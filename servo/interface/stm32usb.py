@@ -3,18 +3,21 @@
 # found in the LICENSE file.
 """Allows creation of an interface via stm32 usb."""
 import collections
+import contextlib
 import threading
 import time
 
 from . import common as c
 import usb
 
+from servo.utils import usb_hierarchy
+
 DeviceInfo = collections.namedtuple('DeviceInfo', ('vid', 'pid', 'serialname'))
 
+EPInfo = collections.namedtuple('USBEPInfo', ('write_ep', 'read_ep'))
 
 class SusbError(c.InterfaceError):
   """Class for exceptions of Susb."""
-  pass
 
 
 class Susb():
@@ -32,8 +35,18 @@ class Susb():
 
   # The time after which to throw arms up when the lock acquisition fails.
   LOCK_TIMEOUT_S = 60
-  # The rate to sample the lock at.
-  LOCK_SAMPLING_RATE_S = 0.001
+
+  # Map to keep track of what stm32usb device had what usb devnum (address)
+  # last time it was configured by anyone.
+  DEV_CONFIG_MAP = {}
+
+  # Map to keep track of which USB interfaces have been claimed by the
+  # process, and the corresponding endpoints.
+  DEV_EP_STORE = collections.defaultdict(dict)
+
+  # Map to keep locks on a per device level. These locks are required so that
+  # no two threads try to set the configuration at the same time.
+  DEVICE_LOCKS = collections.defaultdict(threading.Lock)
 
   def __init__(self, vendor=0x18d1, product=0x500f, interface=1,
                serialname=None, logger=None):
@@ -73,6 +86,15 @@ class Susb():
     self._dev = None
     self._find_device()
 
+  @contextlib.contextmanager
+  def _hold_lock(self, lock):
+    """Helper to manage |lock|."""
+    lock.acquire(timeout=self.LOCK_TIMEOUT_S)
+    try:
+      yield
+    finally:
+      lock.release()
+
   def wait_on_reset(self):
     """Potentially give the resetting thread preference.
 
@@ -95,17 +117,10 @@ class Susb():
     # Signal that resetting is about to happen.
     self._reset_done.clear()
     # Reading and writing is unavailable until the reset has finished.
-    self._acquire_lock(self._read_ep_lock, 'read ep')
-    self._acquire_lock(self._write_ep_lock, 'write ep')
-    try:
-      self._find_device()
-    except:
-      self._logger.info('device not found: %04x:%04x %s',
-                        *self.get_device_info())
-    finally:
-      self._write_ep_lock.release()
-      self._read_ep_lock.release()
-    # Signal that resetting is about to happen.
+    with self._hold_lock(self._read_ep_lock):
+      with self._hold_lock(self._write_ep_lock):
+        self._find_device()
+    # Signal that resetting is done.
     self._reset_done.set()
 
   def get_device_info(self):
@@ -113,26 +128,10 @@ class Susb():
     return DeviceInfo(self._vendor, self._product, self._serialname)
 
   def _find_device(self):
-    """Set up the usb endpoint"""
+    """Find device, setup configuration, and set up the usb endpoint"""
     # Find the stm32.
-    dev_gen = usb.core.find(idVendor=self._vendor, idProduct=self._product,
-                             find_all=True)
-    dev_list = list(dev_gen)
-    if dev_list is None or len(dev_list) == 0:
-      raise SusbError('USB device not found')
-
-    # Check if we have multiple stm32s and we've specified the serial.
-    dev = None
-    if len(dev_list) > 1 and self._serialname is not None:
-      for d in dev_list:
-        if usb.util.get_string(d, d.iSerialNumber) == self._serialname:
-          dev = d
-          break
-      if dev is None:
-        raise SusbError('USB device(%s) not found' % self._serialname)
-    else:
-      dev = dev_list[0]
-
+    devid = self.get_device_info()
+    dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
     # TODO(crbug.com/1014672): investigate whether there is a better way not to
     # leak this many file descriptors for once system, and if there is a better
     # way to clean up the resources than the way/workaround implemented here.
@@ -148,84 +147,100 @@ class Susb():
     # Detatch raiden.ko if it is loaded.
     if dev.is_kernel_driver_active(self._interface):
       dev.detach_kernel_driver(self._interface)
-    usb.util.claim_interface(dev, self._interface)
 
+    # Check whether the current address was already configured by another
+    # interface, or whether we need to do that.
+    if dev.address != self.DEV_CONFIG_MAP.get(devid):
+      # This means the device either has never been set up, or no other
+      # interface has setup the configuration for it.
+      with self._hold_lock(self.DEVICE_LOCKS[devid]):
+        try:
+          dev.get_active_configuration()
+        except usb.core.USBError:
+          # Ignore failure as this is expected to fail for the first attempt
+          # that an interface makes to get the configuration.
+          # If |set_configuration| fails here, there is a real issue,
+          # don't mask it.
+          dev.set_configuration()
+
+      self.DEV_CONFIG_MAP[devid] = dev.address
+      # Delete all records of claimed interfaces so they can be reclaimed.
+      self.DEV_EP_STORE.pop(devid, None)
+
+    self._dev = dev
     serial = '(%s)' % self._serialname if self._serialname else ''
     self._logger.debug('Found stm32%s: %04x:%04x' % (serial, self._vendor,
                                                      self._product))
-    # If we can't set configuration, it's already been set.
-    try:
-      dev.set_configuration()
-    except usb.core.USBError:
-      pass
-    self._dev = dev
 
     # Get an endpoint instance.
     try:
       cfg = dev.get_active_configuration()
     except usb.core.USBError as e:
-      self._logger.error("")
-      self._logger.error("ERROR: You may have run out of endpoints on your "
-          "machine")
-      self._logger.error("due to running too many servos simultaneously."
-          " See crbug.com/652373")
-      self._logger.error("")
+      self._logger.error('You may have run out of endpoints on your machine '
+                         'due to running too many servos simultaneously. '
+                         'See crbug.com/652373')
       raise
-    intf = usb.util.find_descriptor(cfg, bInterfaceNumber=self._interface)
-    self._intf = intf
 
-    self._logger.debug('InterfaceNumber: %s' % intf.bInterfaceNumber)
+    # USB interface claiming.
+    if self._interface not in self.DEV_EP_STORE[devid]:
+      # Some servod interfaces share the same underlying USB interface. Only
+      # one must claim it.
+      usb.util.claim_interface(dev, self._interface)
 
-    read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT
-    read_ep = usb.util.find_descriptor(intf, bEndpointAddress=read_ep_number)
-    self._read_ep = read_ep
-    self._logger.debug('Reader endpoint: 0x%x' % read_ep.bEndpointAddress)
+      intf = usb.util.find_descriptor(cfg, bInterfaceNumber=self._interface)
 
-    write_ep_number = intf.bInterfaceNumber + self.WRITE_ENDPOINT
-    write_ep = usb.util.find_descriptor(intf, bEndpointAddress=write_ep_number)
-    self._write_ep = write_ep
-    self._logger.debug('Writer endpoint: 0x%x' % write_ep.bEndpointAddress)
+      self._logger.debug('InterfaceNumber: %s' % intf.bInterfaceNumber)
 
-    self._logger.debug('Set up stm32 usb')
+      read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT
+      read_ep = usb.util.find_descriptor(intf, bEndpointAddress=read_ep_number)
+      self._logger.debug('Reader endpoint: 0x%x' % read_ep.bEndpointAddress)
 
-  def _acquire_lock(self, lock, name):
-    """Try to acquire the |lock| within |LOCK_TIMEOUT_S|.
+      write_ep_number = intf.bInterfaceNumber + self.WRITE_ENDPOINT
+      write_ep = usb.util.find_descriptor(intf, bEndpointAddress=write_ep_number)
+      self._logger.debug('Writer endpoint: 0x%x' % write_ep.bEndpointAddress)
+
+      self.DEV_EP_STORE[devid][self._interface] = EPInfo(read_ep=read_ep,
+                                                         write_ep=write_ep)
+
+      self._logger.debug('Set up stm32 usb')
+
+  def _get_ep(self, write=False):
+    """Retrieve the ep.
 
     Args:
-      lock: lock to acquire
-      name: name of the lock to log
+      write: whether the write ep or the read ep is desired
+
+    Returns:
+      reference to the shared EP
 
     Raises:
-      SinterfaceError: if |lock| cannot be acquired in |LOCK_TIMEOUT_S| s
+      SusbError: if EP is not available
+
     """
-    end = time.time() + self.LOCK_TIMEOUT_S
-    while time.time() < end:
-      if lock.acquire(False):
-        break
-      time.sleep(self.LOCK_SAMPLING_RATE_S)
+    devid = self.get_device_info()
+    if devid not in self.DEV_EP_STORE:
+      raise SusbError('Device %r has no endpoints setup' % devid)
+    if self._interface not in self.DEV_EP_STORE[devid]:
+      raise SusbError('Device %r has no edpoints setup for interface %d' %
+                      (devid, self._interface))
+    if write:
+      return self.DEV_EP_STORE[devid][self._interface].write_ep
     else:
-      # Acquisition failed. Report and raise an error.
-      self._logger.error('%s lock acquisition failed after %ds.',
-                         name, self.LOCK_TIMEOUT_S)
-      raise SinterfaceError('Failed to acquire %s lock.' % name)
+      return self.DEV_EP_STORE[devid][self._interface].read_ep
 
   def read_ep(self, *args, **kwargs):
     """Thread safe wrapper around reading the |read_ep|"""
     self.wait_on_reset()
-    self._acquire_lock(self._read_ep_lock, 'read ep')
-    try:
-      return self._read_ep.read(*args, **kwargs)
-    finally:
-      self._read_ep_lock.release()
+    with self._hold_lock(self._read_ep_lock):
+      ep = self._get_ep(write=False)
+      return ep.read(*args, **kwargs)
 
   def write_ep(self, *args, **kwargs):
     """Thread safe wrapper around writing to the |write_ep|"""
     self.wait_on_reset()
-    self._acquire_lock(self._write_ep_lock, 'write ep')
-    try:
-      self._write_ep.write(*args, **kwargs)
-    finally:
-      self._write_ep_lock.release()
+    with self._hold_lock(self._write_ep_lock):
+      ep = self._get_ep(write=True)
+      ep.write(*args, **kwargs)
 
   def control(self, request, value):
     """Send control transfer.
