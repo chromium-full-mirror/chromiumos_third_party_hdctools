@@ -31,6 +31,7 @@ import ec3po_servo_micro
 import ec3po_servo_v4
 import ec_i2c_pin
 import ec_lm4
+import echo
 import fluffy
 import ftdii2c_cmd
 import fw_wp_ccd
