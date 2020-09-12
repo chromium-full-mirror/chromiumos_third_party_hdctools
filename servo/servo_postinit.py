@@ -322,8 +322,7 @@ class ServoV4PostInit(BasePostInit):
 
     # Fail if we requested board control but don't have an interface for this.
     if self.servod._board:
-      ccd_capable = self.servod.get('servo_v4_type') == 'type-c'
-      if ccd_capable:
+      if self.servod.get('support.dut_connection_type') == 'type-c':
         faults = diagnose.diagnose_ccd(self.servod)
         if diagnose.SBU_VOLTAGE_FLOAT in faults:
           self.servod.set('dut_sbu_voltage_float_fault', 'on')

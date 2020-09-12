@@ -177,42 +177,42 @@
   </control>
 
   <control>
-    <name>servo_v4p1_dut_cc1_mv</name>
+    <name>servo_dut_cc1_mv</name>
     <doc>DUT CC1 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="DUT_CC1_PD" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
 
   <control>
-    <name>servo_v4p1_dut_cc2_mv</name>
+    <name>servo_dut_cc2_mv</name>
     <doc>DUT CC2 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="DUT_CC2_PD" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
 
   <control>
-    <name>servo_v4p1_chg_cc1_mv</name>
+    <name>servo_chg_cc1_mv</name>
     <doc>Charge port CC1 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="CHG_CC1_PD" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
 
   <control>
-    <name>servo_v4p1_chg_cc2_mv</name>
+    <name>servo_chg_cc2_mv</name>
     <doc>Charge port CC2 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="CHG_CC2_PD" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
 
   <control>
-    <name>servo_v4p1_sbu1_mv</name>
+    <name>servo_dut_sbu1_mv</name>
     <doc>SBU1 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="SBU1_DET" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
 
   <control>
-    <name>servo_v4p1_sbu2_mv</name>
+    <name>servo_dut_sbu2_mv</name>
     <doc>SBU2 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="SBU2_DET" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -225,18 +225,20 @@
   </control>
   <control>
     <name>servo_v4p1_version</name>
+    <alias>support.servo_fw_version</alias>
     <doc>current fw version</doc>
     <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
         map="print" init="print"></params>
   </control>
   <control>
     <name>servo_v4p1_latest_version</name>
+    <alias>support.servo_latest_fw_version</alias>
     <doc>latest released fw version</doc>
     <params cmd="get" subtype="latest_version" interface="26"
       drv="ec3po_servo_v4"></params>
   </control>
   <control>
-    <name>active_v4p1_device</name>
+    <name>active_dut_controller</name>
     <doc>shows the active servo device servo_micro or ccd_cr50</doc>
     <params drv="active_v4_device" interface="servo" input_type="str"
       subtype="device"></params>
@@ -252,7 +254,7 @@
   <control>
     <name>raw_servo_v4p1_uart_pty</name>
     <alias>raw_servo_v4_uart_pty</alias>
-    <doc>Servo V4's stm32 console.</doc>
+    <doc>Servo V4P1's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="22" drv="uart">
     </params>
   </control>
@@ -272,7 +274,7 @@
   <control>
     <name>ec3po_servo_v4p1_uart</name>
     <alias>servo_v4p1_uart_pty</alias>
-    <doc>Servo v4 console provided via EC-3PO console
+    <doc>Servo v4p1 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
     </params>
@@ -286,27 +288,40 @@
   </control>
   <control>
     <name>servo_v4p1_uart_raw_debug</name>
-    <doc>Turn on per-message-received logs to the servo v4 console
+    <doc>Turn on per-message-received logs to the servo v4p1 console
       messages.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="off"
     subtype="raw_debug"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_timestamp</name>
-    <doc>Add timestamps to the servo v4 console messages</doc>
+    <doc>Add timestamps to the servo v4p1 console messages</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp"></params>
   </control>
   <control>
     <name>servo_v4p1_loglevel</name>
-    <doc>servo v4 console loglevel</doc>
+    <doc>servo v4p1 console loglevel</doc>
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
-  <!-- Servo V4 Console Automation Controls -->
+  <control>
+    <name>dut_controller_missing_fault</name>
+    <doc>Whether a main dut-controller is missing.</doc>
+    <params interface="servo" drv="sflag" map="onoff" tags="fault_flag">
+    </params>
+  </control>
+  <control>
+    <name>dut_sbu_voltage_float_fault</name>
+    <doc>Whether the ccd sbu voltage was floating between high and low (i.e.
+      over 300mV and under 2500mV.</doc>
+    <params interface="servo" drv="sflag" map="onoff" tags="fault_flag">
+    </params>
+  </control>
+  <!-- Servo V4P1 Console Automation Controls -->
   <control>
     <name>servo_v4p1_uart_cmd</name>
-    <doc>Set to send command to the servo v4 console. Get to obtain the
+    <doc>Set to send command to the servo v4p1 console. Get to obtain the
     matched results with the regular expression of
     servo_v4p1_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
@@ -314,14 +329,14 @@
   </control>
   <control>
     <name>servo_v4p1_uart_timeout</name>
-    <doc>Timeout value for waiting servo v4 console response of issuing
+    <doc>Timeout value for waiting servo v4p1 console response of issuing
     an EC command.</doc>
     <params subtype="uart_timeout" interface="26" drv="uart"
     input_type="float"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_multicmd</name>
-    <doc>Set to send multiple commands to the servo v4 console.</doc>
+    <doc>Set to send multiple commands to the servo v4p1 console.</doc>
     <params interface="26" drv="na" cmd="get" clobber_ok=""></params>
     <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
     cmd="set" clobber_ok=""></params>
@@ -335,19 +350,19 @@
   </control>
   <control>
     <name>servo_v4p1_uart_capture</name>
-    <doc>enable servo v4 console capture</doc>
+    <doc>enable servo v4p1 console capture</doc>
     <params subtype="uart_capture" interface="26" drv="uart"
     map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>servo_v4p1_uart_stream</name>
-    <doc>servo v4 console stream collected while servo_v4p1_uart_capture on</doc>
+    <doc>servo v4p1 console stream collected while servo_v4p1_uart_capture on</doc>
     <params cmd="get" subtype="uart_stream" interface="26" drv="uart"
     clobber_ok=""></params>
   </control>
   <!-- DTS mode control -->
   <control>
-    <name>servo_v4p1_dts_mode</name>
+    <name>servo_dts_mode</name>
     <doc>Enable/disable DTS mode on servo_v4p1</doc>
     <params subtype="servo_v4_dts_mode" interface="26" drv="ec3po_servo_v4"
     input_type="str" init="on"></params>
@@ -359,7 +374,7 @@
     input_type="str" cmd="get"></params>
   </control>
   <control>
-    <name>servo_v4p1_role</name>
+    <name>servo_pd_role</name>
     <doc>Power role for DUT port on servo_v4</doc>
     <params subtype="servo_v4_power_role" interface="26" drv="ec3po_servo_v4"
     input_type="str"></params>
@@ -397,6 +412,13 @@
     <doc>USB-PD port power role</doc>
     <params interface="26" drv="ec3po_servo_v4" subtype="usbc_pr"
     map="pdpr"></params>
+  </control>
+  <control>
+    <name>servo_v4p1_type</name>
+    <alias>support.dut_connection_type</alias>
+    <!-- This is a hard-coded return string to be compatible with v4
+      code. v4p1 is always type-c-->
+    <params interface="servo" drv="echo" value="type-c"></params>
   </control>
   <control>
     <name>usbc_polarity</name>

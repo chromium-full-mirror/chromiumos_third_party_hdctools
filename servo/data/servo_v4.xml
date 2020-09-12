@@ -120,6 +120,7 @@
   </control>
   <control>
     <name>servo_v4_type</name>
+    <alias>support.dut_connection_type</alias>
     <doc>DONGLE_DET</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
      name="DONGLE_DET" map="servo_v4_type_map"></params>
@@ -231,6 +232,7 @@
 
   <control>
     <name>servo_v4_dut_cc1_mv</name>
+    <alias>servo_dut_cc1_mv</alias>
     <doc>DUT CC1 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="DUT_CC1_PD" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -238,6 +240,7 @@
 
   <control>
     <name>servo_v4_dut_cc2_mv</name>
+    <alias>servo_dut_cc2_mv</alias>
     <doc>DUT CC2 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="DUT_CC2_PD" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -245,6 +248,7 @@
 
   <control>
     <name>servo_v4_chg_cc1_mv</name>
+    <alias>servo_chg_cc1_mv</alias>
     <doc>Charge port CC1 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="CHG_CC1_PD" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -252,6 +256,7 @@
 
   <control>
     <name>servo_v4_chg_cc2_mv</name>
+    <alias>servo_chg_cc2_mv</alias>
     <doc>Charge port CC2 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="CHG_CC2_PD" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -259,6 +264,7 @@
 
   <control>
     <name>servo_v4_sbu1_mv</name>
+    <alias>servo_dut_sbu1_mv</alias>
     <doc>SBU1 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="SBU1_DET" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -266,6 +272,7 @@
 
   <control>
     <name>servo_v4_sbu2_mv</name>
+    <alias>servo_dut_sbu2_mv</alias>
     <doc>SBU2 voltage level</doc>
     <params cmd="get" subtype="adc" adc_name="SBU2_DET" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -278,12 +285,14 @@
   </control>
   <control>
     <name>servo_v4_version</name>
+    <alias>support.servo_fw_version</alias>
     <doc>current fw version</doc>
     <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
         map="print" init="print"></params>
   </control>
   <control>
     <name>servo_v4_latest_version</name>
+    <alias>support.servo_latest_fw_version</alias>
     <doc>latest released fw version</doc>
     <params cmd="get" subtype="latest_version" interface="26"
       drv="ec3po_servo_v4"></params>
@@ -291,6 +300,7 @@
   <control>
     <name>active_v4_device</name>
     <doc>shows the active servo device servo_micro, ccd_cr50, or c2d2</doc>
+    <alias>active_dut_controller</alias>
     <params drv="active_v4_device" interface="servo" input_type="str"
       subtype="device"></params>
   </control>
@@ -414,6 +424,7 @@
   <!-- DTS mode control -->
   <control>
     <name>servo_v4_dts_mode</name>
+    <alias>servo_dts_mode</alias>
     <doc>Enable/disable DTS mode on servo_v4</doc>
     <params subtype="servo_v4_dts_mode" interface="26" drv="ec3po_servo_v4"
     input_type="str" init="on"></params>
@@ -426,6 +437,7 @@
   </control>
   <control>
     <name>servo_v4_role</name>
+    <alias>servo_pd_role</alias>
     <doc>Power role for DUT port on servo_v4</doc>
     <params subtype="servo_v4_power_role" interface="26" drv="ec3po_servo_v4"
     input_type="str"></params>

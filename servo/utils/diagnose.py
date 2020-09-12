@@ -29,33 +29,35 @@ def diagnose_ccd(servo_dev):
   faults = []
 
   # Check ADC values for SBU lines
-  sbu1 = int(servo_dev.get('servo_v4_sbu1_mv'))
-  sbu2 = int(servo_dev.get('servo_v4_sbu2_mv'))
+  sbu1 = int(servo_dev.get('servo_dut_sbu1_mv'))
+  sbu2 = int(servo_dev.get('servo_dut_sbu2_mv'))
   # Check ADC values for CC lines
-  dut_cc1 = int(servo_dev.get('servo_v4_dut_cc1_mv'))
-  dut_cc2 = int(servo_dev.get('servo_v4_dut_cc2_mv'))
-  chg_cc1 = int(servo_dev.get('servo_v4_chg_cc1_mv'))
-  chg_cc2 = int(servo_dev.get('servo_v4_chg_cc2_mv'))
+  dut_cc1 = int(servo_dev.get('servo_dut_cc1_mv'))
+  dut_cc2 = int(servo_dev.get('servo_dut_cc2_mv'))
+  chg_cc1 = int(servo_dev.get('servo_chg_cc1_mv'))
+  chg_cc2 = int(servo_dev.get('servo_chg_cc2_mv'))
 
   # Check SuzyQ routing settings.
   sbu_en = servo_dev.get('sbu_mux_enable') == 'on'  # SuzyQ plugged
   sbu_flip = servo_dev.get('sbu_flip_sel') == 'on'  # SuzyQ flipped
   # Check servo info.
-  servo_v4_type = servo_dev.get('servo_v4_type')
-  servo_v4_fw = servo_dev.get('servo_v4_version')
-  servo_v4_latest_fw = servo_dev.get('servo_v4_latest_version')
+  dut_connection_type = servo_dev.get('support.dut_connection_type')
+  servo_fw = servo_dev.get('support.servo_fw_version')
+  servo_latest_fw = servo_dev.get('support.servo_latest_fw_version')
 
   logger.error('')
   logger.error('CCD diagnosis info:')
-  logger.error('servo_v4_type is %s' % servo_v4_type)
-  logger.error('servo_v4 version is %s' % servo_v4_fw)
+  logger.error('%s dut connection is %s', servo_dev._base_version,
+               dut_connection_type)
+  logger.error('firmware version is %s', servo_fw)
   logger.error('')
 
   # Check for obsolete firmware.
-  if servo_v4_fw != servo_v4_latest_fw:
-    logger.error("Servo v4 fw version doesn't match latest.")
-    logger.error("servo-firmware supplies %s" % servo_v4_latest_fw)
-    logger.error("  Run 'sudo servo_updater -b servo_v4' to correct.")
+  if servo_fw != servo_latest_fw:
+    logger.error("servo firmware version doesn't match latest.")
+    logger.error("latest available firmware: %s" % servo_latest_fw)
+    logger.error("  Run 'sudo servo_updater -b %s' to correct.",
+                 servo_dev._base_version)
     logger.error('')
 
   # Check if chargethrough is plugged in.

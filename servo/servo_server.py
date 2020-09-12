@@ -148,6 +148,9 @@ class Servod(object):
     if model:
       self._board += '_' + model
     self._model = model
+    # TODO(coconutruben): remove this caching of the 'version' after
+    # refactoring it into device properly.
+    self._base_version = version
     self._version = version
     self._usbkm232 = usbkm232
     self._keyboard = None
@@ -542,11 +545,11 @@ class Servod(object):
                            'error is not just a setup issue, consider filing '
                            'a bug. Also checkout go/servo-ki.')
 
-    # If there is the control of 'active_v4_device', set active_v4_device to
-    # the default device as initialization.
+    # If there is the control of 'active_dut_controller',
+    # set active_dut_controller to the default device as initialization.
     try:
-      if self._syscfg.is_control('active_v4_device'):
-        self.set('active_v4_device', 'default')
+      if self._syscfg.is_control('active_dut_controller'):
+        self.set('active_dut_controller', 'default')
     except servo_drv.active_v4_device.activeV4DeviceError as e:
       self._logger.debug('Could not set active device: %s', str(e))
 
