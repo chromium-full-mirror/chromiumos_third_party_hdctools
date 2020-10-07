@@ -43,6 +43,14 @@ class Tester(object):
     self._servod_process = None
     self._report = report
 
+  @property
+  def wait_for_setup(self):
+    """Whether the tester has steps that require the user to setup the test."""
+    # Some devices can test without hooking up anything extra. Those devices
+    # should overwrite this to be False to avoid unnecessary wait times for user
+    # confirmation.
+    return True
+
   def _register_test(self, test):
     """Internal interface for subclass to register a test.
 
@@ -112,8 +120,11 @@ class Tester(object):
     """
     for test in self._tests:
       test.prompt()
-    # At the end, ask the user to confirm that everything is plugged in.
-    result = user_input.instruct_user('', enter_to_confirm=True)
+    result = True
+    if self.wait_for_setup:
+      # At the end, ask the user to confirm that everything is plugged in,
+      # if required.
+      result = user_input.instruct_user('', enter_to_confirm=True)
     if not result:
       self._logger.info('User did not confirm. Testing cancelled.')
       return False

@@ -13,6 +13,11 @@ class MicroTester(tester.Tester):
 
   PHASE = 1
 
+  @property
+  def wait_for_setup(self):
+    """Servo micro does not require any test setup other than the device."""
+    return False
+
   def _register(self):
     """Register all tests for servo micro."""
     # This is broken out to allow for clean readability and maintainability
