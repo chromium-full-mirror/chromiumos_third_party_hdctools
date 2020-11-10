@@ -60,11 +60,11 @@
   <control>
     <name>hpd</name>
     <alias>slp_s0</alias>
-    <params clobber_ok="" od="PP" map="onoff_i"></params>
+    <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>fw_up</name>
     <alias>slp_s3</alias>
-    <params clobber_ok="" od="PP" map="onoff_i"></params>
+    <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
   </control>
 </root>
