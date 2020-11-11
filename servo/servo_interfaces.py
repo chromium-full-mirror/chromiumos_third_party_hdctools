@@ -92,8 +92,8 @@ for vid, pid in RAIDEN_DEFAULTS:
 SERVO_ID_DEFAULTS.extend(RAIDEN_DEFAULTS)
 
 # cr50 CCD
-CCD_DEFAULTS = [(0x18d1, 0x5014)]
-for vid, pid in CCD_DEFAULTS:
+CCD_CR50_DEFAULTS = [(0x18d1, 0x5014)]
+for vid, pid in CCD_CR50_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: Cr50 console
@@ -112,7 +112,32 @@ for vid, pid in CCD_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-SERVO_ID_DEFAULTS.extend(CCD_DEFAULTS)
+SERVO_ID_DEFAULTS.extend(CCD_CR50_DEFAULTS)
+
+# ti50 CCD
+CCD_TI50_DEFAULTS = [(0x18d1, 0x504a)]
+for vid, pid in CCD_TI50_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    ['empty',
+     {'name': 'stm32_uart', 'interface': 0}, # 1: Ti50 console
+     {'name': 'stm32_i2c', 'interface': 5},  # 2: i2c
+     'empty',                                # 3
+     'empty',                                # 4
+     'empty',                                # 5
+     'empty',                                # 6
+     {'name': 'stm32_uart', 'interface': 2}, # 7: EC/PD
+     {'name': 'stm32_uart', 'interface': 1}, # 8: AP
+     {'name': 'ec3po_uart',                  # 9: EC3PO(Cr50)
+      'raw_pty': 'raw_cr50_uart_pty', 'source': 'Cr50'},
+     {'name': 'ec3po_uart',                  #10: EC3PO(EC)
+      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
+     {'name': 'ec3po_uart',                  #11: EC3PO(AP)
+      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
+    ]
+
+SERVO_ID_DEFAULTS.extend(CCD_TI50_DEFAULTS)
+
+CCD_DEFAULTS = CCD_CR50_DEFAULTS + CCD_TI50_DEFAULTS
 
 # Sweetberry
 SWEETBERRY_ID_DEFAULTS = [(0x18d1, 0x5020)]

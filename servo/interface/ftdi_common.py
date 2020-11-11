@@ -34,6 +34,7 @@ SERVO_PID_DEFAULTS = dict([
     ('servo_v4p1', [0x520d]),
     ('servo_micro', [0x501a]),
     ('ccd_cr50', [0x5014]),
+    ('ccd_ti50', [0x504a]),
     ('sweetberry',[0x5020]),
     ('toad_v1', [0x6015]),  # Vendor ID is 0x403 : FTDI
     ('reston', [0x5007]),
@@ -54,6 +55,7 @@ SERVO_CONFIG_DEFAULTS = \
      'servo_micro': ['servo_micro.xml'],
      'sweetberry' : ['sweetberry.xml'],
      'ccd_cr50': ['ccd_cr50.xml'],
+     'ccd_ti50': ['ccd_ti50.xml'],
      'toad_v1': ['toad.xml'],
      'reston': ['reston.xml'],
      'fruitpie': ['fruitpie.xml'],
