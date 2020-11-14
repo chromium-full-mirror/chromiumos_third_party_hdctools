@@ -193,8 +193,10 @@ class Servod(object):
   def close(self):
     """Servod turn down logic."""
     for i, interface in enumerate(self._interface_list):
-      self._logger.info('Turning down interface %d' % i)
-      interface.close()
+      if not isinstance(interface, _interface.empty.Empty):
+        # Only print this on real interfaces and not place holders.
+        self._logger.info('Turning down interface %d', i)
+        interface.close()
 
   def get_devices(self):
     return self._devices.values()
