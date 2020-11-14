@@ -335,6 +335,10 @@ class Servod(object):
       self._drv_dict[control_name]['set'] = (params, drv, device_info)
     return (params, drv, device_info)
 
+  def _has_control(self, control):
+    """Returns True if control is available in servod."""
+    return self._syscfg.is_control(control)
+
   def doc_all(self):
     """Return all documenation for controls.
 

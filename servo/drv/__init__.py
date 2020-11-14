@@ -37,6 +37,7 @@ import fw_wp_ccd
 import fw_wp_servoflex
 import fw_wp_state
 import gpio
+import grunt_power
 import hw_driver
 import i2c_pseudo
 import i2c_reg
