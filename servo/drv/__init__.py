@@ -29,6 +29,7 @@ import ec3po_gpio
 import ec3po_servo
 import ec3po_servo_micro
 import ec3po_servo_v4
+import ec_i2c_pin
 import ec_lm4
 import fluffy
 import ftdii2c_cmd
