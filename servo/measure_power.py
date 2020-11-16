@@ -29,6 +29,9 @@ DEFAULT_POWERSTATE = UNKNOWN_POWERSTATE = 'S?'
 # List of known power states
 POWERSTATES = ['S0', 'S0ix', 'S3', 'S5', 'G3']
 
+# Board name to use when no board name provided, or querying it fails
+# First attempt to read it from the environment before defaulting to unknown
+DEFAULT_BOARD = os.environ.get('BOARD', 'unknown')
 
 class PowerTrackerError(Exception):
   """Error class to invoke on PowerTracker errors."""
@@ -325,7 +328,7 @@ class PowerMeasurement(object):
                              'collection has finished.')
 
   def __init__(self, host, port, ina_rate=DEFAULT_INA_RATE,
-               vbat_rate=DEFAULT_VBAT_RATE, fast=False):
+               vbat_rate=DEFAULT_VBAT_RATE, fast=False, board=DEFAULT_BOARD):
     """Init PowerMeasurement class by attempting to create PowerTrackers.
 
     Args:
@@ -335,6 +338,8 @@ class PowerMeasurement(object):
       vbat_rate: sample rate for servod ec vbat command
       fast: if true, no servod control verification is done before measuring
             power, nor the powerstate queried from the EC
+      board: board name to use. If this is not provided, then an attempt
+             is made to query it from the EC
 
     Raises:
       PowerMeasurementError: if no PowerTracker setup successful
@@ -343,14 +348,15 @@ class PowerMeasurement(object):
     self._logger = logging.getLogger(type(self).__name__)
     self._outdir = None
     self._sclient = client.ServoClient(host=host, port=port)
-    self._board = 'unknown'
-    if not fast:
+    self._board = board
+    if not fast and self._board == DEFAULT_BOARD:
       try:
         board = self._sclient.get('ec_board')
         if board != 'not_applicable':
           self._board = board
       except client.ServoClientError:
-        self._logger.warning('Failed to get ec_board, setting to unknown.')
+        self._logger.warning('Failed to get ec_board, setting to %r.',
+                             self._board)
     self._processing_done = False
     self._setup_done = threading.Event()
     self._stop_signal = threading.Event()

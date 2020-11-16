@@ -96,6 +96,8 @@ def main(cmdline=sys.argv[1:]):
   parser.add_argument('--powerstate', default=measure_power.DEFAULT_POWERSTATE,
                       choices=measure_power.POWERSTATES,
                       help='powerstate being measured (determines data dst)')
+  parser.add_argument('-b', '--board', default=measure_power.DEFAULT_BOARD,
+                      help='board being measured (determines data dst)')
   # power measurement logistics
   parser.add_argument('-f', '--fast', default=False, action='store_true',
                       help='if fast no verification cmds are done')
@@ -149,7 +151,8 @@ def main(cmdline=sys.argv[1:]):
   pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
                                       ina_rate=args.ina_rate,
                                       vbat_rate=args.vbat_rate,
-                                      fast=args.fast)
+                                      fast=args.fast,
+                                      board=args.board)
   # pylint: disable=undefined-variable
   # Event.wait() is used as a preemptible way to sleep and control the
   # ProgressPrinters while handling the SIGTERM/SIGINT signals
