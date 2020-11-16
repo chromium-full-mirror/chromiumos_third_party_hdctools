@@ -20,8 +20,14 @@ DEFAULT_VBAT_RATE = 60
 # Default sample rate to query INAs for power consumption
 DEFAULT_INA_RATE = 1
 
-# Powerstate name used when no powerstate is known
-UNKNOWN_POWERSTATE = 'S?'
+# Powerstate name used when no powerstate is known. The 'default' alias is
+# added to make it clear on modules that use this as a library e.g. dut_power,
+# that this is the 'default'.
+DEFAULT_POWERSTATE = UNKNOWN_POWERSTATE = 'S?'
+
+
+# List of known power states
+POWERSTATES = ['S0', 'S0ix', 'S3', 'S5', 'G3']
 
 
 class PowerTrackerError(Exception):

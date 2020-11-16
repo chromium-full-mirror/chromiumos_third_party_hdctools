@@ -91,6 +91,11 @@ def main(cmdline=sys.argv[1:]):
   description = 'Measure power using servod.'
   # BaseServodParser provides port, host, debug arguments
   parser = servo_parsing.ServodClientParser(description=description)
+  # overwriting/providing measurement information so the servo device
+  # does not need to query for it.
+  parser.add_argument('--powerstate', default=measure_power.DEFAULT_POWERSTATE,
+                      choices=measure_power.POWERSTATES,
+                      help='powerstate being measured (determines data dst)')
   # power measurement logistics
   parser.add_argument('-f', '--fast', default=False, action='store_true',
                       help='if fast no verification cmds are done')
@@ -150,7 +155,7 @@ def main(cmdline=sys.argv[1:]):
   # ProgressPrinters while handling the SIGTERM/SIGINT signals
   sleep_waiting = threading.Event()
   sleep_sampling = threading.Event()
-  setup_done = pm.MeasurePower(wait=args.wait)
+  setup_done = pm.MeasurePower(wait=args.wait, powerstate=args.powerstate)
   # pylint: disable=g-long-lambda
   handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
                   (sw.set(), ss.set(), pm.FinishMeasurement())
