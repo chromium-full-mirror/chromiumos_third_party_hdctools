@@ -20,7 +20,8 @@ import time
 # to ensure that the current directory is part of the path.
 sys.path.append(os.path.dirname(__file__))
 
-
+# Do not change these to relative imports. This file is mostly run through a
+# module import on setup.py, and cannot support relative imports at that point.
 from sweetberry_preprocessor import SweetberryPreprocessor
 from servo_config_generator import ServoConfigFileGenerator
 from servo_config_generator import ServoControlGenerator

@@ -6,7 +6,7 @@
 import logging
 import os
 
-import hw_driver
+from . import hw_driver
 import servo.servo_logging
 
 

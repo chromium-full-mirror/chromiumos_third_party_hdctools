@@ -16,7 +16,7 @@ except ImportError:
   # Remove once fully moved to python3.
   from xmlrpc.client import ServerProxy
 
-import dolphin_server
+from . import dolphin_server
 
 
 __all__ = ['SerialClientError', 'SerialClient']

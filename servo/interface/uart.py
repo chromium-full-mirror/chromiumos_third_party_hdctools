@@ -9,7 +9,7 @@ import threading
 import time
 import tty
 
-import interface
+from . import interface
 
 MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes
 

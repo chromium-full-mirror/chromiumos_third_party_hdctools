@@ -4,7 +4,7 @@
 """ Text-based LCD module driver for LCM2004."""
 
 # servo libs
-import hw_driver
+from . import hw_driver
 
 # commands
 LCD_CLEAR_DISPLAY = 0x01

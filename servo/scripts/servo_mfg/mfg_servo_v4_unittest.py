@@ -6,7 +6,7 @@
 
 import unittest
 
-import mfg_servo_v4 as mfg
+from . import mfg_servo_v4 as mfg
 
 class TestMfgServoV4(unittest.TestCase):
 

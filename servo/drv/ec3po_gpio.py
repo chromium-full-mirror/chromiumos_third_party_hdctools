@@ -9,8 +9,8 @@ Provides the following console controlled function:
 
 import logging
 
-import ec3po_servo
-import pty_driver
+from . import ec3po_servo
+from . import pty_driver
 import servo
 
 # servod numeric translation for GPIO state.

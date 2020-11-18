@@ -25,18 +25,19 @@ import sys
 import threading
 import time
 
-import interface.ftdi_common
-import recovery
-import servo_interfaces
-import servo_logging
-import servo_parsing
-import servo_postinit
-import servo_server
-import system_config
-import terminal_freezer
 import usb
-import utils.scratch as scratch
-import watchdog
+
+from . import interface
+from . import recovery
+from . import servo_interfaces
+from . import servo_logging
+from . import servo_parsing
+from . import servo_postinit
+from . import servo_server
+from . import system_config
+from . import terminal_freezer
+from . import watchdog
+from servo.utils import scratch
 
 MAX_ISERIAL_STR = 128
 

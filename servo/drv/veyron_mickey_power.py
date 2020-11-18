@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver for power_state for veyron_mickey board.
 """
-import power_state
+from . import power_state
 import time
 
 

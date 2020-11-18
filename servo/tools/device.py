@@ -10,7 +10,7 @@ import time
 
 import servo.servo_interfaces
 import servo.utils.usb_hierarchy as uh
-import tool
+from . import tool
 
 # VID to find all servo devices.
 SERVO_VID = 0x18d1

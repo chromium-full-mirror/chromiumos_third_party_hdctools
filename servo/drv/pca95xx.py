@@ -14,8 +14,8 @@ import contextlib
 import os
 import sys
 
-import pca9500
-import pca9537
+from . import pca9500
+from . import pca9537
 
 
 @contextlib.contextmanager

@@ -12,8 +12,8 @@ import errno
 import logging
 import time
 
-import hw_driver
-import i2c_reg
+from . import hw_driver
+from . import i2c_reg
 import numpy
 import servo.interface.stm32i2c
 

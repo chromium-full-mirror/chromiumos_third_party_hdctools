@@ -7,7 +7,7 @@
 See ftdii2c.py for details on controls available.
 """
 
-import hw_driver
+from . import hw_driver
 
 
 # pylint: disable=C0103

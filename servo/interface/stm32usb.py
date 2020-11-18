@@ -6,7 +6,7 @@ import collections
 import threading
 import time
 
-import common as c
+from . import common as c
 import usb
 
 DeviceInfo = collections.namedtuple('DeviceInfo', ('vid', 'pid', 'serialname'))

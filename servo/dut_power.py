@@ -15,10 +15,10 @@ import sys
 import tempfile
 import threading
 
-import client
+from . import client
 # This module is just a wrapper around measure_power functionality
-import measure_power
-import servo_parsing
+from . import measure_power
+from . import servo_parsing
 
 
 class ProgressPrinter(threading.Thread):

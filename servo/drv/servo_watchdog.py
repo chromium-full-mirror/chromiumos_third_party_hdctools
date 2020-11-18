@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver for controlling the watchdog."""
 
-import hw_driver
+from . import hw_driver
 
 
 class servoWatchdogError(hw_driver.HwDriverError):

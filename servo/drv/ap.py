@@ -12,7 +12,7 @@ import logging
 import pexpect
 import time
 
-import pty_driver
+from . import pty_driver
 
 
 class apError(pty_driver.ptyError):

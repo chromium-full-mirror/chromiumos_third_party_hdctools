@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 """Driver for board config controls pca9537, a 4-bit ioexpander.
 """
-import hw_driver
-import tca6416
+from . import hw_driver
+from . import tca6416
 
 
 class pca9537(tca6416.tca6416):

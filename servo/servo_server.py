@@ -15,12 +15,12 @@ import time
 import usb
 import weakref
 
-import drv as servo_drv
-import interface as _interface
-import servo_dev
-import servo_interfaces
-import servo_logging
-import servo_postinit
+from . import drv as servo_drv
+from . import interface as _interface
+from . import servo_dev
+from . import servo_interfaces
+from . import servo_logging
+from . import servo_postinit
 
 HwDriverError = servo_drv.hw_driver.HwDriverError
 

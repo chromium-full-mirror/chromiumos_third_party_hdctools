@@ -5,7 +5,7 @@
 """
 import logging
 
-import pty_driver
+from . import pty_driver
 
 
 class uartError(pty_driver.ptyError):

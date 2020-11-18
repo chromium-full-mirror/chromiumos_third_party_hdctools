@@ -6,7 +6,7 @@
 
 import errno
 import glob
-import hw_driver
+from . import hw_driver
 import time
 
 _DUT_USB3_OFF_SYSCONF_GLOB = '/etc/servo/dut_usb3.no'

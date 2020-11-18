@@ -5,7 +5,7 @@
 
 A zero-drift, bi-directional current/power monitor with I2C interface.
 """
-import ina2xx
+from . import ina2xx
 
 
 class ina219(ina2xx.ina2xx):

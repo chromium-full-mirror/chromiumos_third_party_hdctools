@@ -5,7 +5,7 @@
    This is for the special-purpose commands that Cr50 can handle.
 """
 
-import hw_driver
+from . import hw_driver
 
 CMD_MASK=0xFF
 

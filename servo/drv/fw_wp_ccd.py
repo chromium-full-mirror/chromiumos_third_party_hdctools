@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import cr50
-import fw_wp_state
+from . import cr50
+from . import fw_wp_state
 
-import hw_driver
+from . import hw_driver
 
 class fwWpCcdError(hw_driver.HwDriverError):
   """Exception class for fwWpCcd."""

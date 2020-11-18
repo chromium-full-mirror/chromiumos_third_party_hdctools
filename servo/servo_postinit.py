@@ -12,11 +12,11 @@ import subprocess
 import time
 import usb
 
-import recovery
-import servo_interfaces
-import system_config
-import utils.diagnose
-import utils.usb_hierarchy as usb_hierarchy
+from . import recovery
+from . import servo_interfaces
+from . import system_config
+from servo.utils import diagnose
+from servo.utils import usb_hierarchy
 
 POST_INIT = collections.defaultdict(dict)
 
@@ -324,8 +324,8 @@ class ServoV4PostInit(BasePostInit):
     if self.servod._board:
       ccd_capable = self.servod.get('servo_v4_type') == 'type-c'
       if ccd_capable:
-        faults = utils.diagnose.diagnose_ccd(self.servod)
-        if utils.diagnose.SBU_VOLTAGE_FLOAT in faults:
+        faults = diagnose.diagnose_ccd(self.servod)
+        if diagnose.SBU_VOLTAGE_FLOAT in faults:
           self.servod.set('dut_sbu_voltage_float_fault', 'on')
       # No need to check for the LOW voltage signal here as the fault
       # is valid for both ccd and for servo micro: a controller is missing

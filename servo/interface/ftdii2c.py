@@ -7,10 +7,10 @@
 import ctypes
 import logging
 
-import common as c
-import ftdi_common
-import ftdi_utils
-import i2c_base
+from . import common as c
+from . import ftdi_common
+from . import ftdi_utils
+from . import i2c_base
 
 
 MAX_I2C_CLOCK_HZ = 100000

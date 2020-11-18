@@ -5,9 +5,9 @@
 import atexit
 import os
 
-import common as c
-import bbmux_controller
-import gpio_interface
+from . import common as c
+from . import bbmux_controller
+from . import gpio_interface
 
 GPIO_ROOT = '/sys/class/gpio'
 EXPORT_FILE = os.path.join(GPIO_ROOT, 'export')

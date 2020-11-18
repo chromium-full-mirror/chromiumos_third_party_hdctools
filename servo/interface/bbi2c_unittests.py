@@ -5,7 +5,7 @@
 import mox
 import unittest
 
-import bbi2c
+from . import bbi2c
 
 DEFAULT_BUS_NUM = 3
 SLAVE_ADDRESS = 0x20

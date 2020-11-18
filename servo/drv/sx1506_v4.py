@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver for sx1506 16bit ioexpander, with power on defaults for for servo v4
 """
-import sx1506
+from . import sx1506
 
 
 class sx1506V4(sx1506.sx1506):

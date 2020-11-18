@@ -9,9 +9,9 @@ import os
 import threading
 import time
 
-import client
+from . import client
 import stats_manager
-import timelined_stats_manager
+from . import timelined_stats_manager
 
 SAMPLE_TIME_KEY = 'Sample_msecs'
 

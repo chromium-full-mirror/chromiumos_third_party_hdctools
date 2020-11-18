@@ -11,9 +11,9 @@ import socket
 import tempfile
 import unittest
 
-import client
-import servo_parsing
-import utils.scratch as scratch
+from . import client
+from . import servo_parsing
+from servo.utils import scratch
 
 # Throughout all the tests in this file, parse_known_args is used instead of
 # parse args. This is to avoid having to clutter the tests with unrelated

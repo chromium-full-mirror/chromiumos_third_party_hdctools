@@ -8,9 +8,8 @@ Provides the following console controlled function subtypes:
 """
 import re
 
-import ec3po_servo
-import pty_driver
-import servo
+from . import ec3po_servo
+from . import pty_driver
 
 
 class ec3poServoV4Error(pty_driver.ptyError):

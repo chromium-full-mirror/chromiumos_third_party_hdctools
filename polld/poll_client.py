@@ -15,7 +15,7 @@ except ImportError:
   # Remove once fully moved to python3.
   from xmlrpc.client import ServerProxy
 
-import poll_common
+from . import poll_common
 
 
 __all__ = ['PollClientError', 'PollClient']

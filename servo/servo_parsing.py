@@ -8,10 +8,10 @@ import logging
 import os
 import textwrap
 
-import client
-import servo_logging
-import sversion_util
-import utils.scratch
+from . import client
+from . import servo_logging
+from . import sversion_util
+from servo.utils import scratch
 
 
 # A brief overview of the classes found here, and their abilities.
@@ -413,20 +413,20 @@ class ServodClientParser(ServodRCParser):
   serialname as well.
   """
 
-  def __init__(self, scratch=utils.scratch.SERVO_SCRATCH_DIR, **kwargs):
+  def __init__(self, scratchdir=scratch.SERVO_SCRATCH_DIR, **kwargs):
     """Create a ServodRCParser that has the BaseServodParser args.
 
     (for testing) pass a scratch directory instead of the global default.
 
     Args:
-      scratch: scratch directory to use
+      scratchdir: scratch directory to use
       **kwargs: keyword arguments forwarded to _BaseServodParser
     """
     # BaseServodParser is used here to get the common arguments. Later,
     # the ServodClientParser adds port itself, because from a client perspective
     # there is mutual exclusion between --port/--serialname/--name as they serve
     # one purpose: to identify an instance.
-    self._scratchdir = scratch
+    self._scratchdir = scratchdir
     base_parser = BaseServodParser(add_port=False, add_help=False)
     if 'parents' not in kwargs:
       kwargs['parents'] = []
@@ -452,10 +452,10 @@ class ServodClientParser(ServodRCParser):
     # Passing None here uses the default production logic while passing any
     # other directory can be used for testing. No need to check whether
     # |self._scratchdir| is None.
-    scratch = utils.scratch.Scratch(self._scratchdir)
+    servo_scratch = scratch.Scratch(self._scratchdir)
     try:
-      entry = scratch.FindById(opts.serialname)
-    except utils.scratch.ScratchError:
+      entry = servo_scratch.FindById(opts.serialname)
+    except scratch.ScratchError:
       self.error('No servod instance running for device with serialname: %r' %
                  opts.serialname)
     opts.port = int(entry['port'])

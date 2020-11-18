@@ -6,7 +6,7 @@
 Provides the following EC controlled function:
   lid_open
 """
-import pty_driver
+from . import pty_driver
 
 GPIOC_CRH_ADDR = 0x40011004
 GPIOC_BRR_ADDR = 0x40011014

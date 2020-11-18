@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """
 """
-import hw_driver
+from . import hw_driver
 
 CMD_MASK = 0xf
 

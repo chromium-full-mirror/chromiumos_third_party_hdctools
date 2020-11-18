@@ -7,9 +7,9 @@ import array
 import logging
 import struct
 
-import common as c
-import gpio_interface
-import stm32usb
+from . import common as c
+from . import gpio_interface
+from . import stm32usb
 import usb
 
 

@@ -19,12 +19,12 @@ import termios
 import time
 import tty
 
-import common as c
+from . import common as c
 from . import empty
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-import uart
+from . import uart
 
 DeviceInfo = collections.namedtuple('DeviceInfo', ('vid', 'pid', 'serialname'))
 

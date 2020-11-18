@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-import cros_ec_hardrec_power
+from . import cros_ec_hardrec_power
 
 
 class linkPower(cros_ec_hardrec_power.crosEcHardrecPower):

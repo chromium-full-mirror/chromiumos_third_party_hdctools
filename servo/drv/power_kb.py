@@ -4,8 +4,8 @@
 
 """Driver for power button servo feature."""
 
-import hw_driver
-import keyboard_handlers
+from . import hw_driver
+from . import keyboard_handlers
 
 
 class PowerKbError(hw_driver.HwDriverError):

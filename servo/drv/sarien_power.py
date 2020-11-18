@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-import power_state
+from . import power_state
 
 class sarienPower(power_state.PowerStateDriver):
   """Driver for power_state for Wilco-class boards."""

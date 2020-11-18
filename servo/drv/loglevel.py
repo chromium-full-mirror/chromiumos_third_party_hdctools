@@ -5,7 +5,7 @@
 
 import logging
 
-import hw_driver
+from . import hw_driver
 import servo.interface.ec3po_interface
 import servo.servo_logging
 

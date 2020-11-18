@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import logging
-import hw_driver
+from . import hw_driver
 
 
 class macro(hw_driver.HwDriver):

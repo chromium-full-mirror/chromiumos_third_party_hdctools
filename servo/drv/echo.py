@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Echo servod driver that can be used to store constants for overlays."""
 
-import hw_driver
+from servo.drv import hw_driver
 
 
 class echo(hw_driver.HwDriver):

@@ -12,11 +12,11 @@ import threading
 import time
 import tty
 
-import common as c
-import ftdi_common
-import ftdi_utils
-import ftdigpio
-import uart
+from . import common as c
+from . import ftdi_common
+from . import ftdi_utils
+from . import ftdigpio
+from . import uart
 
 # TODO(tbroch) need some way to xref these to values in ftdiuart.h
 FUART_NAME_SIZE = 128

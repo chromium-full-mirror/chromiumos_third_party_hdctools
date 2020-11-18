@@ -8,7 +8,7 @@ import os
 import subprocess
 import unittest
 
-import bbuart
+from . import bbuart
 
 SET_PROP_EXPECTED_ARGS = [
     'stty', '-F', '/dev/ttyO1', '115200', 'cs8', '-cstopb', '-parenb'

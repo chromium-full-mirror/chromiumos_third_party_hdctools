@@ -5,8 +5,8 @@
 import glob
 import os
 
-import common as c
-import interface
+from . import common as c
+from . import interface
 
 
 class BBadcError(c.InterfaceError):

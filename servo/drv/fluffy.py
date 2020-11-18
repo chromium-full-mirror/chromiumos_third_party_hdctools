@@ -4,7 +4,7 @@
 """Fluffy Servo Driver"""
 
 import logging
-import pty_driver
+from . import pty_driver
 
 ACTIVE_PORT_RX_RE = r'Port (\d+) is ON'
 NO_PORT_RX = r'No ports enabled'

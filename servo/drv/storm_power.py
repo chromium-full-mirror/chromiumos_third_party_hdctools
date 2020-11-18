@@ -4,7 +4,7 @@
 
 import time
 
-import power_state
+from . import power_state
 
 
 class stormPower(power_state.PowerStateDriver):

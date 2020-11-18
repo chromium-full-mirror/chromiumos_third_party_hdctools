@@ -12,10 +12,12 @@ import threading
 import time
 import tty
 
-import common as c
-import stm32usb
-import uart
 import usb
+
+from . import common as c
+from . import stm32usb
+from . import uart
+
 
 
 class SuartError(c.InterfaceError):

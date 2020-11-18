@@ -6,7 +6,7 @@
 import fcntl
 import io
 
-import i2c_base
+from . import i2c_base
 
 
 class I2CBus(i2c_base.BaseI2CBus):

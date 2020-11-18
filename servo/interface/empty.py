@@ -5,7 +5,7 @@
 """A empty interface. This can be used for accounting purposes."""
 
 
-import interface
+from . import interface
 
 
 class Empty(interface.Interface):

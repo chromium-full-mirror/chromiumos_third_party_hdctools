@@ -28,7 +28,7 @@ EEPROM:
 """
 import logging
 
-import hw_driver
+from . import hw_driver
 
 REG_CTRL_LEN = 1
 EEPROM_BYTES = 256

@@ -12,7 +12,7 @@ import tempfile
 import time
 import urllib
 
-import hw_driver
+from . import hw_driver
 import servo.utils.usb_hierarchy as usb_hierarchy
 import usb
 

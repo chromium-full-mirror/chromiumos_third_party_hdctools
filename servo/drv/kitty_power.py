@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver for power_state for kitty board.
 """
-import cros_ec_hardrec_power
+from . import cros_ec_hardrec_power
 
 
 class kittyPower(cros_ec_hardrec_power.crosEcHardrecPower):

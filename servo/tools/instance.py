@@ -8,8 +8,8 @@ import os
 import signal
 import time
 
-import servo.utils.scratch as scratch
-import tool
+from servo.utils import scratch
+from . import tool
 
 
 class InstanceError(Exception):

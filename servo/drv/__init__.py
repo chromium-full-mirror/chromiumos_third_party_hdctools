@@ -7,85 +7,85 @@
 Details of the drivers can be found in hw_driver.py
 """
 
-import active_v4_device
-import ad5248
-import alex_power
-import ap
-import beltino_power
-import cr50
-import cr50_i2c
-import cros_chip
-import cros_ec_hardrec_pbinitidle_power
-import cros_ec_hardrec_power
-import cros_ec_pd_softrec_power
-import cros_ec_power
-import cros_ec_softrec_power
-import daisy_ec
-import daisy_power
-import ec
-import ec3po_c2d2
-import ec3po_driver
-import ec3po_gpio
-import ec3po_servo
-import ec3po_servo_micro
-import ec3po_servo_v4
-import ec_i2c_pin
-import ec_lm4
-import echo
-import fluffy
-import ftdii2c_cmd
-import fw_wp_ccd
-import fw_wp_servoflex
-import fw_wp_state
-import gpio
-import grunt_power
-import hw_driver
-import i2c_pseudo
-import i2c_reg
-import ina219
-import ina231
-import ina2xx
-import ina3221
-import kb
-import kb_handler_init
-import keyboard_handlers
-import kitty_power
-import larvae_adc
-import lcm2004
-import link_power
-import loglevel
-import ltc1663
-import lumpy_power
-import m24c02
-import macro
-import na
-import parrot_ec
-import parrot_power
-import pca9500
-import pca9537
-import pca9546
-import pca95xx
-import plankton
-import power_kb
-import ps8742
-import pty_driver
-import sarien_power
-import servo_metadata
-import servo_v4
-import servo_watchdog
-import sflag
-import sleep
-import storm_power
-import stumpy_power
-import sweetberry
-import sx1505
-import sx1506
-import sx1506_v4
-import tca6416
-import tcs3414
-import uart
-import usb_image_manager
-import veyron_chromebox_power
-import veyron_mickey_power
-import veyron_power
-import veyron_rialto_power
+from . import active_v4_device
+from . import ad5248
+from . import alex_power
+from . import ap
+from . import beltino_power
+from . import cr50
+from . import cr50_i2c
+from . import cros_chip
+from . import cros_ec_hardrec_pbinitidle_power
+from . import cros_ec_hardrec_power
+from . import cros_ec_pd_softrec_power
+from . import cros_ec_power
+from . import cros_ec_softrec_power
+from . import daisy_ec
+from . import daisy_power
+from . import ec
+from . import ec3po_c2d2
+from . import ec3po_driver
+from . import ec3po_gpio
+from . import ec3po_servo
+from . import ec3po_servo_micro
+from . import ec3po_servo_v4
+from . import ec_i2c_pin
+from . import ec_lm4
+from . import echo
+from . import fluffy
+from . import ftdii2c_cmd
+from . import fw_wp_ccd
+from . import fw_wp_servoflex
+from . import fw_wp_state
+from . import gpio
+from . import grunt_power
+from . import hw_driver
+from . import i2c_pseudo
+from . import i2c_reg
+from . import ina219
+from . import ina231
+from . import ina2xx
+from . import ina3221
+from . import kb
+from . import kb_handler_init
+from . import keyboard_handlers
+from . import kitty_power
+from . import larvae_adc
+from . import lcm2004
+from . import link_power
+from . import loglevel
+from . import ltc1663
+from . import lumpy_power
+from . import m24c02
+from . import macro
+from . import na
+from . import parrot_ec
+from . import parrot_power
+from . import pca9500
+from . import pca9537
+from . import pca9546
+from . import pca95xx
+from . import plankton
+from . import power_kb
+from . import ps8742
+from . import pty_driver
+from . import sarien_power
+from . import servo_metadata
+from . import servo_v4
+from . import servo_watchdog
+from . import sflag
+from . import sleep
+from . import storm_power
+from . import stumpy_power
+from . import sweetberry
+from . import sx1505
+from . import sx1506
+from . import sx1506_v4
+from . import tca6416
+from . import tcs3414
+from . import uart
+from . import usb_image_manager
+from . import veyron_chromebox_power
+from . import veyron_mickey_power
+from . import veyron_power
+from . import veyron_rialto_power

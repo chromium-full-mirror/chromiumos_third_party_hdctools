@@ -10,8 +10,8 @@ import sys
 import threading
 import weakref
 
-import i2c_pseudo
-import interface
+from . import i2c_pseudo
+from . import interface
 
 
 def _format_write_list(write_list):

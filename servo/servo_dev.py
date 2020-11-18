@@ -8,8 +8,8 @@ import logging
 import os
 import threading
 
-import servo_interfaces
-import utils.usb_hierarchy as usb_hierarchy
+from . import servo_interfaces
+import servo.utils.usb_hierarchy as usb_hierarchy
 
 
 class ServoDeviceError(Exception):

@@ -10,7 +10,7 @@ import logging
 import os
 import time
 
-from hw_driver import HwDriverError
+from . import hw_driver
 import serial
 
 
@@ -142,7 +142,7 @@ class _BaseHandler(_HandlerTemplate):
         value = self._servo.get('pwr_button')
         self._servo.set('pwr_button', value)
         use_hold_command = False
-      except HwDriverError:
+      except hw_driver.HwDriverError:
         use_hold_command = True
 
     if use_hold_command:

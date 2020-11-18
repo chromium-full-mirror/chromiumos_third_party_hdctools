@@ -6,21 +6,22 @@
 
 import logging
 
-import bbadc
-import bbgpio
-import bbi2c
-import bbuart
-import common as c
-import empty
-import ec3po_interface
-import ftdigpio
-import ftdii2c
-import ftdiuart
-import i2cbus
-import interface
-import stm32gpio
-import stm32i2c
-import stm32uart
+from . import bbadc
+from . import bbgpio
+from . import bbi2c
+from . import bbuart
+from . import common as c
+from . import empty
+from . import ec3po_interface
+from . import ftdi_common
+from . import ftdigpio
+from . import ftdii2c
+from . import ftdiuart
+from . import i2cbus
+from . import interface
+from . import stm32gpio
+from . import stm32i2c
+from . import stm32uart
 
 # Keep track of known interfaces, and map their factory function to their name.
 _interfaces = [

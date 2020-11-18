@@ -17,7 +17,7 @@ import re
 import time
 
 import servo_updater
-import mfg_servo_common as c
+from . import mfg_servo_common as c
 
 STM_DFU_VIDPID = '0483:df11'
 STM_VIDPID = '18d1:5041'

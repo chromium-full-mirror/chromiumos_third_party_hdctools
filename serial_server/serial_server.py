@@ -11,7 +11,7 @@ import logging
 import os
 import serial
 
-import serial_utils
+from . import serial_utils
 
 
 class SerialServerError(Exception):

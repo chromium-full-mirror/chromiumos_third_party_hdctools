@@ -6,7 +6,7 @@
 
 import unittest
 
-import system_config
+from . import system_config
 
 
 class TestSystemConfig(unittest.TestCase):

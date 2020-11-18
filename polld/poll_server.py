@@ -6,7 +6,7 @@
 
 import logging
 
-import poll_common
+from . import poll_common
 from poll_gpio import PollGpio, PollGpioError
 
 

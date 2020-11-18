@@ -7,9 +7,9 @@ import logging
 import re
 import subprocess
 
-import bbmux_controller
-import common as c
-import uart
+from . import bbmux_controller
+from . import common as c
+from . import uart
 
 BITS_RE = 'cs(?P<value>[5-8])'
 PARITY_RE = '\-?parodd'

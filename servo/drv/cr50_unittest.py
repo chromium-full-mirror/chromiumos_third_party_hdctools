@@ -1,4 +1,4 @@
-# Copyright (c) 2020 The Chromium OS Authors. All rights reserved.
+# Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -6,8 +6,8 @@ import mock
 import re
 import unittest
 
-import cr50
-import pty_driver
+from . import cr50
+from . import pty_driver
 
 @mock.patch('servo.drv.pty_driver.ptyDriver._issue_cmd_get_results')
 class TestPromptDetection(unittest.TestCase):

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Custom power_state driver for grunt for b/167734179."""
 
-import cros_ec_softrec_power
+from servo.drv import cros_ec_softrec_power
 
 
 # pylint: disable=invalid-name

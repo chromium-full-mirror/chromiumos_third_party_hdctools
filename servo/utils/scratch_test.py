@@ -10,7 +10,7 @@ import socket
 import tempfile
 import unittest
 
-import scratch
+from . import scratch
 
 
 class TestScratch(unittest.TestCase):

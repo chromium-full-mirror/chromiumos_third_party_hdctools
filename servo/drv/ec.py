@@ -15,7 +15,7 @@ Provides the following EC controlled function:
 import logging
 import time
 
-import pty_driver
+from . import pty_driver
 
 KEY_STATE = [0, 1, 1, 1, 1]
 

@@ -9,7 +9,7 @@ import os
 import re
 import time
 
-import pty_driver
+from . import pty_driver
 import servo
 import servo_updater
 

@@ -4,8 +4,8 @@
 
 """Collection of available tools in the system."""
 
-import device
-import instance
+from . import device
+from . import instance
 
 REGISTERED_TOOLS = [
     device.Device,

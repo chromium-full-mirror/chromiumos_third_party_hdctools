@@ -11,7 +11,7 @@ Provides the following functionis:
 import collections
 import logging
 
-import pty_driver
+from . import pty_driver
 import re
 
 USBC_STATE = [None, None, None]

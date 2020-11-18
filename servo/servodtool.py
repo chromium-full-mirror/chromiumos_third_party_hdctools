@@ -8,7 +8,7 @@ import argparse
 import logging
 import sys
 
-import tools
+from . import tools
 
 
 class ServodToolError(Exception):

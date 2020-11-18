@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 import time
 
-import cros_ec_power
-import ec
+from . import cros_ec_power
+from . import ec
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):

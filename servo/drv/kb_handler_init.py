@@ -11,8 +11,8 @@
 
 import time
 
-import hw_driver
-import keyboard_handlers
+from . import hw_driver
+from . import keyboard_handlers
 
 
 # pylint: disable=invalid-name

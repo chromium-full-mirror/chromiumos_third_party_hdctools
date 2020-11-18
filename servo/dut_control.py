@@ -18,8 +18,8 @@ from socket import error as SocketError
 
 import numpy
 
-import client
-import servo_parsing
+from . import client
+from . import servo_parsing
 
 
 class ControlError(Exception):

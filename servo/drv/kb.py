@@ -4,7 +4,7 @@
 
 """Driver for keyboard control servo feature."""
 
-import hw_driver
+from . import hw_driver
 
 
 class KbError(hw_driver.HwDriverError):

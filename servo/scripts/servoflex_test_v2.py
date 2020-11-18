@@ -16,15 +16,10 @@ import sys
 import string
 import time
 
-# Import ftdi_common from the parent directory to get the Servo PID's.
-sys.path.append('..')
-import interface.ftdi_common
-
 # Servo V2 PID
-V2_PID = interface.ftdi_common.SERVO_PID_DEFAULTS['servo_v2'][0]
+V2_PID = 0x5002
 # Servo V3 PID
-V3_PID = interface.ftdi_common.SERVO_PID_DEFAULTS['servo_v3'][0]
-
+V3_PID = 0x5004
 
 def do_cmd(cmd, timeout, plist=None, flist=None):
   """Executes a shell command

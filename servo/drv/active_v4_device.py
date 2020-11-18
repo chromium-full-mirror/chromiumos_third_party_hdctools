@@ -5,7 +5,7 @@
 
 import time
 
-import hw_driver
+from . import hw_driver
 
 
 class activeV4DeviceError(hw_driver.HwDriverError):

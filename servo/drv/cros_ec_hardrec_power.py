@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-import cros_ec_power
+from . import cros_ec_power
 
 
 class crosEcHardrecPower(cros_ec_power.CrosECPower):

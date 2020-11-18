@@ -6,9 +6,9 @@
 import errno
 import logging
 
-import common as c
-import i2c_base
-import stm32usb
+from . import common as c
+from . import i2c_base
+from . import stm32usb
 
 _MAX_WRITE_SIZE = (1 << 12) - 1
 _MAX_READ_SIZE = (1 << 15) - 1

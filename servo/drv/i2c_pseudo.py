@@ -4,7 +4,7 @@
 
 """Driver class for reading properties of a Servod I2C pseudo controller."""
 
-import hw_driver
+from . import hw_driver
 
 
 class i2cPseudo(hw_driver.HwDriver):

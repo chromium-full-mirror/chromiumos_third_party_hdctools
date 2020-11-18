@@ -5,7 +5,7 @@
 Triple-Channel, High-Side Measurement, Shunt and Bus Voltage Monitor
 with i2c Interface.
 """
-import ina2xx
+from . import ina2xx
 
 
 class ina3221(ina2xx.ina2xx):

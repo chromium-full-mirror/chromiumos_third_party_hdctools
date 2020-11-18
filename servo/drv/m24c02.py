@@ -8,7 +8,7 @@ one of 8 ST M24C02 EEPROMs, which child addresses are 0x50 - 0x57.
 """
 
 # servo libs
-import hw_driver
+from . import hw_driver
 
 # Devices shared among driver objects:
 #   (interface instance, child) => M24C02Device instance

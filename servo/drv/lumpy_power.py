@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver for power_state for lumpy boards.
 """
-import alex_power
+from . import alex_power
 
 
 class lumpyPower(alex_power.alexPower):

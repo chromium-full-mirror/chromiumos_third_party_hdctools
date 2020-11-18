@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 """Driver for board config controls tca6416 dual port (16bit) ioexpander.
 """
-import hw_driver
-import i2c_reg
+from . import hw_driver
+from . import i2c_reg
 
 
 class Tca6416Error(hw_driver.HwDriverError):

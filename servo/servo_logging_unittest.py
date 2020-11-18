@@ -11,7 +11,7 @@ import shutil
 import tempfile
 import unittest
 
-import servo_logging
+from . import servo_logging
 
 # There is 1 file that are exempt from the backup count.
 # - the 'latest' symbolic link

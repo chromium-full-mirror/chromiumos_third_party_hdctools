@@ -5,7 +5,7 @@
 
 High- or Low-side Measurement, Bidirectional current/power monitor with 1.8v i2c
 """
-import ina2xx
+from . import ina2xx
 
 
 class ina231(ina2xx.ina2xx):

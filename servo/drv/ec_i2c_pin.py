@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver to talk to the i2c channels through the DUT EC console."""
 
-import ec
+from servo.drv import ec
 
 
 # pylint: disable=invalid-name

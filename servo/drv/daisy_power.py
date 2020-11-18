@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import cros_ec_softrec_power
+from . import cros_ec_softrec_power
 
 
 class daisyPower(cros_ec_softrec_power.crosEcSoftrecPower):

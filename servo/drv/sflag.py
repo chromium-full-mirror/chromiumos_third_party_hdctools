@@ -4,7 +4,7 @@
 
 """Software flag module to store and report binary status."""
 
-import hw_driver
+from . import hw_driver
 
 
 # pylint: disable=invalid-name

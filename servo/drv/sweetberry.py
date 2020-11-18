@@ -4,9 +4,9 @@
 """Access to Texas Instruments INA231 on sweetberry."""
 
 import copy
-import ina231
+from . import ina231
 
-import hw_driver
+from . import hw_driver
 
 class sweetberryError(hw_driver.HwDriverError):
   pass

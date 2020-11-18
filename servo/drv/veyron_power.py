@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-import cros_ec_softrec_power
+from . import cros_ec_softrec_power
 
 
 class veyronPower(cros_ec_softrec_power.crosEcSoftrecPower):

@@ -6,9 +6,9 @@
 import logging
 import subprocess
 
-import bbmux_controller
-import common as c
-import i2c_base
+from . import bbmux_controller
+from . import common as c
+from . import i2c_base
 
 
 class BBi2cError(c.InterfaceError):

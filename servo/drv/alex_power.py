@@ -5,7 +5,7 @@
 """
 import time
 
-import power_state
+from . import power_state
 
 
 class alexPower(power_state.PowerStateDriver):
