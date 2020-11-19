@@ -107,6 +107,44 @@ Servo or Sweetberry. See `dut-power -h` for setting arguments. `dut-power` works
 with both Servo and Sweetberry. It packs configuring the ADCs, reading data,
 calculating statistics, and saving to file into one command.
 
+dut-power organizes results into a directory 'power_measurements' in a temp
+directory (without TMPDIR in the env, this just defaults to '/tmp'). In there,
+each board receives its own directory, and each measurement its own directory
+within those. Measurements are labeled by their powerstate and timestamp.
+
+The board name and powerstate are queried from the DUT's EC, though this might
+fail, either due to EC communication issues, or because the user is using a
+servo device that is not a dut controller e.g. sweetberry. In those cases, they
+default to 'unknown' for board, and 'S?' for the powerstate.
+
+
+Alternatively, they can be provided as command line arguments. If provided
+through the command line, they overwrite the EC values (we do not attempt to
+even read them)
+
+```
+dut-power --powerstate S0ix --board volteer -t 30 -w 10 -p 9998
+```
+This would read power wait for 10s before reading power for 30s through servod
+running at port `9998` and store the result at
+`/tmp/power_measurements/volteer/S0ix_20210210-162609/`
+
+
+Lastly, the board name can also be provided through the environment variable
+`BOARD`. To summarize the priorities of how the boardname is determined
+(descending priorities)
+1. command-line argument
+2. querying `ec_board` through servod
+3. using `BOARD` environment variable
+4. using `'unknown'`
+
+e.g.
+
+```
+/tmp/power_measurements/volteer/S0_20201116-162609/
+/tmp/power_measurements/unknown/S?_20201116-163909/
+```
+
 ### dut-control
 
 For power users, provides more info than power.
