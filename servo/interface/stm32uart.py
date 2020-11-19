@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Allow creation of uart/console interface via stm32 usb endpoint."""
 import errno
-import exceptions
 import logging
 import os
 import select
@@ -115,12 +114,13 @@ class Suart(uart.Uart):
           r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
           if r:
             os.write(self._ptym, r)
-
+        except (OSError, usb.core.USBError):
+          # Expected and forgiven here, just pass
+          pass
         except Exception as e:
           # If we miss some characters on pty disconnect, that's fine.
           # ep.read() also throws USBError on timeout, which we discard.
-          if type(e) not in [exceptions.OSError, usb.core.USBError]:
-            self._logger.debug('rx %s: %s' % (self.get_pty(), e))
+          self._logger.debug('rx %s: %s', self.get_pty(), e)
       else:
         self._done.wait(.1)
 

@@ -84,7 +84,7 @@ def load_libs(*args):
 
     try:
       dll_list.append(ctypes.cdll.LoadLibrary(lib_path))
-    except OSError, e:
+    except OSError as e:
       print('-E- Unable to find library %s : %s' % (lib_name, e))
       sys.exit(1)
   return dll_list
