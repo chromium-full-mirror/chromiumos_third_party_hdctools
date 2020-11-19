@@ -80,7 +80,9 @@ def _SendShutdown(pipe_wr):
   os.write() to the fd raised an exception.
   """
   try:
-    os.write(pipe_wr.fileno(), '.')
+    # The write here is purely a signaling mechanism, and thus the content
+    # being written does not matter.
+    os.write(pipe_wr.fileno(), b'.')
   except (OSError, IOError) as error:
     if error.errno != errno.EPIPE:
       raise
