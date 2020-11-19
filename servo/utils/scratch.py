@@ -65,7 +65,11 @@ class Scratch(object):
       list convertible, if port or any serial in serials already has an entry
     """
     # TODO(coconutruben): add cmdline support
+    # To make sure that the strings are the default 'string type' in py2 and py3
+    # cast them through str() again. This will ensure that no encoding
+    # identifier is printed
     try:
+      serials = [str(s) for s in serials]
       entry = {'port': int(port),
                'serials': list(serials),
                'pid': int(pid),

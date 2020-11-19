@@ -38,8 +38,8 @@ from . import system_config
 from . import terminal_freezer
 from . import watchdog
 from servo.utils import scratch
+from servo.utils import usb_hierarchy
 
-MAX_ISERIAL_STR = 128
 
 # If user does not specify a log directory, use this one.
 DEFAULT_LOG_DIR = '/var/log'
@@ -61,25 +61,25 @@ def usb_get_iserial(device):
     iserial: USB devices iSerial string or empty string if the device has
              no serial number.
   """
-  # pylint: disable=broad-except
-  device_handle = device.open()
-  # The device has no serial number string descriptor.
-  if device.iSerialNumber == 0:
-    return ''
-  iserial = ''
   try:
-    iserial = device_handle.getString(device.iSerialNumber, MAX_ISERIAL_STR)
+    # The get_string API always returns a unicode string, in py2 or py3
+    iserial = usb.util.get_string(device, device.iSerialNumber)
   except usb.USBError:
     # TODO(tbroch) other non-FTDI devices on my host cause following msg
     #   usb.USBError: error sending control message: Broken pipe
     # Need to investigate further
     pass
-  except Exception:
+  # pylint: disable=broad-except
+  except:
     # This was causing servod to fail to start in the presence of
     # a broken usb interface.
-    logging.exception('usb_get_iserial failed in an unknown way')
-  return iserial
-
+    logging.exception('usb_get_iserial failed in an unknown way: %s', e)
+  else:
+    # No issues
+    if iserial is not None:
+      return iserial
+  # Return an empty string if an issue occured.
+  return ''
 
 def usb_find(vendor, product, serialname):
   """Find USB devices based on vendor, product and serial identifiers.
@@ -95,14 +95,17 @@ def usb_find(vendor, product, serialname):
   Returns:
     matched_devices : list of pyusb devices matching input args
   """
-  matched_devices = []
-  for bus in usb.busses():
-    for device in bus.devices:
-      if (not vendor or device.idVendor == vendor) and \
-            (not product or device.idProduct == product) and \
-            (not serialname or usb_get_iserial(device).endswith(serialname)):
-        matched_devices.append(device)
-  return matched_devices
+  # If these are not specified, they default to None. The search function below
+  # treats None as a wildcard, and will search all vid/pid
+  vid_pid_list = [(vendor, product)]
+  candidates = usb_hierarchy.Hierarchy.GetAllUsbDevices(vid_pid_list)
+  if serialname:
+    # We allow a suffix matching for serialnames, so the serialname cannot be
+    # used to directly look for a device, as the user might have multiple
+    # matching candidates
+    candidates = [c for c in candidates if
+                  usb_get_iserial(c).endswith(serialname)]
+  return candidates
 
 
 # pylint: disable=g-bad-exception-name
