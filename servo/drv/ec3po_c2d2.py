@@ -95,9 +95,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     """
     result = self._issue_cmd_get_results('pwr_button',
       ['Power button held: (\w+)'])[0][1]
-    if result == 'yes':
-        return 'on'
-    return 'off'
+    return result
 
   def _Set_pwr_button(self, value):
     """Sets the current power button state for DUT.

@@ -4,13 +4,24 @@
     <name>common.xml</name>
   </include>
   <include>
+    <name>keyboard.xml</name>
+  </include>
+  <include>
     <name>uart_common.xml</name>
+  </include>
+  <include>
+    <name>cr50.xml</name>
   </include>
   <!-- Maps -->
   <map>
     <name>onoff_vref_sel</name>
     <doc>Determine VREF between pp3300, pp1800 and off. Default is off</doc>
     <params off="0" pp1800="1800" pp3300="3300"></params>
+  </map>
+  <map>
+    <name>pressrelease_yesno</name>
+    <doc>map for press and release of buttons</doc>
+    <params press="yes" release="no"></params>
   </map>
   <!-- C2D2 Console GPIO interface -->
   <control>
@@ -29,8 +40,10 @@
   <control>
     <name>pwr_button</name>
     <doc>Hold DUT power button</doc>
-    <params subtype="pwr_button" interface="6" drv="ec3po_c2d2" clobber_ok=""
-    map="onoff" init="off" />
+    <params cmd="get" subtype="pwr_button" interface="6" drv="ec3po_c2d2"
+    clobber_ok="" map="pressrelease_yesno" />
+    <params cmd="set" subtype="pwr_button" interface="6" drv="ec3po_c2d2"
+    clobber_ok="" map="press_i" />
   </control>
   <control>
     <name>h1_vref_present</name>
@@ -206,5 +219,33 @@
     <doc>Get the I2C pseudo ID of the C2D2 I2C pseudo adapter.</doc>
     <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
     </params>
+  </control>
+  <!-- Controls overwritten by Cr50 -->
+  <control>
+    <name>warm_reset</name>
+    <doc>warm_reset</doc>
+    <params subtype="warm_reset" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>rec_mode</name>
+    <params subtype="rec_mode" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok="" init="off"></params>
+  </control>
+  <control>
+    <name>lid_open</name>
+    <params subtype="lid_open" interface="9" drv="cr50"
+    map="yesno" clobber_ok="" init="yes"></params>
+  </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    init="force_off" />
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing CPU firmware (fake in CCD)</doc>
+    <params interface="servo" drv="na"/>
   </control>
 </root>

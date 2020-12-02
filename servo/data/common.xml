@@ -34,6 +34,11 @@
     <params press="0" release="1"></params>
   </map>
   <map>
+    <name>press_i</name>
+    <doc>map for press and release of buttons (inverted)</doc>
+    <params press="1" release="0"></params>
+  </map>
+  <map>
     <name>uart_parity</name>
     <doc>Parity of uart line properties</doc>
     <params none="0" odd="1" even="2"></params>
