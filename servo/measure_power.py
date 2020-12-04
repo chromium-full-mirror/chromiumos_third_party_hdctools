@@ -108,8 +108,8 @@ class ServodPowerTracker(threading.Thread):
     try:
       samples = self._sclient.set_get_all(ctrls)
     except client.ServoClientError:
-      self._logger.warn('Attempt to get commands: %s failed. Recording them'
-                        ' all as NaN.', ', '.join(ctrls))
+      self._logger.warning('Attempt to get commands: %s failed. Recording them'
+                           ' all as NaN.', ', '.join(ctrls))
       samples = [float('nan')]*len(ctrls)
     duration_ms = (time.time() - start) * 1000
     sample_tuples = zip(ctrls, samples)
@@ -221,8 +221,8 @@ class OnboardINAPowerTracker(HighResServodPowerTracker):
     try:
       self._sclient.set_get_all(cfg_ctrls)
     except client.ServoClientError:
-      self._logger.warn('Power rail configuration failed. Config used: %s',
-                        ' '.join(cfg_ctrls))
+      self._logger.warning('Power rail configuration failed. Config used: %s',
+                           ' '.join(cfg_ctrls))
 
 
 class ECPowerTracker(ServodPowerTracker):
@@ -253,8 +253,8 @@ class ECPowerTracker(ServodPowerTracker):
       # This means that avg_ppvar_vbat_mw is not supported.
       # Revert back to ppvar_vbat_mw for main ctrls.
       self._logger.info(str(e))
-      self._logger.info("%s not supported, using %s instead." %
-              (self._avg_ec_cmd, self._ec_cmd))
+      self._logger.info('%s not supported, using %r instead.', self._avg_ec_cmd,
+                        self._ec_cmd)
       self._ctrls = [self._ec_cmd]
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
@@ -262,7 +262,7 @@ class ECPowerTracker(ServodPowerTracker):
     # Do not check for failure or anything, as its a nice-to-have and increases
     # accuracy, but does not impact functionality. Dsleep might also not be
     # available on some EC images.
-    self._sclient.set('ec_uart_cmd','dsleep 2')
+    self._sclient.set('ec_uart_cmd', 'dsleep 2')
 
   def run(self):
     """EC vbat 'run' to ensure the first reading does not use averaging."""
@@ -312,10 +312,8 @@ class PowerMeasurement(object):
           left empty.
   """
 
-  DEFAULT_OUTDIR_BASE = os.path.join(
-    os.getenv('TMPDIR', '/tmp'),
-    'power_measurements/'
-  )
+  DEFAULT_OUTDIR_BASE = os.path.join(os.getenv('TMPDIR', '/tmp'),
+                                     'power_measurements/')
 
   PREMATURE_RETRIEVAL_MSG = ('Cannot retrieve information before data '
                              'collection has finished.')
@@ -346,7 +344,7 @@ class PowerMeasurement(object):
         if board != 'not_applicable':
           self._board = board
       except client.ServoClientError:
-        self._logger.warn('Failed to get ec_board, setting to unknown.')
+        self._logger.warning('Failed to get ec_board, setting to unknown.')
     self._processing_done = False
     self._setup_done = threading.Event()
     self._stop_signal = threading.Event()
@@ -359,21 +357,21 @@ class PowerMeasurement(object):
                                                      self._stop_signal,
                                                      ina_rate))
       except PowerTrackerError:
-        self._logger.warn('Onboard INA tracker setup failed.')
+        self._logger.warning('Onboard INA tracker setup failed.')
     if vbat_rate > 0:
       try:
         power_trackers.append(ECPowerTracker(host, port, self._stop_signal,
                                              vbat_rate))
       except PowerTrackerError:
-        self._logger.warn('EC Power tracker setup failed.')
+        self._logger.warning('EC Power tracker setup failed.')
     self.Reset()
     for tracker in power_trackers:
       if not self._fast:
         try:
           tracker.verify()
         except PowerTrackerError:
-          self._logger.warn('Tracker %s failed verification. Not using it.',
-                            tracker.title)
+          self._logger.warning('Tracker %s failed verification. Not using it.',
+                               tracker.title)
           continue
       self._power_trackers.append(tracker)
     if not self._power_trackers:
@@ -453,7 +451,7 @@ class PowerMeasurement(object):
           # provide real information.
           powerstate = ecpowerstate
       except client.ServoClientError:
-        self._logger.warn('Failed to get powerstate from EC.')
+        self._logger.warning('Failed to get powerstate from EC.')
     for power_tracker in self._power_trackers:
       power_tracker.prepare(self._fast, powerstate)
     ts = time.strftime('%Y%m%d-%H%M%S', time.localtime(time.time()))
