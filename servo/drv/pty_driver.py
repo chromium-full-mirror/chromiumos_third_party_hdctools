@@ -119,15 +119,75 @@ class ptyDriver(hw_driver.HwDriver):
         self._logger.debug('pty read returned EAGAIN')
         break
 
-  # Remove non-ASCII characters from the results.
-  def _delete_ugly_chars(self, result):
+  def _make_xml_friendly(self, result, error=True):
+    """
+    Args:
+      result: result output from regex match. Either None, or tuple, or a single
+              member
+
+    Returns:
+      tuple, same tuple as |result| but with all characters < 31 and > 127
+      removed (other than tab, newline, and carriage return)
+    """
     if result is None:
       return None
 
-    if isinstance(result, str):
-      return ''.join(i for i in result if ord(i)<128)
+    # TODO(coconutruben): the code to retrieve the regex has a bug in that
+    # |result| can be a string, even though it should be a one member tuple.
+    # This is a bigger thing to refactor, and so I'm leaving the TODO here for
+    # now to tackle that once we have the time to do so. The implications is
+    # that we simply here convert into a tuple the string first so that it
+    # can use the same parsing logic, before splitting it out again for proper
+    # return types.
+    # Check against tuple instead of string, as this
+    # has to work on py2 and py3
+    return_as_string = not isinstance(result, tuple)
+    if return_as_string:
+      # Turn it into a tuple, so that the processing code below can run without
+      # special casing.
+      result = (result,)
 
-    return tuple(map(self._delete_ugly_chars, result))
+    output = []
+    for member in result:
+      if member is None:
+        # An optional match group might be None in the middle of other match
+        # groups.
+        output.append(member)
+      else:
+        # for python2 compatibility we want to always convert |member| into a
+        # utf-8 string
+        member = member.decode()
+        # Now, we want to make sure that each character can go through XMLRPC.
+        # To do this we 1. exempt \t, \r, and \n per spec, and 2. check
+        # the rest for having a numerical value between 31 and and 127.
+        # This is because none of our MCU send meaningful non-ascii range data.
+        # NOTE: should an MCU start sending non-ascii range data, this needs
+        # to be modified accordingly
+        # NOTE: the code below guards according to the the xml and xmlrpc
+        # (python) spec. Should this still cause issues, consider replacing the
+        # numerical checks with a check against
+        # xml.parsers.expat.ParserCreate().Parse()
+        # While this might be marginally more resource intensive, it will be
+        # both safer and more permissive as only characters that genuinely
+        # cannot be sent will be stripped.
+        clean = []
+        for c in member:
+          if ord(c) > 31 and ord(c) < 128:
+            clean.append(c)
+          elif c in (u'\n', u'\t', u'\r'):
+            clean.append(c)
+          else:
+            # Any non-ascii probably shouldn't be there. But we don't want to
+            # hide this. So print the repr of it.
+            # NOTE: you might be tempted to unify this with the above. Do not.
+            # This is designed to allow for easy modification of what to do with
+            # 'unexpected' characters.
+            clean.append(repr(c))
+        output.append(''.join(clean))
+
+    # If originally the output is only an iterable because of |return_as_string|
+    # then convert back and return the 0th member.
+    return output[0] if return_as_string else output
 
   def _send(self, cmds, rate=0.01, flush=True):
     """Send command to EC or AP.
@@ -214,7 +274,7 @@ class ptyDriver(hw_driver.HwDriver):
             # Create a tuple which contains the entire matched string and all
             # the subgroups of the match.
             result = match.group(*range(lastindex + 1)) if match else None
-            result = self._delete_ugly_chars(result)
+            result = self._make_xml_friendly(result)
             result_list.append(result)
             self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
@@ -226,10 +286,13 @@ class ptyDriver(hw_driver.HwDriver):
           # itself had an error on the EC console.
           output = self._child.before
           # Reformat output a bit so that the logs don't get messed up.
-          output = output.replace('\n', ', ').replace('\r', '')
+          # Specifically
+          # - remove \r
+          # - place newlines with a comma and a space
+          output = output.replace(b'\n', b', ').replace(b'\r', b'')
           # ASCIIfy the characters in the string so that the server does not
           # struggle marshaling the data across.
-          output = self._delete_ugly_chars(output)
+          output = self._make_xml_friendly(output, error=False)
           msg = 'Timeout waiting for response. There was output: %s' % output
         else:
           msg = 'No data was sent from the pty.'
@@ -268,7 +331,7 @@ class ptyDriver(hw_driver.HwDriver):
             # Create a tuple which contains the entire matched string and all
             # the subgroups of the match.
             result = match.group(*range(lastindex + 1)) if match else None
-            result = self._delete_ugly_chars(result)
+            result = self._make_xml_friendly(result)
             result_list.append(result)
             self._logger.debug('Got result: %s' % str(result))
           except pexpect.TIMEOUT:
