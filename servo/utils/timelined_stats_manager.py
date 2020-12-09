@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 import copy
+import logging
 import time
 
 import numpy
@@ -105,13 +106,76 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     for domain, sample in samples:
       super(TimelinedStatsManager, self).AddSample(domain, sample)
 
-  def TrimSamples(self, tstart=None, tend=None, padding=0):
-    """Trim raw data to [tstart + padding, tend + padding].
+  def FunctionallyEmpty(self):
+    """Whether the stats manager is devoid of meaningful data.
+
+    Returns:
+      True
+      - if the data is empty
+      - if the only keys available are TIME_KEY and TLINE_KEY
+      - if other keys exist, but they are empty entries
+    """
+    # Trimming below guarantees that a domain will only exist iff it is not
+    # empty after being trimmed. It suffices for the guarantees above to check
+    # that there are more keys in the data than just |TIME_KEY| and |TLINE_KEY|
+    # TODO(coconutruben): this could also do the work of detecting if all
+    # samples are NaN, though that requires a larger rework of that logic, and
+    # potentially pulling in data interpolation into this class.
+
+    return all([k in [TIME_KEY, TLINE_KEY] for k in self._data.keys()])
+
+  def TrimmedCopy(self, tag='', tstart=None, tend=None, offset=0):
+    """Return a (trimmed) copy of this stats manager.
+
+    If |tstart| and |tend| are provided, it will behave like |TrimSamples()|
+    below, and return trimmed to [tstart + offset, tend + offset]
+
+    |tag| usage note: the |smid| of the stats manager is usually its source e.g.
+    'onboard' etc. The trimmed copies are often useful if one larger
+    measurement contains sub-measurements. In those cases, providing a tag can
+    help identify the correct summary file easier, by appending the tag to the
+    smid like |smid_[tag]|
+
+    Args:
+      tag: a string to expand the |smid| of this stats manager's copy with.
+      tstart: first timestamp to include. Seconds since epoch
+      tend: last timestamp to include. Seconds since epoch
+      offset: add offset to tstart and tend to manipulate which data points to
+               trim and which to keep. Seconds since epoch
+
+    Returns:
+      a copy of the stats manager, trimmed, or None if trimming produces empty
+      stats manager
+    """
+    # trimmed stats manager. We want a deep-copy so that we carry all the data
+    # and don't accidently trim data from the original stats manager.
+    # The logger inside the stats manager cannot be deep copied. This works
+    # around that.
+    old_logger = self._logger
+    self._logger = None
+    trimmed_sm = copy.deepcopy(self)
+    trimmed_sm._logger = logging.getLogger(type(self).__name__)
+    self._logger = old_logger
+    # Restore the logger, and make sure that |trimmed_sm| also has a logger.
+    trimmed_sm.TrimSamples(tstart, tend, offset)
+    if trimmed_sm.FunctionallyEmpty():
+      # Trimming resulted in an empty stats manager. Just return None.
+      return None
+    if tag:
+      trimmed_sm._smid += '_%s' % tag
+    # Lastly, before returning, let's recalculate the stats to have the right
+    # values for the trimmed data. This overwrites any previous 'stats' (e.g.
+    # 'mean' values for a domain).
+    trimmed_sm.CalculateStats()
+    return trimmed_sm
+
+  def TrimSamples(self, tstart=None, tend=None, offset=0):
+    """Trim raw data to [tstart + offset, tend + offset].
 
     Args:
       tstart: first timestamp to include. Seconds since epoch
       tend: last timestamp to include. Seconds since epoch
-      padding: add padding to tstart and tend to manipulate which data points to
+      offset: add offset to tstart and tend to manipulate which data points to
                trim and which to keep. Seconds since epoch
     """
     if tstart is None and tend is None:
@@ -121,10 +185,10 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     timeline = numpy.array(self._data[self._tkey])
     if tstart is None:
       tstart = timeline[0]
-    tstart += padding
+    tstart += offset
     if tend is None:
       tend = timeline[-1]
-    tend += padding
+    tend += offset
     # pylint: disable=W0212
     domains_to_remove = set()
     for domain, samples in self._data.items():
@@ -134,10 +198,10 @@ class TimelinedStatsManager(stats_manager.StatsManager):
       if trimmed_samples:
         self._data[domain] = trimmed_samples
       else:
-        self._logger.warn('Trimming to start ts: %.2f end ts: %.2f padding: %d'
+        self._logger.warn('Trimming to start ts: %.2f end ts: %.2f offset: %d'
                           ' has caused domain %r to become empty. Removing it '
                           'from the TimelinedStatsManager.', tstart, tend,
-                          padding, domain)
+                          offset, domain)
         domains_to_remove.add(domain)
     for domain in domains_to_remove:
       del self._data[domain]

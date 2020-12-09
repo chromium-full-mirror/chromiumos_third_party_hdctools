@@ -117,8 +117,33 @@ class TestTimelinedStatsManager(unittest.TestCase):
     # Verify that 'A' has been removed
     self.assertNotIn('A', self.data._data)
 
+  def test_TrimSamplesFunctionallyNotEmpty(self):
+    """Test |FunctionallyEmpty()| after trimming out only data domain."""
+    self.data.AddSamples([('A', 10)])
+    time.sleep(0.01)
+    tstart = time.time()
+    time.sleep(0.01)
+    self.data.AddSamples([('A', 20)])
+    self.data.TrimSamples(tstart=tstart)
+    self.data.CalculateStats()
+    # Verify that 'A' is still present
+    self.assertIn('A', self.data._data)
+    # Verify that this means the stats manager is not functionally empty
+    self.assertFalse(self.data.FunctionallyEmpty())
+
+  def test_TrimSamplesFunctionallyEmpty(self):
+    """Test |FunctionallyEmpty()| after trimming out only data domain."""
+    self.data.AddSamples([('A', 10)])
+    time.sleep(0.01)
+    tstart = time.time()
+    self.data.TrimSamples(tstart=tstart)
+    self.data.CalculateStats()
+    # Verify that 'A' has been removed
+    self.assertNotIn('A', self.data._data)
+    self.assertTrue(self.data.FunctionallyEmpty())
+
   def test_TrimSamplesWithPadding(self):
-    """Ensure that trimming with padding works as expected."""
+    """Ensure that trimming with offset works as expected."""
     tstart = time.time()
     time.sleep(0.01)
     self.data.AddSamples([('A', 10)])
@@ -128,7 +153,7 @@ class TestTimelinedStatsManager(unittest.TestCase):
     tend = time.time()
     time.sleep(0.01)
     self.data.AddSamples([('A', 20)])
-    self.data.TrimSamples(tstart=tstart, tend=tend, padding=0.02)
+    self.data.TrimSamples(tstart=tstart, tend=tend, offset=0.02)
     self.data.CalculateStats()
     # Verify that only the samples between the timestamps are left
     self.assertEqual([23, 20], self.data._data['A'])
