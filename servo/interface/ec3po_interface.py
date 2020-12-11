@@ -315,7 +315,8 @@ class EC3PO(uart.Uart):
     if not isinstance(level, int):
       raise EC3POInterfaceError('invalid loglevel %r' % value)
     self._console_loglevel = level
-    self._console.oobm_queue.put('loglevel %d' % level)
+    # Make sure that only bytes are passed on to the oobm_queue
+    self._console.oobm_queue.put(b'loglevel %d' % level)
 
   def get_loglevel(self):
     """Returns the current loglevel."""
@@ -327,9 +328,10 @@ class EC3PO(uart.Uart):
     Args:
       1 to enable 0 to disable timestamps on the console
     """
-    mode = 'on' if state else 'off'
-    self._logger.debug('EC3PO turn %s timestamp', mode)
-    self._console.oobm_queue.put('timestamp ' + mode)
+    mode = b'on' if state else b'off'
+    self._logger.debug('EC3PO timestamp mode set to: %r', mode)
+    # Make sure that only bytes are passed on to the oobm_queue
+    self._console.oobm_queue.put(b'timestamp ' + mode)
 
   def get_timestamp(self):
     """Returns the current timestamp setting."""

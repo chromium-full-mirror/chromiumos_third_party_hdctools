@@ -121,8 +121,9 @@ class ec3poDriver(hw_driver.HwDriver):
     """
     if self._interface is not None:
       mode = 'on' if state else 'off'
-      self._logger.debug('EC3PO turn %s raw debug.', mode)
-      self._interface._console.oobm_queue.put('rawdebug %s' % mode)
+      self._logger.debug('EC3PO raw debug set to: %r', mode)
+      # Make sure that only bytes are passed on to the oobm_queue
+      self._interface._console.oobm_queue.put(b'rawdebug %s' % mode)
     else:
       # Fail silently for now.  A NoneType interface indicates that this
       # interface is not supported on the current servo host.  There's not much

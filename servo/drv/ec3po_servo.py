@@ -69,7 +69,8 @@ class ec3poServo(pty_driver.ptyDriver):
     if 'console' in params:
       if params['console'] == 'enhanced' and \
           type(interface) is servo.ec3po_interface.EC3PO:
-        interface._console.oobm_queue.put('interrogate never enhanced')
+        # Make sure that only bytes are passed on to the oobm_queue
+        interface._console.oobm_queue.put(b'interrogate never enhanced')
       else:
         raise ec3poServoError('Enhanced console must be ec3po!')
 
