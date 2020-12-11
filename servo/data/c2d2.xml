@@ -32,6 +32,18 @@
     map="onoff" init="off" />
   </control>
   <control>
+    <name>cpu_uart_en</name>
+    <doc>Enable/disable AP UART output.</doc>
+    <params clobber_ok="" interface="servo" drv="na"
+    init="not_applicable"></params>
+  </control>
+  <control>
+    <name>ec_uart_en</name>
+    <doc>Enable/disable EC UART output.</doc>
+    <params subtype="ec_uart_en" interface="6" drv="ec3po_c2d2"
+    map="onoff" init="on" />
+  </control>
+  <control>
     <name>cold_reset</name>
     <doc>Hold DUT in reset via H1 reset</doc>
     <params subtype="h1_reset" interface="6" drv="ec3po_c2d2" clobber_ok=""

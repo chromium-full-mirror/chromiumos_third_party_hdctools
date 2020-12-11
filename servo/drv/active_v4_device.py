@@ -128,11 +128,6 @@ class activeV4Device(hw_driver.HwDriver):
     return (self._interface._can_control_servo and
             self._interface.get('ec_uart_en') == 'on')
 
-  def _using_c2d2(self):
-    """Return True if this is a C2D2 device."""
-    return (self._interface._can_control_servo and
-            self._interface.get('c2d2_ec_boot_mode_uut') == 'off')
-
   def _using_ccd(self):
     """Return True if ccd uart TX is enabled."""
     if not self._interface._can_control_cr50:
@@ -161,7 +156,6 @@ class activeV4Device(hw_driver.HwDriver):
       'neither' otherwise.
     """
     try:
-      using_c2d2 = self._using_c2d2()
       using_servo = self._using_servo()
       using_ccd = self._using_ccd()
     except Exception as e:
@@ -172,7 +166,7 @@ class activeV4Device(hw_driver.HwDriver):
       self._logger.info('Assuming default device.')
       return self.get_v4_device_info('default')
 
-    if using_servo == using_ccd and using_servo == using_c2d2:
+    if using_servo == using_ccd:
       self._logger.warn('No v4 device is enabled.')
       return 'neither'
 
