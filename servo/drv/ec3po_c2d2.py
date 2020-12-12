@@ -44,9 +44,9 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
 
   def _Get_ec_uart_en(self):
     """Returns '1' if the EC UART output is enabled. '0' if it's disabled."""
-    # TODO(b/175428947): replace with command to check if output is enabled.
-    # Right now it's always enabled.
-    return '1'
+    rv = self._issue_cmd_get_results('gpioget EN_CLK_CSN_EC_UART',
+                                     ['\s+([01])\*?\s+EN_CLK_CSN_EC_UART'])
+    return rv[0][1]
 
   def _Set_ec_uart_en(self, value):
     """Controls the EC UART output enable.
@@ -54,9 +54,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     Args:
       value: 1 to enable output, 0 to disable it.
     """
-    # TODO(b/175428947): Add commands that control the EC UART output enable
-    pass
-
+    self._issue_cmd('gpioset EN_CLK_CSN_EC_UART %s' % value)
 
   def _Get_uut_boot_mode(self):
     """Gets the current UUT (UART) boot mode for the EC.
