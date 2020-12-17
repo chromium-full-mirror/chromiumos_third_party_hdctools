@@ -90,13 +90,13 @@ class HwDriver(object):
       NotImplementedError: There's no subtype param and set method
         wasn't implemented in the subclass.
     """
-    self._logger.debug('logical_value = %s' % str(logical_value))
+    self._logger.debug('logical_value = %s', logical_value)
     if 'subtype' in self._params:
       fn_name = '_Set_%s' % self._params['subtype']
       if hasattr(self, fn_name):
         return getattr(self, fn_name)(logical_value)
       else:
-        raise HwDriverError('Finding set function %s' % fn_name)
+        raise HwDriverError('Finding set function %s' % (fn_name,))
     else:
       raise NotImplementedError('Set should be implemented in subclass.')
 
