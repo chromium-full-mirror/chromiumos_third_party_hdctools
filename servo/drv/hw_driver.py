@@ -38,6 +38,18 @@ def _get_io_type(params):
 class HwDriver(object):
   """Base class for all hardware drivers."""
 
+  # The list of params that an overlay needs to specific for the drv to be
+  # effective. By default, that list is empty, though a drv implementation
+  # can simply overwrite them.
+  # Should a drv require different params for set and get, make sure that
+  # 1. the drv uses the type specific |REQUIRED_GET_PARAMS| and
+  # |REQUIRED_SET_PARAMS| and
+  # 2. the overlay contains the right 'cmd' for each of them, as otherwise it
+  # won't be possible to identify them. If they share the same set of required
+  # parameters, using the generic |REQUIRED_PARAMS| is sufficient
+  REQUIRED_PARAMS = []
+  REQUIRED_GET_PARAMS = []
+  REQUIRED_SET_PARAMS = []
 
   def __init__(self, interface, params):
     """Driver constructor.
@@ -68,6 +80,26 @@ class HwDriver(object):
     self._logger.debug('')
     self._interface = interface
     self._params = params
+    # Check whether all required params are provided. if 'cmd' is in params,
+    # use a type-specific |REQUIRED_PARAMS| e.g. set or get. If not, use the
+    # generic one.
+    req_params = self.REQUIRED_PARAMS
+    if 'cmd' in self._params:
+      cmd = self._params['cmd']
+      if cmd == 'get':
+        req_params = self.REQUIRED_GET_PARAMS
+      elif cmd == 'set':
+        req_params = self.REQUIRED_SET_PARAMS
+      # The cmd is invalid here, raise an error. While this doesn't necessarily
+      # cause an issue, we do not want config files laying around that misuse
+      # cmd.
+      else:
+        raise HwDriverError("'cmd' param %r unknown. Use 'set' or 'get'" %
+                            (cmd,))
+    for a in req_params:
+      # Empty |req_params| leads to no checks being performed.
+      if a not in self._params:
+        raise HwDriverError('Required param %r not in params' % (a,))
     # |set| cmd might define choices that show what are valid choices to be
     # set.
     self._choices = None

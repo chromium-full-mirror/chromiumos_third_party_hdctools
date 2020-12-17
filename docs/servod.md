@@ -155,6 +155,12 @@ building out a new driver. It contains the logic for calling the
 `_Set_|control_name|` of a derived class when a control with a subtype is
 defined.
 
+The HwDriver has a few built in tools to facilitate safe drv writing, please
+take a look at the file. These include
+- a mechanism to ensure that only preapproved values can be passed through set
+- a mechanism to signal what params the overlay is _required_ to provide for the
+  drv to function properly
+
 Another important driver is [ptyDriver][8] that the EC, AP, and Cr50 console
 controls use.
 

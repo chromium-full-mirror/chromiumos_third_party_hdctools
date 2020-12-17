@@ -22,7 +22,7 @@ class ecI2cPin(ec.ec):
 
   REGEX = r'(0x[0-9a-f]+) \[\d+\][\n\r]'
 
-  REQUIRED_ARGS = ['bus', 'addr', 'offset', 'mask']
+  REQUIRED_PARAMS = ['bus', 'addr', 'offset', 'mask']
 
   def __init__(self, interface, params):
     """Setup the commands."""
@@ -30,9 +30,6 @@ class ecI2cPin(ec.ec):
     # Set the valid input choices for this driver. Choices need to be set
     # to be strings.
     self._choices = {'0', '1'}
-    for a in self.REQUIRED_ARGS:
-      if a not in self._params:
-        raise ecI2cPinError('Required argument %s not in params' % a)
     self._mask = int(self._params['mask'], 0)
     self._logger.debug('Mask %d' % self._mask)
     if bin(self._mask).count('1') != 1:
