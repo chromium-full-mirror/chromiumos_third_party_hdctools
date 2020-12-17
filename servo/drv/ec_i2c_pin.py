@@ -24,13 +24,12 @@ class ecI2cPin(ec.ec):
 
   REQUIRED_ARGS = ['bus', 'addr', 'offset', 'mask']
 
-  # This driver only supports setting the bit to 0 or to 1.
-  # It should be used with a map so that it can be on/off.
-  VALID_VALUES = [0, 1]
-
   def __init__(self, interface, params):
     """Setup the commands."""
     super(ecI2cPin, self).__init__(interface, params)
+    # Set the valid input choices for this driver. Choices need to be set
+    # to be strings.
+    self._choices = {'0', '1'}
     for a in self.REQUIRED_ARGS:
       if a not in self._params:
         raise ecI2cPinError('Required argument %s not in params' % a)
@@ -46,10 +45,8 @@ class ecI2cPin(ec.ec):
     self._read = self.BASE_CMD % ('r', bus, addr, offset)
     self._write_base = self.BASE_CMD % ('w', bus, addr, offset)
 
-  def set(self, value):
+  def _set(self, value):
     """Set the bit to tbe |value|."""
-    if value not in self.VALID_VALUES:
-      raise ecI2cPinError('value %r invalid' % (value,))
     # register value
     rv = self._raw_read()
     if value:

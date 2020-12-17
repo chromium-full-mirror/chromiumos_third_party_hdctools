@@ -12,23 +12,23 @@ import hw_driver
 class sflag(hw_driver.HwDriver):
   """A driver to store and report an on/off flag."""
 
-  # This is a binary flag
-  VALID_VALUES = [0, 1]
-
   # This is not a constant but at the class level so that
   # it can be shared between set and get.
   # We use a list to allow for sharing across as the class will not make it
   # an instance variable if we write into the lists' 0th element.
   vstore = [None]
 
-  def set(self, value):
+  def __init__(self, interface, params):
+    """Setup the commands."""
+    super(ecI2cPin, self).__init__(interface, params)
+    # Set the valid input choices for this driver. Choices need to be set
+    # to be strings.
+    self._choices = {'0', '1'}
+
+  def _set(self, value):
     """Set the value to |value|."""
     # While these controls _should_ be using a map so that the values
     # are converted to on/off, we still need to make sure.
-    value = int(value)
-    if value not in self.VALID_VALUES:
-      raise hw_driver.HwDriverError('Invalid value: %d' %
-                                    self.vstore[0])
     self.vstore[0] = value
 
   def get(self):

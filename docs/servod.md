@@ -215,6 +215,14 @@ that one should be aware of:
 
     String of the python module that contains the driver for this control.
 
+*   `choices`
+
+    Comma-separated list of valid input choices for a set control. Note two
+    important factors. The check is done after casting the input value to a
+    string, and comparing it to the string defined in this list. The check also
+    only happens if the driver either defines `_set` rather than `set` or
+    defines a subtype (`_Set_[subtype]`)
+
 ## Servo type specific behavior.
 
 There are two mechanism in servod to allow for controls to have different
