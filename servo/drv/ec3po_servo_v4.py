@@ -396,6 +396,40 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     # drop 'v'. e.g. '20v' -> 20
     return int(self.max_req_voltage()[:-1])
 
+  def _Get_usbc_prswap(self):
+    """Getter of pr_swap
+
+    Returns:
+      0 for PR_SWAP disallow, 1 for PR_SWAP allow.
+    """
+    return self._issue_cmd_get_results('usbc_action prswap',
+                                       [r'allow_pr_swap = \d'], timeout=1)
+
+  def _Set_usbc_prswap(self, allow):
+    """Setter of pr_swap
+
+    Args:
+      allow: 1 for allow, 0 for disallow
+    """
+    self._issue_cmd('usbc_action prswap %d' % (1 if allow else 0))
+
+  def _Get_usbc_drswap(self):
+    """Getter of dr_swap
+
+    Returns:
+      0 for DR_SWAP disallow, 1 for DR_SWAP allow.
+    """
+    return self._issue_cmd_get_results('usbc_action drswap',
+                                       [r'allow_dr_swap = \d'], timeout=1)
+
+  def _Set_usbc_drswap(self, allow):
+    """Setter of dr_swap
+
+    Args:
+      allow: 1 for allow, 0 for disallow
+    """
+    self._issue_cmd('usbc_action drswap %d' % (1 if allow else 0))
+
   def _Set_usbc_polarity(self, value):
     """Setter of usbc_polarity.
 
