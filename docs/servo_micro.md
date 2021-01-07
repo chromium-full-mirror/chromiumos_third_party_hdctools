@@ -25,6 +25,11 @@ Like other Servo boards, the Servo Micro requires [`servod`] to be running:
 (chroot) $ sudo servod -b [board]
 ```
 
+The Servo Micro connects to the servo header of the DUT in the orientation
+where 'dot' indications from the Servo Micro and the servo header align:
+
+![Servo Micro and Header Dot Close-up]
+
 Most Servo header functionality should be available, used in the same way as any
 other servo. Here you can see the Servo v4 and Servo Micro plugged into a
 system.
@@ -163,6 +168,7 @@ wires on and use a standard FTDI pin header 3.3V cable.
 <!-- Images -->
 
 [Servo Micro]: ./images/servo_micro.jpg
+[Servo Micro and Header Dot Close-up]: ./images/servo_micro_and_header_dot.jpg
 [Servo Micro and Servo v4]: ./images/servo_micro_servo_v4_dut.jpg
 [Servo Micro USB OTG]: ./images/servo_micro_usb_otg.jpg
 [Servo Micro UART]: ./images/servo_micro_uart.png
