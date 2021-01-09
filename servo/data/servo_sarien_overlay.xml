@@ -38,6 +38,12 @@
     <doc>short hand configs for keypress durations</doc>
     <params tab="0.1" short_press="1.2" press="1.2" long_press="6"></params>
   </map>
+  <!-- Sarien does not have a CrOS EC (thus also does not support
+    communication through it).-->
+  <control>
+    <name>supports_cros_ec_communication</name>
+    <params clobber_ok="" value="no"/>
+  </control>
   <control>
     <name>ec_system_powerstate</name>
     <doc>N/A on sarien boards.</doc>

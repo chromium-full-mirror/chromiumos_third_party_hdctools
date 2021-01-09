@@ -156,4 +156,11 @@
     <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
     tag="servo_mcu_panicinfo"/>
   </control>
+  <!-- The majority of deployed and active DUTs have a CrOS EC. In the special
+    cases where that is not true, overwrite in the board overlay.-->
+  <control>
+    <name>supports_cros_ec_communication</name>
+    <doc>whether the DUT has a CrOS EC that can talk through servo UART</doc>
+    <params drv="echo" value="yes" interface="servo"/>
+  </control>
 </root>
