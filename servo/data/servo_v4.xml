@@ -498,15 +498,18 @@
   <!-- Controls used by PD FAFT -->
   <control>
     <name>ppdut5_mv</name>
-    <remap>vbus_voltage</remap>
+    <alias>vbus_voltage</alias>
+    <params clobber_ok=""></params>
   </control>
   <control>
     <name>ppdut5_ma</name>
-    <remap>vbus_current</remap>
+    <alias>vbus_current</alias>
+    <params clobber_ok=""></params>
   </control>
   <control>
     <name>ppdut5_mw</name>
-    <remap>vbus_power</remap>
+    <alias>vbus_power</alias>
+    <params clobber_ok=""></params>
   </control>
   <!-- I2C pseudo adapter controller -->
   <control>
