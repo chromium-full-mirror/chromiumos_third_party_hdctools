@@ -307,7 +307,7 @@ reinitalization phase will block until the interface is reinitialized.
 [13]: ../servo/system_config.py#382
 [14]: ../servo/servo_server.py#52
 [15]: ../servo/system_config.py#19
-[16]: ./FAQ.md#how-do-i-reroute_overwrite-a-control-for-a-board-tl_dr
+[16]: ./servod_faq.md#reroute-control
 [17]: ../servo/drv/ec.py
 [18]: ../servo/servodtool.py
 [19]: ../servo/servod.py#69

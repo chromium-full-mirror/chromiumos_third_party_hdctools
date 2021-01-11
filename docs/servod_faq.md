@@ -92,7 +92,7 @@ Common interfaces are:
 *   `9`: cr50 console
 *   `10`: EC console
 
-## How do I reroute/overwrite a control for a board?
+## How do I reroute/overwrite a control for a board? {#reroute-control}
 
 ### tl;dr:
 
