@@ -23,12 +23,14 @@
   </include>
   <control>
     <name>spi1_vref</name>
-    <doc>BEWARE ... might actually power the whole board.</doc>
+    <alias>fpmcu_pp3300</alias>
+    <doc>3.3V rail that powers the MCU.</doc>
     <params clobber_ok="" init="pp3300"></params>
   </control>
   <control>
     <name>spi2_vref</name>
-    <doc>Used as 1.8V rail for the sensor.</doc>
+    <alias>fpmcu_pp1800</alias>
+    <doc>1.8V rail that powers the sensor.</doc>
     <params clobber_ok="" init="pp1800"></params>
   </control>
   <control>
