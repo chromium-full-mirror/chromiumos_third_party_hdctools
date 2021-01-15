@@ -9,8 +9,7 @@
   Fingerprint daughter-board overlay
 
   Compatible with the following daughterboards:
-    * zerblebarn
-    * dragontalon (dartmonkey)
+    * icetower (dartmonkey)
     * dragonclaw (bloonchipper)
 
   See http://go/cros-fingerprint-dev-boards
