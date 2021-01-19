@@ -107,10 +107,12 @@ class Uart(interface.Interface):
       self._capture_lock.acquire()
       if len(self._capture_buffer) < MAX_BUFFER_SIZE:
         buffer_overflow = False
-        self._capture_buffer.append(data)
+        # |decode| ensures that we append strings here. The data being
+        # returned is a b' string.
+        self._capture_buffer.append(data.decode())
       elif buffer_overflow:
         self._capture_buffer.append(
-            '\n\n........capture buffer overflow........\n\n')
+            u'\n\n........capture buffer overflow........\n\n')
         buffer_overflow = True
       self._capture_lock.release()
     termios.tcsetattr(uart_fd, termios.TCSANOW, saved_conf)
