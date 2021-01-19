@@ -574,7 +574,7 @@ class USBkm232Handler(_BaseHandler):
 
   MAX_RSP_RETRIES = 10
   USB_QUEUE_DEPTH = 6
-  CLEAR = '\x38'
+  CLEAR = b'\x38'
   KEYS = {
       #row 1
       '`': 1,
@@ -744,7 +744,7 @@ class USBkm232Handler(_BaseHandler):
        Returns:
          Raises exception if no correct response is received.
        """
-    self.serial.write(chr(0))
+    self.serial.write(b'\0')
     rsp = self.serial.read(1)
     if not rsp or (ord(rsp) != 0xff):
       self._logger.error('Presence check response from atmega KB emu: rsp: %s',
