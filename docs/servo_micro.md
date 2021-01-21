@@ -55,6 +55,15 @@ NOTE: There is no `target=(AP|EC)` command as with other `raiden_debug_spi`
 devices. Adding this flag to the `flashrom` command will cause an error.
 ***
 
+## Servo Micro Header Pins
+
+The names of the pins loosely correspond to the name of the controls used by
+[`servod`]. For example, `DUT_LID_OPEN` corresponds to [`lid_open`]. See the
+[Servo Micro Schematics] for complete details of how the header is connected
+to the Servo Micro internals.
+
+![Servo Micro Header Pins]
+
 ## Known Issues
 
 *   JTAG - Servo Micro does not support JTAG.
@@ -164,6 +173,7 @@ wires on and use a standard FTDI pin header 3.3V cable.
 [Servo Micro CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md
 [`servod`]: ./servod.md
 [Servo v2]: ./servo_v2.md
+[`lid_open`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/0c4e47b14d669deece85ad883069feaef9230899/servo/data/servo.xml#178
 
 <!-- Images -->
 
@@ -172,3 +182,4 @@ wires on and use a standard FTDI pin header 3.3V cable.
 [Servo Micro and Servo v4]: ./images/servo_micro_servo_v4_dut.jpg
 [Servo Micro USB OTG]: ./images/servo_micro_usb_otg.jpg
 [Servo Micro UART]: ./images/servo_micro_uart.png
+[Servo Micro Header Pins]: ./images/servo_micro_header_v2.png
