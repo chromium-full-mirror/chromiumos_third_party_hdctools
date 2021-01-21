@@ -135,7 +135,9 @@ def main(cmdline=sys.argv[1:]):
   if not args.no_output:
     pm_logger.addHandler(stdout_handler)
   if args.save_logs:
-    tmplogfile = tempfile.NamedTemporaryFile()
+    # Default mode is 'w+b', but the messages passed are strings. Overwrite
+    # default mode to be 'w+'
+    tmplogfile = tempfile.NamedTemporaryFile(mode='w+')
     logfilehandler = logging.StreamHandler(tmplogfile)
     logfilehandler.setLevel(logging.DEBUG)
     pm_logger.addHandler(logfilehandler)
