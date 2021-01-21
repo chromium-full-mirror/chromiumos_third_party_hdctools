@@ -112,7 +112,7 @@ class ServodPowerTracker(threading.Thread):
                            ' all as NaN.', ', '.join(ctrls))
       samples = [float('nan')]*len(ctrls)
     duration_ms = (time.time() - start) * 1000
-    sample_tuples = zip(ctrls, samples)
+    sample_tuples = list(zip(ctrls, samples))
     sample_tuples.append((SAMPLE_TIME_KEY, duration_ms))
     return (sample_tuples, duration_ms)
 
