@@ -74,6 +74,7 @@ from . import servo_metadata
 from . import servo_v4
 from . import servo_watchdog
 from . import sflag
+from . import simple_ec
 from . import sleep
 from . import storm_power
 from . import stumpy_power
