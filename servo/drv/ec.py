@@ -78,23 +78,6 @@ class ec(pty_driver.ptyDriver):
 
     self._issue_cmd('chan restore')
 
-  def _Get_system_powerstate(self):
-    """Getter for the current powerstate
-    as reported by powerinfo command.
-
-    Returns:
-      The powerinfo string.
-    """
-    self._limit_channel()
-    result = self._issue_cmd_get_results('powerinfo',
-                                         ['power state \d+ = (.*), in'])[0]
-    self._restore_channel()
-    if result is None:
-      # TODO(coconutruben): in here, we might be able to detect if we're
-      # in G3, by seeking the right exception
-      raise ecError('Cannot retrieve the power state on EC console.')
-    return result[1]
-
   def _Get_gpio(self):
     """Getter of current gpio settings.
 

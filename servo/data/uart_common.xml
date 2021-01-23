@@ -139,12 +139,6 @@
     drv="ap"></params>
   </control>
   <control>
-    <name>ec_system_powerstate</name>
-    <doc>The current power state according to the EC.</doc>
-    <params cmd="get" subtype="system_powerstate" interface="10"
-    drv="ec"></params>
-  </control>
-  <control>
     <name>ec_gpio</name>
     <doc>The EC GPIOs and their state.</doc>
     <params cmd="get" subtype="gpio" interface="10" drv="ec"

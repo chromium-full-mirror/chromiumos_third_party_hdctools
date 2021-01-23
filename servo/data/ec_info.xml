@@ -12,4 +12,11 @@
     <params interface="10" drv="simple_ec" uart_cmd="sysinfo"
       regex="Copy:\s+(\S+)\s" group="1" formatting="strip"/>
   </control>
+  <control>
+    <name>ec_system_powerstate</name>
+    <doc>The current power state according to the EC.</doc>
+    <params interface="10" drv="simple_ec" uart_cmd="powerinfo"
+      regex="power state \d+ = (.*), in" group="1" formatting="strip"
+      debug_info="Cannot retrieve the power state on EC console."/>
+  </control>
 </root>
