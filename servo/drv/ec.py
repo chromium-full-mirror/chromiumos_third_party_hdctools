@@ -78,19 +78,6 @@ class ec(pty_driver.ptyDriver):
 
     self._issue_cmd('chan restore')
 
-  def _Get_active_copy(self):
-    """Getter of active_copy.
-
-    Returns:
-        The string of the active EC copy, e.g. "RO", "RW", "RW_B".
-    """
-    self._limit_channel()
-    result = self._issue_cmd_get_results('sysinfo', ['Copy:\s+(\S+)\s'])[0]
-    self._restore_channel()
-    if result is None:
-      raise ecError('Cannot retrieve the active copy result on EC console.')
-    return result[1]
-
   def _Get_system_powerstate(self):
     """Getter for the current powerstate
     as reported by powerinfo command.
