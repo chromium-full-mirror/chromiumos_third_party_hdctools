@@ -1,5 +1,9 @@
 <root>
   <!-- EC-3PO console interpreter for main CPU -->
+  <include>
+    <!-- controls retrieving information from the a CrOS EC -->
+    <name>ec_info.xml</name>
+  </include>
   <control>
     <name>ec3po_cpu_console</name>
     <alias>cpu_uart_pty</alias>
@@ -144,12 +148,6 @@
     <name>ec_gpio</name>
     <doc>The EC GPIOs and their state.</doc>
     <params cmd="get" subtype="gpio" interface="10" drv="ec"
-    input_type="str"></params>
-  </control>
-  <control>
-    <name>ec_board</name>
-    <doc>The board name of the EC image</doc>
-    <params cmd="get" subtype="board" interface="10" drv="ec"
     input_type="str"></params>
   </control>
   <control>

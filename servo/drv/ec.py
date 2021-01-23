@@ -78,19 +78,6 @@ class ec(pty_driver.ptyDriver):
 
     self._issue_cmd('chan restore')
 
-  def _Get_board(self):
-    """Getter of board.
-
-    Returns:
-        The board string.
-    """
-    self._limit_channel()
-    result = self._issue_cmd_get_results('ver', ['RO:\s+(\S*)_v?[\d.-]+'])[0]
-    self._restore_channel()
-    if result is None:
-      raise ecError('Cannot retrieve the board result on EC console.')
-    return result[1]
-
   def _Get_active_copy(self):
     """Getter of active_copy.
 

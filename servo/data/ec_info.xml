@@ -1,0 +1,9 @@
+<root>
+  <!-- Collection of controls retrieving information from the a CrOS EC -->
+  <control>
+    <name>ec_board</name>
+    <doc>The board name of the EC image</doc>
+    <params interface="10" drv="simple_ec" uart_cmd="vers"
+      regex="RO:\s+(\S*)_v?[\d.\w-]+[\n\r]" group="1" formatting="strip"/>
+  </control>
+</root>
