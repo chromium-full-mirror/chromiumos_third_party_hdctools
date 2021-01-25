@@ -20,7 +20,7 @@ class sflag(hw_driver.HwDriver):
 
   def __init__(self, interface, params):
     """Setup the commands."""
-    super(ecI2cPin, self).__init__(interface, params)
+    super(sflag, self).__init__(interface, params)
     # Set the valid input choices for this driver. Choices need to be set
     # to be strings.
     self._choices = {'0', '1'}
