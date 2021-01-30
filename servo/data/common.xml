@@ -54,6 +54,11 @@
     <params five="5" six="6" seven="7" eight="8"></params>
   </map>
   <map>
+    <name>check</name>
+    <doc>helper for commands that need to 'check' something</doc>
+    <params check="0"></params>
+  </map>
+  <map>
     <name>print</name>
     <doc>debug print map</doc>
     <params print="0"></params>

@@ -362,6 +362,14 @@
     <params interface="servo" drv="servo_updater_reader" board="servo_micro"
       channel="stable"/>
   </control>
+  <control>
+    <name>servo_micro_firmware_uptodate</name>
+    <doc>whether servo micro firmware is to update</doc>
+    <params cmd="get" interface="servo" drv="servo_firmware_checker"
+      board="servo_micro" map="yesno"/>
+    <params cmd="set" interface="servo" drv="servo_firmware_checker"
+      board="servo_micro" map="check" init="check"/>
+  </control>
 
   <!-- EC-3PO console interpreter linkup -->
   <control>

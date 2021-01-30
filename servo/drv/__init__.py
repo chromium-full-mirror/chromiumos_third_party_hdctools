@@ -70,6 +70,7 @@ from . import power_kb
 from . import ps8742
 from . import pty_driver
 from . import sarien_power
+from . import servo_firmware_checker
 from . import servo_metadata
 from . import servo_updater_reader
 from . import servo_v4
