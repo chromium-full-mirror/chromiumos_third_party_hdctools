@@ -363,6 +363,12 @@
       channel="stable"/>
   </control>
   <control>
+    <name>servo_micro_firmware_channel</name>
+    <doc>which channel the current servo micro firmware is from</doc>
+    <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
+      board="servo_micro"/>
+  </control>
+  <control>
     <name>servo_micro_firmware_uptodate</name>
     <doc>whether servo micro firmware is to update</doc>
     <params cmd="get" interface="servo" drv="servo_firmware_checker"
