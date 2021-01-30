@@ -348,20 +348,19 @@
     <params cmd="get" subtype="pty" interface="3" drv="uart">
     </params>
   </control>
-
+  <!-- firmware version introspection controls -->
   <control>
     <name>servo_micro_version</name>
     <doc>current fw version</doc>
-    <params cmd="get" subtype="version" interface="6"
-    drv="ec3po_servo_micro" map="print" init="print" clobber_ok="">
-    </params>
+    <params interface="6" drv="simple_ec" uart_cmd="version"
+      regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>
-    <name>servo_micro_latest_version</name>
+    <name>servo_micro_latest_stable_version</name>
+    <alias>servo_micro_latest_version</alias>
     <doc>servo-firmware available fw version</doc>
-    <params cmd="get" subtype="latest_version" interface="6"
-    drv="ec3po_servo_micro">
-    </params>
+    <params interface="servo" drv="servo_updater_reader" board="servo_micro"
+      channel="stable"/>
   </control>
 
   <!-- EC-3PO console interpreter linkup -->

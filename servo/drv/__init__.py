@@ -71,6 +71,7 @@ from . import ps8742
 from . import pty_driver
 from . import sarien_power
 from . import servo_metadata
+from . import servo_updater_reader
 from . import servo_v4
 from . import servo_watchdog
 from . import sflag
