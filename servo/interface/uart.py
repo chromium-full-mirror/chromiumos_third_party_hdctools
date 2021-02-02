@@ -109,7 +109,7 @@ class Uart(interface.Interface):
         buffer_overflow = False
         # |decode| ensures that we append strings here. The data being
         # returned is a b' string.
-        self._capture_buffer.append(data.decode())
+        self._capture_buffer.append(data.decode(errors='ignore'))
       elif buffer_overflow:
         self._capture_buffer.append(
             u'\n\n........capture buffer overflow........\n\n')
