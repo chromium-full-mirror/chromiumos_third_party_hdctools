@@ -156,7 +156,7 @@ class ptyDriver(hw_driver.HwDriver):
       else:
         # for python2 compatibility we want to always convert |member| into a
         # utf-8 string
-        member = member.decode()
+        member = member.decode(encoding='utf-8', errors='replace')
         # Now, we want to make sure that each character can go through XMLRPC.
         # To do this we 1. exempt \t, \r, and \n per spec, and 2. check
         # the rest for having a numerical value between 31 and and 127.
@@ -278,8 +278,8 @@ class ptyDriver(hw_driver.HwDriver):
             result_list.append(result)
             self._logger.debug('Result: %s' % str(result))
       except pexpect.TIMEOUT:
-        self._logger.debug('Before: ^%s^' % self._child.before)
-        self._logger.debug('After: ^%s^' % self._child.after)
+        self._logger.debug('Before: ^%s^', self._child.before)
+        self._logger.debug('After: ^%s^', self._child.after)
         if self._child.before:
           # TODO(crbug.com/1043408): this needs more granular error detection
           # to distinguish whether the console is read-only, or if the control
@@ -293,6 +293,8 @@ class ptyDriver(hw_driver.HwDriver):
           # ASCIIfy the characters in the string so that the server does not
           # struggle marshaling the data across.
           output = self._make_xml_friendly(output, error=False)
+          # Print it here again to see what garbage was in the output if any.
+          self._logger.debug('Before (cleaned): ^%s^', output)
           msg = 'Timeout waiting for response. There was output: %s' % output
         else:
           msg = 'No data was sent from the pty.'
