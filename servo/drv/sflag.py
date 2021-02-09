@@ -34,11 +34,8 @@ class sflag(hw_driver.HwDriver):
   def get(self):
     """Return the |self.vstore| for this flag."""
     if self.vstore[0] is None:
-      # Initialize with a 0 unless a default is provided
-      self.vstore[0] = int(self._params.get('default_value', 0))
-    if self.vstore[0] not in self.VALID_VALUES:
-      # The default must have been invalid. This is because set() guards
-      # against invalid values already - the only other source of values.
-      raise hw_driver.HwDriverError('Invalid default: %d' %
-                                    self.vstore[0])
+      # Initialize with a 0 unless a default is provided. Pass through |set|
+      # rather than just modifying the vstore, to ensure that the value
+      # is a valid choice.
+      self.set(int(self._params.get('default_value', 0)))
     return self.vstore[0]
