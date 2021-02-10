@@ -44,4 +44,10 @@
     <params interface="2" drv="tca6416" child="0x20" od="PP" port="1"
     offset="4" map="yesno" init="no"></params>
   </control>
+  <!-- mistral does not have a CrOS EC (thus also does not support
+    communication through it).-->
+  <control>
+    <name>supports_cros_ec_communication</name>
+    <params clobber_ok="" value="no"/>
+  </control>
 </root>

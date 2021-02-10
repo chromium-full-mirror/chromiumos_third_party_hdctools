@@ -18,4 +18,10 @@
     <params cmd="set" interface="servo" drv="storm_power"
     input_type="str" />
   </control>
+  <!-- storm does not have a CrOS EC (thus also does not support
+    communication through it).-->
+  <control>
+    <name>supports_cros_ec_communication</name>
+    <params clobber_ok="" value="no"/>
+  </control>
 </root>

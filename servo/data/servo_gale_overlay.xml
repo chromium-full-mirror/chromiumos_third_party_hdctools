@@ -26,4 +26,10 @@
     cold_reset.</doc>
     <params clobber_ok="" />
   </control>
+  <!-- gale does not have a CrOS EC (thus also does not support
+    communication through it).-->
+  <control>
+    <name>supports_cros_ec_communication</name>
+    <params clobber_ok="" value="no"/>
+  </control>
 </root>
