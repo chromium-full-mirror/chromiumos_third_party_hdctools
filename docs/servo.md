@@ -5,9 +5,9 @@
 ## Introduction
 
 Servo is a debug board used for Chromium OS test and development. Depending on
-the version of Servo, it can connect to a debug header or USB port on the
-Chrome OS device. The debug header is used primarily during development and is
-often removed before a device is released to consumers.
+the version of Servo, it can connect to a debug header or USB port on the Chrome
+OS device. The debug header is used primarily during development and is often
+removed before a device is released to consumers.
 
 Servo is a key enabler for automated testing, including
 [automated firmware testing][FAFT]. It provides:
@@ -19,8 +19,8 @@ Servo is a key enabler for automated testing, including
 For example, it can act as a USB host to simulate connection and removal of
 external USB devices. It also provides JTAG/SWD support.
 
-Though Servo boards are not publicly distributed or sold (by Google),
-schematics and layout for each version is available.
+Though Servo boards are not publicly distributed or sold (by Google), schematics
+and layout for each version is available.
 
 ## Hardware Versions
 
@@ -30,10 +30,10 @@ See the detailed documentation in [Servo v2].
 
 ### Servo Micro
 
-Servo Micro is a self-contained replacement for Yoshi Servo flex. It is meant
-to be compatible with Servo v2/v3 via `servod`. The design uses case closed
-debug software on an STM32 MCU to provide a [CCD] interface into systems with a
-Yoshi debug port.
+Servo Micro is a self-contained replacement for Yoshi Servo flex. It is meant to
+be compatible with Servo v2/v3 via `servod`. The design uses case closed debug
+software on an STM32 MCU to provide a [CCD] interface into systems with a Yoshi
+debug port.
 
 Servo Micro is usually paired with a Servo v4 Type-A, which provides ethernet,
 dut hub, and muxed usb storage.
@@ -66,6 +66,8 @@ On your workstation, servod must also be running to communicate with servo:
 ```bash
 (chroot) $ sudo servod -b $BOARD &
 ```
+
+<!-- mdformat off(b/139308852) -->
 *** note
 WARNING: `servod` must be run inside a chroot that was launched with the
 `--no-ns-pid` flag. [It is annoying to always specify this (or
@@ -75,6 +77,7 @@ forget)][servod_no_nspid], so you may want to add this to your `$HOME/.bashrc`:
 alias cros_sdk='cros_sdk --no-ns-pid'
 ```
 ***
+<!-- mdformat on -->
 
 With `servod` running, `dut-control` commands can be used to probe and change
 various controls. For a list of commands, run `dut-control` with no parameters:
@@ -155,10 +158,10 @@ writing tests, see the [servo library code] in the [Chromium OS autotest repo].
 
 ## Using multiple servos on the same machine
 
-It's possible to connect multiple servos at once, which is especially useful
-for testing/developing against multiple devices. Servo v4 will charge the DUT
-if a charger is attached to it and also provides an ethernet jack so SSH is
-always available.
+It's possible to connect multiple servos at once, which is especially useful for
+testing/developing against multiple devices. Servo v4 will charge the DUT if a
+charger is attached to it and also provides an ethernet jack so SSH is always
+available.
 
 To use multiple servos, you need to run multiple instances of `servod`, each
 running on a different port. You also need to specify the servo's serial name.
@@ -197,6 +200,7 @@ Look for `sid`:
 (chroot) $ sudo servod --board=hatch --serialname CMO653-00166-040489J03624 --port 9997
 ```
 
+<!-- mdformat off(b/139308852) -->
 *** note
 NOTE: By default `dut-control` will use port 9999 (the default `servod` port).
 You can specify the `--port` flag to `dut-control` to target a specific
@@ -206,6 +210,7 @@ You can specify the `--port` flag to `dut-control` to target a specific
 (chroot)$ dut-control --port 9998 power_state:off
 ```
 ***
+<!-- mdformat on -->
 
 ### servodrc
 
@@ -227,10 +232,12 @@ dragonclaw, CMO653-00166-040489J03624
 nocturne, C1804020116, , nocturne
 ```
 
+<!-- mdformat off(b/139308852) -->
 ***note
 **NOTE**: Even though `board-name` is optional, you probably want to specify it
 if you know it. Otherwise some controls (e.g., `power_state`) will not work.
 ***
+<!-- mdformat on -->
 
 With the above `.servodrc`, you can now simply start `servod` instances by
 symbolic name as as follows:

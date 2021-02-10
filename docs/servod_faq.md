@@ -39,14 +39,14 @@ especially when building locally as we don't have access to git tags, git
 history, and cannot use a git hash in pep440.
 
 The solution is to have two notions of version:
-- one is the python version that applies to the package and the scripts, and is
-  returned through `servod --version`.
-  This one receives a .dev when git-information is missing as that's likely
-  coming from building locally.
-- the other one is sversion, a more comprehensive version that reports the
-  version string, the git-hash, the build-time and builder. This can be queried
-  by doing `servod --sversion` (or any of the other command-line tools
 
+-   one is the python version that applies to the package and the scripts, and
+    is returned through `servod --version`. This one receives a .dev when
+    git-information is missing as that's likely coming from building locally.
+
+-   the other one is sversion, a more comprehensive version that reports the
+    version string, the git-hash, the build-time and builder. This can be
+    queried by doing `servod --sversion` (or any of the other command-line tools
 
 ## Where is the code logic for the control `control`?
 

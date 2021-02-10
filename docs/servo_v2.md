@@ -16,18 +16,22 @@ information is available:
 
 ## Getting Servo v2
 
+<!-- mdformat off(b/139308852) -->
 *** promo
 Sorry, Servo v2 is not publicly available for purchase.
 ***
+<!-- mdformat on -->
 
 ### Googlers
 
 Stop by your local Chromestop.
 
+<!-- mdformat off(b/139308852) -->
 *** note
 Since Servo v2 is no longer manufactured, we are more strict about allocation
 than other Servo versions.
 ***
+<!-- mdformat on -->
 
 ## Connecting Servo v2
 
@@ -46,8 +50,8 @@ The basic steps to connect Servo v2 are:
     down.
 1.  Connect the "Servo" end to the header on the Servo v2 board, metal side up.
     Make sure to engage the black bottom clip of the header on the Servo v2
-    board by pushing it inwards after inserting the ribbon cable. This will
-    hold the ribbon cable in place and press the contacts.
+    board by pushing it inwards after inserting the ribbon cable. This will hold
+    the ribbon cable in place and press the contacts.
 1.  Use a USB cable to connect the Servo v2 board to your Linux workstation.
 
 You should be able to use the power button on Servo v2 to power the Chrome OS
@@ -59,9 +63,9 @@ Follow the general [using Servo] instructions.
 
 ## Yoshi Flex Cable
 
-The Yoshi Flex cable is used to connect Servo v2 to a servo header. The
-standard cable does not work with Serial Wire Debug ([SWD]), but a simple rework
-can be performed to support [SWD].
+The Yoshi Flex cable is used to connect Servo v2 to a servo header. The standard
+cable does not work with Serial Wire Debug ([SWD]), but a simple rework can be
+performed to support [SWD].
 
 Standard Yoshi Flex    | Yoshi Flex Reworked to Support [SWD]
 ---------------------- | -------------------------------------
@@ -98,9 +102,9 @@ This issue can be solved by a [rework].
 
 ## Rework
 
-Servo v2 reworks are needed to flash the PD MCU on certain boards and access
-the PD MCU console. These reworks are not mutually compatible, so only apply
-the one relevant to your board.
+Servo v2 reworks are needed to flash the PD MCU on certain boards and access the
+PD MCU console. These reworks are not mutually compatible, so only apply the one
+relevant to your board.
 
 ### samus_pd:
 

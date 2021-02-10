@@ -1,9 +1,9 @@
 # Servo Micro
 
-Servo Micro (aka "uServo") is a self contained replacement for Yoshi Servo
-Flex. It is meant to be compatible with Servo v2/v3 via [`servod`]. The design
-uses [Case Closed Debug][CCD] software on an STM32 microcontroller to provide a
-[CCD] interface into systems with a Yoshi debug port.
+Servo Micro (aka "uServo") is a self contained replacement for Yoshi Servo Flex.
+It is meant to be compatible with Servo v2/v3 via [`servod`]. The design uses
+[Case Closed Debug][CCD] software on an STM32 microcontroller to provide a [CCD]
+interface into systems with a Yoshi debug port.
 
 [TOC]
 
@@ -25,8 +25,8 @@ Like other Servo boards, the Servo Micro requires [`servod`] to be running:
 (chroot) $ sudo servod -b [board]
 ```
 
-The Servo Micro connects to the servo header of the DUT in the orientation
-where 'dot' indications from the Servo Micro and the servo header align:
+The Servo Micro connects to the servo header of the DUT in the orientation where
+'dot' indications from the Servo Micro and the servo header align:
 
 ![Servo Micro and Header Dot Close-up]
 
@@ -50,17 +50,19 @@ For example, on a 3.3V DUT:
 (chroot) $ dut-control spi2_vref:off spi2_buf_en:off
 ```
 
+<!-- mdformat off(b/139308852) -->
 *** note
 NOTE: There is no `target=(AP|EC)` command as with other `raiden_debug_spi`
 devices. Adding this flag to the `flashrom` command will cause an error.
 ***
+<!-- mdformat on -->
 
 ## Servo Micro Header Pins
 
 The names of the pins loosely correspond to the name of the controls used by
 [`servod`]. For example, `DUT_LID_OPEN` corresponds to [`lid_open`]. See the
-[Servo Micro Schematics] for complete details of how the header is connected
-to the Servo Micro internals.
+[Servo Micro Schematics] for complete details of how the header is connected to
+the Servo Micro internals.
 
 ![Servo Micro Header Pins]
 
@@ -104,10 +106,12 @@ servos impacted. Impacted DUTs may require deployment using [Servo v2].
 Servo Micro can be updated to the latest stable firmware using the
 `servo_updater` tool.
 
+<!-- mdformat off(b/139308852) -->
 *** note
 **NOTE**: [`servod`] must not be running when updating since it locks the
 device.
 ***
+<!-- mdformat on -->
 
 Sync the latest source:
 

@@ -78,24 +78,26 @@ The following graphic shows how a call to `dut-control ec_board` works.
 1.  The `dut-control` control issues a request to the servo server, asking it to
     get the control `ec_board`.
 
-2.  The servod [instance][14] then looks up what the control `ec_board` means,
+1.  The servod [instance][14] then looks up what the control `ec_board` means,
     and how to execute it. It uses its [system config][15] to find the `drv` and
     the params used to execute an `ec_board` request.
 
-3.  The server initializes and keeps around an ec `drv` instance to execute the
+1.  The server initializes and keeps around an ec `drv` instance to execute the
     `ec_board` control.
 
+<!-- mdformat off(b/139308852) -->
     *** note
     Note: This is crucial, because it means that one can share state between
     two invocations of `ec_board` - since they use the same `drv` instance to
     execute them - but not as easily between two invocations of different
     controls, since they will use different `drv` instances to execute.
     ***
+<!-- mdformat on -->
 
-4.  The server then dispatches an attempt to retrieve the information by calling
+1.  The server then dispatches an attempt to retrieve the information by calling
     `.get()` on the `drv`.
 
-5.  The return value then gets propagated all the way back up until finally
+1.  The return value then gets propagated all the way back up until finally
     `dut-control` prints out the response on the terminal.
 
 ## Data and Configuration file structure
@@ -121,12 +123,14 @@ A configuration file is an xml file that has `<control>`, `<map>`, and
     *   `<remap>` Remap makes the control at `<remap>` an alias for the control.
         See [FAQ][16] for details.
 
+<!-- mdformat off(b/139308852) -->
     *** note
     Note: two params may be defined if the params for the `set` version of the
     control is different from the `get` version of the control. In that case,
     the params are required to have a `cmd` attribute each, one defined as
     `get` the other defined as `set` to [distinguish between them][1].
     ***
+<!-- mdformat on -->
 
 *   `<include>` [elements][3]
 
@@ -156,10 +160,9 @@ building out a new driver. It contains the logic for calling the
 defined.
 
 The HwDriver has a few built in tools to facilitate safe drv writing, please
-take a look at the file. These include
-- a mechanism to ensure that only preapproved values can be passed through set
-- a mechanism to signal what params the overlay is _required_ to provide for the
-  drv to function properly
+take a look at the file. These include - a mechanism to ensure that only
+preapproved values can be passed through set - a mechanism to signal what params
+the overlay is _required_ to provide for the drv to function properly
 
 Another important driver is [ptyDriver][8] that the EC, AP, and Cr50 console
 controls use.
@@ -253,11 +256,10 @@ configurations using a config file, to map serialname to symbolic name.
 `servod -b samus -s xxx-yyy -> servod -n my_samus //where servodrc has my_samus,
 xxx-yyy`
 
-With that, there are some helpers to make parsing easier and more unified.
-The purpose is for shared arguments and shared parsing logic
-(e.g. runtime configuration mappings) to live in one place, to ensure a
-consistent cmdline experience across servod tools, and to simplify and
-centralize future changes.
+With that, there are some helpers to make parsing easier and more unified. The
+purpose is for shared arguments and shared parsing logic (e.g. runtime
+configuration mappings) to live in one place, to ensure a consistent cmdline
+experience across servod tools, and to simplify and centralize future changes.
 Please see [this top comment][21] for an overview and the [servodrc examples].
 
 ## Servodtool {#servod-tool}
@@ -275,9 +277,9 @@ the /sys/bus/usb/devices/ path of a servo device given its serialname.
 
 The instance tool uses the file-system to leave information around about running
 servod instances. It supports listing all instances running on a system and
-their info (e.g., what port they run on, what the main process' PID is, what
-the serial numbers of the attached servo devices are), and gracefully stopping
-an instance.
+their info (e.g., what port they run on, what the main process' PID is, what the
+serial numbers of the attached servo devices are), and gracefully stopping an
+instance.
 
 It works by writing all the information into a file at `/tmp/servoscratch` on
 invocation and clearing out the entry when `servod` turns off. This flow is

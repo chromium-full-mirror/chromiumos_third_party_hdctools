@@ -16,8 +16,8 @@ to securely debug the device without physically opening it.
 Current Cr50 capabilities allow read/write access to a UART on the AP and a UART
 on the EC, as well as a SPI interface (normally used to access the flash chips)
 and an I2C interface (normally used to access INAs, but may be used to flash the
-EC).  Closed Case Debug replaces the capabilities that previously relied on the
-servo header.  Outside of ccd, the servo USB connection also provides:
+EC). Closed Case Debug replaces the capabilities that previously relied on the
+servo header. Outside of ccd, the servo USB connection also provides:
 
 *   power supply
 *   a network interface
@@ -63,6 +63,7 @@ https://www.sparkfun.com/products/14746.
 
 ![suzyq](images/suzyq.png "SuzyQ")
 
+<!-- mdformat off(b/139308852) -->
 *** note
 NOTE: The cable will generally only work in one port and one orientation. If it
 doesn't work try the other port, or flip the connector. Check the
@@ -76,6 +77,7 @@ monitor `lsusb` for Cr50 device enumeration:
 (chroot) $ watch -n 1 "lsusb | grep 18d1:5014"
 ```
 ***
+<!-- mdformat on -->
 
 #### Making your own SuzyQ
 
@@ -98,8 +100,8 @@ signaling on the CC lines debug accessory mode), so it can be used as an
 alternative to the SuzyQ cable. During debugging, Servo v4 will normally allow
 the device-under-test to act as a USB host, providing it with an Ethernet
 interface and USB flash device that may be used for a recovery image. Servo v4
-allows USB Type-C connection automation (both data and charging).  Servo v4
-also has a keyboard emulator.
+allows USB Type-C connection automation (both data and charging). Servo v4 also
+has a keyboard emulator.
 
 ## Using CCD
 

@@ -12,10 +12,10 @@ Recall that a servo device is one usb device with a collection of interfaces.
 Depending on the device, there are different interfaces. These interfaces are
 implemented in this module. The module itself provides a 'clean' discovery
 method that allows the interface writers to identify their interface with a
-'name' static method, and the servo\_interfaces.py list (that maps servo
-devices to a list of interfaces and parameters on how to build them). So adding
-a new interface happens here, while describing how to build and deploy that
-interface on a new servo device happens in servo\_interfaces.py.
+'name' static method, and the servo\_interfaces.py list (that maps servo devices
+to a list of interfaces and parameters on how to build them). So adding a new
+interface happens here, while describing how to build and deploy that interface
+on a new servo device happens in servo\_interfaces.py.
 
 Lastly, consider an example like ec3po: this is an entirely software interface
 that takes an underlying "real" interface and provide functionality on top of
@@ -31,10 +31,11 @@ arguments. It's fine to either ignore them (and mark so for pylint) or leverage
 |kwargs|.
 
 In its current implemenation Build is invoked with the following parameters:
-- index: the interface index i.e. whether it's the first, second, or 10th
-- vid, pid, serial: the identifiers for the underlying device
-- interface\_data: a (custom) dictionary with extra data to build the interface.
-  This is taken directory from servo\_interfaces.py and passed to the Build()
-  function.
-- servod: a reference to servod for interfaces that need to query information
-  about the system to build themselves e.g. ec3po
+
+-   index: the interface index i.e. whether it's the first, second, or 10th
+-   vid, pid, serial: the identifiers for the underlying device
+-   interface\_data: a (custom) dictionary with extra data to build the
+    interface. This is taken directory from servo\_interfaces.py and passed to
+    the Build() function.
+-   servod: a reference to servod for interfaces that need to query information
+    about the system to build themselves e.g. ec3po

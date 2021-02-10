@@ -9,6 +9,7 @@ own. It must be paired with CCD (Cr50's on-board servo implementation) or
 
 [TOC]
 
+<!-- mdformat off(b/139308852) -->
 *** note
 **Googlers**: gLinux has a [kernel bug] that will cause all
 USB devices (including keyboard and mouse) to randomly stop working when using
@@ -24,6 +25,7 @@ echo 1 > /sys/kernel/debug/tracing/events/xhci-hcd/enable
 
 See this [email][chatty-eng servo issue] for more details.
 ***
+<!-- mdformat on -->
 
 ## What is Servo v4?
 
@@ -45,14 +47,18 @@ Details:
 
 ## Getting Servo v4
 
+<!-- mdformat off(b/139308852) -->
 *** promo
 Sorry, Servo v4 is not publicly available for purchase.
 ***
+<!-- mdformat on -->
 
+<!-- mdformat off(b/139308852) -->
 *** note
 **IMPORTANT**: You will need to [update the firmware](#updating-firmware)
 before using, as the factory firmware is quite old.
 ***
+<!-- mdformat on -->
 
 ### Partners
 
@@ -91,8 +97,8 @@ act as a passive hub.
 
 Servo v4 has an embedded keyboard so keystrokes can be emulated on the DUT.
 
-The [`servod`] server must be running for Servo v4 to work. Details can be
-found on the [Servo] page.
+The [`servod`] server must be running for Servo v4 to work. Details can be found
+on the [Servo] page.
 
 ## Type-A vs Type-C Variants
 
@@ -107,19 +113,21 @@ The Type-C version acts as both a USB hub and PD charger. Servo v4 can also
 control both CC terminations which allows it to act as a debug accessory. It
 should be used on systems with [CCD].
 
+<!-- mdformat off(b/139308852) -->
 *** note
 NOTE: Type-C Servo v4 is a charge-through hub and is NOT functionally equivalent
 to a Type-A servo with an A-to-C adapter. DO NOT use a Type-C Servo v4 just
 because you want to plug into a Type-C port. Older Chromebooks (Eve, Samus,
 etc.) have [EC] bugs that prevent charge through hubs from working correctly.
 ***
+<!-- mdformat on -->
 
 ![Servo v4 Type-C](images/servo_v4_typec.jpg)
 
 ### Type-A Version
 
-The Type-A version is used with a uServo and serves as the DUT USB hub, with
-the uServo providing SPI and UART support.
+The Type-A version is used with a uServo and serves as the DUT USB hub, with the
+uServo providing SPI and UART support.
 
 ![Servo v4 Type-A](images/servo_v4_typea.jpg)
 
@@ -226,9 +234,11 @@ Connect to Cr50 Console:
 
 ### Disable/Enable [SuzyQ] wiring (debug accessory mode)
 
+<!-- mdformat off(b/139308852) -->
 *** note
 Type-C Servo v4 only
 ***
+<!-- mdformat on -->
 
 ```bash
 (chroot) $ dut-control servo_v4_dts_mode:off [on]
@@ -236,9 +246,11 @@ Type-C Servo v4 only
 
 ### Disable/Enable Chargethrough
 
+<!-- mdformat off(b/139308852) -->
 *** note
 Type-C Servo v4 only
 ***
+<!-- mdformat on -->
 
 ```bash
 (chroot) $ dut-control servo_v4_role:snk [src]
@@ -246,17 +258,21 @@ Type-C Servo v4 only
 
 ## Flashrom
 
+<!-- mdformat off(b/139308852) -->
 *** note
 For [CCD]: Flashrom doesn't need to specify voltage anymore, this is done
 within Cr50. See the "care and feeding" for your specific device for the
 correct `flashrom` commands for [CCD], Servo Micro, and Servo v2, as they are
 each different.
 ***
+<!-- mdformat on -->
 
+<!-- mdformat off(b/139308852) -->
 *** note
 When flashing the BIOS or EC with [CCD], you need to make sure the [`FlashAP`]
 capability is enabled in Cr50.
 ***
+<!-- mdformat on -->
 
 Flash BIOS with CCD:
 
@@ -272,9 +288,11 @@ The latest firmware is available in the chroot at
 If the green LED on the servo does not light up when DUT POWER is connected to a
 USB charger, you probably don’t have the latest firmware and should update.
 
+<!-- mdformat off(b/139308852) -->
 *** note
 **NOTE**: [`servod`] must not be running.
 ***
+<!-- mdformat on -->
 
 Sync the latest source:
 
@@ -304,12 +322,13 @@ Update to specific version:
 
 See [CCD] for complete details.
 
-
+<!-- mdformat off(b/139308852) -->
 *** note
 If using a Type-C Servo v4, these commands will only work if the USB-C cable is
 plugged into the correct USB port. Generally, this is the USB port on the left
 side of the device. If the command doesn't work, try the other ports.
 ***
+<!-- mdformat on -->
 
 Connect to Cr50 console:
 
@@ -324,6 +343,7 @@ Check the Cr50 version in the Cr50 console:
 Build:   0.4.10/cr50_v1.9308_B.269-754117a
 ```
 
+<!-- mdformat off(b/139308852) -->
 ***note
 CCD requires Cr50 version 0.3.9+ / 0.4.9+
 *   0.4.x is the "pre-pvt" version, for pre-production devices.
@@ -331,6 +351,7 @@ CCD requires Cr50 version 0.3.9+ / 0.4.9+
     to be in developer mode before "ccd open".
 *   0.0.22 is the factory preflash from GUC. It needs an update.
 ***
+<!-- mdformat on -->
 
 Open CCD in the Cr50 console:
 
@@ -340,15 +361,19 @@ Open CCD in the Cr50 console:
 
 Press power button when prompted. It should take around 5 minutes.
 
+<!-- mdformat off(b/139308852) -->
 *** note
 If you get an access denied error when attempting `ccd open`, you likely do
 not have developer mode enabled.
 ***
+<!-- mdformat on -->
 
+<!-- mdformat off(b/139308852) -->
 *** note
 Cr50 loses the developer mode state after "opening CCD". If your device boots
 into recovery mode, try re-entering developer  mode.
 ***
+<!-- mdformat on -->
 
 Enable testlab mode in the Cr50 console:
 
@@ -377,9 +402,9 @@ See http://b/112187276.
 
 Your network switch port will get hosed (some TX buffer fills up and starts
 dropping things) if you have Servo v4 connected to most switches and unplug the
-servo's USB connection, or power off the DUT fully, after the servo's NIC has
-an IP. This behavior is not reproducible with a [GS108Tv2], so the workaround is
-to use a [GS108Tv2].
+servo's USB connection, or power off the DUT fully, after the servo's NIC has an
+IP. This behavior is not reproducible with a [GS108Tv2], so the workaround is to
+use a [GS108Tv2].
 
 [GS108Tv2]: https://www.amazon.com/NETGEAR-Ethernet-Unmanaged-Lifetime-Protection/dp/B003KP8VSK/
 
@@ -389,9 +414,11 @@ File bug or feature requests [here][Bug].
 
 ## Programming
 
+<!-- mdformat off(b/139308852) -->
 *** note
 You don't need to do this unless you're developing Servo v4 firmware.
 ***
+<!-- mdformat on -->
 
 Servo v4 code lives in the [EC] and [`hdctools`] codebase. It can be built as
 follows:
