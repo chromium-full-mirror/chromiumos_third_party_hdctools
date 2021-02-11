@@ -4,6 +4,7 @@
 """A simple driver to set/retrieve simple data from a cros ec interface."""
 
 from servo.drv import ec
+from servo.drv import hw_driver
 
 
 # pylint: disable=invalid-name
@@ -29,6 +30,9 @@ class simpleEc(ec.ec):
     self._uart_cmd = self._params['uart_cmd']
     self._regex = self._params['regex']
     self._group = int(self._params['group'])
+    # User can optionally provide a |debug_info| string to log
+    # when this control fails.
+    self._debug_info = self._params.get('debug_info', '')
 
   def _process_output(self, pre_result):
     """Helper to perform extra formatting out the output of |_Get_output|.
@@ -68,6 +72,21 @@ class simpleEc(ec.ec):
                              request)
     return pre_result
 
+  def _error(self, errmsg, e=None):
+    """Helper to raise errors in a standardized way.
+
+    Args:
+      errmsg: msg to raise error with
+
+    Raises:
+      ec.ecError: always, with |errmsg|
+    """
+    if e:
+      self._logger.error(e)
+    if self._debug_info:
+      self._logger.error(self._debug_info)
+    raise ec.ecError(errmsg)
+
   def _get_safe_output(self, cmd, regex):
     """Safely retrieve the output of |cmd| from the |self._interface|.
 
@@ -82,12 +101,16 @@ class simpleEc(ec.ec):
       ecError: if the output from the |self._uart_cmd| matched with the
                |self._regex| is None
     """
-    self._limit_channel()
-    result = self._issue_cmd_get_results(self._uart_cmd, [self._regex])
-    self._restore_channel()
+    errmsg = 'Failed to retrieve output for %r matching regex %r' % (cmd, regex)
+    try:
+      self._limit_channel()
+      result = self._issue_cmd_get_results(self._uart_cmd, [self._regex])
+      self._restore_channel()
+    except hw_driver.HwDriverError as e:
+      # Any known error is coming through as a HwDriverError derivative.
+      self._error(errmsg, e)
     if result is None:
-      raise ec.ecError('Failed to retrieve output for %r matching regex %r' %
-                       (cmd, regex))
+      self._error(errmsg, e)
     # Extract the requested group. This control does not support a list of regex
     # but rather just expects one regex. Therefore we access the 1st element of
     # the result (result[0]) always.
