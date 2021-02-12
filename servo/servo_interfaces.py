@@ -147,6 +147,8 @@ for vid, pid in SWEETBERRY_ID_DEFAULTS:
      'empty',
      {'name': 'stm32_i2c', 'interface': 3},  # 2: i2c
      {'name': 'stm32_uart', 'interface': 0}, # 3: sweetberry console
+     {'name': 'ec3po_uart',                  # 4: EC3PO(Sweetberry)
+      'raw_pty': 'raw_sweetberry_uart_pty', 'source': 'sweetberry'},
     ]
 
 SERVO_ID_DEFAULTS.extend(SWEETBERRY_ID_DEFAULTS)
