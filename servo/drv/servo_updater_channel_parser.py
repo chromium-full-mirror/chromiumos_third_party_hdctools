@@ -41,4 +41,4 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
       return channel if channel is not None else 'unknown'
     except servo_updater.ServoUpdaterException as e:
       msg = 'Failed to find out the channel of the current firmware'
-      raise ServoUpdaterChannelParserError(msg)
+      raise servoUpdaterChannelParserError(msg)
