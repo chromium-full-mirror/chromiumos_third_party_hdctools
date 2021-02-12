@@ -223,20 +223,36 @@
     <params subtype="macaddr" interface="26" drv="ec3po_servo_v4"
       input_type="str"></params>
   </control>
+  <!-- firmware version introspection controls -->
   <control>
     <name>servo_v4p1_version</name>
     <alias>support.servo_fw_version</alias>
     <doc>current fw version</doc>
-    <params cmd="get" subtype="version" interface="26" drv="ec3po_servo_v4"
-        map="print" init="print"></params>
+    <params interface="26" drv="simple_ec" uart_cmd="version"
+      regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>
-    <name>servo_v4p1_latest_version</name>
-    <alias>support.servo_latest_fw_version</alias>
-    <doc>latest released fw version</doc>
-    <params cmd="get" subtype="latest_version" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <name>servo_v4p1_latest_stable_version</name>
+    <alias>servo_v4p1_latest_version,support.servo_latest_fw_version</alias>
+    <doc>servo-firmware available fw version</doc>
+    <params interface="servo" drv="servo_updater_reader" board="servo_v4p1"
+      channel="stable"/>
   </control>
+  <control>
+    <name>servo_v4p1_firmware_channel</name>
+    <doc>which channel the current servo v4 firmware is from</doc>
+    <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
+      board="servo_v4p1"/>
+  </control>
+  <control>
+    <name>servo_v4p1_firmware_uptodate</name>
+    <doc>whether servo v4 firmware is to update</doc>
+    <params cmd="get" interface="servo" drv="servo_firmware_checker"
+      board="servo_v4p1" map="yesno"/>
+    <params cmd="set" interface="servo" drv="servo_firmware_checker"
+      board="servo_v4p1" map="check" init="check"/>
+  </control>
+  <!-- dut interaction controls -->
   <control>
     <name>active_dut_controller</name>
     <doc>shows the active servo device servo_micro or ccd_cr50</doc>
