@@ -167,20 +167,33 @@
     <params cmd="get" subtype="pty" interface="6" drv="uart">
     </params>
   </control>
-  <!-- Version controls -->
+  <!-- firmware version introspection controls -->
   <control>
     <name>c2d2_version</name>
     <doc>current fw version</doc>
-    <params cmd="get" subtype="version" interface="6"
-    drv="ec3po_c2d2" map="print" init="print" clobber_ok="">
-    </params>
+    <params interface="6" drv="simple_ec" uart_cmd="version"
+      regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>
-    <name>c2d2_latest_version</name>
+    <name>c2d2_latest_stable_version</name>
+    <alias>c2d2_latest_version</alias>
     <doc>servo-firmware available fw version</doc>
-    <params cmd="get" subtype="latest_version" interface="6"
-    drv="ec3po_c2d2">
-    </params>
+    <params interface="servo" drv="servo_updater_reader" board="c2d2"
+      channel="stable"/>
+  </control>
+  <control>
+    <name>c2d2_firmware_channel</name>
+    <doc>which channel the current c2d2 firmware is from</doc>
+    <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
+      board="c2d2"/>
+  </control>
+  <control>
+    <name>c2d2_firmware_uptodate</name>
+    <doc>whether c2d2 firmware is to update</doc>
+    <params cmd="get" interface="servo" drv="servo_firmware_checker"
+      board="c2d2" map="yesno"/>
+    <params cmd="set" interface="servo" drv="servo_firmware_checker"
+      board="c2d2" map="check" init="check"/>
   </control>
   <!-- ITE EC firmware flashing support -->
   <control>
