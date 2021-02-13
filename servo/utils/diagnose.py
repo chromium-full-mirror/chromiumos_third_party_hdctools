@@ -41,9 +41,9 @@ def diagnose_ccd(servo_dev):
   sbu_en = servo_dev.get('sbu_mux_enable') == 'on'  # SuzyQ plugged
   sbu_flip = servo_dev.get('sbu_flip_sel') == 'on'  # SuzyQ flipped
   # Check servo info.
-  dut_connection_type = servo_dev.get('support.dut_connection_type')
-  servo_fw = servo_dev.get('support.servo_fw_version')
-  servo_latest_fw = servo_dev.get('support.servo_latest_fw_version')
+  dut_connection_type = servo_dev.get('root.dut_connection_type')
+  servo_fw = servo_dev.get('root.servo_fw_version')
+  servo_latest_fw = servo_dev.get('root.servo_latest_fw_version')
 
   logger.error('')
   logger.error('CCD diagnosis info:')
