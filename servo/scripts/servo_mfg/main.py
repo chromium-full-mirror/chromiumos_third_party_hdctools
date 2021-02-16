@@ -15,6 +15,7 @@ import sys
 
 from servo_mfg import reporter
 from servo_mfg import user_input
+from servo_mfg.c2d2_manager import C2D2Manager
 from servo_mfg.micro_manager import MicroManager
 from servo_mfg.v4_manager import V4Manager
 from servo_mfg.v4p1_manager import V4P1Manager
@@ -71,6 +72,9 @@ class Coordinator(object):
 
     elif self.args.device == MicroManager.TITLE:
       self.manager = MicroManager(args=self.args, outdir=self.outdir)
+
+    elif self.args.device == C2D2Manager.TITLE:
+      self.manager = C2D2Manager(args=self.args, outdir=self.outdir)
 
     if self.manager is None:
       self._logger.error('No manager found for the task. This is a coding '
@@ -191,6 +195,11 @@ class Coordinator(object):
     micro_parser = device_parsers.add_parser(MicroManager.TITLE,
                                              help='servo micro mfg')
     MicroManager.add_manager_args(micro_parser)
+
+    # c2d2 done here.
+    c2d2_parser = device_parsers.add_parser(C2D2Manager.TITLE,
+                                            help='c2d2 mfg')
+    C2D2Manager.add_manager_args(c2d2_parser)
 
     return parser.parse_args(cmdline)
 

@@ -27,6 +27,9 @@ class Tester(object):
 
   PHASE = 1
 
+  # By default wait at most 30s for servod to start up.
+  SERVOD_STARTUP_S = 30
+
   def __init__(self, report, serialno):
     """Initialize the tester.
 
@@ -76,7 +79,9 @@ class Tester(object):
     servodp = exec_util.exec_nonblocking(['servod', '-s', self._serial])
     ret, _, _ = exec_util.exec_blocking(['servodtool', 'instance',
                                          'wait-for-active', '-s',
-                                         self._serial])
+                                         self._serial,
+                                         '--timeout',
+                                         str(self.SERVOD_STARTUP_S)])
     if ret:
       if servodp.poll() is None:
         # This means that servod somehow got stuck coming up otherwise it would
