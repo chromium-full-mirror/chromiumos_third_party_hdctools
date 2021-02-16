@@ -14,6 +14,7 @@ import signal
 import sys
 
 from servo_mfg import reporter
+from servo_mfg.micro_manager import MicroManager
 from servo_mfg.v4p1_manager import V4P1Manager
 
 
@@ -59,6 +60,9 @@ class Coordinator(object):
     # Note: add new device managers here
     if self.args.device == V4P1Manager.TITLE:
       self.manager = V4P1Manager(args=self.args, outdir=self.outdir)
+
+    elif self.args.device == MicroManager.TITLE:
+      self.manager = MicroManager(args=self.args, outdir=self.outdir)
 
     if self.manager is None:
       self._logger.error('No manager found for the task. This is a coding '
@@ -160,9 +164,15 @@ class Coordinator(object):
                                            description=V4P1Manager.PARSER_DESC,
                                            dest='device')
     # Note: add new devices parsers here.
+    # servo v4p1 done here.
     v4p1_parser = device_parsers.add_parser(V4P1Manager.TITLE,
                                             help='servo_v4p1 mfg')
     V4P1Manager.add_manager_args(v4p1_parser)
+
+    # servo micro done here.
+    micro_parser = device_parsers.add_parser(MicroManager.TITLE,
+                                             help='servo micro mfg')
+    MicroManager.add_manager_args(micro_parser)
 
     return parser.parse_args(cmdline)
 
