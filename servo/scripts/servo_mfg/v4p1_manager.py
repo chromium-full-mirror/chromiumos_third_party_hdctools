@@ -9,6 +9,7 @@ from servo_mfg import device_util
 from servo_mfg import manager
 from servo_mfg import user_input
 from servo_mfg.v4p1_manufacturer import V4P1Manufacturer
+from servo_mfg.v4p1_tester import V4P1Tester
 
 
 # pylint: disable=g-bad-exception-name
@@ -41,6 +42,7 @@ class V4P1Manager(manager.Manager):
     self.board = 'v4p1'
     manager.Manager.__init__(self, outdir=outdir, validation=args.validation)
     self.manufacturer = V4P1Manufacturer(self.validation, args)
+    self.tester_cls = V4P1Tester
 
   @staticmethod
   def add_manager_args(parser):
@@ -133,7 +135,7 @@ class V4P1Manager(manager.Manager):
       args: argparse Namespace object for the programming
     """
     serial = mac = None
-    if args.serial:
+    if args.serial or args.testing:
       serial = user_input.prompt_for_serial(self.SERIALNO_RE)
       if serial is None:
         # This indicates the user ran out of tries to get this right. Abort

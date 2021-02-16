@@ -33,6 +33,7 @@ class V4P1Manufacturer(manufacturer.Manufacturer):
   # of the servo.
   HH_VID = 0x05e3  # Genesys
   HH_PID = 0x0610
+  HH_PID3 = 0x0625
 
   # The DH VID/PID is DUT hub i.e. the usb hub facing the dut side of the servo.
   DH_VID = 0x04b4  # Cypress

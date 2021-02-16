@@ -65,15 +65,31 @@ class Manager(object):
     # tested by simply overwriting this method in the device specific subclass.
     sargs = self.extract_single_device_data(args)
     report = self.reporter.new_report(**sargs)
+    dtester = None
+    success = True
     try:
-      report.add_section(title='Programming')
-      # manufacture returns whether a device has failed or not.
-      success = self.manufacturer.manufacture(report, **sargs)
-      report.mark(success)
+      if args.programming:
+        report.add_section(title='Programming')
+        # manufacture returns whether a device has failed or not.
+        success = self.manufacturer.manufacture(report, **sargs)
+        report.mark(success)
+      if success and args.testing:
+        if not args.serialno:
+          self._logger.info('Testing requires a serial number. Skipping.')
+        else:
+          self._log_phase('Testing')
+          report.add_section(title='Testing Phase %d' % self.tester_cls.PHASE)
+          dtester = self.tester_cls(report=report, serialno=args.serialno)
+          # Testing returns true when all tests have passed.
+          success = dtester.run()
+          report.mark(success)
     except Exception as e:
       for line in traceback.format_exc().splitlines():
         self._logger.debug(line)
       self._logger.error('Failed: %s', str(e))
+      # If the tester was created, we have to try and turn down servod.
+      if dtester:
+        dtester.stop_servod()
       success = False
       # Whatever section we were in, we know it has failed. Mark it accordingly.
       report.mark(success)

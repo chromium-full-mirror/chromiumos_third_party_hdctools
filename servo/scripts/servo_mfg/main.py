@@ -134,6 +134,17 @@ class Coordinator(object):
     parser.add_argument('--single', action='store_true', default=False,
                         help='Whether to program a single device rather than '
                         'a continous loop')
+    t = parser.add_mutually_exclusive_group()
+    t.add_argument('--no-testing', action='store_false', default=True,
+                   dest='testing',
+                   help='Whether to run the test loop after programming.')
+    # By default, |programming| is done. The overall programming that is.
+    # If the user specifies '--only-testing' then no programming is done
+    # and only testing is done.
+    t.add_argument('--only-testing', action='store_false', default=True,
+                   dest='programming',
+                   help='only run testing and skip all programming. This makes'
+                   'all no_* flags unnecessary.')
     parser.add_argument('-v', '--validation', action='store_true',
                         default=False,
                         help='This indicates that no flashing should take '
