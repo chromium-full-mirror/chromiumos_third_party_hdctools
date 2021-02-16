@@ -15,6 +15,7 @@ import sys
 
 from servo_mfg import reporter
 from servo_mfg.micro_manager import MicroManager
+from servo_mfg.v4_manager import V4Manager
 from servo_mfg.v4p1_manager import V4P1Manager
 
 
@@ -60,6 +61,9 @@ class Coordinator(object):
     # Note: add new device managers here
     if self.args.device == V4P1Manager.TITLE:
       self.manager = V4P1Manager(args=self.args, outdir=self.outdir)
+
+    elif self.args.device == V4Manager.TITLE:
+      self.manager = V4Manager(args=self.args, outdir=self.outdir)
 
     elif self.args.device == MicroManager.TITLE:
       self.manager = MicroManager(args=self.args, outdir=self.outdir)
@@ -168,6 +172,11 @@ class Coordinator(object):
     v4p1_parser = device_parsers.add_parser(V4P1Manager.TITLE,
                                             help='servo_v4p1 mfg')
     V4P1Manager.add_manager_args(v4p1_parser)
+
+    # servo v4 done here.
+    v4_parser = device_parsers.add_parser(V4Manager.TITLE,
+                                          help='servo_v4 mfg')
+    V4Manager.add_manager_args(v4_parser)
 
     # servo micro done here.
     micro_parser = device_parsers.add_parser(MicroManager.TITLE,
