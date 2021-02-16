@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """v4p1 manufacturer providing usb data, setting up programmers and phases."""
 
+from servo_mfg import color_mode as cm
 from servo_mfg import device_util
 from servo_mfg import manufacturer
 from servo_mfg.atmega_kb_programmer import AtmegaKBEmulatorProgrammer
@@ -103,43 +104,46 @@ class V4P1Manufacturer(manufacturer.Manufacturer):
 
   def _pre_dfu_prep(self):
     """Instruct user how to flip the switch and how to plug in v4p1."""
-    base = 'Plug the host side cable in.'
+    base = cm.red('Plug the host side cable in.')
     if self._dfu_registered:
-      m = 'Move the DFU switch to DFU-mode (slide to the right). %s' % base
+      m = cm.blue('Move the DFU switch to DFU-mode (slide right).\n')
     else:
-      m = 'Move the DFU switch to normal mode (slide to the left). %s' % base
+      m = cm.blue('Move the DFU switch to normal mode (slide left).\n')
+    m += base
     device_util.wait_for_usb_device(vid=self.HH_VID, pid=self.HH_PID,
                                     message=m, enter_to_confirm=True)
 
   def _dfu_prep(self):
     """Instruct user to ensure that the device is in DFU mode."""
+    m = cm.blue('Switch the DFU switch to DFU-mode sliding it to the right '
+                '(blue LED).\n')
+    m += ('If the check does not register, try unplugging and replugging it\n'
+          'to ensure DFU mode entry.')
     device_util.wait_for_usb_device(vid=self.STM_DFU_VID, pid=self.STM_DFU_PID,
-                                    message='Switch the DFU switch to DFU-mode '
-                                    'sliding it to the right (blue LED). If the'
-                                    'check does not register, try unplugging '
-                                    'and replugging it to ensure DFU mode '
-                                    'entry.')
+                                    message=m)
 
   def _dfu_post(self):
     """Wait until the device is disconnected from DFU and reconnected again."""
+    m = cm.red('Unplug the host side cable.')
     device_util.wait_for_usb_disconnect(vid=self.STM_DFU_VID,
-                                        pid=self.STM_DFU_PID,
-                                        message='Unplug the host side cable.')
+                                        pid=self.STM_DFU_PID, message=m)
+    m = cm.blue('Ensure the DFU switch is in normal mode sliding it to the '
+                'left (no blue LED).\n')
+    m += cm.red('Plug host side cable back in.')
     device_util.wait_for_usb_device(vid=self.HH_VID, pid=self.HH_PID,
-                                    message='Ensure the DFU switch is in normal'
-                                    ' mode sliding it to the left (no blue LED)'
-                                    '. Plug host side cable back in.')
+                                    message=m)
 
   def _post_dfu_prep(self):
     """Wait for host side and dut side connection both."""
     # Wait again for the host-hub as we don't know what state we're in here.
+    m = cm.red('Ensure that the host side cable is plugged in in normal mode '
+               '(no blue LED).')
     device_util.wait_for_usb_device(vid=self.HH_VID, pid=self.HH_PID,
-                                    message='Ensure that the host side cable is'
-                                    ' plugged in in normal mode (no blue LED).')
+                                    message=m)
     # The servo devices enumerates automatically when the right cables are
     # plugged in. Wait here explicitly for it as this is the first time the
     # device enumerates after flashing.
+    m = cm.magenta('Plug DUT side cable in')
     device_util.wait_for_usb_device(vid=self.SERVO_VID, pid=self.SERVO_PID)
     device_util.wait_for_usb_device(vid=self.DH_VID, pid=self.DH_PID,
-                                    pid3=self.DH_PID3,
-                                    message='Plug DUT side cable in.')
+                                    pid3=self.DH_PID3, message=m)

@@ -8,6 +8,8 @@ import logging
 import re
 import signal
 
+from servo_mfg import color_mode as cm
+
 
 # pylint: disable=g-bad-exception-name
 class UserInputError(Exception):
@@ -167,14 +169,14 @@ def _prompt_and_validate(name, data_re=None):
 
 # This module flag enables the user_input to system-wide turn off requiring user
 # confirmation.
-CONFIRMATIONS_ENABLED = True
+confirmations_enabled = True
 
 
 def turn_off_user_confirmation():
   """Turn off |instruct_user| from seeking user confirmation for actions."""
-  global CONFIRMATIONS_ENABLED
+  global confirmations_enabled
   logging.info('All user prompts will be automatically answered affirmatively.')
-  CONFIRMATIONS_ENABLED = False
+  confirmations_enabled = False
 
 
 def instruct_user(message, enter_to_confirm=False):
@@ -191,11 +193,14 @@ def instruct_user(message, enter_to_confirm=False):
   Note: The return value is always True if |enter_to_confirm| is False as no
         confirmation was sought.
   """
-  message = '>>> %s' % message
-  logging.info(message)
-  if CONFIRMATIONS_ENABLED and enter_to_confirm:
-    result = _raw_input_timeout('Type only [enter] to confirm, anything else '
-                                'to cancel')
+  # This is the user prompt signal.
+  up = cm.red_bg('>>>')
+  chunks = ['%s %s' % (up, c) for c in message.split('\n')]
+  for c in chunks:
+    logging.info(c)
+  if confirmations_enabled and enter_to_confirm:
+    result = _raw_input_timeout(cm.red_bg('Type only [enter] to confirm, '
+                                          'anything else to cancel'))
     # Only enter will yield a '', which we want to return as True.
     return not bool(result)
   # If no confirmation was requested, then assume confirmation is given.

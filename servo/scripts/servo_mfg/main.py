@@ -13,6 +13,7 @@ import os
 import signal
 import sys
 
+from servo_mfg import color_mode as cm
 from servo_mfg import reporter
 from servo_mfg import user_input
 from servo_mfg.c2d2_manager import C2D2Manager
@@ -41,6 +42,8 @@ class Coordinator(object):
     self._logger = logging.getLogger(type(self).__name__)
     self.signal_map = collections.defaultdict(lambda: SIGNAL_COUNT_TO_QUIT)
     self.args = self.parse(cmdline)
+    if self.args.color_mode:
+      cm.activate()
     self.outdir = reporter.setup_logging_and_reporting(self.args.debug)
     # If log management is the only job to do here, then do that, before
     # exiting.
@@ -155,6 +158,11 @@ class Coordinator(object):
                         'it is given. Use this if the user has prepared the '
                         'devices beforehand and will not require time to setup '
                         'testing explicitly.')
+    parser.add_argument('--color-mode', action='store_true', default=False,
+                        help='Color mode prints color prompts when the user '
+                        'needs to take action, and tries to match up the '
+                        'text color to the cable coloring (if color was '
+                        'prepared). Use this in factory for clearer flow.')
     t = parser.add_mutually_exclusive_group()
     t.add_argument('--no-testing', action='store_false', default=True,
                    dest='testing',

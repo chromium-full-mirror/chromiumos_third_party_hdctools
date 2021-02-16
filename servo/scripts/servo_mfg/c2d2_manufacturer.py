@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """c2d2 manufacturer providing usb data, setting up programmers and phases."""
 
+from servo_mfg import color_mode as cm
 from servo_mfg import device_util
 from servo_mfg import manufacturer
 from servo_mfg.serial_programmer import SerialProgrammer
@@ -59,23 +60,23 @@ class C2D2Manufacturer(manufacturer.Manufacturer):
 
   def _dfu_prep(self):
     """Instruct user to plug in device in DFU mode."""
+    m = cm.blue('Plug c2d2 in with the OTG cable, coming up in DFU mode.')
     device_util.wait_for_usb_device(vid=self.STM_DFU_VID, pid=self.STM_DFU_PID,
-                                    message='Plug c2d2 in with the OTG '
-                                    'cable, coming up in DFU mode.')
+                                    message=m)
 
   def _dfu_post(self):
     """Wait until the device is disconnected from DFU and reconnected again."""
+    m = cm.blue('Unplug the host side USB OTG cable.')
     device_util.wait_for_usb_disconnect(vid=self.STM_DFU_VID,
-                                        pid=self.STM_DFU_PID,
-                                        message='Unplug the host side micro '
-                                        'USB OTG cable.')
+                                        pid=self.STM_DFU_PID, message=m)
+    m = cm.red('Plug c2d2 in with normal mode cable (regular micro USB cable).')
     device_util.wait_for_usb_device(vid=self.SERVO_VID, pid=self.SERVO_PID,
-                                    message='Plug c2d2 in with normal '
-                                    'mode cable (regular micro usb cable).')
+                                    message=m)
 
   def _post_dfu_prep(self):
     """Wait for servo (programmed) to appear as a USB device."""
     # Wait again for the servo as we don't know what state we're in here.
+    m = cm.red('Ensure the c2d2 is plugged in in normal mode (regular micro '
+               'USB cable).')
     device_util.wait_for_usb_device(vid=self.SERVO_VID, pid=self.SERVO_PID,
-                                    message='Ensure the c2d2 is plugged in in '
-                                    'normal mode (regular micro usb cable).')
+                                    message=m)

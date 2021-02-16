@@ -6,6 +6,7 @@
 import logging
 import traceback
 
+from servo_mfg import color_mode as cm
 from servo_mfg import device_util
 from servo_mfg import reporter
 from servo_mfg import user_input
@@ -97,7 +98,7 @@ class Manager(object):
     # to be added to the same report such as testing. The manufacturer cannot
     # know if the report is finished or not, while the manager does know.
     report.finish()
-    return success
+    return self._output_prompt(success)
 
   def wait_for_disconnect(self):
     """Implement in subclass to wait for all parts to disconnect."""
@@ -127,8 +128,10 @@ class Manager(object):
                     'place into the {0} devices bin.')
     if success:
       message = core_message.format('succeeded')
+      message = cm.green_bg(message)
     else:
       message = core_message.format('failed')
+      message = cm.red_bg(message)
     user_input.instruct_user(message)
     try:
       self.wait_for_disconnect()
@@ -153,8 +156,7 @@ class Manager(object):
       # the user has not decided to finish this session.
       if self._finished:
         break
-      success = self.single_device(args)
-      if not self._output_prompt(success):
+      if not self.single_device(args):
         self._logger.info('Users seems to have stepped away. Turning down.')
         return self.abort(0)
       self._log_phase('Finished')
