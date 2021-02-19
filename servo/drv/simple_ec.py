@@ -72,20 +72,23 @@ class simpleEc(ec.ec):
                              request)
     return pre_result
 
-  def _error(self, errmsg, e=None):
+  def _error(self, cmd, regex, e=None):
     """Helper to raise errors in a standardized way.
 
     Args:
-      errmsg: msg to raise error with
+      cmd: command that was run
+      regex: regex that was used
+      e: error object, or string to provide extra information
 
     Raises:
       ec.ecError: always, with |errmsg|
     """
+    errmsg = 'Failed to retrieve output for %r matching regex %r' % (cmd, regex)
     if e:
       self._logger.error(e)
     if self._debug_info:
       self._logger.error(self._debug_info)
-    raise ec.ecError(errmsg)
+    raise ec.ecError('%s. %s' % (errmsg, e))
 
   def _get_safe_output(self, cmd, regex):
     """Safely retrieve the output of |cmd| from the |self._interface|.
@@ -101,20 +104,23 @@ class simpleEc(ec.ec):
       ecError: if the output from the |self._uart_cmd| matched with the
                |self._regex| is None
     """
-    errmsg = 'Failed to retrieve output for %r matching regex %r' % (cmd, regex)
     try:
       self._limit_channel()
-      result = self._issue_cmd_get_results(self._uart_cmd, [self._regex])
+      results = self._issue_cmd_get_results(cmd, [regex])
+      # |results| should always be a list of tuples.
+      # TODO(b/180764962) remove this
+      if not isinstance(results[0], tuple):
+        results[0] = results[0],
       self._restore_channel()
     except hw_driver.HwDriverError as e:
       # Any known error is coming through as a HwDriverError derivative.
-      self._error(errmsg, e)
-    if result is None:
-      self._error(errmsg, e)
+      self._error(cmd, regex, e)
+    if results is None:
+      self._error(cmd, regex)
     # Extract the requested group. This control does not support a list of regex
     # but rather just expects one regex. Therefore we access the 1st element of
-    # the result (result[0]) always.
-    return result[0][self._group]
+    # the results (results[0]) always.
+    return results[0]
 
   def get(self):
     """Generic get from EC console, using |self._params| for cmd and regex.
@@ -126,5 +132,13 @@ class simpleEc(ec.ec):
       result of |self._uart_cmd| after matching with |self._regex| and
       processing
     """
-    result = self._get_safe_output(self._uart_cmd, self._regex)
+    results = self._get_safe_output(self._uart_cmd, self._regex)
+    # The desired output is inside the self._group member of |results|. However,
+    # given how python regex works, this can be None, and we cannot marshall
+    # None across the channel, so make sure to cast it into a string first.
+    result = results[self._group]
+    if result is None:
+      self._logger.debug('Requested result group returned None, casting '
+                         'into string.')
+      result = str(result)
     return self._process_output(result)

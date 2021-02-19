@@ -187,7 +187,9 @@ class ptyDriver(hw_driver.HwDriver):
 
     # If originally the output is only an iterable because of |return_as_string|
     # then convert back and return the 0th member.
-    return output[0] if return_as_string else output
+    # The convention is to have each result be a tuple (as it would come out
+    # of re.match()). Cast list to a tuple.
+    return output[0] if return_as_string else tuple(output)
 
   def _send(self, cmds, rate=0.01, flush=True):
     """Send command to EC or AP.
