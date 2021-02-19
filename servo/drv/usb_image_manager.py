@@ -146,6 +146,15 @@ class usbImageManager(hw_driver.HwDriver):
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
                                  self._image_usbkey_hub_ports]
+    # all |image_location_candidates| here assume that the device is on the same
+    # bus as the servo device. The servo device is on bus 1 as it runs on usb2.
+    # Some servo devices support usb3 host hub connection. This means that the
+    # device might be on bus 2 as well (if it's a usb3 usb stick, and that
+    # stick is enumerated as usb3).
+    # expand this logic here to account for both.
+    usb3_location_candidates = [c.replace('/1-', '/2-') for c in
+                                image_location_candidates]
+    image_location_candidates.extend(usb3_location_candidates)
     hub_location_candidates = []
     if self._supports_hub_on_port:
       # Here the config says that |image_usbkey_sysfs| might actually have a hub
