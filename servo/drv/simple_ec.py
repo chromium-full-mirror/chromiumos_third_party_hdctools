@@ -19,6 +19,15 @@ class simpleEc(ec.ec):
   # the entire match
   REQUIRED_GET_PARAMS = ['uart_cmd', 'regex', 'group']
 
+  # This drv for setting a control requires
+  # - the command template to run
+  REQUIRED_SET_PARAMS = ['uart_cmd']
+
+  # The default regex to use for set. It simply checks whether the control
+  # finished and a new line is printed. This helps servod avoid returning before
+  # the control has actually finished executing on the ec console.
+  SET_RE_DEFAULT = '>'
+
   def __init__(self, interface, params):
     """Constructor.
 
@@ -28,8 +37,14 @@ class simpleEc(ec.ec):
     """
     super(simpleEc, self).__init__(interface, params)
     self._uart_cmd = self._params['uart_cmd']
-    self._regex = self._params['regex']
-    self._group = int(self._params['group'])
+    if self._is_get():
+      # These controls are required for |get| but not for |set|.
+      self._regex = self._params['regex']
+      self._group = int(self._params['group'])
+    else:
+      # guaranteed to be in 'set'.
+      self._regex = self._params.get('regex', self.SET_RE_DEFAULT)
+      self._group = int(self._params.get('group', '0'))
     # User can optionally provide a |debug_info| string to log
     # when this control fails.
     self._debug_info = self._params.get('debug_info', '')
@@ -123,7 +138,7 @@ class simpleEc(ec.ec):
     return results[0]
 
   def get(self):
-    """Generic get from EC console, using |self._params| for cmd and regex.
+    """Generic get from MCU console, using |self._params| for cmd and regex.
 
     Runs |self._uart_cmd| on |self._interface| (has to be a uart interface)
     and matches the output with |self._regex| before returning the result.
@@ -142,3 +157,21 @@ class simpleEc(ec.ec):
                          'into string.')
       result = str(result)
     return self._process_output(result)
+
+  def _set(self, value):
+    """Generic set method to set |self._uart_cmd| + str(|value|) to the console.
+
+    Note: the control to send to the |self._interface| console is created
+    by appending a space and the string cast of |value| to |self._uart_cmd|.
+
+    Args:
+      value: the value passed through by servod to set
+    """
+    # NOTE: This mechanism is limited, but effective for many use-cases.
+    # Should the situation arise multiple times where a more complex control
+    # generation is required e.g. string formatting so that the value is
+    # in the middle of the string somewhere, please file a feature request bug.
+    full_cmd = '%s %s' % (self._uart_cmd, value)
+    self._logger.debug('About to issue %r', full_cmd)
+    # Ignore the return type as we only want to send the |cmd|
+    self._get_safe_output(full_cmd, self._regex)

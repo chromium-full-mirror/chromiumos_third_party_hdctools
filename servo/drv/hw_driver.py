@@ -106,7 +106,7 @@ class HwDriver(object):
     # set.
     self._choices = None
     if 'choices' in self._params:
-      self._choices = self._params['choices'].split(',')
+      self._choices = set(self._params['choices'].split(','))
       self._logger.debug('Valid input choices: %s', self._choices)
     self._io_type = _get_io_type(params)
 
