@@ -254,7 +254,9 @@ class Fuart(uart.Uart):
       String path to the pty connected to the uart
     """
     self._logger.debug('')
-    return self._fuartc.name
+    # In the FTDI world this is a c-string i.e. a bytes array. We want to
+    # return an actual string object here, like all other interfaces do.
+    return self._fuartc.name.decode(encoding='ascii')
 
 
 def test():
