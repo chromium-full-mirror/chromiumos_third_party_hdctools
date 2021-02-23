@@ -44,10 +44,10 @@ class HwDriver(object):
   # Should a drv require different params for set and get, make sure that
   # 1. the drv uses the type specific |REQUIRED_GET_PARAMS| and
   # |REQUIRED_SET_PARAMS| and
-  # 2. the overlay contains the right 'cmd' for each of them, as otherwise it
-  # won't be possible to identify them. If they share the same set of required
-  # parameters, using the generic |REQUIRED_PARAMS| is sufficient
-  REQUIRED_PARAMS = []
+  # 2. the overlay contains the right 'cmd' for each of them, or follows the cmd
+  # convention for single-params controls.
+  # If both set and get use the same required params, simplify define one and
+  # set the other to that definition.
   REQUIRED_GET_PARAMS = []
   REQUIRED_SET_PARAMS = []
 
@@ -83,19 +83,17 @@ class HwDriver(object):
     # Check whether all required params are provided. if 'cmd' is in params,
     # use a type-specific |REQUIRED_PARAMS| e.g. set or get. If not, use the
     # generic one.
-    req_params = self.REQUIRED_PARAMS
-    if 'cmd' in self._params:
-      cmd = self._params['cmd']
-      if cmd == 'get':
-        req_params = self.REQUIRED_GET_PARAMS
-      elif cmd == 'set':
-        req_params = self.REQUIRED_SET_PARAMS
-      # The cmd is invalid here, raise an error. While this doesn't necessarily
-      # cause an issue, we do not want config files laying around that misuse
-      # cmd.
-      else:
-        raise HwDriverError("'cmd' param %r unknown. Use 'set' or 'get'" %
-                            (cmd,))
+    cmd = self._params['cmd']
+    if cmd == 'get':
+      req_params = self.REQUIRED_GET_PARAMS
+    elif cmd == 'set':
+      req_params = self.REQUIRED_SET_PARAMS
+    # The cmd is invalid here, raise an error. While this doesn't necessarily
+    # cause an issue, we do not want config files laying around that misuse
+    # cmd.
+    else:
+      raise HwDriverError("'cmd' param %r unknown. Use 'set' or 'get'" %
+                          (cmd,))
     for a in req_params:
       # Empty |req_params| leads to no checks being performed.
       if a not in self._params:

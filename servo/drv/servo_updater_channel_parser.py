@@ -13,7 +13,7 @@ class servoUpdaterChannelParserError(hw_driver.HwDriverError):
 class servoUpdaterChannelParser(hw_driver.HwDriver):
   """class to handle information retrieval from servo_updater"""
 
-  REQUIRED_PARAMS = ['board']
+  REQUIRED_GET_PARAMS = ['board']
 
   def __init__(self, interface, params):
     """Constructor.
@@ -37,7 +37,7 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
     """
     current = self._interface.get(self._current_fw_cmd)
     try:
-      channel =  servo_updater.get_firmware_channel(self._board, current)
+      channel = servo_updater.get_firmware_channel(self._board, current)
       return channel if channel is not None else 'unknown'
     except servo_updater.ServoUpdaterException as e:
       msg = 'Failed to find out the channel of the current firmware'

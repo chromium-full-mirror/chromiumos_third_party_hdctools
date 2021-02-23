@@ -13,7 +13,7 @@ class servoUpdaterReaderError(hw_driver.HwDriverError):
 class servoUpdaterReader(hw_driver.HwDriver):
   """class to handle information retrieval from servo_updater"""
 
-  REQUIRED_PARAMS = ['board', 'channel']
+  REQUIRED_GET_PARAMS = ['board', 'channel']
 
   def __init__(self, interface, params):
     """Constructor.
@@ -39,10 +39,10 @@ class servoUpdaterReader(hw_driver.HwDriver):
     try:
       # Pass None for the |fname| argument to let the updater get the default
       # files for |self._board|.
-      _, _, vers =  servo_updater.get_files_and_version(self._board, None,
-                                                        self._channel)
+      _, _, vers = servo_updater.get_files_and_version(self._board, None,
+                                                       self._channel)
       return vers
     except servo_updater.ServoUpdaterException as e:
       msg = ('Failed to read latest available %r firmware for %r. %s'
              % (self._channel, self._board, e))
-      raise ServoUpdaterReaderError(msg)
+      raise servoUpdaterReaderError(msg)

@@ -21,7 +21,8 @@ class servoFirmwareCheckerError(hw_driver.HwDriverError):
 class servoFirmwareChecker(hw_driver.HwDriver):
   """class to handle checking and reporting on errors."""
 
-  REQUIRED_PARAMS = ['board']
+  REQUIRED_GET_PARAMS = ['board']
+  REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
   def __init__(self, interface, params):
     """Constructor.

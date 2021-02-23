@@ -46,7 +46,8 @@ class ecI2cPin(ec.ec):
 
   REGEX = r'(0x[0-9a-f]+) \[\d+\][\n\r]'
 
-  REQUIRED_PARAMS = ['bus', 'addr', 'offset', 'mask']
+  REQUIRED_GET_PARAMS = ['bus', 'addr', 'offset', 'mask']
+  REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
   def __init__(self, interface, params):
     """Setup the commands."""
