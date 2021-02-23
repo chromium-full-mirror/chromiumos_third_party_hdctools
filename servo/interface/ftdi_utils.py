@@ -28,7 +28,9 @@ def get_interface_and_pid(index, pid):
   # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
   # The interface argument in ftdi initialization is the interface number.
   idx = ((index - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
-  product_increment = (index - 1) / ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE
+  # pid has to be an int. ensure the increment is also an int.
+  product_increment = int((index - 1) /
+                          ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE)
   pid = pid + product_increment
   if product_increment:
     c.build_logger.info('Use the next FTDI part @ pid = 0x%04x', pid)
