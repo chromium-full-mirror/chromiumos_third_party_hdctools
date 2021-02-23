@@ -359,8 +359,8 @@
     <name>servo_micro_latest_stable_version</name>
     <alias>servo_micro_latest_version</alias>
     <doc>servo-firmware available fw version</doc>
-    <params interface="servo" drv="servo_updater_reader" board="servo_micro"
-      channel="stable"/>
+    <params cmd="get" interface="servo" drv="servo_updater_reader"
+      board="servo_micro" channel="stable"/>
   </control>
   <control>
     <name>servo_micro_firmware_channel</name>

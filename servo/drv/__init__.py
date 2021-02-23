@@ -32,6 +32,7 @@ from . import ec3po_servo_v4
 from . import ec_i2c_pin
 from . import ec_lm4
 from . import echo
+from . import error
 from . import fluffy
 from . import ftdii2c_cmd
 from . import fw_wp_ccd

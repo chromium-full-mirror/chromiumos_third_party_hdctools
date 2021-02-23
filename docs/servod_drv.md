@@ -36,6 +36,43 @@ there is
 1. data you need to share across multiple functionalities
 2. this data is best shared in a common class, rather than through inheritance
 
+## mode
+
+The `mode` is the value of the `cmd`=`mode` keyval control parameter that the
+`drv` uses to decide whether to perform `get` or `set`. There are in
+general the following types of `drv`:
+1. `drv` that can do `set/get` with the same params e.g. a GPIO read/write
+2. `drv` that can do `set/get` with different params e.g. some control that has
+   a different API/requirement for set than get
+3. `drv` that can **only** do `set/get` with their param set, and the other
+   one is undefined
+
+
+To aid with this, `system_config` implements the following policy.
+1. if a `control` has two sets of params, both must have `cmd`, one must be
+   `cmd="get"` and the other must be `cmd="set"`
+2. if a `control` has one set of params *and defines* `cmd="[mode]"`, the
+   assumption is that `drv` is **only** valid for that mode. In that case,
+   `system_config` will create a error params for the other mode, so that if
+   the user tries to issue the control in the unsupported mode, they will get an
+   explicit error that the control does not support that mode.\
+   For example. `dut-control servo_v4_version` only supports reading, and not
+   writing anything to it. So if the user issues
+   `dut-control servo_v4_version:rubbish` they receive an explicit error that
+   'set is not supported'.
+3. if a `control` has one set of params and *and does not define* `cmd="[mode]"`
+   the system assumes that the params are valid for both set and get. It will
+   create a copy of the params, add `cmd="set|get"` appropriately, and generate
+   both modes of the controls.
+
+This ensures two things
+1. a mechanism for `control` writers to be explicit whether their control
+   supports both modes or not
+2. a guarantee to `drv` system that every set of params will have the mode
+   written into it, and thus any logic that depends on whether the `drv`
+   instance is for a set or a get drv that query that information from
+   `self._params['cmd']`
+
 ## data sharing
 
 Each `drv` is its own instance for each control and control mode (set/get). This

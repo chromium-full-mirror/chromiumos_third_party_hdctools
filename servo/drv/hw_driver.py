@@ -108,6 +108,22 @@ class HwDriver(object):
       self._logger.debug('Valid input choices: %s', self._choices)
     self._io_type = _get_io_type(params)
 
+  def _is_set(self):
+    """Whether the |self| is a driver instance for 'set'.
+
+    Returns:
+      True if 'cmd' is 'set'
+    """
+    return self._params['cmd'] == 'set'
+
+  def _is_get(self):
+    """Whether the |self| is a driver instance for 'get'.
+
+    Returns:
+      True if 'cmd' is 'get'
+    """
+    return self._params['cmd'] == 'get'
+
   def _check_input(self, value):
     """Check whether |value| is a valid input.
 
@@ -159,7 +175,7 @@ class HwDriver(object):
     implemented in the subclass.
 
     This function is a safety wrapper around _set() to check that
-    |logical_value| is a valid choice before passing it down if valid choices
+    |lt ogical_value| is a valid choice before passing it down if valid choices
     have been defined.
 
     If a (simple) driver desires more safety, by checking that input values

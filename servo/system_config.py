@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """System configuration module."""
 import collections
+import copy
 import glob
 import logging
 import os
@@ -14,6 +15,11 @@ MAP_TAG = 'map'
 CONTROL_TAG = 'control'
 SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG]
 ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
+
+# A control to use when set/get is explicitly not defined for a control.
+UNDEF_CONTROL_DICT = {'drv': 'error',
+                      'interface': 'servo',
+                      'input_type': 'str'}
 
 
 # pylint: disable=g-bad-exception-name
@@ -202,8 +208,8 @@ class SystemConfig(object):
 
     filename = cfgname
     if (filename, name_prefix, interface_increment) in self._loaded_xml_files:
-      self._logger.warn('Already sourced system file (%s, %s, %d).', filename,
-                        name_prefix, interface_increment)
+      self._logger.warning('Already sourced system file (%s, %s, %d).',
+                           filename, name_prefix, interface_increment)
       return
     self._loaded_xml_files.append((filename, name_prefix, interface_increment))
 
@@ -262,6 +268,13 @@ class SystemConfig(object):
               interface_id = int(params.attrib['interface'])
               params.attrib['interface'] = interface_id + interface_increment
 
+        # Make sure that if |cmd| is defined, it is correctly defined as either
+        # set or get.
+        for p in params_list:
+          if 'cmd' in p.attrib and p.attrib['cmd'] not in ['set', 'get']:
+            raise SystemConfigError('%s %s cmd has to be set|get, not %r' %
+                                    (tag, name, p.attrib['cmd']))
+
         if len(params_list) == 2:
           assert tag != MAP_TAG, 'maps have only one params entry'
           for params in params_list:
@@ -275,18 +288,40 @@ class SystemConfig(object):
                     '%s %s multiple get params defined\n%s' % (tag, name,
                                                                element_str))
               get_dict = params.attrib
-            elif cmd == 'set':
+            else:  # |cmd| is 'set'
+              # We know from above that cmd is guaranteed to be 'set' or 'get'
               if set_dict:
                 raise SystemConfigError(
                     '%s %s multiple set params defined\n%s' % (tag, name,
                                                                element_str))
               set_dict = params.attrib
-            else:
-              raise SystemConfigError("%s %s cmd of 'get'|'set' not found\n%s" %
-                                      (tag, name, element_str))
         elif len(params_list) == 1:
-          get_dict = params_list[0].attrib
-          set_dict = get_dict
+          # Some controls work for both set and get. Some controls only work
+          # for one of the two, and the other is undefined. If there is only
+          # one |params| defined and it does *not* define cmd, then the policy
+          # is to treat it like the same dictionary for both. If it does
+          # define it, then the policy is that the control is *only* valid for
+          # one direction: set or get.
+          # |pd| here stands for params dict
+          pd = params_list[0].attrib
+          if 'cmd' in pd:
+            cmd = pd['cmd']
+            if cmd == 'get':
+              get_dict = copy.copy(pd)
+              set_dict = copy.copy(UNDEF_CONTROL_DICT)
+            else:  # |cmd| is 'set'
+              set_dict = copy.copy(pd)
+              get_dict = copy.copy(UNDEF_CONTROL_DICT)
+          else:
+            # |cmd| is not set. assume it's the same for both.
+            get_dict = copy.copy(pd)
+            set_dict = copy.copy(pd)
+          # Lastly, to allow the |drv| full visibility in whether it's a set
+          # or a get instance, make sure to store set and get in the dict
+          # regardless of whether it was already there or has been inferred
+          # here.
+          get_dict['cmd'] = 'get'
+          set_dict['cmd'] = 'set'
         else:
           raise SystemConfigError('%s %s has illegal number of params %d\n%s' %
                                   (tag, name, len(params_list), element_str))
