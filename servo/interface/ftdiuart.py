@@ -97,7 +97,8 @@ class Fuart(uart.Uart):
         vendor_id=vendor,
         product_id=product,
         interface=interface,
-        serialname=serialname,
+        # |FtdiCommonArgs| expects a byte-array here.
+        serialname=serialname.encode(),
         speed=115200,
         bits=8,  # BITS_8 in ftdi.h
         partity=0,  # NONE in ftdi.h

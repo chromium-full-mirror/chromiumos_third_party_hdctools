@@ -76,7 +76,8 @@ class Fi2c(i2c_base.BaseI2CBus):
         ftdi_utils.load_libs('ftdi', 'ftdii2c', 'ftdigpio')
     self._fargs = ftdi_common.FtdiCommonArgs(
         vendor_id=vendor, product_id=product, interface=interface,
-        serialname=serialname)
+        # |FtdiCommonArgs| expects a byte-array here.
+        serialname=serialname.encode())
     self._fc = ftdi_common.FtdiContext()
     self._fic = Fi2cContext()
     self._gpio = ftdi_common.Gpio()

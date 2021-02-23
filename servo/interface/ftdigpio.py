@@ -70,7 +70,8 @@ class Fgpio(gpio_interface.GpioInterface):
     (self._flib, self._lib) = ftdi_utils.load_libs('ftdi', 'ftdigpio')
     self._fargs = ftdi_common.FtdiCommonArgs(
         vendor_id=vendor, product_id=product, interface=interface,
-        serialname=serialname)
+        # |FtdiCommonArgs| expects a byte-array here.
+        serialname=serialname.encode())
     self._is_closed = True
     self._gpio = ftdi_common.Gpio()
     self._fc = ftdi_common.FtdiContext()
