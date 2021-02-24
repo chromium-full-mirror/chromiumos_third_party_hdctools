@@ -15,7 +15,7 @@
     <name>sweetberry_version</name>
     <alias>support.servo_fw_version</alias>
     <doc>current fw version</doc>
-    <params interface="4" drv="simple_ec" uart_cmd="version"
+    <params cmd="get" interface="4" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>

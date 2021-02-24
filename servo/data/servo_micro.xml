@@ -352,7 +352,7 @@
   <control>
     <name>servo_micro_version</name>
     <doc>current fw version</doc>
-    <params interface="6" drv="simple_ec" uart_cmd="version"
+    <params cmd="get" interface="6" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>

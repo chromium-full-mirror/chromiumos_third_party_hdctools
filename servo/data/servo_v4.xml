@@ -288,15 +288,15 @@
     <name>servo_v4_version</name>
     <alias>root.servo_fw_version</alias>
     <doc>current fw version</doc>
-    <params interface="26" drv="simple_ec" uart_cmd="version"
+    <params cmd="get" interface="26" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>
     <name>servo_v4_latest_stable_version</name>
     <alias>servo_v4_latest_version,root.servo_latest_fw_version</alias>
     <doc>servo-firmware available fw version</doc>
-    <params interface="servo" drv="servo_updater_reader" board="servo_v4"
-      channel="stable"/>
+    <params cmd="get" interface="servo" drv="servo_updater_reader"
+      board="servo_v4" channel="stable"/>
   </control>
   <control>
     <name>servo_v4_firmware_channel</name>
