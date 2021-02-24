@@ -293,10 +293,10 @@ class EC3PO(uart.Uart):
     """
     self._logger.debug('EC3PO Interpreter connection request: \'%r\'', state)
     if state == 1:
-      self._cmd_pipe_int.send('reconnect')
+      self._cmd_pipe_int.send(b'reconnect')
       self._interp_connected = 'on'
     else:
-      self._cmd_pipe_int.send('disconnect')
+      self._cmd_pipe_int.send(b'disconnect')
       self._interp_connected = 'off'
     return
 
