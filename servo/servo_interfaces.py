@@ -342,6 +342,7 @@ for board in [
     'cave',
     'chell',
     'cheza',
+    'd2db',
     'dragonegg',
     'drallion',
     'endeavour',
