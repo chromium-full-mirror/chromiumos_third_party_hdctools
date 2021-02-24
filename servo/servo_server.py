@@ -305,43 +305,58 @@ class Servod(object):
       if not is_get and ('set' in self._drv_dict[control_name]):
         return self._drv_dict[control_name]['set']
 
-    params = self._syscfg.lookup_control_params(control_name, is_get)
+    self._logger.debug('Did not find cached drvs for %r. Will generate '
+                       'both set and get drvs.', control_name)
 
-    # Get the most suitable drv given the servo instance.
-    drv_name = self._get_servo_specific_param(params, 'drv', control_name)
-    if drv_name == 'na':
-      # 'na' drv can be used to selectively turn controls into noops for
-      # a given servo hardware. Ensure that there is an interface.
-      params.setdefault('interface', 'servo')
-      self._logger.debug('Setting interface to default to %r for %r unless '
-                         ' defined  in params, as drv is %r.', 'servo',
-                         control_name, 'na')
-      # Setting input_type to str allows all inputs through enabling a true noop
-      params.update({'input_type': 'str'})
-    interface_id = self._get_servo_specific_param(params, 'interface',
-                                                  control_name)
-    if None in [drv_name, interface_id]:
-      raise ServodError('No drv/interface for control %r found' % control_name)
+    set_params, get_params = self._syscfg.lookup_control_params(control_name)
 
-    if interface_id == 'servo':
-      interface = weakref.proxy(self)
-    else:
-      index = int(interface_id)
-      interface = self._interface_list[index]
+    for params in [get_params, set_params]:
+      # |cmd| is guaranteed to be in each params.
+      mode = params['cmd']
+      # Get the most suitable drv given the servo instance.
+      drv_name = self._get_servo_specific_param(params, 'drv', control_name)
+      if drv_name == 'na':
+        # 'na' drv can be used to selectively turn controls into noops for
+        # a given servo hardware. Ensure that there is an interface.
+        params.setdefault('interface', 'servo')
+        self._logger.debug('Setting interface to default to %r for %r unless '
+                           ' defined  in params, as drv is %r.', 'servo',
+                           control_name, 'na')
+        # Setting input_type to str allows all inputs through enabling a true
+        # noop
+        params.update({'input_type': 'str'})
 
-    device_info = None
-    if hasattr(interface, 'get_device_info'):
-      device_info = interface.get_device_info()
-    drv_module = getattr(servo_drv, drv_name)
-    drv_class = getattr(drv_module, self._camel_case(drv_name))
-    drv = drv_class(interface, params)
-    if control_name not in self._drv_dict:
-      self._drv_dict[control_name] = {}
-    if is_get:
-      self._drv_dict[control_name]['get'] = (params, drv, device_info)
-    else:
-      self._drv_dict[control_name]['set'] = (params, drv, device_info)
-    return (params, drv, device_info)
+      interface_id = self._get_servo_specific_param(params, 'interface',
+                                                    control_name)
+      if None in [drv_name, interface_id]:
+        raise ServodError('No drv/interface for control %r found' %
+                          control_name)
+
+      if interface_id == 'servo':
+        interface = weakref.proxy(self)
+      else:
+        index = int(interface_id)
+        interface = self._interface_list[index]
+
+      device_info = None
+      if hasattr(interface, 'get_device_info'):
+        device_info = interface.get_device_info()
+      drv_module = getattr(servo_drv, drv_name)
+      drv_class = getattr(drv_module, self._camel_case(drv_name))
+      drv = drv_class(interface, params)
+      if control_name not in self._drv_dict:
+        self._drv_dict[control_name] = {}
+      # Store the information in the right mode.
+      self._drv_dict[control_name][mode] = (params, drv, device_info)
+    # At this point, both 'set' and 'get' have been generated. The last thing
+    # left to do is to pass each one of them a weak reference to the other.
+    # This ensures that if a control needs to do read/modify/write for
+    # instance it can do so without much overhead.
+    _, set_drv, _ = self._drv_dict[control_name]['set']
+    _, get_drv, _ = self._drv_dict[control_name]['get']
+    set_drv.set_complement(get_drv)
+    # Run the method again, as it will find the entries now in the cache.
+    return self._get_param_drv(control_name, is_get)
 
   def _has_control(self, control):
     """Returns True if control is available in servod."""
@@ -358,7 +373,7 @@ class Servod(object):
       warm_reset             :: Reset the device warmly
       ------------------------> {'interface': '1', 'map': 'onoff_i', ... }
     """
-    return self._syscfg.display_config()
+  return self._syscfg.display_config()
 
   def doc(self, name):
     """Retreive doc string in system config file for given control name.

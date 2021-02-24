@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Base class for servo drivers."""
 import logging
+import weakref
 
 VALID_IO_TYPES = ['PU', 'PP']
 
@@ -72,12 +73,15 @@ class HwDriver(object):
 
     Attributes:
       _logger: logger object.  May be accessed via sub-class
+      _complement: a weak reference to the complement drv e.g. the controls'
+                   set implementation if this is a get implementation.
       _interface: interface object.  May be accessed via sub-class
       _params: parameter dictionary.  May be accessed via sub-class
       _io_type: String of io type or False if not explicitly assigned.
     """
     self._logger = logging.getLogger(type(self).__name__)
     self._logger.debug('')
+    self._complement = None
     self._interface = interface
     self._params = params
     # Check whether all required params are provided. if 'cmd' is in params,
@@ -106,13 +110,22 @@ class HwDriver(object):
       self._logger.debug('Valid input choices: %s', self._choices)
     self._io_type = _get_io_type(params)
 
+  def __str__(self):
+    """Return a string representation of this drv."""
+    return '%s[%s](%s)' % (self._params['control_name'],
+                           type(self).__name__, self._mode())
+
+  def __repr__(self):
+    """Return same as __str__()"""
+    return str(self)
+
   def _is_set(self):
     """Whether the |self| is a driver instance for 'set'.
 
     Returns:
       True if 'cmd' is 'set'
     """
-    return self._params['cmd'] == 'set'
+    return self._mode() == 'set'
 
   def _is_get(self):
     """Whether the |self| is a driver instance for 'get'.
@@ -120,7 +133,61 @@ class HwDriver(object):
     Returns:
       True if 'cmd' is 'get'
     """
-    return self._params['cmd'] == 'get'
+    return self._mode() == 'get'
+
+  def _mode(self):
+    """Mode of this drv, either 'set' or 'get'.
+
+    Returns:
+      contents of self._params['cmd']
+    """
+    return self._params['cmd']
+
+  def set_complement(self, complement_drv):
+    """set |complement_drv| to this drv's complement and vice-versa
+
+    Args:
+      complement_drv: this control drv's complement
+
+    Raises:
+      HwDriverError: if |complement_drv| and |self| have the same mode (set,get)
+      HwDriverError: if |complement_drv| or |self| already have a complement
+    """
+    # pylint: disable=protected-access
+    # Access required as the goal is to link both the classes.
+    if complement_drv._mode() == self._mode():
+      raise HwDriverError('Cannot set %r as the complement of %r.' %
+                          (complement_drv, self))
+
+    # Note: this policy can be changed if necessary, but for now it seems safer
+    # to enforce that complements are set once. There is no known reason so far
+    # to have a complement drv dynamically change at runtime after the first
+    # time it is set. If this is changed in the future, consider that we do
+    # not want to have open loops i.e. if a complement is cleaned up, it needs
+    # to be cleaned up from both sides.
+    for d in [self, complement_drv]:
+      if d._complement is not None:
+        # |d._complement| is a weakref. Casting it to a string before passing it
+        # to %r ensures it prints the actual object class and not that it's
+        # a weakref.
+        raise HwDriverError('drv %r already has a complement: %r' %
+                            (d, str(d._complement)))
+
+    self._complement = weakref.proxy(complement_drv)
+    complement_drv._complement = weakref.proxy(self)
+    # |self._complement| is a weakref. Casting it to a string before passing it
+    # to %r ensures it prints the actual object class and not that it's a
+    # weakref.
+    self._logger.debug('Set drvs %r and %r as each others complements.',
+                       self, str(self._complement))
+
+  def _get_complement(self):
+    """Return the complement drv.
+
+    Returns:
+      self._complement i.e. the complement drv. Can be None if not set yet.
+    """
+    return self._complement
 
   def _check_input(self, value):
     """Check whether |value| is a valid input.

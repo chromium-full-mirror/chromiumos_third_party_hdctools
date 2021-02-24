@@ -7,7 +7,11 @@ behind a control. So every control has a `drv`. This is intended as an overview
 to how `drv` work, and what to look out for when writing `drv`, debugging, or
 anything else. This overview is also intended to explain how to use params, what
 special params exist, and how to leverage them to write less code, and create
-robust controls.
+robust controls.\
+The first key insight is that a servod control is entirely described in its
+params, and that a combination of `drv`, `interface` and `params` entirely
+defines a control, and its execution logic. The control name is simply a
+symbolic name to access that logic.
 
 ## core system
 
@@ -72,6 +76,41 @@ This ensures two things
    written into it, and thus any logic that depends on whether the `drv`
    instance is for a set or a get drv that query that information from
    `self._params['cmd']`
+
+## control complement
+
+As mentioned before
+1. a control is entirely defined by its parameters, and a combination of `drv`,
+   `interface`, and `params` defines a control uniquely.
+2. a control has at least one mode, and can have up to two valid modes.
+
+From those two facts, we introduce the notion of a control's complement. The
+control's complement is simply the control in the other mode e.g.
+```
+dut-control control_a
+dut-control control_a:something
+```
+are each others complements.\
+It sometimes becomes necessary for controls to be able to execute their own
+complement in order to perform their function. A simple example is
+read/modify/write operations on a register, or checking whether a mux
+already points in a specific direction before changing the direction.\
+To facilitate this, the framework provides each `drv` instance with a reference
+to its complement control's `drv` instance. This allows a control to execute the
+complement.\
+There are a few things to note when leveraging this mechanism
+1. There is always a complement, it will never be None, but that complement
+   might be an error control. This stems from the guarantee above that each
+   control will exist in both modes, but if the control is not valid in one
+   mode then its implementation in that mode will throw a clear error indicating
+   that it does not exist in that mode. Writer need to be aware of this whether
+   a complement makes sense or exists
+2. The complement logic is based on servod control configs, and not `drv`
+   classes. This means that the complement is simply what the other mode's
+   parameters described it would be. The complement might be an entirely
+   different `drv`, with a different interface, etc. This is aligned with the
+   goal that the mechanism is there to provide access to the other mode for a
+   control
 
 ## data sharing
 

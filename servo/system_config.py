@@ -418,32 +418,28 @@ class SystemConfig(object):
       return []
     return self.control_tags[tag]
 
-  def lookup_control_params(self, name, is_get=True):
+  def lookup_control_params(self, name):
     """Lookup & return control parameter dictionary.
 
-    Note, controls must have either one or two set of parameters.  In the case
-    of two, the dictionary must contain k=v element of 'type':'get' or
-    'type':'set'
+    Each control has a set and get implementation. See |add_cfg_file()| for
+    the policy on how those are generated and the guarantee that both always
+    exist.
 
     Args:
       name: string of control name to lookup
-      is_get: boolean of whether params should be for 'get' | 'set'
 
     Returns:
-      control's parameter dictionary for approrpiate get or set
+      tuple(get params, set params) the params for each set and get
 
     Raises:
       NameError: if control name not found
-      SystemConfigError: if error encountered identifying parameters
     """
     if name not in self.syscfg_dict[CONTROL_TAG]:
       raise NameError('No control named %s. All controls:\n%s' %
                       (name,
                        ','.join(sorted(self.syscfg_dict[CONTROL_TAG]))))
-    if is_get:
-      return self.syscfg_dict[CONTROL_TAG][name]['get_params']
-    else:
-      return self.syscfg_dict[CONTROL_TAG][name]['set_params']
+    return (self.syscfg_dict[CONTROL_TAG][name]['get_params'],
+            self.syscfg_dict[CONTROL_TAG][name]['set_params'])
 
   def is_control(self, name):
     """Determine if name is a control or not.
