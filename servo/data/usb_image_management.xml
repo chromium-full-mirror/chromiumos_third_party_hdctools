@@ -9,8 +9,7 @@
   <control>
     <name>download_image_to_usb_dev</name>
     <doc>Download image from given path to usb dev attached to servo</doc>
-    <params subtype="download_to_usb_dev" interface="servo" drv="usb_image_manager"
-      input_type="str"></params>
+    <params cmd="set" interface="servo" drv="usb_downloader" input_type="str"/>
   </control>
   <control>
     <name>make_usb_dev_image_noninteractive</name>
