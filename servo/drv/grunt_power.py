@@ -4,6 +4,7 @@
 """Custom power_state driver for grunt for b/167734179."""
 
 from servo.drv import cros_ec_softrec_power
+from servo.drv.ec_i2c_pin import ecI2cPinError
 
 
 # pylint: disable=invalid-name
@@ -12,6 +13,9 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
   """Driver for power_state for grunt."""
 
   CTRL = 'c0_ppc_pp1_en'
+
+  # Number of times to retry i2c communication before pulling down the system.
+  I2C_RETRY_COUNT = 3
 
   def _power_on_bytype(self, *args, **kwargs):
     """We want to make sure that the issue does not arise during :rec either."""
@@ -37,7 +41,20 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
       # Turn off the c0_ppc_pp1 right after turning off. It takes the EC ~10s to
       # transition to out G3 implementation that turns off the VBUS, and causes
       # the issue.
-      self._interface.set(self.CTRL, 'off')
+      # This might fail over i2c. In those cases, retry |I2C_RETRY_COUNT| times
+      # before resetting the system. We reset the system because then it remains
+      # ccd enabled/recoverable which is preferred over a disabled ccd signal.
+      for i in range(self.I2C_RETRY_COUNT):
+        try:
+          self._interface.set(self.CTRL, 'off')
+          # exit on success
+          return
+        except ecI2cPinError as e:
+          self._logger.debug('Try %d to turn off ppc failed. %r', i+1, e)
+      # If we made it to here, this means that we turned off the DUT, needed
+      # to turn off the ppc, but failed. Reset the system.
+      self._logger.error('Turning off ppc failed. Resetting system over cr50')
+      self._interface.set('power_state', 'cr50_reset')
 
   def _needs_c0_pp1(self):
     """Whether grunt needs to manage the c0 ppc pp1 enable manually."""
