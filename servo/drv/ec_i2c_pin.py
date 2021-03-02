@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Driver to talk to the i2c channels through the DUT EC console."""
 
+import re
+
 from servo.drv import ec
 
 
@@ -10,6 +12,28 @@ from servo.drv import ec
 # This conforms to the servod error naming pattern.
 class ecI2cPinError(ec.ecError):
   """Exception class for ec i2c pin."""
+
+# TODO(b/180671248): delete this code (better yet, revert the CL as
+# soon as that change lands.
+# A list of all cros ec error regex strings.
+# source: src/platform/ec/common/console.c
+CROS_EC_ERROR_STRING_RX = [
+    r'Unknown error',
+    r'Unimplemented',
+    r'Overflow',
+    r'Timeout',
+    r'Invalid argument',
+    r'Busy',
+    r'Access Denied',
+    r'Not Powered',
+    r'Not Calibrated',
+    r'Parameter \d+ invalid',
+    r'Wrong number of params',
+    r'Command returned error \d+',
+    r"Command '\w+' not found or ambiguous."
+]
+
+CROS_EC_ERROR_RX = '(' + '|'.join(CROS_EC_ERROR_STRING_RX) + ')'
 
 
 # pylint: disable=invalid-name
@@ -41,6 +65,35 @@ class ecI2cPin(ec.ec):
     offset = int(self._params['offset'], 0)
     self._read = self.BASE_CMD % ('r', bus, addr, offset)
     self._write_base = self.BASE_CMD % ('w', bus, addr, offset)
+    # TODO(b/180671248): delete this code
+    # expand the regexes to also look for errors.
+
+  def _get_cmd_results(self, cmd, regex):
+    """Overwrite to also catch ec console errors.
+
+    Args:
+      cmd: command to send to the EC console
+      regex: regex to look for
+
+    Returns:
+      result of the command
+
+    Raises:
+      ecI2cPinError: if a known issue issue is found.
+    """
+    # TODO(b/180671248): delete this method.
+    # modified regex to also catch errors.
+    mregex = CROS_EC_ERROR_RX + '|' + regex
+    r = ec.ec._issue_cmd_get_results(self, cmd, [mregex])
+    if r is None:
+      raise ecI2cPinError('Failed to read out the i2c register value')
+    # we know that |r| is a list of list/tuple to match regex. So we need
+    # to check whether it matched an error string.
+    if re.search(CROS_EC_ERROR_RX, r[0][0]):
+      raise ecI2cPinError('Ran into cros ec error: %r' % r[0][0])
+    # We only ever pass in one regex in this drv/so there is only ever
+    # one member in the highest level.
+    return r[0]
 
   def _set(self, value):
     """Set the bit to tbe |value|."""
@@ -53,17 +106,15 @@ class ecI2cPin(ec.ec):
     # actually need to write the value.
     write_cmd = '%s 0x%x' % (self._write_base, rv)
     # Simply wait until the writing is finished.
-    self._issue_cmd_get_results(write_cmd, ['>'])
+    self._get_cmd_results(write_cmd, '(>)')
 
   def _raw_read(self):
     """Read the raw hex value out for the whole offset."""
     # TODO(coconutruben): unify this with |_Get_output| in the ec.
     self._limit_channel()
-    result = self._issue_cmd_get_results(self._read, [self.REGEX])
+    result = self._get_cmd_results(self._read, self.REGEX)
     self._restore_channel()
-    if result is None:
-      raise ecI2cPinError('Failed to read out the i2c register value')
-    val_str = result[0][1]
+    val_str = result[1]
     val = int(val_str, 16)
     return val
 
