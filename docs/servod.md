@@ -159,16 +159,8 @@ building out a new driver. It contains the logic for calling the
 `_Set_|control_name|` of a derived class when a control with a subtype is
 defined.
 
-The HwDriver has a few built in tools to facilitate safe drv writing, please
-take a look at the file. These include - a mechanism to ensure that only
-preapproved values can be passed through set - a mechanism to signal what params
-the overlay is _required_ to provide for the drv to function properly
 
-Another important driver is [ptyDriver][8] that the EC, AP, and Cr50 console
-controls use.
-
-As mentioned above, it’s crucial to note that drivers get instantiated with a
-set of params for each control.
+Take a look at [the doc][22] for more details on `drv`.
 
 ## Interfaces and their usage
 
@@ -187,50 +179,9 @@ execute a control.
 
 In general, params can be any parameters that the config file writer decides to
 add that are needed for a driver. However, there are a couple special parameters
-that one should be aware of:
-
-*   `map`
-
-    As a parameter map tells servod what map to use for input on this control.
-
-*   `cmd`
-
-    Either `set` or `get`. On controls with different params for `get` and `set`
-    method this needs to be defined to associate the right params dictionary to
-    the right method.
-
-*   `fmt`
-
-    [`fmt` function to execute][11] on output values. Currently only supports
-    hex.
-
-*   `subtype`
-
-    If a driver has more than one method it exposes, then subtype defines what
-    method should be called to execute a given control. The method [called][12]
-    on the driver instance then is drv.`_(Set|Get)_|subtype|`.
-
-*   `input_type`
-
-    Input on set methods will be [cast][13] to `input_type`. Currently `float`,
-    `int`, and `str` are supported.
-
-*   `interface`
-
-    Index of the interface to use for this control. `servo` if the interface is
-    intended to be the `servod` instance.
-
-*   `drv`
-
-    String of the python module that contains the driver for this control.
-
-*   `choices`
-
-    Comma-separated list of valid input choices for a set control. Note two
-    important factors. The check is done after casting the input value to a
-    string, and comparing it to the string defined in this list. The check also
-    only happens if the driver either defines `_set` rather than `set` or
-    defines a subtype (`_Set_[subtype]`)
+that one should be aware of. Please take a look [here][params].\
+In short: a control needs to provide `drv` and `interface` in the params at a
+minimum to function correctly.
 
 ## Servo type specific behavior.
 
@@ -318,9 +269,6 @@ reinitalization phase will block until the interface is reinitialized.
 [8]: ../servo/drv/pty_driver.py
 [9]: ../servo/data/arm_ec_common.xml#14
 [10]: ../servo/servo_interfaces.py
-[11]: ../servo/system_config.py#455
-[12]: ../servo/drv/hw_driver.py#72
-[13]: ../servo/system_config.py#382
 [14]: ../servo/servo_server.py#52
 [15]: ../servo/system_config.py#19
 [16]: ./servod_faq.md#reroute-control
@@ -329,4 +277,6 @@ reinitalization phase will block until the interface is reinitialized.
 [19]: ../servo/servod.py#69
 [20]: ../servo/ftdi_common.py#28
 [21]: ../servo/servo_parsing.py#16
+[22]: ./servod_drv.md
+[params]: ./servod_drv.md#params
 [servodrc examples]: ./servo.md#servodrc
