@@ -761,7 +761,7 @@ class USBkm232Handler(_BaseHandler):
           Proper encoding to send to the uart side of the usbkm232 to create the
           desired key press.
         """
-    return '%c' % self.KEYS[press_ch]
+    return b'%c' % self.KEYS[press_ch]
 
   def _release(self, release_ch):
     """Encode and return character to release using usbkm232.
@@ -775,7 +775,7 @@ class USBkm232Handler(_BaseHandler):
           Proper encoding to send to the uart side of the usbkm232 to create the
           desired key release.
         """
-    return '%c' % (self.KEYS[release_ch] | 0x80)
+    return b'%c' % (self.KEYS[release_ch] | 0x80)
 
   def _rsp(self, orig_ch):
     """Check response after sending character to usbkm232.
