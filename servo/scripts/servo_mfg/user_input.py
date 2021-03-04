@@ -165,6 +165,17 @@ def _prompt_and_validate(name, data_re=None):
                 'again.', name, INPUT_ATTEMPTS)
   return None
 
+# This module flag enables the user_input to system-wide turn off requiring user
+# confirmation.
+CONFIRMATIONS_ENABLED = True
+
+
+def turn_off_user_confirmation():
+  """Turn off |instruct_user| from seeking user confirmation for actions."""
+  global CONFIRMATIONS_ENABLED
+  logging.info('All user prompts will be automatically answered affirmatively.')
+  CONFIRMATIONS_ENABLED = False
+
 
 def instruct_user(message, enter_to_confirm=False):
   """Helper to instruct user and wait for confirmation.
@@ -182,7 +193,7 @@ def instruct_user(message, enter_to_confirm=False):
   """
   message = '>>> %s' % message
   logging.info(message)
-  if enter_to_confirm:
+  if CONFIRMATIONS_ENABLED and enter_to_confirm:
     result = _raw_input_timeout('Type only [enter] to confirm, anything else '
                                 'to cancel')
     # Only enter will yield a '', which we want to return as True.

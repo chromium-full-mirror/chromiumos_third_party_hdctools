@@ -14,6 +14,7 @@ import signal
 import sys
 
 from servo_mfg import reporter
+from servo_mfg import user_input
 from servo_mfg.micro_manager import MicroManager
 from servo_mfg.v4_manager import V4Manager
 from servo_mfg.v4p1_manager import V4P1Manager
@@ -56,6 +57,9 @@ class Coordinator(object):
     # inform the user that that's where they can find all the files
     logging.getLogger().info('Logs and output files will be available at: %r',
                              self.outdir)
+    if self.args.yes:
+      # Set the right switch to ensure users do not get used for confirmation.
+      user_input.turn_off_user_confirmation()
     self.manager = None
 
     # Note: add new device managers here
@@ -142,6 +146,11 @@ class Coordinator(object):
     parser.add_argument('--single', action='store_true', default=False,
                         help='Whether to program a single device rather than '
                         'a continous loop')
+    parser.add_argument('--yes', action='store_true', default=False,
+                        help='Never wait for user confirmation, always assume '
+                        'it is given. Use this if the user has prepared the '
+                        'devices beforehand and will not require time to setup '
+                        'testing explicitly.')
     t = parser.add_mutually_exclusive_group()
     t.add_argument('--no-testing', action='store_false', default=True,
                    dest='testing',
