@@ -153,6 +153,11 @@ class Coordinator(object):
     parser.add_argument('--single', action='store_true', default=False,
                         help='Whether to program a single device rather than '
                         'a continous loop')
+    parser.add_argument('--developer', action='store_true', default=False,
+                        help='Whether to run into developer mode. By default '
+                        'the script runs in factory mode. Factory mode means '
+                        '--yes, --color-mode, and testing. Use developer mode '
+                        'to overwrite those if desired.')
     parser.add_argument('--yes', action='store_true', default=False,
                         help='Never wait for user confirmation, always assume '
                         'it is given. Use this if the user has prepared the '
@@ -209,7 +214,15 @@ class Coordinator(object):
                                             help='c2d2 mfg')
     C2D2Manager.add_manager_args(c2d2_parser)
 
-    return parser.parse_args(cmdline)
+    args = parser.parse_args(cmdline)
+    # If factory mode i.e. not developer mode, overwrite any wrong flags.
+    if not args.developer:
+      # Write the default factory configuration.
+      args.programming = True
+      args.testing = True
+      args.color_mode = True
+      args.yes = True
+    return args
 
   def run(self):
     """Run the manufacturing logic."""
