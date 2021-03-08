@@ -114,7 +114,9 @@ class ecI2cPin(ec.ec):
     self._limit_channel()
     result = self._get_cmd_results(self._read, self.REGEX)
     self._restore_channel()
-    val_str = result[1]
+    # The regex has None as its first group (because nothing in the error group
+    # matched). Need to get to the second group.
+    val_str = result[2]
     val = int(val_str, 16)
     return val
 
