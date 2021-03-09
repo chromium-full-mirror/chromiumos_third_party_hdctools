@@ -321,17 +321,27 @@ class ec(pty_driver.ptyDriver):
         full_mah: battery last full charge in mAh
         design_mah: battery design full capacity in mAh
     """
-    self._limit_channel()
-    results = self._issue_cmd_get_results('battery', [
-        r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
-        r'V:[\s0-9a-fx]*= (-*\d+) mV',
-        r'I:[\s0-9a-fx]*= (-*\d+) mA',
-        r'Charge:\s*(\d+) %',
-        r'Remaining:\s*(\d+) mAh',
-        r'Cap-full:\s*(\d+) mAh',
-        r'Design:\s*(\d+) mAh',
-    ])
-    self._restore_channel()
+    # The uart often drops some of the output of the battery cmd.
+    retries = 3
+    while retries > 0:
+      retries -= 1
+      try:
+        self._limit_channel()
+        results = self._issue_cmd_get_results('battery', [
+            r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
+            r'V:[\s0-9a-fx]*= (-*\d+) mV',
+            r'I:[\s0-9a-fx]*= (-*\d+) mA',
+            r'Charge:\s*(\d+) %',
+            r'Remaining:\s*(\d+) mAh',
+            r'Cap-full:\s*(\d+) mAh',
+            r'Design:\s*(\d+) mAh',
+        ])
+        self._restore_channel()
+        break
+      except pty_driver.ptyError as e:
+        if retries <= 0:
+          raise
+        logging.warning('Battery cmd failed, retrying: %s', e)
     result = {
         'tempc': float(results[0][1]),
         'mv': int(results[1][1], 0),
