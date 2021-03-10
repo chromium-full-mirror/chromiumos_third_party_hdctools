@@ -83,7 +83,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
     """The usb device information."""
     return self._susb.get_device_info()
 
-  def _raw_wr_rd(self, child_address, write_list, read_count=None):
+  def _raw_wr_rd(self, child_address, write_list, read_count=0):
     """Implements hdctools wr_rd() interface.
 
     This function writes byte values list to I2C device, then reads
