@@ -817,6 +817,8 @@ class USBkm232Handler(_BaseHandler):
     for i, write_ch in enumerate(mylist):
       print('usbkm232: writing  [%d] = \\0%03o 0x%02x' % \
             (i, ord(write_ch), ord(write_ch)))
+      if hasattr(write_ch, 'encode'):
+        write_ch = write_ch.encode('utf-8')
       self.serial.write(write_ch)
       if check:
         self._rsp(write_ch)
