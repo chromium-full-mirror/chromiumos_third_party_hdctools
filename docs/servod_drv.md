@@ -86,10 +86,11 @@ at [the echo drv][echo] for a simple example of that.\
 It's especially important to keep in mind which parameters a `drv` has access
 to when trying to execute other modes/subtypes within a `drv`. The parameters a
 `drv` instance knows about are from its control only. If it needs to know about
-more paramters (to execute other things) you can
+more parameters (to execute other things) you can
 1. pass more parameters through the config (preferred)
-2. write a sort of super-set `control` and `drv` that uses `servo` as its
-   interface (and thus can execute arbitrary other servod controls)
+2. write a super-set `control` and `drv` that uses `servo` as its interface
+   (and thus can execute arbitrary other servod controls) like
+   [usb muxing][usb_mux]
 
 ## safety
 
@@ -114,12 +115,13 @@ The following special parameters exist, and are useful to know about
 
 *   `drv`
 
-    String of the python module that contains the driver for this control.
+    Name of the python module that contains the driver for this control.
 
 *   `interface`
 
-    Index of the interface to use for this control. `servo` if the interface is
-    intended to be the `servod` instance.
+    Index of the interface to use for this control or `servo` if the interface
+    is intended to be the `servod` instance. The interface index for the devices
+    can be found [here][interface_index]
 
 *   `map`
 
@@ -203,3 +205,5 @@ the following `drv`:
 [call]: ../servo/drv/hw_driver.py#72
 [fmt]: ../servo/system_config.py#455
 [cst]: ../servo/system_config.py#382
+[usb_mux]: ../servo/drv/usb_image_manager.py
+[interface_index]: ../servo/servo_interfaces.py
