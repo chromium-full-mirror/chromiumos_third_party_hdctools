@@ -277,7 +277,7 @@ class I2cPseudoAdapter(object):
     write_idx = None
     write_list = None
     read_idx = None
-    read_count = None
+    read_count = 0
     read_flags = 0
     retval = None
     errnum = 0
@@ -291,10 +291,7 @@ class I2cPseudoAdapter(object):
         read_flags = flags
       else:
         write_idx = idx
-        # TODO(b/79684405): This is silly, wr_rd() often/always converts back to
-        #   byte array, i.e. Python 2 str / Python 3 bytes, using chr().  Update
-        #   servo I2C bus interface to accept byte array.
-        write_list = [ord(c) for c in data]
+        write_list = data
         write_flags = flags
 
     try:
@@ -342,10 +339,12 @@ class I2cPseudoAdapter(object):
       parts = line.split(_HEADER_SEP_CHAR, 6)
       if len(parts) < 7:
         # The data field is absent, handle it the same as an empty data field.
-        data = b''
+        data = []
       else:
-        data = b''.join(
-            chr(int(hex_, 16)) for hex_ in parts[6].split(_DATA_SEP_CHAR))
+        # TODO(b/79684405): This is silly, wr_rd() often/always converts back to
+        #   byte array, i.e. Python 2 str / Python 3 bytes, using chr().  Update
+        #   servo I2C bus interface to accept byte array.
+        data = [int(hex_, 16) for hex_ in parts[6].split(_DATA_SEP_CHAR)]
     self._xfer_reqs.append((xfer_id, idx, addr, flags, length, data))
 
   def _cmd_i2c_adap_num(self, line):
