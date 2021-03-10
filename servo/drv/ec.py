@@ -201,10 +201,19 @@ class ec(pty_driver.ptyDriver):
       0: Lid closed.
       1: Lid opened.
     """
-    self._limit_channel()
-    result = self._issue_cmd_get_results('lidstate',
-                                         ['lid state: (open|closed)'])[0]
-    self._restore_channel()
+    retries = 3
+    while retries > 0:
+        retries -= 1
+        try:
+          self._limit_channel()
+          result = self._issue_cmd_get_results('lidstate',
+                                              ['lid state: (open|closed)'])[0]
+          self._restore_channel()
+          break
+        except pty_driver.ptyError as e:
+            if retries <= 0:
+                raise
+            logging.warning('Failed to get lidstate. %s', e)
 
     return 1 if result[1] == 'open' else 0
 
