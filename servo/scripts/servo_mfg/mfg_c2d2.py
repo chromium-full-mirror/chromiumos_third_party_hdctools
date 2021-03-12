@@ -1,7 +1,10 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 # Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# Note: This is a py2/3 compatible file.
+
 """Script to test and flash c2d2 boards.
 
 This script will continuously flash new boards in a loop,
@@ -11,6 +14,7 @@ It will produce logfiles in a logfile/ directory for
 each device and for the full run.
 """
 from __future__ import print_function
+from six.moves import input
 
 import argparse
 import re
@@ -48,7 +52,7 @@ def main():
     if not serialno:
       done = False
       while not done:
-        serialno = raw_input('Scan serial number barcode: ')
+        serialno = input('Scan serial number barcode: ')
         if RE_SERIALNO.match(serialno):
           print('Scanned sn %s' % serialno)
           done = True

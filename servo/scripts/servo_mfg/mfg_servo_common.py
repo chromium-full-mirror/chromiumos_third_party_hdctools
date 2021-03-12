@@ -24,7 +24,7 @@ testerlogfile = None
 
 def full_servo_bin_path(board):
   """Get full servo binary path by servo board name."""
-  _, bin_path = servo_updater.findfiles(board, None)
+  _, bin_path, _ = servo_updater.get_files_and_version(board, None)
   return bin_path
 
 def full_bin_path(binfile):
