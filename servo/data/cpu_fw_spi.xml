@@ -3,7 +3,7 @@
   <control>
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware</doc>
-    <params interface="servo" drv="macro" map="onoff"
+    <params clobber_ok="" interface="servo" drv="macro" map="onoff"
       set_value_1="spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:pp1800
                    cold_reset:on spi_hold:off"
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
