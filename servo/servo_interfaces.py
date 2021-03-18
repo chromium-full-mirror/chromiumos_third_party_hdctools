@@ -353,6 +353,7 @@ for board in [
     'glados',
     'grunt',
     'hatch',
+    'hayato',
     'jacuzzi',
     'kalista',
     'kukui',
