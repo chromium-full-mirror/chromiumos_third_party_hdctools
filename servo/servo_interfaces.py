@@ -373,6 +373,7 @@ for board in [
     'scarlet',
     'sentry',
     'soraka',
+    'spherion',
     'strago',
     'strongbad',
     'trogdor',
