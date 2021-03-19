@@ -44,7 +44,7 @@ class V4P1Tester(tester.Tester):
 
     # Check the role to make sure that the cc readings work internally, at
     # least at surface level.
-    test = control_test.ControlTest(name='servo_v4p1_role', regex='(src|snk)')
+    test = control_test.ControlTest(name='servo_pd_role', regex='(src|snk)')
     # Indicate test is to check cc values.
     test.base_debug_line = 'Querying cc values by the servo EC failed.'
     self._register_test(test)
