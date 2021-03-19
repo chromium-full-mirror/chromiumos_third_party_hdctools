@@ -100,9 +100,7 @@ class C2D2Manager(manager.Manager):
   def extract_single_device_data(self, args):
     """Extract out of the command line args the single device args."""
     if args.serial and not args.serialno:
-      self._logger.error('Required argument missing. Cannot continue')
-      self._logger.debug('Args provided: %s', str(args))
-      self.abort(1)
+      return self._req_arg_missing(args)
     return {'serial': args.serialno}
 
   def prompt_data(self, args):

@@ -36,18 +36,25 @@ class Manager(object):
     """Abort the current flashing."""
     if self._wrapped_up:
       # This indicates we have already aborted this service. Skip quietly.
-      return
+      return False
     self._wrapped_up = True
     self.finish()
     # In this case however, we will exit as this is due to an error.
     self.reporter.finish()
     self._logger.info('Wrapping up with code %d.', error_code)
     self.exit_code = error_code
+    return False
 
   def check_args(self, namespace):
     """Check the parsed arguments, perform modifications, or raise error."""
     # The default implementation just gives a thumbs up.
     pass
+
+  def _req_arg_missing(self, args):
+    """Helper to raise standard error when required args are missing."""
+    self._logger.error(cm.red_bg('Required argument missing. Cannot continue'))
+    self._logger.debug('Args provided: %s', str(args))
+    return self.abort(1)
 
   def extract_single_device_data(self, args):
     """Extract the data to program a single device from |args|."""
@@ -65,6 +72,9 @@ class Manager(object):
     # it into the general flow, though the work can initially be unblocked and
     # tested by simply overwriting this method in the device specific subclass.
     sargs = self.extract_single_device_data(args)
+    if sargs == False:
+      # Required arguments are missing. Abort.
+      return self.abort(1)
     report = self.reporter.new_report(**sargs)
     dtester = None
     success = True
