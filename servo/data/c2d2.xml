@@ -172,7 +172,8 @@
     <name>c2d2_version</name>
     <doc>current fw version</doc>
     <params cmd="get" interface="6" drv="simple_ec" uart_cmd="version"
-      regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"/>
+      regex="RO:\s+(\S*_v?[\d.\w-]+)[\n\r]" group="1" formatting="strip"
+      tags="servo_fw_version"/>
   </control>
   <control>
     <name>c2d2_latest_stable_version</name>
