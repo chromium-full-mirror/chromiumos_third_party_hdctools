@@ -456,7 +456,7 @@ class ina2xx(hw_driver.HwDriver):
          self._calib_reg = self.MAX_CALIB
 
     self._write_reg(reg, value)
-    if reg is 'cal':
+    if reg == 'cal':
       self._calib_reg = value
 
   def _wake(self):

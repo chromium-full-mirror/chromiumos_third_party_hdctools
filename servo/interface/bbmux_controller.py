@@ -75,7 +75,7 @@ class BBmuxController(object):
             # counting from -1.
             control_num = -1
             for field in line.split():
-              if field is not '|':
+              if field != '|':
                 BBmuxController._pin_mode_map[field] = control_num
                 BBmuxController._pin_name_map[field] = mux_file
                 self._logger.debug('Pin %s in in file %s with mode %s', field,

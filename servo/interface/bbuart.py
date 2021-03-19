@@ -189,7 +189,7 @@ class BBuart(uart.Uart):
       parity = 0
     else:
       par_mode = re.search(PARITY_RE, output)
-      if par_mode.group(0) is '-parodd':
+      if par_mode.group(0) == '-parodd':
         parity = 2
       else:
         parity = 1

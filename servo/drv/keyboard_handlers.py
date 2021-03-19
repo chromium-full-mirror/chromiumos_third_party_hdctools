@@ -125,7 +125,7 @@ class _BaseHandler(_HandlerTemplate):
         Args:
           press_secs: Time in seconds to simulate the keypress.
         """
-    if press_secs is '':
+    if press_secs == '':
       press_secs = self.NORMAL_TRANSITION_DELAY
 
     # Check if pwr_button control available, by setting it to
@@ -290,7 +290,7 @@ class MatrixKeyboardHandler(_BaseHandler):
 
   def _press_and_release_keys(self, key, press_secs=''):
     """Simulate button presses and release."""
-    if press_secs is '':
+    if press_secs == '':
       press_secs = self.SERVO_KEY_PRESS_DELAY
     self._press_keys(key)
     time.sleep(press_secs)
@@ -502,7 +502,7 @@ class ChromeECHandler(_BaseHandler):
 
         @param keys: A list of key names, which are the keys of KEY_MATRIX.
         """
-    if press_secs is '':
+    if press_secs == '':
       press_secs = self.SERVO_KEY_PRESS_DELAY
     for key in keys:
       # Send EC command: kbpress col row pressed

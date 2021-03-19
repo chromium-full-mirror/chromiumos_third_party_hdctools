@@ -118,7 +118,7 @@ class Susb():
     dev_gen = usb.core.find(idVendor=self._vendor, idProduct=self._product,
                              find_all=True)
     dev_list = list(dev_gen)
-    if dev_list is None or len(dev_list) is 0:
+    if dev_list is None or len(dev_list) == 0:
       raise SusbError('USB device not found')
 
     # Check if we have multiple stm32s and we've specified the serial.
