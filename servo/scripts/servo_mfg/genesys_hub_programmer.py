@@ -85,7 +85,7 @@ class GenesysHubProgrammer(programmer.Programmer):
     os.chdir(wd)
     if ret:
       self.throw_error('Issue on read. Giving up.')
-    match = re.search(self.VERSION_REGEX, stdout)
+    match = re.search(self.VERSION_REGEX, stdout.decode())
     return match and int(match.group(1)) == self.FW_VERSION
 
   def _verify_programming_env(self):
