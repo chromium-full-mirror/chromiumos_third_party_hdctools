@@ -47,23 +47,24 @@ class V4P1Manager(manager.Manager):
   @staticmethod
   def add_manager_args(parser):
     """Helper to add the arguments that this type of manager requires."""
+    manager.Manager.add_manager_args(parser)
     parser.add_argument('-s', '--serialno', type=str,
                         help='serial number to program', default=None)
     parser.add_argument('-m', '--macaddr', type=str, help='macaddr to program',
                         default=None)
-    devices = ['flash', 'usb_hub', 'serial', 'mac', 'kb_emulator']
+    devices = ['flash', 'usb-hub', 'serial', 'mac', 'kb-emulator']
     for dev in devices:
       g = parser.add_mutually_exclusive_group()
-      g.add_argument('--no_%s' % dev, action='store_false', dest=dev,
-                     default=True,
+      g.add_argument('--no-%s' % dev, action='store_false', default=True,
+                     dest=dev.replace('-', '_'),
                      help='Skip any %s validation or writing. This '
-                     'takes precedence over force_.' % dev)
+                     'takes precedence over force-.' % dev)
       if dev == 'flash':
         # You cannot force the dfu mode through software, so either it's on
         # through a cable, or it's not. There is no point in having a
         # force flag here.
         continue
-      g.add_argument('--force_%s' % dev, action='store_true', default=False,
+      g.add_argument('--force-%s' % dev, action='store_true', default=False,
                      help='Force %s writing. Even if the already has '
                      'the right firmware, write it again.' % dev)
 

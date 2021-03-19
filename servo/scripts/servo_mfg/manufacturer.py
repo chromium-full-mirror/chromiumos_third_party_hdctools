@@ -181,6 +181,20 @@ class Manufacturer(object):
       return programmer.validate(**kwargs)
     return programmer.program(**kwargs)
 
+  def check_env(self):
+    """Whether this environment can program successfully."""
+    success = True
+    for task in self._pre_dfu_tasks + [self._dfu_task] + self._post_dfu_tasks:
+      if task is not None:
+        if task.programmer is not None:
+          s = task.programmer.verify_programming_env()
+          suffix = ': can run.' if s else ': cannot run.'
+        else:
+          s = True
+          suffix = ': skipped.'
+        self._logger.info(task.task_desc + suffix)
+        success = success & s
+    return success
 
 class Task(object):
   """Holder object for a programmer and some metadata."""

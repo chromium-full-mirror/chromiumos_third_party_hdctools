@@ -45,6 +45,12 @@ class Manager(object):
     self.exit_code = error_code
     return False
 
+  @staticmethod
+  def add_manager_args(parser):
+    """Helper to add .check."""
+    parser.add_argument('--check', default=False, action='store_true',
+                        help='validate the environment and exit.')
+
   def check_args(self, namespace):
     """Check the parsed arguments, perform modifications, or raise error."""
     # The default implementation just gives a thumbs up.
@@ -191,3 +197,11 @@ class Manager(object):
     raise NotImplementedError('Provide implementation to prompt user for '
                               'data to program single device.')
 
+  def check_env(self):
+    """Check whether the environment allows for this manager to program."""
+    env_ok = self.manufacturer.check_env()
+    if env_ok:
+      self._logger.info(cm.green_bg('Environment OK to run'))
+    else:
+      self._logger.info(cm.red_bg('Environment NOT OK to run'))
+    self.exit_code = int(env_ok)

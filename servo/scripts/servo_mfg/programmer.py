@@ -228,6 +228,14 @@ class Programmer(object):
     """Helper to validate that programming tools are available."""
     raise NotImplementedError()
 
+  def verify_programming_env(self):
+    """True/False wrapper around |_verify_programming_env|."""
+    try:
+      self._verify_programming_env()
+      return True
+    except ProgrammerError:
+      return False
+
   # The helpers below are to raise common errors, and have standardized
   # reporting on them.
 

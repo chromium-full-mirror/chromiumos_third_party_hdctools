@@ -178,7 +178,7 @@ class Coordinator(object):
     t.add_argument('--only-testing', action='store_false', default=True,
                    dest='programming',
                    help='only run testing and skip all programming. This makes'
-                   'all no_* flags unnecessary.')
+                   'all no-* flags unnecessary.')
     parser.add_argument('-v', '--validation', action='store_true',
                         default=False,
                         help='This indicates that no flashing should take '
@@ -226,7 +226,10 @@ class Coordinator(object):
 
   def run(self):
     """Run the manufacturing logic."""
-    if self.args.single:
+    if self.args.check:
+      # only check the environment
+      self.manager.check_env()
+    elif self.args.single:
       ret = self.manager.single_device(self.args)
       # On single device mode, we need to call abort from
       # the outside. |ret| is True on success, and False on failure.
