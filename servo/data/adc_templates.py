@@ -451,7 +451,7 @@ class PAC19nextTemplate(PAC1934Template):
 
   ADC_TYPE = 'pac19next'
 
-  REG_IDX = dict(refresh=0, ctrl=1, busv=0xf, cur=0x13, pwr=0x17,
+  REG_IDX = dict(refresh=0, ctrl=1, busv=0xf, cur=0x13, pwr=0x17, smbus=0x1c,
                  neg_pwr_fsr=0x1d, refresh_v=0x1f, ctrl_act=0x21,
                  neg_pwr_fsr_act=0x22)
 

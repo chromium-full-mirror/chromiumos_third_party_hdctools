@@ -63,6 +63,7 @@ from . import macro
 from . import na
 from . import pac1934
 from . import pac19next
+from . import pac19next_gpio
 from . import parrot_ec
 from . import parrot_power
 from . import pca9500
