@@ -316,6 +316,50 @@ class Hierarchy(object):
     """
     return Hierarchy._ReadFromSysfs(sysfs_path, Hierarchy.SERIAL_FILE)
 
+  @staticmethod
+  def ComplementBusNum(busnum):
+    """Find the complement bus to |busnum|.
+
+    Assuming that |busnum| runs on usb3, this will find the busnum for the same
+    host controller that runs on usb2 (and vice-versa).
+
+    Assumptions (to aid debugging if/when the logic breaks):
+    1. all usb buses are enumerated under `/sys/bus/usb/devices/usb$d`
+    2. complement buses (usb2 and usb3 of the same controller) have the same
+       pci device
+    -> use sysfs pci paths to check for complement buses
+
+    Args:
+      busnum: int, busnum of the bus of interest
+
+    Returns:
+      busnum, int, the complement speed's busnum, or None if the controller
+      is a single-speed controller with only one bus
+
+    Raises:
+      HierarchyError: if |busnum| is not a real usb bus on the system
+      HierarchyError: if more than one complement bus are found
+    """
+    busdir = 'usb%d' % busnum
+    sysfs_buspath = '/sys/bus/usb/devices/' + busdir
+    if not os.path.exists(sysfs_buspath):
+      raise HierarchyError('No usb bus %d found' % busnum)
+    pci_dev_path = os.path.dirname(os.path.realpath(sysfs_buspath))
+    # let's search for the other candidates
+    complement_candidates = [c for c in os.listdir(pci_dev_path) if
+                             re.match(r'usb\d+$', c)]
+    # remove |busnum| as a candidate
+    if busdir in complement_candidates:
+      complement_candidates.remove(busdir)
+    if not complement_candidates:
+      return None
+    # Turn into busnum int
+    complement_candidates = [int(c[3:]) for c in complement_candidates]
+    if len(complement_candidates) > 1:
+      raise HierarchyError('%r all potential complement buses to %d' %
+                           (complement_candidates, busnum))
+    return complement_candidates[0]
+
   def RefreshHierarchy(self):
     """Walk through usb sysfs files and gather device information.
 

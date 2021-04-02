@@ -145,13 +145,15 @@ class usbImageManager(hw_driver.HwDriver):
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
                                  self._image_usbkey_hub_ports]
     # all |image_location_candidates| here assume that the device is on the same
-    # bus as the servo device. The servo device is on bus 1 as it runs on usb2.
-    # Some servo devices support usb3 host hub connection. This means that the
-    # device might be on bus 2 as well (if it's a usb3 usb stick, and that
-    # stick is enumerated as usb3).
-    # expand this logic here to account for both.
-    usb3_location_candidates = [c.replace('/1-', '/2-') for c in
-                                image_location_candidates]
+    # bus as the servo device. If the servo is attached to a usb controller
+    # that has both usb2 and usb3 busses, we need to search both.
+    busnum = usb_hierarchy.Hierarchy.BusNumFromSysfs(hub_on_servo)
+    usb3_busnum = usb_hierarchy.Hierarchy.ComplementBusNum(busnum)
+    if usb3_busnum is not None:
+      # It can be none if the bus only appears in one speed.
+      usb3_location_candidates = [c.replace('/%d-' % busnum,
+                                            '/%d-' % usb3_busnum)
+                                  for c in image_location_candidates]
     image_location_candidates.extend(usb3_location_candidates)
     hub_location_candidates = []
     if self._supports_hub_on_port:
