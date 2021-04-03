@@ -42,11 +42,20 @@ See the detailed documentation in [Servo Micro].
 
 ### Servo v4
 
-Servo v4 is the latest test and debug board to work with Google hardware. It
+While Servo v4 is still supported in software, the hardware has been discontinued 
+and replaced by Servo v4.1.
+
+See the detailed documentation in [Servo v4].
+
+### Servo v4.1
+
+Servo v4.1 is the latest test and debug board to work with Google hardware. It
 combines Case Closed Debug ([CCD]) with numerous different methods to download
 data to the DUT and other testing and debug functionality.
 
-See the detailed documentation in [Servo v4].
+Servo v4.1 is a superset of Servo v4 for functionality.
+
+See the detailed documentation in [Servo v4.1].
 
 ## Using Servo {#using-servo}
 
@@ -257,6 +266,7 @@ symbolic name as as follows:
 [Chromium OS autotest repo]: https://chromium.googlesource.com/chromiumos/third_party/autotest
 [Servo v2]: ./servo_v2.md
 [Servo v4]: ./servo_v4.md
+[Servo v4.1]: ./servo_v4p1.md
 [Servo Micro]: ./servo_micro.md
 [servod_no_nspid]: https://groups.google.com/a/google.com/d/msg/chromeos-chatty-firmware/mDexO8T1TyM/rFONCSifAAAJ
 [CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/docs/case_closed_debugging_cr50.md

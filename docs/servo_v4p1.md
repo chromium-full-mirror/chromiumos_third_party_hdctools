@@ -1,0 +1,435 @@
+# Servo v4.1
+
+Servo v4.1 is a debug device in the Servo family and is a superset of the v4 device.
+
+Servo v4.1 functions as a configurable USB hub to support developer and lab
+recovery features. However, it doesn't have any hardware debug features on its
+own. It must be paired with CCD (Cr50's on-board Servo implementation) or
+[Servo Micro].  The Servo is controlled by a host and the Servo attaches to a
+chromebook DUT.
+
+
+[TOC]
+
+<!-- mdformat off(b/139308852) -->
+*** note
+**Googlers**: gLinux has a [kernel bug] that will cause all
+USB devices (including keyboard and mouse) to randomly stop working when using
+Servo v4.1.
+
+To enable tracing and help debug the issue, which also seems to help reduce the
+frequency of occurrence, you can add the following to `/etc/rc.local`:
+
+```bash
+logger "Enabling USB Tracing: See http://b/123886969 and http://b/136676682"
+echo 1 > /sys/kernel/debug/tracing/events/xhci-hcd/enable
+```
+
+See this [email][chatty-eng servo issue] for more details.
+***
+<!-- mdformat on -->
+
+## How do the Servo v4.1 and v4 compare?
+
+
+Feature                              | v4.1            | v4
+------------------------------------ | --------------- | ---------------------
+Host USB connector type              | C               | Micro
+Host max speed to switched USB ports | USB3 5 Gbps     | USB2 480 Gbps
+Servo Power Options                  | Host BC1.2,     | Host only
+''                                   | Host USBC @ 5V, |
+''                                   | Alternate Power Port @ 5V |
+Switchable USB ports                 | 2x USB3.0       | 1x USB3.0, SD Reader
+CC DACs on DUT                       | Yes             | No
+DisplayPort                          | 4 lanes HBR2    | No
+DisplayPort power for dongles        | 3.3V @ 500mA    | No
+EC SWD debug port                    | Yes             | No
+EC DFU recovery mechanical switch    | Yes             | No
+DUT Vbus auto discharge option       | Yes             | No
+DUT max Vbus current                 | 3A+             | 3A
+Alternate UART to RJ11               | Yes             | No
+Ethernet power on/off                | Yes             | No
+
+
+Servo v4.1 has a number of minor bug fixes to v4 and BOM replacement for EOL parts.
+
+For most users, replace the host cable from USB micro to USB C type and then update the servod software by the normal methods, and the Servo v4.1 will drop in to the old solution.
+
+
+## What is Servo v4.1?
+
+Servo v4.1 combines the functionality of the following devices into one:
+
+*   Ethernet-USB dongle
+*   2x muxable USB3 ports
+*   Keyboard emulator
+*   Pass through charger
+*   [Case-Closed Debug (CCD)][CCD] interface ([SuzyQ] debug cable)
+
+Details:
+
+*   [Servo v4.1 Block Diagram]
+*   [Servo v4.1 Schematic]
+
+![Servo v4.1](images/Servo_V4p1_DVT.jpg)
+
+## Getting Servo v4.1
+
+<!-- mdformat off(b/139308852) -->
+*** promo
+Sorry, Servo v4.1 is not publicly available for purchase.
+***
+<!-- mdformat on -->
+
+<!-- mdformat off(b/139308852) -->
+*** note
+**IMPORTANT**: You should [update the firmware](#updating-firmware)
+before using, as the factory firmware may be out of date.
+***
+<!-- mdformat on -->
+
+### Partners
+
+Your contact at Google should be able to provide you with Servo v4.1.
+
+### Googlers
+
+Stop by your local Chromestop.
+
+## How to Use Servo v4.1
+
+Servo v4.1 must be plugged into a host machine using a USBC cable. This will
+power the Servo while allowing the user to control the Servo using [`servod`].
+
+The Servo can be powered by the host cable (with BC1.2 and up to 5V @ 3A from a USBC cable) or from the Servo Alternate Power port. If the Servo power needs exceed the host port capability, the Servo Alternate Power Port may be used instead.  Presently the EC code is RAM limited, so the full input range of the Servo Alternate Power port (5V-15V @3A) is reduced to 5V only, with PD unsupported.   When the Alternate power port is present, the Servo will automatically switch to the Alternate port to power the Servo.  When the Alternate power port is used, the Servo has the ability (through software control) to remain powered when the host computer/hub has its own power removed.
+
+The DUT cable (which is a captive) can be plugged into a Chromebook (Device under Test), providing the
+DUT access to the ethernet and stacked USB ports inside the Servo.  This port can support other USB devices as well.
+
+The Type-C captive cable enables debugging of devices that have a Cr50 (recent
+Chromebooks) through [CCD].
+
+The "uServo" USB port can be used to plug a Servo micro to debug devices over
+the Yoshi debug header.
+
+From here other functionality is available. The following devices can be used to
+download data to the DUT:
+
+*   Ethernet (only available to DUT)
+*   USB flash drives (dynamically configurable, can attach to host or DUT)
+
+Additionally Servo v4.1 can be used to power the DUT which becomes useful for
+devices that use USB as their only charge port (tablets, phones etc.). The
+Type-C port can be used to plug in any Type-C charger to provide full charging
+capabilities as a charge through hub. If no charger is attached, Servo v4.1 will
+act as a passive hub.
+
+Servo v4.1 has an embedded keyboard so keystrokes can be emulated on the DUT.
+
+The [`servod`] server must be running for Servo v4.1 to work. Details can be found
+on the [Servo] page.
+
+The Type-C Servo version acts as both a USB hub and PD charger. Servo v4.1 can also
+control both CC terminations which allows it to act as a debug accessory. It
+should be used on systems with [CCD].
+
+## Servo v4.1 LEDs
+
+* Red power:  Lit when unit is powered.  Located near host USBC connector.
+
+* Red s/w configured: Lit per EC code.  Located near uServo USBA connector.
+
+* Blue DFM:  Lit when EC boots in DFM mode, based upon slider switch.  This LED should be off for standard operation.
+
+* Green DUT Power:  Lit after PD contract with DUT has completed, to indicate DUT Power port is providing power to DUT
+* Orange DUT Power:  Lit after PD contract with DUT has completed, to indicate Servo is providing internally generated 5V to DUT
+
+These DUT Power LEDs are near the center of the Servo.
+
+* Green Hub Port:  Host hub controlled; lit when the A0 (top) USB stacked port is present and attached to the host.  LED is near RJ45 on the PCB.
+
+RJ45 LEDs, viewed from the front of RJ45 connector
+* Left- Activity / Link
+* Right- Speed:   Green = 1000M, Yellow = 100M, off = 10M
+
+
+## Servo v4.1 Revisions
+
+Servo v4.1 had several revisions, indicated by board color. The mass production
+(MP) version is available from Chromestop.
+
+### Blue or Black Soldermask (DVT/MP)
+
+
+### Green Soldermask (EVT)
+
+The EVT version is a mostly functioning version with a few bugs. There are
+around sixty of these EVT units total.
+
+*   The host port BC1.2 detection sometimes malfunctions and won't permit the EC
+    to be detected by the host.
+
+
+## Tips
+
+This is the recommended order in which to attach cabling/peripherals for best results.
+
+1. Host cable
+2. Servo Power supply (optional)
+3. DUT Power supply (if used)
+4. DUT cable
+5. DisplayPort
+
+This sequence has better coverage.  The other peripherals (USBA ports, RJ22, RJ45) shouldn't matter for order.
+
+
+## Software
+
+Servo v4.1 runs more or less equivalently to Servo v2 and v3, through [`servod`].
+It's intended to be mostly transparent, but there are some differences.
+
+Most functionality is exported through `dut-control`.
+
+```bash
+(chroot) $ sudo servod -b <board> -s <serial>
+```
+
+To use with a specific board, you can connect a servo_micro to the "uServo"
+labeled port (or use the Type-C cable to connect to [CCD]) and run [`servod`],
+which will load the board config and control both Servo v4.1 and Servo Micro (or
+Cr50).
+
+```bash
+(chroot) $ sudo servod -b [board] -s [serialno printed on Servo sticker]
+```
+
+### Recipes
+
+#### Connect to Servo console without servod
+
+Connect to Servo v4.1 Console:
+
+```bash
+(chroot) $ usb_console -d 18d1:520d
+```
+
+Connect to Servo Micro Console:
+
+```bash
+(chroot) $ usb_console -d 18d1:501a -i 3
+```
+
+Connect to Cr50 Console:
+
+```bash
+(chroot) $ usb_console -d 18d1:5014
+```
+
+#### Switch USB3 to Host
+
+```bash
+(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
+```
+
+#### Switch USB3 to DUT
+
+```bash
+(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
+```
+
+### Disable/Enable [SuzyQ] wiring (debug accessory mode)
+
+<!-- mdformat off(b/139308852) -->
+*** note
+Type-C Servo v4.1 only
+***
+<!-- mdformat on -->
+
+```bash
+(chroot) $ dut-control servo_v4p1_dts_mode:off [on]
+```
+
+### Disable/Enable Chargethrough
+
+<!-- mdformat off(b/139308852) -->
+*** note
+Type-C Servo v4.1 only
+***
+<!-- mdformat on -->
+
+```bash
+(chroot) $ dut-control servo_v4p1_role:snk [src]
+```
+
+## Flashrom
+
+<!-- mdformat off(b/139308852) -->
+*** note
+For [CCD]: Flashrom doesn't need to specify voltage anymore, this is done
+within Cr50. See the "care and feeding" for your specific device for the
+correct `flashrom` commands for [CCD], Servo Micro, and Servo v2, as they are
+each different.
+***
+<!-- mdformat on -->
+
+<!-- mdformat off(b/139308852) -->
+*** note
+When flashing the BIOS or EC with [CCD], you need to make sure the [`FlashAP`]
+capability is enabled in Cr50.
+***
+<!-- mdformat on -->
+
+Flash BIOS with CCD:
+
+```bash
+(chroot) $ sudo flashrom -p raiden_debug_spi:target=AP -r bios.bin
+```
+
+## Updating Firmware {#updating-firmware}
+
+The latest firmware is available in the chroot at
+`/usr/share/servo_updater/firmware/`.
+
+If the green LED on the Servo does not light up when DUT POWER is connected to a
+USB charger, you probably don’t have the latest firmware and should update.
+
+<!-- mdformat off(b/139308852) -->
+*** note
+**NOTE**: [`servod`] must not be running.
+***
+<!-- mdformat on -->
+
+Sync the latest source:
+
+```bash
+(chroot) repo sync
+```
+
+Update `sys-firmware/servo-firmware` to the latest version:
+
+```bash
+(chroot) ~/trunk/src/scripts/update_chroot
+```
+
+Update to latest stable firmware:
+
+```bash
+(chroot) $ sudo servo_updater -b servo_v4p1
+```
+
+Update to specific version:
+
+```bash
+(chroot) $ sudo servo_updater -b servo_v4p1 -f <filename>
+```
+
+## Enabling Case Closed Debug (CCD)
+
+See [CCD] for complete details.
+
+Connect to Cr50 console:
+
+```bash
+(chroot) $ usb_console -d 18d1:5014
+```
+
+Check the Cr50 version in the Cr50 console:
+
+```
+> version
+Build:   0.4.10/cr50_v1.9308_B.269-754117a
+```
+
+<!-- mdformat off(b/139308852) -->
+***note
+CCD requires Cr50 version 0.3.9+ / 0.4.9+
+*   0.4.x is the "pre-pvt" version, for pre-production devices.
+*   0.3.x is the "mp" version, for production devices. This requires the device
+    to be in developer mode before "ccd open".
+*   0.0.22 is the factory preflash from GUC. It needs an update.
+***
+<!-- mdformat on -->
+
+Open CCD in the Cr50 console:
+
+```
+> ccd open
+```
+
+Press power button when prompted. It should take around 5 minutes.
+
+<!-- mdformat off(b/139308852) -->
+*** note
+If you get an access denied error when attempting `ccd open`, you likely do
+not have developer mode enabled.
+***
+<!-- mdformat on -->
+
+<!-- mdformat off(b/139308852) -->
+*** note
+Cr50 loses the developer mode state after "opening CCD". If your device boots
+into recovery mode, try re-entering developer  mode.
+***
+<!-- mdformat on -->
+
+Enable testlab mode in the Cr50 console:
+
+```
+> ccd testlab enable
+```
+
+Press power button some more. CTRL+C to exit.
+
+Run [`servod`] as normal, [CCD] should be enabled now.
+
+## Known issues
+
+*   Servo Alternate Power Port: Due to EC RAM limitations the maximum voltage used
+    is 5V, although hardware will support a nominal 15V input.
+
+## Bugs
+
+File bug or feature requests [here][Bug].
+
+## Programming
+
+<!-- mdformat off(b/139308852) -->
+*** note
+You don't need to do this unless you're developing Servo v4.1 firmware.
+***
+<!-- mdformat on -->
+
+Servo v4.1 code lives in the [EC] and [`hdctools`] codebase. It can be built as
+follows:
+
+```bash
+(chroot) $ cd ~/trunk/src/platform/ec
+(chroot) $ make BOARD=servo_v4p1 -j8
+```
+
+To raw flash a Servo v4.1, slide the DFU switch by the RJ45 so the blue LED is lit.  For ordinary 
+Servo use, the blue LED should be off.
+
+```bash
+(chroot) $ ./util/flash_ec --board=servo_v4p1
+```
+
+To set the Servo v4.1 serial number on the Servo console:
+
+```
+> serialno set 0123456
+```
+
+[Servo]: ./servo.md
+[Servo v4.1 Block Diagram]: ./images/Servo_V4.1_Block_Diagram_V1p02.pdf
+[Servo v4.1 Schematic]: ./images/G650-05260-03-SCH_Revision_3p03_Servo_4p1_DVT_Released_210316.pdf
+[Servo Micro]: ./servo.md
+[EC]: https://chromium.googlesource.com/chromiumos/platform/ec
+[`servod`]: ./servod.md
+[SuzyQ]: ./ccd.md#suzyq-suzyqable
+[CCD]: ./ccd.md
+[`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md#flashap
+[Bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards
+[`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools
+[kernel bug]: https://issuetracker.google.com/123886969
+[chatty-eng servo issue]: https://groups.google.com/a/google.com/g/chromeos-chatty-eng/c/tWChV-rkCHw/m/0JO8VG2dAgAJ
