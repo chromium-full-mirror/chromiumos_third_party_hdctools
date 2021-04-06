@@ -11,16 +11,17 @@ import servo.interface.stm32uart as stm32uart
 class TinyServod(object):
   """Helper class to wrap a pty_driver with interface."""
 
-  def __init__(self, vid, pid, interface):
+  def __init__(self, vid, pid, interface, serialname=None):
     """Build the driver and interface.
 
     Args:
       vid: servo device vid
       pid: servo device pid
       interface: which usb interface the servo console is on
+      serialname: optional, serial if this is used in a multi device setting
     """
     self.suart = stm32uart.Suart(vendor=vid, product=pid, interface=interface,
-                                 serialname=None)
+                                 serialname=serialname)
     self.suart.run()
     self.pty = pty_driver.ptyDriver(self.suart, [])
 
