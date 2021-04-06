@@ -16,11 +16,12 @@ class ServodToolError(Exception):
   pass
 
 
-def setup_logging():
+def setup_logging(debug=False):
   """Setup logging for the command line tool."""
   root_logger = logging.getLogger()
   stdout_handler = logging.StreamHandler(sys.stdout)
-  stdout_handler.setLevel(logging.INFO)
+  level = logging.DEBUG if debug else logging.INFO
+  stdout_handler.setLevel(level)
   root_logger.setLevel(logging.DEBUG)
   root_logger.addHandler(stdout_handler)
 
@@ -42,8 +43,9 @@ def servodutil(cmdline=sys.argv[1:]):
 def main(cmdline=sys.argv[1:]):
   """Entry function for cmdline servodtool utility."""
   # pylint: disable=protected-access
-  setup_logging()
   parser = argparse.ArgumentParser()
+  parser.add_argument('-d', '--debug', action='store_true', default=False,
+                      help='enable debug messages')
   subparsers = parser.add_subparsers(dest='tool')
   # Make a dictionary of tool names and the actual tool.
   tool_dict = {}
@@ -55,6 +57,7 @@ def main(cmdline=sys.argv[1:]):
     tparser = subparsers.add_parser(tname, help=t.help)
     tool_dict[tname].add_args(tparser)
   args = parser.parse_args(cmdline)
+  setup_logging(args.debug)
   tool_dict[args.tool].run(args)
 
 

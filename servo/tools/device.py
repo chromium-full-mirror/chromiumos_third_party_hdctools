@@ -4,13 +4,16 @@
 
 """Device tool to manage the (usb) servo device."""
 
+import collections
 import os
 import subprocess
 import time
 
 import servo.servo_interfaces
+from servo.drv.pty_driver import ptyError
 import servo.utils.usb_hierarchy as uh
 from . import tool
+from servo_mfg import tiny_servod
 
 # VID to find all servo devices.
 SERVO_VID = 0x18d1
@@ -44,6 +47,20 @@ class Device(tool.Tool):
   # Polling intervals to find the |devnum| file for reset device.
   REINIT_POLL_SLEEP_S = 0.1
 
+  # Time to sleep and attempts to interact with servo console after reboot.
+  REBOOT_SLEEP_S = 1
+  REBOOT_TIMEOUT_ATTEMPTS = 4
+
+  # Dictionary to look up the device's servo console USB interface number.
+  # TODO(coconutruben): remove this once we have servo device templates that
+  # contain all this information.
+  USB_CONSOLE_IFACE = collections.defaultdict(dict)
+  USB_CONSOLE_IFACE[0x18d1][0x501a] = 3 # servo_micro
+  USB_CONSOLE_IFACE[0x18d1][0x501b] = 0 # servo_v4
+  USB_CONSOLE_IFACE[0x18d1][0x5020] = 0 # sweetberry
+  USB_CONSOLE_IFACE[0x18d1][0x520d] = 0 # servo_v4p1
+  USB_CONSOLE_IFACE[0x18d1][0x5041] = 0 # c2d2
+
   @property
   def help(self):
     """Tool help message for parsing."""
@@ -66,6 +83,52 @@ class Device(tool.Tool):
       if dev_serial == serial:
         return dev_path
     return None
+
+  def reboot(self, args):
+    """Reboot the device."""
+    # First, let's make sure the device exists.
+    e = None
+    dev_path = self._usb_path(args.serial)
+    if not dev_path:
+      self.error('Device with serial %r not found.', args.serial)
+    vid = uh.Hierarchy.VendorIDFromSysfs(dev_path)
+    pid = uh.Hierarchy.ProductIDFromSysfs(dev_path)
+    devnum = uh.Hierarchy.DevNumFromSysfs(dev_path)
+    if (vid not in self.USB_CONSOLE_IFACE or
+        pid not in self.USB_CONSOLE_IFACE[vid]):
+      self.error('Device %04x:%04x %s does not support reboot',
+                 vid, pid, args.serial)
+    iface = self.USB_CONSOLE_IFACE[vid][pid]
+    ts = tiny_servod.TinyServod(vid, pid, iface, args.serial)
+    ts.pty._issue_cmd_get_results('chan 0', ['>'])
+    try:
+      ts.pty._issue_cmd_get_results('reboot', ['>'])
+    except ptyError as e:
+      # We except a no-data error here occasionally, if the reboot
+      # was too quick for the console to send a newline. That's fine.
+      if 'No data was sent from the pty' not in str(e):
+        raise
+    # Make sure the device comes back with a new devnum before attempting
+    # to comminucate with it.
+    self._check_devnum_reset(dev_path, devnum, 'reboot')
+    for i in range(self.REBOOT_TIMEOUT_ATTEMPTS):
+      try:
+        # Make sure the device is back
+        self._logger.debug('Attempt %d to interact with console post reboot',
+                           i+1)
+        ts.reinitialize()
+        ts.pty._issue_cmd_get_results('chan 0', ['>'])
+        ts.pty._issue_cmd_get_results('serialno',
+                                      [r'Serial number: ([^\r\n]+)[\n\r]+'])
+        ts.pty._issue_cmd_get_results('chan restore', ['>'])
+        return
+      except Exception as e:
+        # store the exception in e here so that we have access to it later
+        # if we need to print it.
+        self._logger.debug(e)
+      time.sleep(self.REBOOT_SLEEP_S)
+    self.error('Device %04x:%04x %s issue after reboot: %s',
+               vid, pid, args.serial, e)
 
   def usb_path(self, args):
     """Retrieve the usb sysfs path for a serial number."""
@@ -161,6 +224,40 @@ class Device(tool.Tool):
 
     self.error('Unimplemented pid: %04x', pid)
 
+  def _check_devnum_reset(self, dev_path, devnum, action):
+    """Check that the |devnum| has changed after a reset/reboot/power-cycle
+
+    Args:
+      dev_path: device sysfs path
+      devnum: int, usb devnum (original devnum, before reset action)
+      action: str, action performed (used to print better errors/logs
+
+    Note: this helper will call self.error() (and thus exit) if
+    - the devnum does not change
+    - it fails to read the devnum after self.MAX_REINIT_SLEEP_S
+    """
+    # Sleep a bit to let the device fully fall off, and the sysfs files be
+    # renewed.
+    time.sleep(self.RESET_DEBOUNCE_S)
+    # For |MAX_REINIT_SLEEP_S| seconds, try to find the new devnum for the
+    # device.
+    end = time.time() + self.MAX_REINIT_SLEEP_S
+    while time.time() < end:
+      try:
+        # check devnum reset
+        if devnum == uh.Hierarchy.DevNumFromSysfs(dev_path):
+          self.error('%r likely unsuccessful. devnum stayed the same.', action)
+        # If |devnum| changed, then the goal is fulfilled. Move on.
+        break
+      except uh.HierarchyError:
+        # The device might not have reenumerated yet. Sample again.
+        time.sleep(self.REINIT_POLL_SLEEP_S)
+    else:
+      # The while loop finished without breaking out e.g. we never read the
+      # |devnum| file successfully.
+      self.error('unable to read device |devnum| file after %ds. Giving up.',
+                 self.MAX_REINIT_SLEEP_S)
+
   def power_cycle(self, args):
     """Perform a power-cycle on the device using uhubctl."""
     self._build_and_assert_uhubctl()
@@ -177,29 +274,7 @@ class Device(tool.Tool):
     # extract the hub and check whether it's on uhubctl
     hub, port = self._get_hub_and_port(dev_path, pid)
     self._run_uhubctl_command(hub=hub, port=port, action='reset')
-    # Sleep a bit to let the device fully fall off, and the sysfs files be
-    # renewed.
-    time.sleep(self.RESET_DEBOUNCE_S)
-    # For |MAX_REINIT_SLEEP_S| seconds, try to find the new devnum for the
-    # device.
-    end = time.time() + self.MAX_REINIT_SLEEP_S
-    while time.time() < end:
-      try:
-        # check devnum reset
-        if devnum == uh.Hierarchy.DevNumFromSysfs(dev_path):
-          self.error('devnum stayed the same even though allegedly the device '
-                     'was power-cycled. Do not believe the device was power '
-                     'cycled.')
-        # If |devnum| changed, then the goal is fulfilled. Move on.
-        break
-      except uh.HierarchyError:
-        # The device might not have reenumerated yet. Sample again.
-        time.sleep(self.REINIT_POLL_SLEEP_S)
-    else:
-      # The while loop finished without breaking out e.g. we never read the
-      # |devnum| file successfully.
-      self.error('unable to read device |devnum| file after %ds. Giving up.',
-                 self.MAX_REINIT_SLEEP_S)
+    self._check_devnum_reset(dev_path, devnum, 'power-cycle')
     # At the end, no error was encountered, so indicate belief that reset was
     # successful.
     self._logger.info('Successfully power-cycled device with serial %r. '
@@ -210,8 +285,9 @@ class Device(tool.Tool):
     subcommands = tool_parser.add_subparsers(dest='command')
     tool_parser.add_argument('-s', '--serial', required=True,
                              help='serial of servo device on the system.')
-    subcommands.add_parser('usb-path',
-                           help='Show /sys/bus/usb/devices path of the device')
     subcommands.add_parser('power-cycle',
                            help='Power cycle device using uhubctl if on smart '
                                 'hub')
+    subcommands.add_parser('reboot', help='Reboot the device MCU')
+    subcommands.add_parser('usb-path',
+                           help='Show /sys/bus/usb/devices path of the device')
