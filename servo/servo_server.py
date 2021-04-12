@@ -255,7 +255,9 @@ class Servod(object):
       # NOTE(coconutruben): all of this nonsense is going away with the new
       # servod and is to bridge the time until then. Please forgive the below
       # until then.
-      if '.' in control_name:
+      if '.' in control_name and not control_name.startswith('root'):
+        # TODO(coconutruben): remove the root exception here once multi device
+        # support is merged.
         # In the current implementation, the only case where a '.' (a prefix)
         # is in the control name is when there is a dual instance with micro and
         # ccd on a v4.
