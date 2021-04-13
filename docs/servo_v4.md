@@ -228,6 +228,12 @@ Type-C Servo v4 only
 (chroot) $ dut-control servo_v4_dts_mode:off [on]
 ```
 
+#### Connect remotely
+
+```bash
+$ dut-control --host XXX --port YYY
+```
+
 ### Disable/Enable Chargethrough
 
 <!-- mdformat off(b/139308852) -->
