@@ -71,7 +71,7 @@ Details:
 *   [Servo v4.1 Block Diagram]
 *   [Servo v4.1 Schematic]
 
-![Servo v4.1](images/Servo_V4p1_DVT.jpg)
+![Servo v4p1](images/servo_v4p1_dvt.jpg)
 
 ## Getting Servo v4.1
 
@@ -421,8 +421,8 @@ To set the Servo v4.1 serial number on the Servo console:
 ```
 
 [Servo]: ./servo.md
-[Servo v4.1 Block Diagram]: ./images/Servo_V4.1_Block_Diagram_V1p02.pdf
-[Servo v4.1 Schematic]: ./images/G650-05260-03-SCH_Revision_3p03_Servo_4p1_DVT_Released_210316.pdf
+[Servo v4.1 Block Diagram]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/images/Servo_V4.1_Block_Diagram_V1p02.pdf
+[Servo v4.1 Schematic]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/images/G650-05260-03-SCH_Revision_3p03_Servo_4p1_DVT_Released_210316.pdf
 [Servo Micro]: ./servo.md
 [EC]: https://chromium.googlesource.com/chromiumos/platform/ec
 [`servod`]: ./servod.md
