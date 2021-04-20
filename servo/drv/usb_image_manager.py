@@ -154,7 +154,7 @@ class usbImageManager(hw_driver.HwDriver):
       usb3_location_candidates = [c.replace('/%d-' % busnum,
                                             '/%d-' % usb3_busnum)
                                   for c in image_location_candidates]
-    image_location_candidates.extend(usb3_location_candidates)
+      image_location_candidates.extend(usb3_location_candidates)
     hub_location_candidates = []
     if self._supports_hub_on_port:
       # Here the config says that |image_usbkey_sysfs| might actually have a hub
