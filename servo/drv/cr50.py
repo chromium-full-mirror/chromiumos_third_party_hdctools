@@ -52,6 +52,8 @@ class cr50(pty_driver.ptyDriver):
   PROMPT_DETECTION_TRIES = 3
   PROMPT_DETECTION_INTERVAL = 1
 
+  RDD_RE = r'Rdd:\s+(?P<rdd>\S+)[\r\n]+(KeepAlive: (?P<keepalive>\S+)\s)?'
+
   def __init__(self, interface, params):
     """Constructor.
 
@@ -327,8 +329,19 @@ class cr50(pty_driver.ptyDriver):
       0: keepalive disabled.
       1: keepalive enabled.
     """
-    rdd = self._get_ccd_cap_state('Rdd')
-    return 1 if 'keepalive' in rdd else 0
+    result = self._issue_cmd_get_results('ccdstate', ['ccdstate.*>'])[0]
+    rddstate = re.search(self.RDD_RE, result)
+    if not rddstate:
+      raise cr50Error('Unable to get rdd output %r', result)
+    # Older versions of cr50 don't have a devoted KeepAlive field. Use the
+    # keepalive output where possible.
+    # Check for shorter strings in case servo drops output.
+    keepalive = rddstate.group('keepalive')
+    if keepalive:
+      rv = 'ena' in keepalive
+    else:
+      rv = 'keep' in rddstate.group('rdd')
+    return int(rv)
 
   def _Get_ccd_cap(self, cap_name):
     """Getter of CCD capability state for the given capability name.
