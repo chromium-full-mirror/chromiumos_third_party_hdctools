@@ -328,7 +328,7 @@ class cr50(pty_driver.ptyDriver):
       1: keepalive enabled.
     """
     rdd = self._get_ccd_cap_state('Rdd')
-    return 'on' if 'keepalive' in rdd else 'off'
+    return 1 if 'keepalive' in rdd else 0
 
   def _Get_ccd_cap(self, cap_name):
     """Getter of CCD capability state for the given capability name.
@@ -360,11 +360,7 @@ class cr50(pty_driver.ptyDriver):
     Args:
       value: 0=off, 1=on.
     """
-    if value == 'off' or value == 'on':
-      self._issue_cmd('rddkeepalive %s' % value)
-    else:
-      raise ValueError("Invalid ec_keepalive_en setting: '%s'. Try one of "
-                       "'on', or 'off'." % value)
+    self._issue_cmd('rddkeepalive %s' % ('on' if value else 'off'))
 
   def _Get_ec_uart_bitbang_en(self):
     return int(self._interface._ec_uart_bitbang_props['enabled'])
