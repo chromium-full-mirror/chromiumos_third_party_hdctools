@@ -461,6 +461,7 @@
   </control>
   <control>
     <name>servo_v4_pd_comm</name>
+    <alias>servo_pd_comm</alias>
     <doc>PD communication for DUT port on servo_v4</doc>
     <params subtype="servo_v4_pd_comm" interface="26" drv="ec3po_servo_v4"
     input_type="str"></params>
