@@ -21,7 +21,8 @@ class CrosECPower(power_state.PowerStateDriver):
                                                  'apshutdown')
     self._shutdown_delay = float(self._params.get('shutdown_delay', 11.0))
 
-  def _power_off(self):
+  def _power_off(self, manage_delay=True):
     self._interface.set('ec_uart_regexp', 'None')
     self._interface.set('ec_uart_cmd', self._shutdown_ec_command)
-    time.sleep(self._shutdown_delay)
+    if manage_delay:
+      time.sleep(self._shutdown_delay)

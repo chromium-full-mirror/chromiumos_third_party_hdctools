@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 """Custom power_state driver for grunt for b/167734179."""
 
+import time
+
 from servo.drv import cros_ec_softrec_power
-from servo.drv.ec_i2c_pin import ecI2cPinError
 
 
 # pylint: disable=invalid-name
@@ -36,7 +37,8 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
     # NOTE: the control cannot be turned off _before_ |_power_off()| because
     # the system might be booted from a usb stick, and this would remove the
     # memory.
-    super(gruntPower, self)._power_off()
+    super(gruntPower, self)._power_off(manage_delay=False)
+    g3_entry_time = time.time() + self._shutdown_delay
     if self._needs_c0_pp1():
       # Turn off the c0_ppc_pp1 right after turning off. It takes the EC ~10s to
       # transition to out G3 implementation that turns off the VBUS, and causes
@@ -47,14 +49,18 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
       for i in range(self.I2C_RETRY_COUNT):
         try:
           self._interface.set(self.CTRL, 'off')
-          # exit on success
-          return
-        except ecI2cPinError as e:
+          break
+        except Exception as e:
+          # This cannot fail. Once we're here, we need to either get the ppc
+          # turned off, or reset the DUT before it ccd breaks.
           self._logger.debug('Try %d to turn off ppc failed. %r', i+1, e)
-      # If we made it to here, this means that we turned off the DUT, needed
-      # to turn off the ppc, but failed. Reset the system.
-      self._logger.error('Turning off ppc failed. Resetting system over cr50')
-      self._interface.set('power_state', 'cr50_reset')
+      else:
+        # If we made it to here, this means that we turned off the DUT, needed
+        # to turn off the ppc, but failed. Reset the system.
+        self._logger.error('Turning off ppc failed. Resetting system over cr50')
+        self._interface.set('power_state', 'cr50_reset')
+    # Manage the delay ourselves here sleep the remaining time here.
+    time.sleep(max(0, g3_entry_time - time.time()))
 
   def _needs_c0_pp1(self):
     """Whether grunt needs to manage the c0 ppc pp1 enable manually."""
