@@ -277,7 +277,7 @@ capability is enabled in Cr50.
 Flash BIOS with CCD:
 
 ```bash
-(chroot) $ sudo flashrom -p raiden_debug_spi:target=AP -r bios.bin
+(chroot) $ sudo flashrom -p raiden_debug_spi:target=AP -w bios.bin
 ```
 
 ## Updating Firmware {#updating-firmware}

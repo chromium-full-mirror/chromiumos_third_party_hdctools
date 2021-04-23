@@ -46,7 +46,7 @@ For example, on a 3.3V DUT:
 
 ```bash
 (chroot) $ dut-control spi2_vref:pp3300 spi2_buf_en:on
-(chroot) $ sudo flashrom --programmer raiden_debug_spi -r bios.bin
+(chroot) $ sudo flashrom --programmer raiden_debug_spi -w bios.bin
 (chroot) $ dut-control spi2_vref:off spi2_buf_en:off
 ```
 
