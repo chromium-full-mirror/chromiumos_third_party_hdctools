@@ -9,24 +9,6 @@ own. It must be paired with CCD (Cr50's on-board servo implementation) or
 
 [TOC]
 
-<!-- mdformat off(b/139308852) -->
-*** note
-**Googlers**: gLinux has a [kernel bug] that will cause all
-USB devices (including keyboard and mouse) to randomly stop working when using
-servo v4.
-
-To enable tracing and help debug the issue, which also seems to help reduce the
-frequency of occurrence, you can add the following to `/etc/rc.local`:
-
-```bash
-logger "Enabling USB Tracing: See http://b/123886969 and http://b/136676682"
-echo 1 > /sys/kernel/debug/tracing/events/xhci-hcd/enable
-```
-
-See this [email][chatty-eng servo issue] for more details.
-***
-<!-- mdformat on -->
-
 ## What is Servo v4?
 
 Servo v4 combines the functionality of the following devices into one:
@@ -451,5 +433,3 @@ To set the Servo v4 serial number on the Servo console:
 [`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md#flashap
 [Bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards
 [`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools
-[kernel bug]: https://issuetracker.google.com/123886969
-[chatty-eng servo issue]: https://groups.google.com/a/google.com/g/chromeos-chatty-eng/c/tWChV-rkCHw/m/0JO8VG2dAgAJ
