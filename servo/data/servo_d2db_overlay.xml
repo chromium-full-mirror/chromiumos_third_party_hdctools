@@ -1,3 +1,10 @@
+<!-- This module allows to attach servod to a servo-v2 connected to the D2
+     daugtherboard.
+
+See details on how to spiflash the D2 in
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/docs/servo_v2.md#Recovery-Of-Corrupted-D2-Chips-On-D2DB
+-->
+
 <root>
   <control>
     <name>jtag_buf_on_flex_en</name>

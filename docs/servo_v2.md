@@ -77,6 +77,39 @@ Rework steps:
 *   Wire from Pin 6 of U21 to right side of R18
 *   Wire from Pin 6 of U21 to right side of R19
 
+## Recovery Of Corrupted D2 Chips On D2DB
+
+Some Dauntless(D2) daughtercards (D2DB) come with chips with non-production
+firmware. Another situation when the D2 chip needs hardware based recovery is
+when the chip was programmed with an RW firmware which malfunctions and does
+not allow any more firmware updates.
+
+The only way to recover D2 in this state is to use the `spiflash` utility,
+which programs RO and RW firmware simultaneously. This will destroy the D2
+identity, but at least will allow using it for board bringup.
+
+Servo v2 allows to use `spiflash` to re-program D2.
+
+A pull up on dev_mode line is required to allow enabling D2 SPI flash
+programming mode. On servo-v2 the pull up needs to be connected between pins
+j7:6 and j11:8, any value from 1k to 1M should be fine.
+
+To enable D2 firwmare flashing run
+
+```
+ $ dut-control spi1_buf_en:on spi1_buf_on_flex_en:on spi1_vref:pp3300
+ $ dut-control dev_mode:on pch_disable:on pch_disable:off
+```
+
+At this point the boot prompt should show up on D2 console:
+
+```
+Ravn4|00100000 7f4bdb+
+boot :
+```
+
+and spiflash utility can be used to send the new firmare to the chip.
+
 ## Images
 
 ![servo v2 top](https://www.chromium.org/_/rsrc/1410554530438/chromium-os/servo/servo_v2_top.jpg)
