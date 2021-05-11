@@ -48,10 +48,11 @@ Servo v4.1 combines the functionality of the following devices into one:
 *   Pass through charger
 *   [Case-Closed Debug (CCD)][CCD] interface ([SuzyQ] debug cable)
 
-Details:
+## Where are the schematics?
 
-*   [Servo v4.1 Block Diagram]
-*   [Servo v4.1 Schematic]
+For schematics and other hardware design collateral, visit the Chrome OS Partner Site.
+
+Look under the 'Released Reference Designs' on the left window pane.
 
 ![Servo v4p1](images/servo_v4p1_dvt.jpg)
 
