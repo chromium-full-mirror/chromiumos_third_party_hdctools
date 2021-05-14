@@ -14,6 +14,7 @@ from servo.drv.pty_driver import ptyError
 import servo.utils.usb_hierarchy as uh
 from . import tool
 from servo_mfg import tiny_servod
+import usb
 
 # VID to find all servo devices.
 SERVO_VID = 0x18d1
@@ -141,6 +142,33 @@ class Device(tool.Tool):
       self._logger.info(dev_path)
     else:
       self.error('Device with serial %r not found.', args.serial)
+
+  def usb_comms(self, args):
+    """Test whether usb communication works for device at |args.serial|.
+
+    This tool tries to identify USB devices that are still enumerated on the
+    the system, but that fail to respond to USB communication e.g. because their
+    data lines have been muxed off but the system has not registered that.
+
+    The detection is done by using cached values of the device on sysfs to find
+    the device on pyusb, and then attempting to read the iSerial, as this
+    requires opening the device and communicating with it.
+    """
+    dev_path = self._usb_path(args.serial)
+    if not dev_path:
+      self.error('Device with serial %r not found.', args.serial)
+    # Now, retrieve busnum and devnum using sysfs as those values are cached.
+    devnum = uh.Hierarchy.DevNumFromSysfs(dev_path)
+    busnum = uh.Hierarchy.BusNumFromSysfs(dev_path)
+    dev = usb.core.find(address=devnum, bus=busnum)
+    if dev is None:
+      self.error('Device with serial %r not found on pyusb.', args.serial)
+    # The real experiment - reading some data.
+    try:
+      _ = usb.util.get_string(dev, dev.iSerialNumber)
+    except ValueError as e:
+      self.error('Device with serial %r has USB comms issues. %s', args.serial,
+                 e)
 
   def _run_uhubctl_command(self, hub, port, action):
     """Build |uhubctl| command performing |action| on |hub|'s |port|.
@@ -342,5 +370,9 @@ class Device(tool.Tool):
                            help='Power cycle device using uhubctl if on smart '
                                 'hub')
     subcommands.add_parser('reboot', help='Reboot the device MCU')
+    subcommands.add_parser('usb-comms',
+                           help='Test whether USB communication on the device '
+                           'works. Exit code 1 if USB communication broken, '
+                           'and exit code 0 otherwise. Requires root.')
     subcommands.add_parser('usb-path',
                            help='Show /sys/bus/usb/devices path of the device')
