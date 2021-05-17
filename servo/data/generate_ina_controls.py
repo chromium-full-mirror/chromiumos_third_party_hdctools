@@ -2,9 +2,9 @@
 # Copyright 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from __future__ import print_function
-
 """Helper module to generate system control files for INA adcs."""
+
+from __future__ import print_function
 
 import argparse
 import copy
@@ -22,13 +22,16 @@ sys.path.append(os.path.dirname(__file__))
 
 # Do not change these to relative imports. This file is mostly run through a
 # module import on setup.py, and cannot support relative imports at that point.
-from sweetberry_preprocessor import SweetberryPreprocessor
+from adc_templates import GetTemplate
 from servo_config_generator import ServoConfigFileGenerator
 from servo_config_generator import ServoControlGenerator
+from sweetberry_preprocessor import SweetberryPreprocessor
+
 
 class INAConfigGeneratorError(Exception):
   """Error class for INA control generation errors."""
   pass
+
 
 class INAConfigGenerator(object):
   """Base class for any INA Configuration Generator.
@@ -38,6 +41,7 @@ class INAConfigGenerator(object):
   Attributes:
     _configs_to_generate: a list of configurations that this template produces.
   """
+
   def __init__(self, module_name, ina_pkg):
     """Init all INA Configuration Generators.
 
@@ -65,6 +69,9 @@ class INAConfigGenerator(object):
 
   def ExportConfig(self, outdir):
     """Export the configuration(s) of a template to outdir.
+
+    Args:
+      outdir: output directory to dump generated configs to
 
     This is required for each Generator class to implement.
     """
@@ -116,6 +123,9 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
     """
     adc_list = []
     rails = []
+    # pylint: disable=unused-variable
+    # continue to properly name variables even if unused here so that in case
+    # of future need, developers know what came out of |adcs|
     for (drvname, child, name, nom, sense, mux, is_calib) in adcs:
       if is_calib:
         addr, port = [int(entry, 0) for entry in child.split(':')]
@@ -162,6 +172,9 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       ina_pkg: template loaded as a module
       servo_data_dir: servo data directory to include configs
       servo_drv_dir: servo drv directory to check drv availability
+
+    Raises:
+      INAConfigGeneratorError: if a a non-int interface is defined in |ina_pkg|
     """
     super(ServoINAConfigGenerator, self).__init__(module_name, ina_pkg)
     if not servo_drv_dir:
@@ -170,7 +183,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     ina2xx_drv_cfg = os.path.join(servo_data_dir, 'ina2xx.xml')
     if hasattr(ina_pkg, 'interface'):
       interface = ina_pkg.interface
-      if type(interface) != int:
+      if not isinstance(interface, int):
         raise INAConfigGeneratorError('Invalid interface %r, should be int.'
                                       % interface)
     else:
@@ -226,99 +239,51 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         raise INAConfigGeneratorError('Unable to locate driver for %s at %s'
                                       % (drvname, drvpath))
       ina_type = 'ina231' if drvname == 'sweetberry' else drvname
-      params_base = {
-          'type'      : 'get',
-          'drv'       : drvname,
-          'interface' : interface,
-          'child'       : child,
-          'mux'       : mux,
-          'rsense'    : sense,
-      }
-      # Must match REG_IDX.keys() in servo/drv/ina2xx.py
-      regs = ['cfg', 'shv', 'busv', 'pwr', 'cur', 'cal']
-
-      if ina_type == 'ina231':
-        regs.extend(['msken', 'alrt'])
-      elif ina_type == 'ina3221':
-        regs = ['cfg', 'shv', 'busv', 'msken']
+      addr = child
+      # Only some types of ADCs support this extra information.
+      i2c_port = 0
+      channel = 0
 
       if ina_type == 'ina3221':
-        (child, chan_id) = child.split(':')
-        params_base['child'] = child
-        params_base['channel'] = chan_id
-
-      if drvname == 'sweetberry':
-        (child, port) = child.split(':')
-        params_base['child'] = child
-        params_base['port'] = port
-
-      mv_ctrl_docstring = ('Bus Voltage of %s rail in millivolts on i2c_mux:%s'
-                           % (name, params_base['mux']))
-      mv_ctrl_params = {'subtype' : 'millivolts',
-                        'tags'    : 'bus_voltage_rail',
-                        'nom'     : nom}
-      mv_ctrl_params.update(params_base)
-      control_generators.append(ServoControlGenerator(name + '_mv',
-                                                     mv_ctrl_docstring,
-                                                     mv_ctrl_params))
-
-      shuntmv_ctrl_docstring = ('Shunt Voltage of %s rail in millivolts '
-                                'on i2c_mux:%s' % (name, params_base['mux']))
-      shuntmv_ctrl_params = {'subtype'  : 'shuntmv',
-                             'tags'     : 'shunt_voltage_rail',
-                             'nom'      : nom}
-      shuntmv_ctrl_params.update(params_base)
-      control_generators.append(ServoControlGenerator(name + '_shuntmv',
-                                                     shuntmv_ctrl_docstring,
-                                                     shuntmv_ctrl_params))
-
-      # in some instances we may not know sense resistor size ( re-work ) or
-      # other custom factors may not allow for calibration and those reliable
-      # readings on the current and power registers.  This boolean determines
-      # which controls should be enumerated based on rails input specification
-      if is_calib:
-        ma_ctrl_docstring = ('Current of %s rail in milliamps '
-                             'on i2c_mux:%s' % (name, params_base['mux']))
-        ma_ctrl_params = {'subtype' : 'milliamps',
-                          'tags'    : 'current_rail'}
-        ma_ctrl_params.update(params_base)
-        control_generators.append(ServoControlGenerator(name + '_ma',
-                                                       ma_ctrl_docstring,
-                                                       ma_ctrl_params))
-
-        mw_ctrl_docstring = ('Power of %s rail in milliwatts '
-                             'on i2c_mux:%s' % (name, params_base['mux']))
-        mw_ctrl_params = {'subtype' : 'milliwatts',
-                          'tags'    : 'power_rail'}
-        mw_ctrl_params.update(params_base)
-        control_generators.append(ServoControlGenerator(name + '_mw',
-                                                       mw_ctrl_docstring,
-                                                       mw_ctrl_params))
-      for reg in regs:
-        reg_ctrl_docstring = ('Raw register value of %s on i2c_mux:%s'
-                              % (reg, params_base['mux']))
-        reg_ctrl_name = '%s_%s_reg' % (name, reg)
-        reg_ctrl_params_get = {'cmd'      : 'get',
-                               'subtype'  : 'readreg',
-                               'fmt'      : 'hex',
-                               'reg'      : reg}
-        reg_ctrl_params_get.update(params_base)
-        # rsense and type are in params_base, but not needed here
-        del reg_ctrl_params_get['rsense']
-        del reg_ctrl_params_get['type']
-        reg_ctrl_params_set = None
-        if reg in ['cfg', 'cal']:
-          reg_ctrl_params_set = copy.copy(reg_ctrl_params_get)
-          reg_ctrl_params_set.update({'cmd'      : 'set',
-                                      'subtype'  : 'writereg'})
-          if reg == 'cal':
-            reg_ctrl_params_set['map'] = 'calibrate'
-          if reg == 'cfg':
-            reg_ctrl_params_set['map'] = '%s_cfg' % ina_type
-        control_generators.append(ServoControlGenerator(reg_ctrl_name,
-                                                       reg_ctrl_docstring,
-                                                       reg_ctrl_params_get,
-                                                       reg_ctrl_params_set))
+        addr, channel = addr.split(':')
+      elif drvname == 'sweetberry':
+        addr, i2c_port = addr.split(':')
+      # Convert all to integers as needed.
+      if not isinstance(addr, int):
+        # Some config files are written with the integer directly, and not a
+        # hex string. Those should not be converted.
+        addr = int(addr, 16)
+      i2c_port = int(i2c_port)
+      channel = int(channel)
+      # The template is used to get the parameters for all the register
+      # controls.
+      adc_temp = GetTemplate(ina_type)(addr, channel)
+      for suffix, params in adc_temp.GetFunctionalParams(sense).items():
+        if not is_calib and suffix in ['ma', 'mw']:
+          # in some instances we may not know sense resistor size ( re-work ),
+          # the size might be 0, or other custom factors may not allow for
+          # calibration and those reliable readings on the current and power
+          # registers.
+          # This boolean determines which controls should be enumerated based
+          # on rails input specification.
+          continue
+        # Nominal voltage is just informational. Add it here to maintain
+        # same interface as before, but TODO: consider if this info is neded at
+        # all.
+        params['nom'] = nom
+        # Provide the rails with access to the 'base name' so that
+        params['base_name'] = name
+        docstring = adc_temp.FUNC_DOCSTRING_TEMPLATES[suffix] % name
+        cname = '%s_%s' % (name, suffix)
+        control_generators.append(ServoControlGenerator(cname,
+                                                        docstring,
+                                                        params))
+      for reg, reg_params in adc_temp.GetRegisterParams(interface).items():
+        docstring = 'Raw register value of %s on i2c_mux:%s' % (reg, mux)
+        ctrl_name = '%s_%s_reg' % (name, reg)
+        control_generators.append(ServoControlGenerator(ctrl_name,
+                                                        docstring,
+                                                        reg_params))
     return control_generators
 
   def ExportConfig(self, outdir):
@@ -332,6 +297,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
     for outfile in self._configs_to_generate:
       outfile_dest = os.path.join(outdir, '%s.xml' % outfile)
       self._outfile_gen.WriteToFile(outfile_dest)
+
 
 def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None,
                         export=True, candidates=[]):
@@ -378,12 +344,12 @@ def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None,
       if config_type not in ['sweetberry', 'servod']:
         raise INAConfigGeneratorError('Unknown config type %s' % config_type)
       if config_type == 'sweetberry':
-        #translate inas from pin-style to i2c-addr style config (if applicable)
+        # translate inas from pin-style to i2c-addr style config (if applicable)
         ina_pkg.inas = SweetberryPreprocessor.Preprocess(ina_pkg.inas)
-        #also output powerlog config files (.board/.scenario)
+        # also output powerlog config files (.board/.scenario)
         generators.append(PowerlogINAConfigGenerator(module_name,
                                                      ina_pkg))
-      #always output Servod configurations
+      # always output Servod configurations
       generators.append(ServoINAConfigGenerator(module_name,
                                                 ina_pkg,
                                                 servo_data_dir,
@@ -392,8 +358,12 @@ def GenerateINAControls(servo_data_dir, servo_drv_dir=None, outdir=None,
     for generator in generators:
       generator.ExportConfig(outdir)
 
+
 def main(cmdline=sys.argv[1:]):
   """cmdline interface to generate &| verify config files.
+
+  Args:
+    cmdline: sys command line args (without the program name)
 
   Note: This is mainly inteded as a development tool to verify a new or
   modified powermap before submitting it, and without having to build the full
@@ -414,9 +384,9 @@ def main(cmdline=sys.argv[1:]):
   if os.path.isfile(args.input):
     servo_data_dir = os.path.dirname(args.input)
     candidates = [args.input]
-  #having only the basename is required for load_module to work better
+  # having only the basename is required for load_module to work better
   candidates = [os.path.basename(candidate) for candidate in candidates]
-  #if dry_run is set then we don't want to export.
+  # if dry_run is set then we don't want to export.
   export = not args.dry_run
   for candidate in candidates:
     try:

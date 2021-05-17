@@ -498,7 +498,7 @@ class SystemConfig(object):
       SystemConfigError: mapping issues found
     """
     # its a map
-    err = 'Unknown error formatting input value.'
+    err = 'Error formatting input value.'
     if 'map' in params:
       map_dict = self._lookup(MAP_TAG, params['map'])
       if map_dict is None:
@@ -529,6 +529,8 @@ class SystemConfig(object):
       return float(str(map_vstr))
     except ValueError:
       # No we know that nothing worked, and there was an error.
+      err += (' %r canot be cast to default input type %r or fallback input '
+              'type %r' % (map_vstr, 'int', 'float'))
       raise SystemConfigError(err)
 
   # pylint: disable=invalid-name
@@ -548,8 +550,9 @@ class SystemConfig(object):
     """Reformat value.
 
     Formatting determined via:
-      1. if has map, then remap
-      2. else if has fmt param, use that function
+      1. if it has fmt param, reformat based on that
+      2. if value (or value after fmt) matches a map in the param, use
+         the symbolic name from the map, otherwise the (fmt) value
 
     Args:
       params: parameter dictionary for control
@@ -567,14 +570,7 @@ class SystemConfig(object):
     if value is not None and 'map' not in params and 'fmt' not in params:
       return value
     reformat_value = str(value)
-    if 'map' in params:
-      map_dict = self._lookup(MAP_TAG, params['map'])
-      if map_dict:
-        for keyname, val in map_dict['map_params'].items():
-          if val == reformat_value:
-            reformat_value = keyname
-            break
-    elif 'fmt' in params:
+    if 'fmt' in params:
       fmt = params['fmt']
       try:
         func = getattr(self, '_Fmt_%s' % fmt)
@@ -584,6 +580,13 @@ class SystemConfig(object):
         reformat_value = func(value)
       except Exception:
         raise SystemConfigError('Problem executing format %s' % fmt)
+    if 'map' in params:
+      map_dict = self._lookup(MAP_TAG, params['map'])
+      if map_dict:
+        for keyname, val in map_dict['map_params'].items():
+          if val == reformat_value:
+            reformat_value = keyname
+            break
     return reformat_value
 
   def display_config(self, tag=None, prefix=None):

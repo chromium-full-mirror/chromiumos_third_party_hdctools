@@ -43,6 +43,7 @@ from . import grunt_power
 from . import hw_driver
 from . import i2c_pseudo
 from . import i2c_reg
+from . import i2c_reg_drv
 from . import ina219
 from . import ina231
 from . import ina2xx

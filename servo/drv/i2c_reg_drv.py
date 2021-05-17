@@ -1,0 +1,105 @@
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""i2c register module drv to read/write register directly."""
+import errno
+import time
+
+from servo.drv import error
+from servo.drv import hw_driver
+from servo.drv import i2c_reg
+from servo.interface.stm32i2c import Si2cError
+
+
+TIMEOUT_RETRIES = 10
+
+
+class i2cRegDrv(hw_driver.HwDriver):
+  """Provides methods for devices with registered indexing over i2c."""
+
+  # len: the length of the register in bytes
+  # addr: the i2c child address
+  # offset: the i2c offset of the register to read
+  REQUIRED_GET_PARAMS = ['reg_len', 'addr', 'offset']
+  REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
+
+  def __init__(self, interface, params):
+    """I2cRegDrv constructor.
+
+    Args:
+      interface: i2c supporting interface e.g. stm32i2c
+      params: params to read/write from this register. Please see above for
+              required param values. Additional optional param options:
+              - msb_last: if this param is present, we assume that most
+                significant byte comes last. Default is False
+              - no_read: if this param is present, we will not read after
+                writing to the register. Default is False
+              - read_only: when a register cannot be written to. This will then
+                cause an error to be thrown when a write is attempted. Default
+                is False
+              - write_only: when a register cannot be read from. This will then
+                cause an error to be thrown when a read is attempted. Default
+                is False
+    """
+    super(i2cRegDrv, self).__init__(interface, params)
+    msb_first = 'msb_last' not in self._params
+    self._no_read = 'no_read' in self._params
+    self._read_only = 'read_only' in self._params
+    self._write_only = 'write_only' in self._params
+    self._offset = int(self._params['offset'])
+    self._dev = i2c_reg.I2cReg.get_device(interface,
+                                          addr_len=1,
+                                          child=int(params['addr'], 0),
+                                          reg_len=int(params['reg_len']),
+                                          msb_first=msb_first,
+                                          no_read=self._no_read,
+                                          use_reg_cache=False)
+
+  def _set(self, value):
+    """Write |value| to |self._offset| on |self._dev|.
+
+    Args:
+      value: int, value to write to register
+
+    Raises:
+      HwDriverError: if |self._read_only| is True
+    """
+    if self._read_only:
+      error.error.set(self, None)
+    # Set potential overwrites from default.
+    # pylint: disable=protected-access
+    # _dev object is used to share object across multiple registers
+    self._dev._write_reg(self._offset, value, no_read=self._no_read)
+
+  def get(self):
+    """"Read out the value from |self._offset| register on |self._dev|.
+
+    Returns:
+      output of read_reg of the i2c object
+
+    Raises:
+      HwDriverError: if |self._write_only| is True
+    """
+    if self._write_only:
+      error.error.get(self)
+    last_exception = None
+    for i in range(0, TIMEOUT_RETRIES):
+      if i > 0:
+        sleep_ms = i ** 2
+        self._logger.warning('Read timed out, trying again in %d ms', sleep_ms)
+        time.sleep(sleep_ms / 1000.0)
+
+      try:
+        # pylint: disable=protected-access
+        # _dev object is used to share object across multiple registers
+        return self._dev._read_reg(self._offset)
+      except IOError as e:
+        if e.errno == errno.ETIMEDOUT:
+          last_exception = e
+        else:
+          raise
+      except Si2cError as e:
+        last_exception = e
+
+    if last_exception:
+      raise last_exception

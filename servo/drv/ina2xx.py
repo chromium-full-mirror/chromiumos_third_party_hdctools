@@ -8,9 +8,7 @@ Presently tested for:
   INA231
 """
 from __future__ import print_function
-import errno
 import logging
-import time
 
 from . import hw_driver
 from . import i2c_reg
@@ -32,13 +30,6 @@ class ina2xx(hw_driver.HwDriver):
   For example, a control to read the millivolts of an ADC would be
   dispatched to call _Get_millivolts.
   """
-  # TODO(tbroch) Need to investigate modal uses and need to change configuration
-  # register.  As it stands we capture samples continuously w/ 12-bit samples
-  # averaged across 532usecs
-  # TODO(tbroch) For debug, provide shuntv readings
-  MAX_CHANNEL = 0
-  REG_IDX = dict(cfg=0, shv=1, busv=2, pwr=3, cur=4, cal=5, msken=6, alrt=7)
-
   # maximum number of re-reads of bus voltage to do before raising
   # exception for failing to see a data conversion.  Note the CNVR bit
   # is affected by averaging and multiplication as well. I decided on
@@ -57,6 +48,12 @@ class ina2xx(hw_driver.HwDriver):
   # maximum value of power output register.
   PWR_MAX = 0xffff
 
+  # sign bit of the power output register.
+  PWR_SIGN = 0x8000
+
+  # offset of the power reading, in case some bits are unused.
+  PWR_MW_OFFSET = 0
+
   # mask ( 3-bits ) for ina219 configuration modes
   CFG_MODE_MASK = 0x7
   # continuous mode
@@ -68,20 +65,18 @@ class ina2xx(hw_driver.HwDriver):
     """Constructor.
 
     Args:
-    interface: FTDI interface object to handle low-level communication to
-      control
+    interface: servod object to handle reading low-level i2c information
     params: dictionary of params needed to perform operations on
       ina219 devices.  All items are strings initially but should be
       cast to types detailed below.
 
     Mandatory Params:
-      child: integer, 7-bit i2c child address
+      base_name: the symbolic name for this INA e.g. pp3300_wlan_dx
       subtype: string, used by get/set method of base class to decide
         how to dispatch request.  Examples are: millivolts, milliamps,
         milliwatts
 
     Optional Params:
-      reg: integer, raw register index [0:5] to read / write.
       rsense: float, sense resistor size for adc in ohms.  Needed to properly
         compute current and power measurements
 
@@ -90,12 +85,8 @@ class ina2xx(hw_driver.HwDriver):
     """
     super(ina2xx, self).__init__(interface, params)
     self._logger.debug('')
-    self._child = int(self._params['child'], 0)
-    # TODO(tbroch) Re-visit enabling use_reg_cache once re-req's are
-    # incorporated into cache's key field ( crosbug.com/p/2678 )
-    self._i2c_obj = i2c_reg.I2cReg.get_device(
-        self._interface, self._child, addr_len=1, reg_len=2, msb_first=True,
-        no_read=False, use_reg_cache=False)
+    self._base_name = self._params['base_name']
+
     if 'subtype' not in self._params:
       raise Ina2xxError('Unable to find subtype param')
     subtype = self._params['subtype']
@@ -106,9 +97,6 @@ class ina2xx(hw_driver.HwDriver):
         raise Ina2xxError('No sense resistor in params')
       self._rsense = None
     # base class
-    self._msb_first = True
-    self._reg_len = 2
-    self._mode = None
     self._reset()
 
   def _read_cnvr_ovf(self):
@@ -129,65 +117,25 @@ class ina2xx(hw_driver.HwDriver):
     self._calib_reg = None
     self._reg_cache = None
 
-  def _get_reg_idx(self, name):
-    """Get register index and insure its valid.
-
-    Args:
-      name: string of register index name.
-
-    Raises:
-      Ina2xxError: if index or channel is out of range.
-      NotImplementedError: if channel is set incorrectly.
-    """
-    channel = 0
-    if 'channel' in self._params:
-      try:
-        channel = int(self._params['channel'])
-      except ValueError as e:
-        raise Ina2xxError(e)
-
-    if channel > self.MAX_CHANNEL or channel < 0:
-      raise Ina2xxError('register channel %d, out of range' % channel)
-
-    reg = self.REG_IDX[name]
-    if name in ['busv', 'shv']:
-      reg += channel * 2
-
-    if reg > self.MAX_REG_INDEX or reg < self.REG_IDX['cfg']:
-      raise Ina2xxError('register index %d, out of range' % reg)
-
-    return reg
+  def _reg_control_name(self, reg):
+    return '%s_%s_reg' % (self._base_name, reg)
 
   def _has_reg(self, reg):
-    return reg in self.REG_IDX
+    return self._interface._has_control(self._reg_control_name(reg))
 
-  def _read_reg(self, name, timeout_retries=10):
-    """Read architected register and return value."""
-    last_exception = None
-    for i in range(0, timeout_retries):
-      if i > 0:
-        sleep_ms = i ** 2
-        self._logger.warning('Read timed out, trying again in %d ms', sleep_ms)
-        time.sleep(sleep_ms / 1000.0)
+  def _read_reg(self, reg):
+    if not self._has_reg(reg):
+      raise Ina2xxError('Register %s for control %s unknown' %
+                        (reg, self._base_name))
+    ctrl_name = self._reg_control_name(reg)
+    return int(self._interface.get(ctrl_name), 16)
 
-      try:
-        return self._i2c_obj._read_reg(self._get_reg_idx(name))
-      except IOError as e:
-        if e.errno == errno.ETIMEDOUT:
-          last_exception = e
-        else:
-          raise
-      except servo.interface.stm32i2c.Si2cError as e:
-        last_exception = e
-
-    if last_exception:
-      raise last_exception
-    else:
-      raise ValueError('timeout_retries must be > 0')
-
-  def _write_reg(self, name, value):
-    """Write architected register."""
-    self._i2c_obj._write_reg(self._get_reg_idx(name), value)
+  def _write_reg(self, reg, value):
+    if not self._has_reg(reg):
+      raise Ina2xxError('Register %s for control %s unknown' %
+                        (reg, self._base_name))
+    ctrl_name = self._reg_control_name(reg)
+    self._interface.set(ctrl_name, value)
 
   def _read_busv(self):
     """Read bus voltage value."""
@@ -247,20 +195,17 @@ class ina2xx(hw_driver.HwDriver):
     # private copy of the calibration register.
     calib_reg = self._calib_reg = self._read_reg('cal')
 
-    if self._calib_reg in [None, 0]:
-      self._write_reg('cal', self.MAX_CALIB)
-      self._calib_reg = self.MAX_CALIB
-      is_ovf = self._get_next_ovf()
-    else:
-      is_ovf = self._read_ovf()
+    self._write_reg('cal', self.MAX_CALIB)
+    calib_reg = self.MAX_CALIB
+    is_ovf = self._get_next_ovf()
 
     while is_ovf:
       if calib_reg == self.MIN_CALIB:
         raise Ina2xxError('Failed to calibrate for lowest precision')
-      calib_reg = (self._calib_reg >> 1) & self.MAX_CALIB
+      calib_reg = (calib_reg >> 1) & self.MAX_CALIB
       self._logger.debug('writing calibrate to 0x%04x' % (calib_reg))
       self._write_reg('cal', calib_reg)
-      self._calib_reg = calib_reg
+      calib_reg = calib_reg
       is_ovf = self._get_next_ovf()
 
   def _Get_millivolts(self):
@@ -272,8 +217,6 @@ class ina2xx(hw_driver.HwDriver):
     self._logger.debug('')
     busv = self._read_busv()
     millivolts = busv * self.BUSV_MV_PER_LSB
-    assert millivolts < self.BUSV_MAX, \
-        'bus voltage measurement exceeded maximum'
     if millivolts >= self.BUSV_MAX:
       self._logger.error(
           'bus voltage measurement exceeded maximum %x' % millivolts)
@@ -296,7 +239,6 @@ class ina2xx(hw_driver.HwDriver):
     self._logger.debug('')
     milliamps_per_lsb = self._milliamps_per_lsb()
     raw_cur = self._read_reg('cur')
-    assert raw_cur != self.CUR_MAX, 'current saturated'
     if raw_cur == self.CUR_MAX:
       self._logger.error('current saturated %x\n' % raw_cur)
     raw_cur = int(numpy.int16(raw_cur))
@@ -386,12 +328,9 @@ class ina2xx(hw_driver.HwDriver):
     self._logger.debug('')
     # call first to force compulsory calibration
     milliwatts_per_lsb = self._milliwatts_per_lsb()
-    raw_pwr = self._read_reg('pwr')
-    assert not (raw_pwr & 0x8000), \
-        'Unknown whether power register is signed or unsigned'
-    if raw_pwr & 0x8000:
-      self._logger.error('Power may be signed %x\n' % raw_pwr)
-    assert raw_pwr != self.PWR_MAX, 'power saturated'
+    raw_pwr = self._read_reg('pwr') >> self.PWR_MW_OFFSET
+    if raw_pwr & self.PWR_SIGN:
+      self._logger.debug('Power may be signed %x\n' % raw_pwr)
     if raw_pwr == self.PWR_MAX:
       self._logger.error('power saturated %x\n' % raw_pwr)
     raw_pwr = int(numpy.int16(raw_pwr))
@@ -420,45 +359,6 @@ class ina2xx(hw_driver.HwDriver):
     else:
       return self._get_milliwatts_calc()
 
-  def _Get_readreg(self):
-    """Read raw register value from INA219.
-
-    Returns:
-      Integer value of register
-
-    Raises:
-      Ina2xxError: If error with register access
-    """
-    self._logger.debug('')
-    if 'reg' not in self._params:
-      raise Ina2xxError('no register defined in parameters')
-    reg = self._params['reg']
-
-    return self._read_reg(reg)
-
-  def _Set_writereg(self, value):
-    """Write raw register value from INA219.
-
-    Args:
-      value: Integer value to write to register
-
-    Raises:
-      Ina2xxError: If error with register access
-    """
-    self._logger.debug('')
-    if 'reg' not in self._params:
-      raise Ina2xxError('no register defined in parameters')
-    reg = self._params['reg']
-
-    if reg == 'cfg':
-      if self._has_reg('cal'):
-         self._write_reg('cal', self.MAX_CALIB)
-         self._calib_reg = self.MAX_CALIB
-
-    self._write_reg(reg, value)
-    if reg == 'cal':
-      self._calib_reg = value
-
   def _wake(self):
     """Wake up the INA219 adc from sleep."""
     self._logger.debug('')
@@ -483,7 +383,6 @@ class ina2xx(hw_driver.HwDriver):
       mode: integer value to write to configuration register to change the mode.
     """
     self._logger.debug('')
-    assert (mode & self.CFG_MODE_MASK) == mode, 'Invalid mode: %d' % mode
     cfg_reg = self._read_reg('cfg')
     self._write_reg('cfg', (cfg_reg & ~self.CFG_MODE_MASK) | mode)
 
@@ -497,7 +396,6 @@ class ina2xx(hw_driver.HwDriver):
     """
     self._logger.debug('')
     self._calibrate()
-    assert self._calib_reg, 'Calibration reg not calibrated'
     lsb = self.CUR_LSB_COEFFICIENT / (self._calib_reg * self._rsense)
     self._logger.debug('lsb = %f' % lsb)
     return lsb
