@@ -47,10 +47,11 @@ class i2cRegDrv(hw_driver.HwDriver):
     self._read_only = 'read_only' in self._params
     self._write_only = 'write_only' in self._params
     self._offset = int(self._params['offset'])
+    self._reg_len = int(params['reg_len'])
     self._dev = i2c_reg.I2cReg.get_device(interface,
                                           addr_len=1,
                                           child=int(params['addr'], 0),
-                                          reg_len=int(params['reg_len']),
+                                          reg_len=self._reg_len,
                                           msb_first=msb_first,
                                           no_read=self._no_read,
                                           use_reg_cache=False)
@@ -69,7 +70,8 @@ class i2cRegDrv(hw_driver.HwDriver):
     # Set potential overwrites from default.
     # pylint: disable=protected-access
     # _dev object is used to share object across multiple registers
-    self._dev._write_reg(self._offset, value, no_read=self._no_read)
+    self._dev._write_reg(self._offset, value, reg_len=self._reg_len,
+                         no_read=self._no_read)
 
   def get(self):
     """"Read out the value from |self._offset| register on |self._dev|.
@@ -92,7 +94,7 @@ class i2cRegDrv(hw_driver.HwDriver):
       try:
         # pylint: disable=protected-access
         # _dev object is used to share object across multiple registers
-        return self._dev._read_reg(self._offset)
+        return self._dev._read_reg(self._offset, reg_len=self._reg_len)
       except IOError as e:
         if e.errno == errno.ETIMEDOUT:
           last_exception = e

@@ -244,7 +244,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       i2c_port = 0
       channel = 0
 
-      if ina_type == 'ina3221':
+      if ina_type in ['ina3221', 'pac1934', 'pac19next']:
         addr, channel = addr.split(':')
       elif ina_type == 'ina231' and type(addr) == str and ':' in addr:
         # This only happens on sweetberry configurations. This is to report
@@ -273,7 +273,10 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         # same interface as before, but TODO: consider if this info is neded at
         # all.
         params['nom'] = nom
-        # Provide the rails with access to the 'base name' so that
+        # Let the controls know about their own channel
+        params['channel'] = channel
+        # Provide the rails with access to the 'base name' so that they
+        # can find register controls for their own ADC by symbolic name
         params['base_name'] = name
         docstring = adc_temp.FUNC_DOCSTRING_TEMPLATES[suffix] % name
         cname = '%s_%s' % (name, suffix)

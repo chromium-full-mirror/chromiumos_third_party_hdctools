@@ -72,6 +72,16 @@
             regular_power_no_hw_avg="0x7127">
     </params>
   </map>
+  <map>
+    <name>resolution</name>
+    <doc>resolution map</doc>
+    <params high="1" regular="0"></params>
+  </map>
+  <map>
+    <name>refresh</name>
+    <doc>map for pacxx refresh registers</doc>
+    <params refresh="0"/>
+  </map>
   <control>
     <name>current_rails</name>
     <doc>List of available rail controls to measure current.</doc>

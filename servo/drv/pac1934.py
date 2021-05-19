@@ -1,0 +1,196 @@
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""Access to Microchip PAC1934.
+
+Quad-Channel, High-Side Measurement, Shunt and Bus Voltage Monitor
+with i2c Interface.
+"""
+import time
+
+from servo.drv import ina2xx
+
+
+class pac1934(ina2xx.ina2xx):
+  """Object to access drv=pac1934 controls."""
+
+  BUSV_MV_OFFSET = 0
+  # In millivolts.
+  BUSV_MAX = 32000.
+
+  # These are the values used to determine whether values are signed
+  NEG_PWR_UNI = 0x0
+  NEG_PWR_BIP = 0x1
+
+  # The exponents of 2 of the different calculation denominators.
+  VBUS_DEN_EXP = CUR_DEN_EXP = 16
+  PWR_DEN_EXP = 28
+
+  # maximum value of power output register. The register is a 4 byte register
+  # with 3 unused bits.
+  PWR_MAX = 0xffffffff >> 3
+  # 4 lsb on the power register are not real data.
+  PWR_MW_OFFSET = 4
+  # power is a 28 bit 'signed' number, so we can check the 28th bit to check
+  # the sign.
+  PWR_SIGN = 1 << 27
+
+  # Time after the refresh command when the signal is stable.
+  REFRESH_STABLE_S = 1.0/1000  # 1ms.
+
+  # Resolutions of voltage and current conversion. If a chip supports high
+  # resolution measurements, implement the _[Set|Get]_resolution in a subclass
+  # and use these constants to know which resolution is requested.
+  REGULAR_RESOLUTION = 0
+  HIGH_RESOLUTION = 1
+
+  def __init__(self, interface, params):
+    super(pac1934, self).__init__(interface, params)
+    # Pre-calculate a few important values.
+    # full scale current and power full scale range
+    self._fsc = self._pwr_fsr = None
+    self._busv_fsr = self.BUSV_MAX
+    if self._rsense:
+      # in milliamps. Adapted from Equation 4-3 in datasheet.
+      self._fsc = 100. / self._rsense
+      # in milliwatts. Adapted from Equation 4-5 in datasheet.
+      self._pwr_fsr = self.BUSV_MAX * self._fsc
+
+  def busv_fsr(self):
+    """Retrieve the bus voltage full scale range (fsr) signed."""
+    _, v_signed = self._signed()
+    return self._busv_fsr, v_signed
+
+  def pwr_fsr(self):
+    """Retrieve pwr full scale range (fsr) and signed."""
+    c_signed, v_signed = self._signed()
+    return self._pwr_fsr, c_signed or v_signed
+
+  def fsc(self):
+    """Retrieve full scale current (fsc) and signed."""
+    c_signed, _ = self._signed()
+    return self._fsc, c_signed
+
+  def _refresh(self, clear=False):
+    """Write 0x0 to refresh register to get refreshed values.
+
+    Args:
+      clear: bool, whether to clear accum. uses refresh-v reg if not |clear|
+             else refresh
+
+    """
+    reg = 'refresh' if clear else 'refresh_v'
+    self._write_reg(reg, 0x0, refresh=None)
+    time.sleep(self.REFRESH_STABLE_S)
+
+  def _Set_resolution(self, _):
+    """The resolution is always the same on pac1934."""
+    pass
+
+  def _Get_resolution(self):
+    """The resolution is always the same on pac1934."""
+    return self.REGULAR_RESOLUTION
+
+  @property
+  def _neg_pwr_current_offset(self):
+    """Returns of offset for the channel's CHn_BIDI bank."""
+    return 6 - self._channel
+
+  @property
+  def _neg_pwr_voltage_offset(self):
+    """Returns of offset for the channel's CHn_BIDV bank."""
+    return 3 - self._channel
+
+  def _signed(self):
+    """Whether current and voltage readings are signed."""
+    cv = self._read_reg('neg_pwr_act')
+    # 0x1 is used as the information is only in 1 bit.
+    v_mode = bit_util.extract_bitfield(cv, 0x1,
+                                       self._neg_pwr_voltage_offset)
+    c_mode = bit_util.extract_bitfield(cv, 0x1,
+                                       self._neg_pwr_current_offset)
+    c_signed = c_mode == self.NEG_PWR_BIP
+    v_signed = v_mode == self.NEG_PWR_BIP
+    return c_signed, v_signed
+
+  def _read_reg(self, name, refresh='v'):
+    """Specify whether we need to call refresh (and what kind) before read.
+
+    Args:
+      name: register name
+      refresh: one of 'v', 'clear' or None
+
+    Returns:
+      int, content from the |name| register
+    """
+    if refresh is not None:
+      self._refresh(clear=refresh == 'clear')
+    return super(pac1934, self)._read_reg(name)
+
+  def _write_reg(self, name, value, refresh='v'):
+    """Specify whether we need to call refresh (and what kind) after write.
+
+    Args:
+      name: register name
+      value: int, content to write to register
+      refresh: one of 'v', 'clear' or None
+    """
+    super(pac1934, self)._write_reg(name, value)
+    if refresh is not None:
+      self._refresh(clear=refresh == 'clear')
+
+  @property
+  def millivolts_per_lsb(self):
+    """Bus voltage mv per lsb.
+
+    Returns:
+      float of bus voltage per lsb in millivolts
+    """
+    busv_fsr, signed = self.busv_fsr()
+    # We need to divide the max bus voltage by the denominator matching the
+    # current mode (signed, or unsigned).
+    d = 1 << self.VBUS_DEN_EXP
+    # If the voltage is signed, |signed| will return True, and we need to shift
+    # back.
+    d = d >> int(signed)
+    return busv_fsr / float(d)
+
+  @property
+  def milliamps_per_lsb(self):
+    """Calculate milliamps per least significant bit of the current register.
+
+    Returns:
+      float of current per lsb value in milliamps.
+    """
+    fsc, signed = self.fsc()
+    # We need to divide the full scale current by the denominator matching the
+    # current mode (signed, or unsigned).
+    d = 1 << self.CUR_DEN_EXP
+    # If the current is signed, this will return true, and we need to shift
+    # back.
+    d = d >> int(signed)
+    # Adopted from Equation 4-4 in datasheet.
+    lsb = fsc / float(d)
+    self._logger.debug('lsb = %f' % lsb)
+    return lsb
+
+  @property
+  def milliwatts_per_lsb(self):
+    """Calculate milliwatts per least significant bit of the power register.
+
+    Returns:
+      float of power per lsb value in milliwatts.
+    """
+    self._logger.debug('')
+    pwr_fsr, signed = self.pwr_fsr()
+    # We need to divide the full scale power by the denominator matching the
+    # power mode (signed, or unsigned).
+    d = 1 << self.PWR_DEN_EXP
+    # The power is signed if either of the two components are signed.
+    # Adopted from Equation 4-6 and 4-7 in datasheet.
+    d = d >> int(signed)
+    # We also need to further divide the lsb by 1000. This is because
+    # we're in ma * mv calculations.
+    lsb = pwr_fsr / float(d) / 1000.0
+    self._logger.debug('lsb = %f' % lsb)
+    return lsb

@@ -70,6 +70,9 @@ class basePWRADC(hw_driver.HwDriver):
     super(basePWRADC, self).__init__(interface, params)
     self._logger.debug('')
     self._base_name = self._params['base_name']
+    # Single channel ADCs can be thought of as running on channel 0.
+    # Some ADCs might need this information to find pertinent bits on registers.
+    self._channel = int(self._params.get('channel', 0))
 
     if 'subtype' not in self._params:
       raise BasePWRADCError('Unable to find subtype param')
@@ -228,7 +231,7 @@ class basePWRADC(hw_driver.HwDriver):
     milliwatts_per_lsb = self.milliwatts_per_lsb
     raw_pwr = self._read_reg('pwr') >> self.PWR_MW_OFFSET
     if raw_pwr & self.PWR_SIGN:
-      self._logger.debug('Power may be signed %x', raw_pwr)
+      self._logger.debug('power may be signed %x', raw_pwr)
       raw_pwr -= (self.PWR_SIGN << 1)
       self._logger.debug('power %x after negation', raw_pwr)
     if raw_pwr == self.PWR_MAX:

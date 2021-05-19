@@ -84,32 +84,40 @@ class I2cReg(object):
       _devices[key] = dev_obj
     return dev_obj
 
-  def _read_reg(self, reg):
+  def _read_reg(self, reg, reg_len=None):
     """Read the register.
 
     Args:
       reg: i2c register to read
+      reg_len: optional, if the |reg_len| is different from |self._reg_len|
 
     Returns:
       integer value read from i2c reg
     """
     self._logger.debug('')
-    rlist = self._wr_rd(reg, [], self._reg_len)
+    # Set potential overwrites from default.
+    reg_len = reg_len if reg_len is not None else self._reg_len
+    rlist = self._wr_rd(reg, [], reg_len)
     return self._convert_rd(rlist, self._msb_first)
 
-  def _write_reg(self, reg, value):
+  def _write_reg(self, reg, value, reg_len=None, no_read=None):
     """Write the register.
 
     Args:
       reg: i2c register to read
       value: integer value to write to reg
+      reg_len: optional, if the |reg_len| is different from |self._reg_len|
+      no_read: optional, whether to use no_read instead of |self._no_read|
 
     Returns:
       integer value read after the write of reg
     """
     self._logger.debug('')
     wlist = []
-    for _ in range(self._reg_len):
+    # Set potential overwrites from default.
+    no_read = no_read if no_read is not None else self._no_read
+    reg_len = reg_len if reg_len is not None else self._reg_len
+    for _ in range(reg_len):
       wlist.append(value & 0xff)
       value = value >> 8
     if value != 0:
@@ -117,7 +125,7 @@ class I2cReg(object):
     if self._msb_first:
       wlist.reverse()
 
-    read_len = 0 if self._no_read else self._reg_len
+    read_len = 0 if no_read else reg_len
     rlist = self._wr_rd(reg, wlist, read_len)
     return self._convert_rd(rlist, self._msb_first)
 

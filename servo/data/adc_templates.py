@@ -4,6 +4,7 @@
 """Templates for register and functional ADC control generation."""
 
 import collections
+import copy
 
 
 class ADCTemplateError(Exception):
@@ -64,6 +65,7 @@ class ADCTemplate(object):
 
     Raises:
       ADCTemplateError: if |ADC_TYPE| is None
+      ADCTemplateError: if |FUNCTIONS| is None
       ADCTemplateError: if |FUNC_DOCSTRING_TEMPLATES| and |FUNCTIONS| have
                         disjoint keys
     """
@@ -71,6 +73,8 @@ class ADCTemplate(object):
       raise ADCTemplateError('Please overwrite ADC_TYPE for your template.')
     self._addr = addr
     self._channel = channel
+    if self.FUNCTIONS is None:
+      raise ADCTemplateError('Please overwrite FUNCTIONS for your template.')
     if self.FUNCTIONS.keys() != self.FUNC_DOCSTRING_TEMPLATES.keys():
       raise ADCTemplateError('FUNCTIONS and FUNC_DOCSTRING_TEMPLATES not '
                              'matching in keys for %r' % self.ADC_TYPE)
@@ -373,12 +377,100 @@ class INA3221Template(INA219Template):
       idx += self._channel * 2
     return idx
 
-# A map to find the corret template.
 
+class PAC1934Template(ADCTemplate):
+  """Template for PAC 1934 that handles the different channels."""
+
+  ADC_TYPE = 'pac1934'
+
+  REG_IDX = dict(refresh=0, ctrl=1, busv=0xf, cur=0x13, pwr=0x17,
+                 refresh_v=0x1f, ctrl_act=0x21, neg_pwr_act=0x23)
+
+  # Add 'refresh' shorthand for the refresh registers.
+  REG_MAP = copy.copy(ADCTemplate.REG_MAP)
+  REG_MAP.update(dict(refresh='refresh', refresh_v='refresh'))
+
+  REG_LEN = collections.defaultdict(lambda: 2)
+  REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4, neg_pwr_act=1,
+                      ctrl=1, ctrl_act=1))
+
+  REG_RO = collections.defaultdict(lambda: False)
+  # These registers are all read only.
+  REG_RO.update(dict(busv=True, pwr=True, cur=True, neg_pwr_act=True))
+
+  REG_WO = collections.defaultdict(lambda: False)
+  # Refresh is only used to write to it.
+  REG_WO.update(dict(refresh=True, refresh_v=True))
+
+  # Refresh is only used to write to it.
+  REG_NORAW = collections.defaultdict(lambda: False)
+  REG_NORAW.update(dict(refresh=True, refresh_v=True))
+
+  # Functions supported by the pac family.
+  FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
+                   res='resolution')
+  # Supply the resolution map
+  FUNCTIONS_MAP = collections.defaultdict(lambda: None)
+  FUNCTIONS_MAP['res'] = 'resolution'
+  # Mark relevant functions as r/w.
+  FUNCTIONS_RO = copy.copy(ADCTemplate.FUNCTIONS_RO)
+  FUNCTIONS_RO['res'] = False
+  # Docstring templates for the functions.
+  FUNC_DOCSTRING_TEMPLATES = {}
+  FUNC_DOCSTRING_TEMPLATES['mv'] = 'Bus Voltage of %r rail in millivolts'
+  FUNC_DOCSTRING_TEMPLATES['ma'] = 'Current of %r rail in milliamps'
+  FUNC_DOCSTRING_TEMPLATES['mw'] = 'Power of %r rail in milliwatts'
+  FUNC_DOCSTRING_TEMPLATES['res'] = 'Resolution of %r rail'
+
+  def reg_offset(self, reg):
+    """PAC ADC specific offset logic.
+
+    Args:
+      reg: str, name of register
+
+    Returns:
+      |REG_IDX|[|reg|]
+
+    Raises:
+      ADCTemplateError: if |reg| not in |REG_IDX|
+      ADCTemplateError: if |self._channel| is None
+    """
+    if reg not in self.REG_IDX:
+      raise ADCTemplateError('Unknown register %r' % reg)
+    if self._channel is None:
+      raise ADCTemplateError('Channel info required on PAC 1934.')
+    idx = self.REG_IDX[reg]
+    if reg in ['busv', 'cur', 'pwr']:
+      # These are offset depending on which channel the user is trying to read.
+      idx += self._channel
+    return idx
+
+
+class PAC19nextTemplate(PAC1934Template):
+  """Template for PAC 19next that handles the different channels."""
+
+  ADC_TYPE = 'pac19next'
+
+  REG_IDX = dict(refresh=0, ctrl=1, busv=0xf, cur=0x13, pwr=0x17,
+                 neg_pwr_fsr=0x1d, refresh_v=0x1f, ctrl_act=0x21,
+                 neg_pwr_fsr_act=0x22)
+
+  REG_LEN = collections.defaultdict(lambda: 2)
+  REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4))
+
+  REG_RO = collections.defaultdict(lambda: False)
+  # These registers are all read only.
+  REG_RO.update(dict(busv=True, pwr=True, cur=True, neg_pwr_fsr_act=True))
+
+
+# A map to find the correct template.
 lookup = {}
 lookup['ina219'] = INA219Template
 lookup['ina231'] = INA231Template
 lookup['ina3221'] = INA3221Template
+lookup['pac1934'] = PAC1934Template
+lookup['pac19next'] = PAC19nextTemplate
+
 
 def GetTemplate(name):
   """Return the template for ADC type |name|.
@@ -390,7 +482,7 @@ def GetTemplate(name):
     ADCTemplate subclass corresponding to |name|.
 
   Raises:
-    ADCTemplateError if |name| is unknown.
+    ADCTemplateError: if |name| is unknown.
   """
   if name not in lookup:
     raise ADCTemplateError('ADC type %r unknown.' % name)
