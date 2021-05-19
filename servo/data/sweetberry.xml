@@ -7,7 +7,7 @@
     <name>raw_sweetberry_console_pty</name>
     <alias>raw_sweetberry_uart_pty</alias>
     <doc>Sweetberry's stm32 console.</doc>
-    <params cmd="get" subtype="pty" interface="3" drv="uart">
+    <params cmd="get" subtype="pty" interface="6" drv="uart">
     </params>
   </control>
   <!-- firmware version introspection controls -->
@@ -15,7 +15,7 @@
     <name>sweetberry_version</name>
     <alias>support.servo_fw_version</alias>
     <doc>current fw version</doc>
-    <params cmd="get" interface="4" drv="simple_ec" uart_cmd="version"
+    <params cmd="get" interface="7" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w\+-]+)[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>

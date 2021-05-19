@@ -145,9 +145,12 @@ for vid, pid in SWEETBERRY_ID_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['empty',
      'empty',
-     {'name': 'stm32_i2c', 'interface': 3},  # 2: i2c
-     {'name': 'stm32_uart', 'interface': 0}, # 3: sweetberry console
-     {'name': 'ec3po_uart',                  # 4: EC3PO(Sweetberry)
+     {'name': 'stm32_i2c', 'interface': 3},  # 2: i2c bus 0
+     {'name': 'stm32_i2c', 'interface': 3, 'port': 1},  # 3: i2c bus 1
+     {'name': 'stm32_i2c', 'interface': 3, 'port': 2},  # 4: i2c bus 2
+     {'name': 'stm32_i2c', 'interface': 3, 'port': 3},  # 5: i2c bus 3
+     {'name': 'stm32_uart', 'interface': 0}, # 6: sweetberry console
+     {'name': 'ec3po_uart',                  # 7: EC3PO(Sweetberry)
       'raw_pty': 'raw_sweetberry_uart_pty', 'source': 'sweetberry'},
     ]
 
@@ -185,7 +188,8 @@ for vid, pid in C2D2_DEFAULTS:
      {'name': 'stm32_uart', 'interface': 0}, # 1: H1 console
      {'name': 'stm32_i2c',  'interface': 4}, # 2: i2c
      {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
-     'empty',                                # 4: empty
+     {'name': 'stm32_i2c',  'interface': 4,
+      'port': 1},                            # 4: i2c 2 // INAs etc
      'empty',                                # 5: empty
      {'name': 'ec3po_uart',                  # 6: servo console
       'raw_pty': 'raw_c2d2_uart_pty', 'source': 'c2d2'},
