@@ -5,19 +5,20 @@
 
 A zero-drift, bi-directional current/power monitor with I2C interface.
 """
-from . import ina2xx
+from servo.drv import ina2xx
 
 
+# pylint: disable=invalid-name
+# servod drv identification follows this naming convention.
 class ina219(ina2xx.ina2xx):
   """Object to access drv=ina219 controls."""
 
   # 800mA range, ~12.5uA/lsb for a 50mOhm rsense.  Note lsb is SBZ
   MAX_CALIB = 0xfffe
   MIN_CALIB = 0x2
-  MAX_REG_INDEX = 0x5  # REG_CALIB
 
   # millivolts per lsb of bus voltage register
-  BUSV_MV_PER_LSB = 4
+  BUSV_MV_PER_LSB = 4.
   # offset of 13-bit bus voltage measurement.
   # <2> reserved
   # <1> CNVR: conversion ready bit

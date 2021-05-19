@@ -1,27 +1,27 @@
 # Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Base class to provide access to Texas Instruments INA-based ADCs
+"""Base class to provide access to Texas Instruments INA-based ADCs.
 
 Presently tested for:
   INA219
   INA231
+  INA3221
 """
 from __future__ import print_function
 import logging
 
-from . import hw_driver
-from . import i2c_reg
-import numpy
-import servo.interface.stm32i2c
+from servo.drv import base_pwr_adc
 
 
-class Ina2xxError(hw_driver.HwDriverError):
+# pylint: disable=invalid-name
+# servod drv identification follows this naming convention.
+class Ina2xxError(base_pwr_adc.BasePWRADCError):
   """Error occurred accessing INA219."""
 
 
-class ina2xx(hw_driver.HwDriver):
-  """class definition
+class ina2xx(base_pwr_adc.basePWRADC):
+  """class definition.
 
   Note, instances of this object get dispatched via base class,
   HwDriver's get/set method.  That method ulitimately calls:
@@ -41,18 +41,11 @@ class ina2xx(hw_driver.HwDriver):
   CUR_SIGN = 0x8000
   # maximum value of current output register.
   CUR_MAX = 0x7fff
-  # maximum number of re-reads of current register to do before raising
-  # exception because current reading is still saturated
-  CUR_READ_RETRY = 10
 
   # maximum value of power output register.
   PWR_MAX = 0xffff
-
   # sign bit of the power output register.
   PWR_SIGN = 0x8000
-
-  # offset of the power reading, in case some bits are unused.
-  PWR_MW_OFFSET = 0
 
   # mask ( 3-bits ) for ina219 configuration modes
   CFG_MODE_MASK = 0x7
@@ -61,43 +54,41 @@ class ina2xx(hw_driver.HwDriver):
   # sleep mode
   CFG_MODE_SLEEP = 0
 
-  def __init__(self, interface, params):
-    """Constructor.
+  @property
+  def millivolts_per_lsb(self):
+    """Bus voltage mv per lsb.
 
-    Args:
-    interface: servod object to handle reading low-level i2c information
-    params: dictionary of params needed to perform operations on
-      ina219 devices.  All items are strings initially but should be
-      cast to types detailed below.
+    Value is defined in the subclasses.
 
-    Mandatory Params:
-      base_name: the symbolic name for this INA e.g. pp3300_wlan_dx
-      subtype: string, used by get/set method of base class to decide
-        how to dispatch request.  Examples are: millivolts, milliamps,
-        milliwatts
-
-    Optional Params:
-      rsense: float, sense resistor size for adc in ohms.  Needed to properly
-        compute current and power measurements
-
-    Raises:
-      ina2xxError: if needed params are absent
+    Returns:
+      float of bus voltage per lsb in millivolts
     """
-    super(ina2xx, self).__init__(interface, params)
-    self._logger.debug('')
-    self._base_name = self._params['base_name']
+    return self.BUSV_MV_PER_LSB
 
-    if 'subtype' not in self._params:
-      raise Ina2xxError('Unable to find subtype param')
-    subtype = self._params['subtype']
-    try:
-      self._rsense = float(self._params['rsense'])
-    except Exception:
-      if (subtype == 'milliamps') or (subtype == 'milliwatts'):
-        raise Ina2xxError('No sense resistor in params')
-      self._rsense = None
-    # base class
-    self._reset()
+  @property
+  def milliamps_per_lsb(self):
+    """Calculate milliamps per least significant bit of the current register.
+
+    Returns:
+      float of current per lsb value in milliamps.
+    """
+    self._logger.debug('')
+    self._calibrate()
+    lsb = self.CUR_LSB_COEFFICIENT / (self._calib_reg * self._rsense)
+    self._logger.debug('lsb = %f' % lsb)
+    return lsb
+
+  @property
+  def milliwatts_per_lsb(self):
+    """Calculate milliwatts per least significant bit of the power register.
+
+    Returns:
+      float of power per lsb value in milliwatts.
+    """
+    self._logger.debug('')
+    lsb = self.PWR_LSB_COEFFICIENT * self.milliamps_per_lsb
+    self._logger.debug('lsb = %f' % lsb)
+    return lsb
 
   def _read_cnvr_ovf(self):
     raise NotImplementedError('Must be defined by child class')
@@ -117,33 +108,8 @@ class ina2xx(hw_driver.HwDriver):
     self._calib_reg = None
     self._reg_cache = None
 
-  def _reg_control_name(self, reg):
-    return '%s_%s_reg' % (self._base_name, reg)
-
-  def _has_reg(self, reg):
-    return self._interface._has_control(self._reg_control_name(reg))
-
-  def _read_reg(self, reg):
-    if not self._has_reg(reg):
-      raise Ina2xxError('Register %s for control %s unknown' %
-                        (reg, self._base_name))
-    ctrl_name = self._reg_control_name(reg)
-    return int(self._interface.get(ctrl_name), 16)
-
-  def _write_reg(self, reg, value):
-    if not self._has_reg(reg):
-      raise Ina2xxError('Register %s for control %s unknown' %
-                        (reg, self._base_name))
-    ctrl_name = self._reg_control_name(reg)
-    self._interface.set(ctrl_name, value)
-
-  def _read_busv(self):
-    """Read bus voltage value."""
-    busv_reg = self._read_reg('busv')
-    return busv_reg >> self.BUSV_MV_OFFSET
-
   def _get_next_ovf(self):
-    """Watch conversion ready bit assertion then return overflow status
+    """Watch conversion ready bit assertion then return overflow status.
 
     Note datasheet doesn't spell this out but it seems logical.
 
@@ -205,44 +171,7 @@ class ina2xx(hw_driver.HwDriver):
       calib_reg = (calib_reg >> 1) & self.MAX_CALIB
       self._logger.debug('writing calibrate to 0x%04x' % (calib_reg))
       self._write_reg('cal', calib_reg)
-      calib_reg = calib_reg
       is_ovf = self._get_next_ovf()
-
-  def _Get_millivolts(self):
-    """Retrieve voltage measurement for ADC in millivolts.
-
-    Returns:
-      integer of potential in millivolts
-    """
-    self._logger.debug('')
-    busv = self._read_busv()
-    millivolts = busv * self.BUSV_MV_PER_LSB
-    if millivolts >= self.BUSV_MAX:
-      self._logger.error(
-          'bus voltage measurement exceeded maximum %x' % millivolts)
-    return millivolts
-
-  def _get_milliamps_reg(self):
-    """Retrieve current measurement for ADC in milliamps from current register.
-
-    Note may trigger calibration which will increase latency.  This calibration
-    occurs when math overflow is detected from the OVF bit in the BUSV
-    register.  If OVF asserts, software will attempt to adjust the calibration
-    register until overflow is gone.
-
-    Returns:
-      float of current in milliamps
-
-    Raises:
-      AssertionError: when current is saturated.
-    """
-    self._logger.debug('')
-    milliamps_per_lsb = self._milliamps_per_lsb()
-    raw_cur = self._read_reg('cur')
-    if raw_cur == self.CUR_MAX:
-      self._logger.error('current saturated %x\n' % raw_cur)
-    raw_cur = int(numpy.int16(raw_cur))
-    return raw_cur * milliamps_per_lsb
 
   def _get_shunt_millivolts(self):
     """Retrieve shunt voltage measurement for ADC.
@@ -264,7 +193,7 @@ class ina2xx(hw_driver.HwDriver):
       logging.debug('shv = 0x%04x after negate', vshunt_reg)
 
     if abs(vshunt_reg) >= self.SHV_MASK:
-      raise Ina2xxError('vshunt overflow 0x%04x', vshunt_reg)
+      raise Ina2xxError('vshunt overflow 0x%04x' % vshunt_reg)
 
     vshunt_reg = vshunt_reg >> self.SHV_OFFSET
     return vshunt_reg * self.SHV_UV_PER_LSB / 1000.
@@ -290,74 +219,6 @@ class ina2xx(hw_driver.HwDriver):
     vshunt_mv = self._get_shunt_millivolts()
     logging.debug('vshunt_mv = %2.2f', vshunt_mv)
     return vshunt_mv / self._rsense
-
-  def _Get_milliamps(self):
-    """Retrieve current measurement for ADC in milliamps.
-
-    At moment there are two methods for determining current:
-      1. Reading ADCs current reg and scaling by ma/lsb
-      2. Reading shunt voltage reg and calculating via Ohm's law
-         I = Vshunt/Rsense
-
-    Below is list of devices and which method they can support.
-      Method 1: INA219, INA231
-      Method 2: INA219, INA231, INA3221
-
-    The method will retrieve current in milliamps choosing best available
-    method.
-
-    Returns:
-      float of current in milliamps
-    """
-    if self._has_reg('cur'):
-      return self._get_milliamps_reg()
-    else:
-      return self._get_milliamps_calc()
-
-  def _get_milliwatts_reg(self):
-    """Retrieve power measurement for ADC in milliamps from power register.
-
-    Note may trigger calibration which will increase latency
-
-    Returns:
-      float of power in milliwatts
-
-    Raises:
-      AssertionError: when power is saturated.
-    """
-    self._logger.debug('')
-    # call first to force compulsory calibration
-    milliwatts_per_lsb = self._milliwatts_per_lsb()
-    raw_pwr = self._read_reg('pwr') >> self.PWR_MW_OFFSET
-    if raw_pwr & self.PWR_SIGN:
-      self._logger.debug('Power may be signed %x\n' % raw_pwr)
-    if raw_pwr == self.PWR_MAX:
-      self._logger.error('power saturated %x\n' % raw_pwr)
-    raw_pwr = int(numpy.int16(raw_pwr))
-    return raw_pwr * milliwatts_per_lsb
-
-  def _get_milliwatts_calc(self):
-    """Retrieve power measurement for ADC in milliamps from calculation.
-
-    Returns:
-      float of power in milliwatts
-    """
-    volts = self._Get_millivolts() / 1000.
-    milliamps = self._get_milliamps_calc()
-    return volts * milliamps
-
-  def _Get_milliwatts(self):
-    """Retrieve power measurement for INA ADCs in milliwatts.
-
-    See _Get_milliamps for details on multiple methods.
-
-    Returns:
-      float of power in milliwatts
-    """
-    if self._has_reg('pwr'):
-      return self._get_milliwatts_reg()
-    else:
-      return self._get_milliwatts_calc()
 
   def _wake(self):
     """Wake up the INA219 adc from sleep."""
@@ -387,77 +248,3 @@ class ina2xx(hw_driver.HwDriver):
     self._write_reg('cfg', (cfg_reg & ~self.CFG_MODE_MASK) | mode)
 
     self._mode = mode
-
-  def _milliamps_per_lsb(self):
-    """Calculate milliamps per least significant bit of the current register.
-
-    Returns:
-      float of current per lsb value in milliamps.
-    """
-    self._logger.debug('')
-    self._calibrate()
-    lsb = self.CUR_LSB_COEFFICIENT / (self._calib_reg * self._rsense)
-    self._logger.debug('lsb = %f' % lsb)
-    return lsb
-
-  def _milliwatts_per_lsb(self):
-    """Calculate milliwatts per least significant bit of the power register.
-
-    Returns:
-      float of power per lsb value in milliwatts.
-    """
-    self._logger.debug('')
-    lsb = self.PWR_LSB_COEFFICIENT * self._milliamps_per_lsb()
-    self._logger.debug('lsb = %f' % lsb)
-    return lsb
-
-def testit(testname, adc):
-  """Test major features of one ADC.
-
-  Args:
-    testname: string name of test
-    adc: integer of 7-bit i2c child address
-  """
-  for i in range(0, 6):
-    print('%s: [%d] = 0x%04x' % (testname, i, adc._read_reg(i)))
-  print('%s: mv = %d' % (testname, adc.millivolts()))
-  print('%s: ma = %d' % (testname, adc.milliamps()))
-  print('%s: mw = %d' % (testname, adc.milliwatts()))
-
-
-def test():
-  """Integration testing
-  """
-  import ftdi_utils
-  (options, args) = ftdi_utils.parse_common_args(interface=2)
-  loglevel = logging.INFO
-  if options.debug:
-    loglevel = logging.DEBUG
-  logging.basicConfig(
-      level=loglevel,
-      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
-  import ftdii2c
-  i2c = ftdii2c.Fi2c(options.vendor, options.product, options.interface)
-  i2c.open()
-  i2c.setclock(100000)
-
-  child = 0x40
-  wbuf = [0]
-  # try raw transaction to ftdii2c library reading cfg reg 0x399f
-  rbuf = i2c.wr_rd(child, wbuf, 2)
-  logging.info('001: i2c read of child=0x%02x reg=0x%02x == 0x%02x%02x', child,
-               wbuf[0], rbuf[0], rbuf[1])
-
-  # same read of cfg (0x399f) using ina219 module
-  adc = ina219.ina219(i2c, child, 'foo', 0.010)
-
-  adc.calibrate()
-  testit('POR  ', adc)
-  adc.sleep()
-  testit('SLEEP', adc)
-  adc.wake()
-  testit('WAKE ', adc)
-
-
-if __name__ == '__main__':
-  test()

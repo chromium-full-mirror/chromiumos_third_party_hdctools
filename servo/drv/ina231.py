@@ -5,9 +5,11 @@
 
 High- or Low-side Measurement, Bidirectional current/power monitor with 1.8v i2c
 """
-from . import ina2xx
+from servo.drv import ina2xx
 
 
+# pylint: disable=invalid-name
+# servod drv identification follows this naming convention.
 class ina231(ina2xx.ina2xx):
   """Object to access drv=ina231 controls.
 
@@ -21,7 +23,6 @@ class ina231(ina2xx.ina2xx):
   """
   MAX_CALIB = 0xffff
   MIN_CALIB = 0x1
-  MAX_REG_INDEX = 0x7  # REG_ALRT
 
   MSKEN_CNVR = 0x8
   MSKEN_OVF = 0x4
