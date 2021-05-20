@@ -3,8 +3,7 @@
 # found in the LICENSE file.
 import time
 
-from . import cros_ec_power
-from . import ec
+from . import cros_ec_power, ec
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):
@@ -215,38 +214,16 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       #
       # This is needed because the data role swaps normally don't happen in
       # EC_RO (which is the image we MUST be in for entering recovery mode).
+      #
+      # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
+      # this will be a no-op.
       servo_type = self._interface.get('servo_type')
       if 'ccd' in servo_type and 'servo_micro' not in servo_type:
         try:
-          # Check current data role.  Assuming port 0 is the CCD port.
-          cmd = 'pd 0 state'
-          self._interface.set('ec_uart_regexp', '["SNK-UFP"]')
-          self._interface.set('ec_uart_cmd', 'pd 0 state')
-          self._logger.debug('Initiating data role swap...')
-          # Clear the regexp.
-          self._interface.set('ec_uart_regexp', 'None')
-          cmd = 'pd 0 swap data'
-          self._interface.set('ec_uart_cmd', cmd)
-
-          # Did it work?
-          try:
-            self._logger.debug('Role swap delay: %s',
-                self._role_swap_delay)
-            time.sleep(self._role_swap_delay)
-            cmd = 'pd 0 state'
-            self._interface.set('ec_uart_regexp', '["DFP"]')
-            self._interface.set('ec_uart_cmd', 'pd 0 state')
-            self._logger.debug('Checking data role swap...')
-            self._interface.set('ec_uart_regexp', 'None')
-          except Exception as e:
-            self._logger.error('DUT cannot enable DFP!')
+          self._interface.set('dut_pd_data_role', 'DFP')
         except Exception as e:
-          # Assuming the DUT's data role is already a DFP.
-          self._logger.debug('DUT\'s port may already be a DFP.')
+          self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
           pass
-        finally:
-          # Clear the regexp.
-          self._interface.set('ec_uart_regexp', 'None')
 
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
