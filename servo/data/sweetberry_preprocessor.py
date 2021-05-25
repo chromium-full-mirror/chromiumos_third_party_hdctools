@@ -126,12 +126,12 @@ class SweetberryPreprocessor(object):
 
     Args:
       inas: list of ina config tuples
-      [('sweetberry', (1,3), 'ppvar_some' , 5.0, 0.010, 'j2', False),
+      [('ina231', (1,3), 'ppvar_some' , 5.0, 0.010, 'j2', False),
        ...]
 
     Returns:
       list of new ina configuration tuples with i2c child addresses.
-      [('sweetberry', '0x40:3', 'ppvar_some' , 5.0, 0.010, 'j2', False),
+      [('ina231', '0x40:3', 'ppvar_some' , 5.0, 0.010, 'j2', False),
        ...]
     """
     #TODO(coconutruben): add an exhaustive unit-test here.

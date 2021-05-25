@@ -49,8 +49,8 @@ inas = [
         ('ina219',     '0x40',      'ppvar_219',      3.3,   0.1,  'rem', True),
         ('ina231',     '0x40',      'ppvar_231',      3.3,   0.1,  'rem', True),
         ('ina3221',    '0x40:2',    'ppvar_3221',     3.3,   0.1,  'rem', True),
-        ('sweetberry', (1,3),       'ppvar_sb_pins',  3.3,   0.1,  'j2',  True),
-        ('sweetberry', '0x40:3',    'ppvar_sb_addr',  3.3,   0.1,  'j2',  True),
+        ('ina231', (1,3),       'ppvar_sb_pins',  3.3,   0.1,  'j2',  True),
+        ('ina231', '0x40:3',    'ppvar_sb_addr',  3.3,   0.1,  'j2',  True),
 ]
 """ % user
 

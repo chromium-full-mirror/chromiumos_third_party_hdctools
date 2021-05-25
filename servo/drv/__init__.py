@@ -83,7 +83,6 @@ from . import simple_ec
 from . import sleep
 from . import storm_power
 from . import stumpy_power
-from . import sweetberry
 from . import sx1505
 from . import sx1506
 from . import sx1506_v4

@@ -5,5 +5,5 @@
 config_type='sweetberry'
 
 inas = [
-    ('sweetberry', '0x40:3', 'vbat', 7.70, 1.000, 'j2', True), # R569, originally 0.01 Ohm
+    ('ina231', '0x40:3', 'vbat', 7.70, 1.000, 'j2', True), # R569, originally 0.01 Ohm
 ]

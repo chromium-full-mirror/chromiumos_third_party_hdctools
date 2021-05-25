@@ -93,9 +93,8 @@ For more details, see `generate_ina_controls.py`.
 ### sweetberry
 
 The output is a `servod`-style `.xml` control file, where the driver is
-"sweetberry" as a wrapper around the `ina231.py` driver, and a powerlog config
-file pair (`.board` and `.scenario` files). See below at `servod` for the
-controls exposed by the `.xml` file.
+`ina231.py`, and a powerlog config file pair (`.board` and `.scenario` files).
+See below at `servod` for the controls exposed by the `.xml` file.
 
 Sweetberry is not trivial to manually configure properly with i2c child address
 and the i2c port. This is due to each physical bank using multiple ports, and a
@@ -108,18 +107,18 @@ write the `.py` template also by setting:
 To summarize here are two equivalent rail configurations:
 
 ```python
-('sweetberry', (1,3), 'sample_rail_mw' , 5.0, 0.010, 'j2', False)
+('ina231', (1,3), 'sample_rail_mw' , 5.0, 0.010, 'j2', False)
 
-('sweetberry', '0x40:3', 'sample_rail_mw' , 5.0, 0.010, 'j2', False)
+('ina231', '0x40:3', 'sample_rail_mw' , 5.0, 0.010, 'j2', False)
 ```
 
 as the first line will be converted into the 2nd line in preprocessing. Same
 below.
 
 ```python
-('sweetberry', (1,3), 'sample_rail_mw' , 5.0, 0.010, 'j3', False)
+('ina231', (1,3), 'sample_rail_mw' , 5.0, 0.010, 'j3', False)
 
-('sweetberry', '0x44:3', 'sample_rail_mw' , 5.0, 0.010, 'j3', False)
+('ina231', '0x44:3', 'sample_rail_mw' , 5.0, 0.010, 'j3', False)
 ```
 
 See [sweetberry] for the details on banks, ports, and i2c addresses.

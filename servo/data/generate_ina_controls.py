@@ -238,7 +238,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       if not os.path.isfile(drvpath):
         raise INAConfigGeneratorError('Unable to locate driver for %s at %s'
                                       % (drvname, drvpath))
-      ina_type = 'ina231' if drvname == 'sweetberry' else drvname
+      ina_type = drvname
       addr = child
       # Only some types of ADCs support this extra information.
       i2c_port = 0
@@ -246,7 +246,9 @@ class ServoINAConfigGenerator(INAConfigGenerator):
 
       if ina_type == 'ina3221':
         addr, channel = addr.split(':')
-      elif drvname == 'sweetberry':
+      elif ina_type == 'ina231' and type(addr) == str and ':' in addr:
+        # This only happens on sweetberry configurations. This is to report
+        # which i2c port the ina219 is on.
         addr, i2c_port = addr.split(':')
       # Convert all to integers as needed.
       if not isinstance(addr, int):
@@ -278,7 +280,11 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         control_generators.append(ServoControlGenerator(cname,
                                                         docstring,
                                                         params))
-      for reg, reg_params in adc_temp.GetRegisterParams(interface).items():
+      # Only sweetberry has |i2c_port| as non-zero. In that case, the actual
+      # interface is |interface| (2) + i2c_port
+      # |einterface| stands for effective interface.
+      einterface = interface + i2c_port
+      for reg, reg_params in adc_temp.GetRegisterParams(einterface).items():
         docstring = 'Raw register value of %s on i2c_mux:%s' % (reg, mux)
         ctrl_name = '%s_%s_reg' % (name, reg)
         control_generators.append(ServoControlGenerator(ctrl_name,

@@ -5,5 +5,5 @@
 config_type='sweetberry'
 
 inas = [
-    ('sweetberry', '0x40:3', 'vbat', 7.70, 0.010, 'j2', True), # R569
+    ('ina231', '0x40:3', 'vbat', 7.70, 0.010, 'j2', True), # R569
 ]
