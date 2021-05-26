@@ -12,6 +12,10 @@ from servo.drv import bit_util
 from servo.drv import ina2xx
 
 
+class Pac1934Error(ina2xx.Ina2xxError):
+  """Pac1934 error class."""
+
+
 class pac1934(ina2xx.ina2xx):
   """Object to access drv=pac1934 controls."""
 
@@ -47,6 +51,14 @@ class pac1934(ina2xx.ina2xx):
 
   # Bit 3 on the register
   CTRL_REG_ALERT_PIN_OFFSET = 3
+
+  # Maps to handle sampling states.
+  SAMPLE_BIT_MAP = {8: 0b11, 64: 0b10, 256: 0b01, 1024: 0b00}
+  BIT_SAMPLE_MAP = {v: k for k, v in SAMPLE_BIT_MAP.items()}
+  SAMPLING_RATES = list(SAMPLE_BIT_MAP.keys())
+
+  # How many bits to shift to the right to get the sample rate bits from reg.
+  SAMPLING_OFFSET = 6
 
   def __init__(self, interface, params):
     super(pac1934, self).__init__(interface, params)
@@ -94,6 +106,28 @@ class pac1934(ina2xx.ina2xx):
   def _Get_resolution(self):
     """The resolution is always the same on pac1934."""
     return self.REGULAR_RESOLUTION
+
+  def _Get_samples(self):
+    """Return current samples per second setting."""
+    cv = self._read_reg('ctrl_act', refresh=None)
+    smode = bit_util.extract_bitfield(cv, 0x3, self.SAMPLING_OFFSET)
+    return self.BIT_SAMPLE_MAP[smode]
+
+  def _Set_samples(self, value):
+    """Set |value| samples per second.
+
+    Args:
+      value: one of [8, 64, 256, 1024]
+
+    Raises:
+      Pac1934Error: if |value| is not a known sampling rate
+    """
+    if value not in self.SAMPLING_RATES:
+      raise Pac1934Error('Unknown sampling rate %d' % value)
+    smode = self.SAMPLE_BIT_MAP[value]
+    cv = self._read_reg('ctrl', refresh=None)
+    rv = bit_util.set_bitfield(cv, 0x2, self.SAMPLING_SHIFT, smode)
+    self._write_reg('ctrl', rv)
 
   def _Get_slow(self):
     """Whether slow-mode is enabled via pin input on the pac1934."""

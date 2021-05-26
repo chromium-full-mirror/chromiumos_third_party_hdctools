@@ -408,16 +408,18 @@ class PAC1934Template(ADCTemplate):
 
   # Functions supported by the pac family.
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
-                   res='resolution', slow_enabled='slow')
+                   res='resolution', slow_enabled='slow', samples='samples')
   # Supply the resolution map
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   FUNCTIONS_MAP['res'] = 'resolution'
   FUNCTIONS_MAP['slow_enabled'] = 'yesno'
+  FUNCTIONS_MAP['samples'] = 'pac_samples'
 
   # Mark relevant functions as r/w.
   FUNCTIONS_RO = copy.copy(ADCTemplate.FUNCTIONS_RO)
   FUNCTIONS_RO['res'] = False
   FUNCTIONS_RO['slow_enabled'] = False
+  FUNCTIONS_RO['samples'] = False
 
   # Docstring templates for the functions.
   FUNC_DOCSTRING_TEMPLATES = {}
@@ -426,6 +428,7 @@ class PAC1934Template(ADCTemplate):
   FUNC_DOCSTRING_TEMPLATES['mw'] = 'Power of %r rail in milliwatts'
   FUNC_DOCSTRING_TEMPLATES['res'] = 'Resolution of %r rail'
   FUNC_DOCSTRING_TEMPLATES['slow_enabled'] = 'Slow pin ctrl enabled on %r rail'
+  FUNC_DOCSTRING_TEMPLATES['samples'] = 'Samples per second of %r rail'
 
   def reg_offset(self, reg):
     """PAC ADC specific offset logic.

@@ -41,6 +41,13 @@ class pac19next(pac1934.pac1934):
   # the sign.
   PWR_SIGN = 1 << 29
 
+  # How many bits to shift to the right to get the sample rate bits from reg.
+  SAMPLING_SHIFT = 12
+  # Mask that only has 1s on the sampling bit positions. Note: we only
+  # use adaptive mode on this pac and ignore the bits always for non-adaptive
+  # mode.
+  SAMPLING_MASK = 0x3000
+
   def busv_fsr(self):
     """Retrieve the bus voltage full scale range (fsr)."""
     _, v_signed, _, v_fsr2 = self._signed_and_fsr()

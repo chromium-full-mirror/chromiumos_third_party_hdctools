@@ -73,6 +73,11 @@
     </params>
   </map>
   <map>
+    <name>pac_samples</name>
+    <doc>Shorthand for sample/second for pac family ADCs</doc>
+    <params default="1024" highest="1024" lowest="8"/>
+  </map>
+  <map>
     <name>resolution</name>
     <doc>resolution map</doc>
     <params high="1" regular="0"></params>
