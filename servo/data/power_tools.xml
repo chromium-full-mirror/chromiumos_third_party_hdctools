@@ -82,6 +82,11 @@
     <doc>map for pacxx refresh registers</doc>
     <params refresh="0"/>
   </map>
+  <map>
+    <name>yesno</name>
+    <doc>assertive high map for yes/no</doc>
+    <params yes="1" no="0"></params>
+  </map>
   <control>
     <name>current_rails</name>
     <doc>List of available rail controls to measure current.</doc>

@@ -8,6 +8,7 @@ with i2c Interface.
 """
 import time
 
+from servo.drv import bit_util
 from servo.drv import ina2xx
 
 
@@ -43,6 +44,9 @@ class pac1934(ina2xx.ina2xx):
   # and use these constants to know which resolution is requested.
   REGULAR_RESOLUTION = 0
   HIGH_RESOLUTION = 1
+
+  # Bit 3 on the register
+  CTRL_REG_ALERT_PIN_OFFSET = 3
 
   def __init__(self, interface, params):
     super(pac1934, self).__init__(interface, params)
@@ -90,6 +94,30 @@ class pac1934(ina2xx.ina2xx):
   def _Get_resolution(self):
     """The resolution is always the same on pac1934."""
     return self.REGULAR_RESOLUTION
+
+  def _Get_slow(self):
+    """Whether slow-mode is enabled via pin input on the pac1934."""
+    cv = self._read_reg('ctrl_act', refresh=None)
+    mode = bit_util.extract_bitfield(cv, 0x1, self.CTRL_REG_ALERT_PIN_OFFSET)
+    return int(not bool(mode))
+
+  def _Set_slow(self, value):
+    """Configure whether to accept the pin input for slow mode or ignore it.
+
+    This is implemented by reconfiguring the SLOW/ALERT input to ALERT and thus
+    ignore SLOW signal.
+
+    Args:
+      value: 0 means slow pin will be ignored, anything else means it will
+             be accepted
+    """
+    cv = self._read_reg('ctrl', refresh=None)
+    if value:
+      mode = 0
+    else:
+      mode = 1
+    rv = bit_util.set_bitfield(cv, 0x1, self.CTRL_REG_ALERT_PIN_OFFSET, mode)
+    self._write_reg('ctrl', rv)
 
   @property
   def _neg_pwr_current_offset(self):

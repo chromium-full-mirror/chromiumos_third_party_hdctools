@@ -408,19 +408,24 @@ class PAC1934Template(ADCTemplate):
 
   # Functions supported by the pac family.
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
-                   res='resolution')
+                   res='resolution', slow_enabled='slow')
   # Supply the resolution map
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   FUNCTIONS_MAP['res'] = 'resolution'
+  FUNCTIONS_MAP['slow_enabled'] = 'yesno'
+
   # Mark relevant functions as r/w.
   FUNCTIONS_RO = copy.copy(ADCTemplate.FUNCTIONS_RO)
   FUNCTIONS_RO['res'] = False
+  FUNCTIONS_RO['slow_enabled'] = False
+
   # Docstring templates for the functions.
   FUNC_DOCSTRING_TEMPLATES = {}
   FUNC_DOCSTRING_TEMPLATES['mv'] = 'Bus Voltage of %r rail in millivolts'
   FUNC_DOCSTRING_TEMPLATES['ma'] = 'Current of %r rail in milliamps'
   FUNC_DOCSTRING_TEMPLATES['mw'] = 'Power of %r rail in milliwatts'
   FUNC_DOCSTRING_TEMPLATES['res'] = 'Resolution of %r rail'
+  FUNC_DOCSTRING_TEMPLATES['slow_enabled'] = 'Slow pin ctrl enabled on %r rail'
 
   def reg_offset(self, reg):
     """PAC ADC specific offset logic.
@@ -461,6 +466,15 @@ class PAC19nextTemplate(PAC1934Template):
   REG_RO = collections.defaultdict(lambda: False)
   # These registers are all read only.
   REG_RO.update(dict(busv=True, pwr=True, cur=True, neg_pwr_fsr_act=True))
+
+  def GetFunctionalParams(self, rsense, interface='servo'):
+    """pac19next specific overwrite to handle special 'slow' implementation."""
+    funcs = super(PAC19nextTemplate, self).GetFunctionalParams(rsense,
+                                                               interface)
+    funcs['slow_enabled'].update(dict(subtype='slow', drv='pac19next_gpio',
+                                      interface=interface, io_mode='slow',
+                                      pin='1'))
+    return funcs
 
 
 # A map to find the correct template.
