@@ -163,6 +163,7 @@ class basePWRADC(hw_driver.HwDriver):
       BasePWRADCError: if |self._base_name|_|suffix| is no servod control
     """
     ctrl_name = '%s_%s' % (self._base_name, suffix)
+    # pylint: disable=protected-access
     if not self._interface._has_control(ctrl_name):
       raise BasePWRADCError('Control %r unknown.' % ctrl_name)
     self._interface.set(ctrl_name, value)
@@ -235,10 +236,14 @@ class basePWRADC(hw_driver.HwDriver):
       self._logger.error('current saturated %x', raw_cur)
     return raw_cur * milliamps_per_lsb
 
-  def _Get_milliwatts(self):
+  def _Get_milliwatts(self, raw_pwr=None):
     """Retrieve power measurement for ADC in milliamps from power register.
 
     Note may trigger calibration which will increase latency
+
+    Args:
+      raw_pwr: if an ADC supports accumulation, the accumulator/count reading
+               can be fed in here rather than reading the pwr register directly
 
     Returns:
       float of power in milliwatts
@@ -249,11 +254,12 @@ class basePWRADC(hw_driver.HwDriver):
     self._logger.debug('')
     # call first to force compulsory calibration
     milliwatts_per_lsb = self.milliwatts_per_lsb
-    raw_pwr = self._read_reg('pwr') >> self.PWR_MW_OFFSET
-    if raw_pwr & self.PWR_SIGN:
-      self._logger.debug('power may be signed %x', raw_pwr)
-      raw_pwr -= (self.PWR_SIGN << 1)
-      self._logger.debug('power %x after negation', raw_pwr)
+    if raw_pwr is None:
+      raw_pwr = self._read_reg('pwr') >> self.PWR_MW_OFFSET
+      if raw_pwr & self.PWR_SIGN:
+        self._logger.debug('power may be signed %x', raw_pwr)
+        raw_pwr -= (self.PWR_SIGN << 1)
+        self._logger.debug('power %x after negation', raw_pwr)
     if raw_pwr == self.PWR_MAX:
       self._logger.error('power saturated %x', raw_pwr)
     return raw_pwr * milliwatts_per_lsb

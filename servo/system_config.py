@@ -106,7 +106,7 @@ class SystemConfig(object):
     """SystemConfig constructor."""
     self._logger = logging.getLogger('SystemConfig')
     self._logger.debug('')
-    self.control_tags = collections.defaultdict(list)
+    self.control_tags = collections.defaultdict(set)
     self.aliases = {}
     self.syscfg_dict = collections.defaultdict(dict)
     self.hwinit = []
@@ -392,14 +392,12 @@ class SystemConfig(object):
     base_controls = [control for control in self.syscfg_dict[CONTROL_TAG]
                      if control not in self.aliases]
     for control in base_controls:
-      # Tags are only read out of the get dict for now. If a control defines
-      # seperate get and set dicts, please make sure to define the tags in the
-      # get dict.
-      get_dict = self.syscfg_dict[CONTROL_TAG][control]['get_params']
-      if 'tags' in get_dict:
-        tags = SystemConfig.tag_string_to_tags(get_dict['tags'])
-        for tag in tags:
-          self.control_tags[tag].append(control)
+      # Tags can be in either params.
+      for params_dict in self.syscfg_dict[CONTROL_TAG][control].values():
+        if 'tags' in params_dict:
+          tags = SystemConfig.tag_string_to_tags(params_dict['tags'])
+          for tag in tags:
+            self.control_tags[tag].add(control)
 
   def get_controls_for_tag(self, tag):
     """Get list of controls for a given tag.
@@ -416,7 +414,7 @@ class SystemConfig(object):
     if tag not in self.control_tags:
       self._logger.info('Tag %s unknown.', tag)
       return []
-    return self.control_tags[tag]
+    return list(self.control_tags[tag])
 
   def lookup_control_params(self, name):
     """Lookup & return control parameter dictionary.

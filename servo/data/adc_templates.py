@@ -53,7 +53,9 @@ class ADCTemplate(object):
   # this is to tie together the system regardless of which ADCs are used.
   FUNCTIONS_TAGS = collections.defaultdict(lambda: None)
   FUNCTIONS_TAGS.update(dict(shuntmv='shuntmv', mv='bus_voltage_rail',
-                             ma='current_rail', mw='power_rail'))
+                             ma='current_rail', mw='power_rail',
+                             avg_mw='avg_power_rails',
+                             acc_clear='accum_clear_ctrls'))
   # Whether a function uses a map in servod.
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   # Templates for string formatting to produce servod control docstrings.
@@ -414,8 +416,9 @@ class PAC1934Template(ADCTemplate):
 
   ADC_TYPE = 'pac1934'
 
-  REG_IDX = dict(refresh=0, ctrl=1, busv=0xf, cur=0x13, pwr=0x17,
-                 refresh_v=0x1f, ctrl_act=0x21, neg_pwr_act=0x23)
+  REG_IDX = dict(refresh=0, ctrl=1, acc_count=0x2, acc_pwr=0x3, busv=0xf,
+                 cur=0x13, pwr=0x17, refresh_v=0x1f, ctrl_act=0x21,
+                 neg_pwr_act=0x23)
 
   # Add 'refresh' shorthand for the refresh registers.
   REG_MAP = copy.copy(ADCTemplate.REG_MAP)
@@ -423,7 +426,7 @@ class PAC1934Template(ADCTemplate):
 
   REG_LEN = collections.defaultdict(lambda: 2)
   REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4, neg_pwr_act=1,
-                      ctrl=1, ctrl_act=1))
+                      ctrl=1, ctrl_act=1, acc_count=3, acc_pwr=6))
 
   REG_RO = collections.defaultdict(lambda: False)
   # These registers are all read only.
@@ -440,25 +443,34 @@ class PAC1934Template(ADCTemplate):
   # Functions supported by the pac family.
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
                    res='resolution', slow_enabled='slow', samples='samples',
-                   ez_config='ez_config')
+                   ez_config='ez_config', avg_mw='accum_milliwatts',
+                   acc_clear='acc_clear')
   # Supply the resolution map
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   FUNCTIONS_MAP['res'] = 'resolution'
   FUNCTIONS_MAP['slow_enabled'] = 'yesno'
   FUNCTIONS_MAP['samples'] = 'pac_samples'
   FUNCTIONS_MAP['ez_config'] = 'on'
+  FUNCTIONS_MAP['acc_clear'] = 'yes'
 
   # Mark relevant functions as r/w.
   FUNCTIONS_RO = copy.copy(ADCTemplate.FUNCTIONS_RO)
   FUNCTIONS_RO['res'] = False
   FUNCTIONS_RO['slow_enabled'] = False
   FUNCTIONS_RO['samples'] = False
+  FUNCTIONS_RO['acc_clear'] = False
+
+  FUNCTIONS_WO = copy.copy(ADCTemplate.FUNCTIONS_WO)
+  FUNCTIONS_WO['acc_clear'] = True
 
   # Docstring templates for the functions.
   FUNC_DOCSTRING_TEMPLATES = {}
   FUNC_DOCSTRING_TEMPLATES['mv'] = 'Bus Voltage of %r rail in millivolts'
   FUNC_DOCSTRING_TEMPLATES['ma'] = 'Current of %r rail in milliamps'
   FUNC_DOCSTRING_TEMPLATES['mw'] = 'Power of %r rail in milliwatts'
+  FUNC_DOCSTRING_TEMPLATES['avg_mw'] = ('Avg power of %r rail in milliwatts '
+                                        'since last clearing the accumulator')
+  FUNC_DOCSTRING_TEMPLATES['acc_clear'] = ('Clear the accumulator for %r rail')
   FUNC_DOCSTRING_TEMPLATES['res'] = 'Resolution of %r rail'
   FUNC_DOCSTRING_TEMPLATES['slow_enabled'] = 'Slow pin ctrl enabled on %r rail'
   FUNC_DOCSTRING_TEMPLATES['samples'] = 'Samples per second of %r rail'
@@ -482,7 +494,7 @@ class PAC1934Template(ADCTemplate):
     if self._channel is None:
       raise ADCTemplateError('Channel info required on PAC 1934.')
     idx = self.REG_IDX[reg]
-    if reg in ['busv', 'cur', 'pwr']:
+    if reg in ['busv', 'cur', 'pwr', 'acc_pwr']:
       # These are offset depending on which channel the user is trying to read.
       idx += self._channel
     return idx
@@ -493,12 +505,13 @@ class PAC19nextTemplate(PAC1934Template):
 
   ADC_TYPE = 'pac19next'
 
-  REG_IDX = dict(refresh=0, ctrl=1, busv=0xf, cur=0x13, pwr=0x17, smbus=0x1c,
-                 neg_pwr_fsr=0x1d, refresh_v=0x1f, ctrl_act=0x21,
-                 neg_pwr_fsr_act=0x22)
+  REG_IDX = dict(refresh=0, ctrl=1, acc_count=0x2, acc_pwr=0x3, busv=0xf,
+                 cur=0x13, pwr=0x17, smbus=0x1c, neg_pwr_fsr=0x1d,
+                 refresh_v=0x1f, ctrl_act=0x21, neg_pwr_fsr_act=0x22)
 
   REG_LEN = collections.defaultdict(lambda: 2)
-  REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4))
+  REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4, acc_count=4,
+                      acc_pwr=7))
 
   REG_RO = collections.defaultdict(lambda: False)
   # These registers are all read only.

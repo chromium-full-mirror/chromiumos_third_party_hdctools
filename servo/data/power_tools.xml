@@ -123,4 +123,19 @@
     <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
     tag="power_rail"/>
   </control>
+  <control>
+    <name>avg_power_rails</name>
+    <doc>List of available rail controls to measure power using hardware
+         support to accumulate and average.</doc>
+    <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
+    tag="avg_power_rails"/>
+  </control>
+  <control>
+    <name>accum_clear_ctrls</name>
+    <doc>List of available controls to clear underlying accumulators. Use this
+         in conjunction with 'avg_power_rails' to clear after reading, to
+         ensure a fresh sample on the next timestamp.</doc>
+    <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
+    tag="accum_clear_ctrls"/>
+  </control>
 </root>

@@ -41,6 +41,9 @@ class pac19next(pac1934.pac1934):
   # the sign.
   PWR_SIGN = 1 << 29
 
+  # accumulator power is a 56 bit 'signed' number potentially
+  PWR_ACCUM_SIGN = 1 << 55
+
   # How many bits to shift to the right to get the sample rate bits from reg.
   SAMPLING_SHIFT = 12
   # Mask that only has 1s on the sampling bit positions. Note: we only

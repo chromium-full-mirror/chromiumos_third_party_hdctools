@@ -40,6 +40,9 @@ class pac1934(ina2xx.ina2xx):
   # the sign.
   PWR_SIGN = 1 << 27
 
+  # accumulator power is a 48 bit 'signed' number potentially
+  PWR_ACCUM_SIGN = 1 << 47
+
   # Time after the refresh command when the signal is stable.
   REFRESH_STABLE_S = 1.0/1000  # 1ms.
 
@@ -270,3 +273,26 @@ class pac1934(ina2xx.ina2xx):
     lsb = pwr_fsr / float(d) / 1000.0
     self._logger.debug('lsb = %f' % lsb)
     return lsb
+
+  def _Get_accum_milliwatts(self):
+    """Retrieve power by reading accumulator and accumulator count.
+
+    Note: this does not clear them, but merely reads them out.
+
+    Returns:
+      milliwatts, but using accumulator & count i.e. avg since last clear
+    """
+    acc_pwr = self._read_reg('acc_pwr')
+    if acc_pwr & self.PWR_ACCUM_SIGN:
+      self._logger.debug('Power accumulator may be signed %x', acc_pwr)
+      acc_pwr -= (self.PWR_ACCUM_SIGN << 1)
+      self._logger.debug('power accumulator %x after negation', acc_pwr)
+    # Do not refresh again to avoid acc_count being different
+    acc_count = self._read_reg('acc_count', refresh=None)
+    # Integer division as we want it to mimick the output of a normal pwr
+    # register.
+    return self._Get_milliwatts(raw_pwr=acc_pwr//acc_count)
+
+  def _Set_acc_clear(self, _):
+    """Clear the accumulator values (and refresh)."""
+    self._refresh(clear=True)
