@@ -99,6 +99,20 @@ class pac1934(ina2xx.ina2xx):
     self._write_reg(reg, 0x0, refresh=None)
     time.sleep(self.REFRESH_STABLE_S)
 
+  def _Set_ez_config(self, _):
+    """Configure for standard usage on pac family.
+
+    on the PAC family, standard usage means
+    - high sample rate
+    - high resolution
+    - turning off slow-pin
+    - resetting the accumulators
+    """
+    self._set_ctrl('slow_enabled', 'no')
+    self._set_ctrl('res', 'high')
+    self._set_ctrl('samples', 'highest')
+    self._refresh(clear=True)
+
   def _Set_resolution(self, _):
     """The resolution is always the same on pac1934."""
     pass

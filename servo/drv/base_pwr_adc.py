@@ -152,6 +152,21 @@ class basePWRADC(hw_driver.HwDriver):
     ctrl_name = self._reg_control_name(reg)
     self._interface.set(ctrl_name, value)
 
+  def _set_ctrl(self, suffix, value):
+    """Set the control |suffix| for |self._base_name| to |value|.
+
+    Args:
+      suffix: control name suffix e.g. 'res'
+      value: servod value to pass to the control
+
+    Raises:
+      BasePWRADCError: if |self._base_name|_|suffix| is no servod control
+    """
+    ctrl_name = '%s_%s' % (self._base_name, suffix)
+    if not self._interface._has_control(ctrl_name):
+      raise BasePWRADCError('Control %r unknown.' % ctrl_name)
+    self._interface.set(ctrl_name, value)
+
   @property
   def millivolts_per_lsb(self):
     """Bus voltage mv per lsb. Required to be implemented in the subclass.
@@ -178,6 +193,11 @@ class basePWRADC(hw_driver.HwDriver):
       float of power per lsb value in milliwatts.
     """
     raise NotImplementedError()
+
+  def _Set_ez_config(self, _):
+    """Go through routine to configure the ADC for common use-case."""
+    # NOTE: subclass should implement this if they want to configure anything
+    # for common users or dut-power automation
 
   def _Get_millivolts(self):
     """Retrieve voltage measurement for ADC in millivolts.

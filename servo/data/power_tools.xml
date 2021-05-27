@@ -88,6 +88,11 @@
     <params refresh="0"/>
   </map>
   <map>
+    <name>on</name>
+    <doc>simple on-only map for ez_config</doc>
+    <params on="1"></params>
+  </map>
+  <map>
     <name>yesno</name>
     <doc>assertive high map for yes/no</doc>
     <params yes="1" no="0"></params>

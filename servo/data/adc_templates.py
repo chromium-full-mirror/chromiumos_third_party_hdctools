@@ -43,6 +43,12 @@ class ADCTemplate(object):
   # Functions that are read-only. By default, all functions are RO as that's the
   # common case. Individual templates can expand
   FUNCTIONS_RO = collections.defaultdict(lambda: True)
+  # Functions that are write-only
+  FUNCTIONS_WO = collections.defaultdict(lambda: False)
+  # 'ez_config' is a general function that everyone has to implement,
+  # and is write only.
+  FUNCTIONS_WO['ez_config'] = True
+  FUNCTIONS_RO['ez_config'] = False
   # Tags used for specific functions. Do not overwrite in the subtype as
   # this is to tie together the system regardless of which ADCs are used.
   FUNCTIONS_TAGS = collections.defaultdict(lambda: None)
@@ -200,6 +206,22 @@ class ADCTemplate(object):
       raise ADCTemplateError('Unknown function %r' % func)
     return self.FUNCTIONS_RO[func]
 
+  def func_write_only(self, func):
+    """Whether |func| is marked as a |func_write_only|.
+
+    Args:
+      func: str, name of function
+
+    Returns:
+      |FUNCTIONS_WO|[|func|]
+
+    Raises:
+      ADCTemplateError: if |func| not in |FUNCTIONS|
+    """
+    if func not in self.FUNCTIONS:
+      raise ADCTemplateError('Unknown function %r' % func)
+    return self.FUNCTIONS_WO[func]
+
   def func_map(self, func):
     """Whether |func| has a map.
 
@@ -302,8 +324,13 @@ class ADCTemplate(object):
       fmap = self.func_map(suffix)
       if fmap:
         output[suffix]['map'] = fmap
+      if self.func_read_only(suffix) and self.func_write_only(suffix):
+        raise ADCTemplateError('%r cannot be read only and write only' %
+                               suffix)
       if self.func_read_only(suffix):
         output[suffix]['cmd'] = 'get'
+      elif self.func_write_only(suffix):
+        output[suffix]['cmd'] = 'set'
       tags = self.func_tags(suffix)
       if tags is not None:
         output[suffix]['tags'] = tags
@@ -323,13 +350,17 @@ class INA219Template(ADCTemplate):
 
   # Supported higher level functions
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
-                   shuntmv='shuntmv')
+                   shuntmv='shuntmv', ez_config='ez_config')
+
+  FUNCTIONS_MAP = collections.defaultdict(lambda: None)
+  FUNCTIONS_MAP['ez_config'] = 'on'
 
   FUNC_DOCSTRING_TEMPLATES = {}
   FUNC_DOCSTRING_TEMPLATES['mv'] = 'Bus Voltage of %r rail in millivolts'
   FUNC_DOCSTRING_TEMPLATES['ma'] = 'Current of %r rail in milliamps'
   FUNC_DOCSTRING_TEMPLATES['mw'] = 'Power of %r rail in milliwatts'
   FUNC_DOCSTRING_TEMPLATES['shuntmv'] = 'Shunt Voltage of %r rail in millivolts'
+  FUNC_DOCSTRING_TEMPLATES['ez_config'] = 'Good default config for %r rail'
 
 
 class INA231Template(INA219Template):
@@ -408,12 +439,14 @@ class PAC1934Template(ADCTemplate):
 
   # Functions supported by the pac family.
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
-                   res='resolution', slow_enabled='slow', samples='samples')
+                   res='resolution', slow_enabled='slow', samples='samples',
+                   ez_config='ez_config')
   # Supply the resolution map
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   FUNCTIONS_MAP['res'] = 'resolution'
   FUNCTIONS_MAP['slow_enabled'] = 'yesno'
   FUNCTIONS_MAP['samples'] = 'pac_samples'
+  FUNCTIONS_MAP['ez_config'] = 'on'
 
   # Mark relevant functions as r/w.
   FUNCTIONS_RO = copy.copy(ADCTemplate.FUNCTIONS_RO)
@@ -429,6 +462,7 @@ class PAC1934Template(ADCTemplate):
   FUNC_DOCSTRING_TEMPLATES['res'] = 'Resolution of %r rail'
   FUNC_DOCSTRING_TEMPLATES['slow_enabled'] = 'Slow pin ctrl enabled on %r rail'
   FUNC_DOCSTRING_TEMPLATES['samples'] = 'Samples per second of %r rail'
+  FUNC_DOCSTRING_TEMPLATES['ez_config'] = 'Good default config for %r rail'
 
   def reg_offset(self, reg):
     """PAC ADC specific offset logic.

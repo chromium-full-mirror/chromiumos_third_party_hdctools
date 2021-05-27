@@ -173,6 +173,16 @@ class ina2xx(base_pwr_adc.basePWRADC):
       self._write_reg('cal', calib_reg)
       is_ovf = self._get_next_ovf()
 
+  def _Set_ez_config(self, _):
+    """Set the config register to be 'low_power'.
+
+    low_power is a short-hand on the INA chips in servod to say
+    - high sample rate
+    - high resolution
+    - hardware averaging
+    """
+    self._write_reg('cfg', 'low_power')
+
   def _get_shunt_millivolts(self):
     """Retrieve shunt voltage measurement for ADC.
 
