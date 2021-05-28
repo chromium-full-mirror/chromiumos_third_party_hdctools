@@ -15,10 +15,10 @@ import sys
 import tempfile
 import threading
 
-from . import client
+from servo import client
 # This module is just a wrapper around measure_power functionality
-from . import measure_power
-from . import servo_parsing
+from servo import measure_power
+from servo import servo_parsing
 
 
 class ProgressPrinter(threading.Thread):
@@ -105,9 +105,15 @@ def main(cmdline=sys.argv[1:]):
                       help='time (sec) to wait before measuring power')
   parser.add_argument('-t', '--time', default=60, type=float,
                       help='time (sec) to measure power for')
-  parser.add_argument('--ina-rate', default=measure_power.DEFAULT_INA_RATE,
-                      type=float, help='rate (sec) to query the INAs, if <= 0 '
-                      'then INAs will not be queried')
+  adcg = parser.add_mutually_exclusive_group()
+  # TODO(coconutruben): remove --ina-rate as legacy name once all dependencies
+  # are removed, and people have had time to switch scripts/docs/workflows
+  adcg.add_argument('--ina-rate', default=measure_power.DEFAULT_ADC_RATE,
+                    dest='adc_rate', type=float, help='rate (sec) to query the '
+                    'ADCs, if <= 0 then ADCs will not be queried')
+  adcg.add_argument('--adc-rate', default=measure_power.DEFAULT_ADC_RATE,
+                    dest='adc_rate', type=float, help='rate (sec) to query the '
+                    'ADCs, if <= 0 then ADCs will not be queried')
   parser.add_argument('--vbat-rate', default=measure_power.DEFAULT_VBAT_RATE,
                       type=float,
                       help='rate (sec) to query the ec vbat command, if <= 0 '
@@ -149,7 +155,7 @@ def main(cmdline=sys.argv[1:]):
     logfilehandler.setLevel(logging.DEBUG)
     pm_logger.addHandler(logfilehandler)
   pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
-                                      ina_rate=args.ina_rate,
+                                      adc_rate=args.adc_rate,
                                       vbat_rate=args.vbat_rate,
                                       fast=args.fast,
                                       board=args.board)
@@ -160,6 +166,7 @@ def main(cmdline=sys.argv[1:]):
   sleep_sampling = threading.Event()
   setup_done = pm.MeasurePower(wait=args.wait, powerstate=args.powerstate)
   # pylint: disable=g-long-lambda
+  # pylint: disable=g-backslash-continuation
   handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
                   (sw.set(), ss.set(), pm.FinishMeasurement())
   # Ensure that SIGTERM and SIGNINT gracefully stop the measurement

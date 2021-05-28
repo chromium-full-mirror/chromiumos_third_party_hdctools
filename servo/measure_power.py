@@ -9,16 +9,16 @@ import os
 import threading
 import time
 
-from . import client
+from servo import client
+from servo import timelined_stats_manager
 import stats_manager
-from . import timelined_stats_manager
 
 SAMPLE_TIME_KEY = 'Sample_msecs'
 
 # Default sample rate to query ec for battery power consumption
 DEFAULT_VBAT_RATE = 60
-# Default sample rate to query INAs for power consumption
-DEFAULT_INA_RATE = 1
+# Default sample rate to query ADCs for power consumption
+DEFAULT_ADC_RATE = 1
 
 # Powerstate name used when no powerstate is known. The 'default' alias is
 # added to make it clear on modules that use this as a library e.g. dut_power,
@@ -203,35 +203,33 @@ class HighResServodPowerTracker(ServodPowerTracker):
     return self._stats
 
 
-class OnboardINAPowerTracker(HighResServodPowerTracker):
-  """Off-the-shelf PowerTracker to measure onboard INAs through servod."""
+class OnboardADCPowerTracker(HighResServodPowerTracker):
+  """Off-the-shelf PowerTracker to measure onboard ADCs through servod."""
 
-  def __init__(self, host, port, stop_signal, sample_rate=DEFAULT_INA_RATE):
-    """Init by finding onboard INA ctrls."""
-    super(OnboardINAPowerTracker, self).__init__(host=host, port=port,
+  def __init__(self, host, port, stop_signal, sample_rate=DEFAULT_ADC_RATE):
+    """Init by finding onboard ADC ctrls."""
+    super(OnboardADCPowerTracker, self).__init__(host=host, port=port,
                                                  stop_signal=stop_signal,
                                                  ctrls=[],
                                                  sample_rate=sample_rate,
                                                  tag='onboard',
-                                                 title='Onboard INA')
+                                                 title='Onboard ADC')
     self._ctrls = self._sclient.get('power_rails')
     if not self._ctrls:
-      raise PowerTrackerError('No onboard INAs found.')
+      raise PowerTrackerError('No onboard ADCs found.')
     self._logger.debug('Following power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._pwr_cfg_ctrls = [ina.replace('_mw', '_cfg_reg') for ina in
-                           self._ctrls]
+    self._ez_cfg_ctrls = [adc.replace('_mw', '_ez_config') for adc in
+                          self._ctrls]
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
-    """prepare onboard INA measurement by configuring INAs for powerstate."""
-    cfg = 'regular_power' if powerstate in [UNKNOWN_POWERSTATE,
-                                            'S0'] else 'low_power'
-    cfg_ctrls = ['%s:%s' % (cfg_cmd, cfg) for cfg_cmd in self._pwr_cfg_ctrls]
+    """prepare onboard ADC measurement by configuring ADCs for powerstate."""
+    cfg_ctrls = ['%s:on' % cfg_cmd for cfg_cmd in self._ez_cfg_ctrls]
     try:
       self._sclient.set_get_all(cfg_ctrls)
     except client.ServoClientError:
-      self._logger.warning('Power rail configuration failed. Config used: %s',
-                           ' '.join(cfg_ctrls))
+      self._logger.warning('Power rail configuration failed. Details in DEBUG.')
+      self._logger.debug('Controls issued: %s', ' '.join(cfg_ctrls))
 
 
 class ECPowerTracker(ServodPowerTracker):
@@ -327,14 +325,14 @@ class PowerMeasurement(object):
   PREMATURE_RETRIEVAL_MSG = ('Cannot retrieve information before data '
                              'collection has finished.')
 
-  def __init__(self, host, port, ina_rate=DEFAULT_INA_RATE,
+  def __init__(self, host, port, adc_rate=DEFAULT_ADC_RATE,
                vbat_rate=DEFAULT_VBAT_RATE, fast=False, board=DEFAULT_BOARD):
     """Init PowerMeasurement class by attempting to create PowerTrackers.
 
     Args:
       host: host to reach servod instance
       port: port on host to reach servod instance
-      ina_rate: sample rate for servod INA controls
+      adc_rate: sample rate for servod ADC controls
       vbat_rate: sample rate for servod ec vbat command
       fast: if true, no servod control verification is done before measuring
             power, nor the powerstate queried from the EC
@@ -363,13 +361,13 @@ class PowerMeasurement(object):
     self._power_trackers = []
     self._stats = {}
     power_trackers = []
-    if ina_rate > 0:
+    if adc_rate > 0:
       try:
-        power_trackers.append(OnboardINAPowerTracker(host, port,
+        power_trackers.append(OnboardADCPowerTracker(host, port,
                                                      self._stop_signal,
-                                                     ina_rate))
+                                                     adc_rate))
       except PowerTrackerError:
-        self._logger.warning('Onboard INA tracker setup failed.')
+        self._logger.warning('Onboard ADC tracker setup failed.')
     if vbat_rate > 0:
       try:
         power_trackers.append(ECPowerTracker(host, port, self._stop_signal,
@@ -538,8 +536,8 @@ class PowerMeasurement(object):
                     'timeline'          : [0.0, 0.01 ...],
                     'Sample_msecs'      : [0.4, 0.2 ...],
                     'ec_ppvar_vbat_mw'  : [52.23, 87.23 ... ]}
-          'Onboard INA' : ... }
-      Possible keys are: 'EC', 'Onboard INA'
+          'Onboard ADC' : ... }
+      Possible keys are: 'EC', 'Onboard ADC'
 
     Raises:
       PowerMeasurementError: if called before measurement processing is done
@@ -591,8 +589,8 @@ class PowerMeasurement(object):
                          'Sample_msecs':  {...},
                          'time':          {...},
                          'timeline':      {...}},
-         'Onboard INA': {...}}
-      Possible keys are: 'EC', 'Onboard INA'
+         'Onboard ADC': {...}}
+      Possible keys are: 'EC', 'Onboard ADC'
 
     Raises:
       PowerMeasurementError: if called before measurement processing is done
