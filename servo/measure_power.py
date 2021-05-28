@@ -341,6 +341,7 @@ class PowerMeasurement(object):
 
     Raises:
       PowerMeasurementError: if no PowerTracker setup successful
+      PowerMeasurementError: ADCs cannot be configured correctly
     """
     self._fast = fast
     self._logger = logging.getLogger(type(self).__name__)
@@ -361,6 +362,10 @@ class PowerMeasurement(object):
     self._power_trackers = []
     self._stats = {}
     power_trackers = []
+    # Setup ADCs on the servo device.
+    self._sclient.set('servo_adcs_enabled', 'on')
+    if self._sclient.get('servo_adcs_enabled') != 'on':
+      raise PowerMeasurementError('ADCs setup failed.')
     if adc_rate > 0:
       try:
         power_trackers.append(OnboardADCPowerTracker(host, port,

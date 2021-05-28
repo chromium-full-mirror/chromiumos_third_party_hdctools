@@ -6,6 +6,9 @@
   <include>
     <name>servo_v2_r0.xml</name>
   </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
   <!-- ********** Maps ********** -->
   <map>
     <name>vref_sel0</name>

@@ -12,6 +12,9 @@
   <include>
     <name>uart_common.xml</name>
   </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>

@@ -3,6 +3,9 @@
   <include>
     <name>common.xml</name>
   </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
   <control>
     <name>raw_sweetberry_console_pty</name>
     <alias>raw_sweetberry_uart_pty</alias>

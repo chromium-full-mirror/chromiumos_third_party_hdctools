@@ -14,6 +14,9 @@
   <include>
     <name>usb_image_management.xml</name>
   </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
   <map>
     <name>vref_sel_v3</name>
     <doc>Determine VREF between pp3300, pp2500, pp1800 and off.

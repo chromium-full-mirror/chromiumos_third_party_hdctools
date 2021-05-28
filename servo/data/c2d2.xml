@@ -23,6 +23,11 @@
     <doc>map for press and release of buttons</doc>
     <params press="yes" release="no"></params>
   </map>
+  <map>
+    <name>i2c_ap_onoff</name>
+    <doc>Helpers to configure i2c on AP pins for servo ADCs</doc>
+    <params on="400" off="0"/>
+  </map>
   <!-- C2D2 Console GPIO interface -->
   <control>
     <name>c2d2_ec_boot_mode_uut</name>
@@ -273,5 +278,17 @@
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware (fake in CCD)</doc>
     <params interface="servo" drv="na"/>
+  </control>
+  <control>
+    <name>ap_pin_mode</name>
+    <doc>Whether the AP pins are in UART or I2C mode.</doc>
+    <params drv="simple_ec" interface="6" uart_cmd="bus_status" group="1"
+      formatting="strip" regex="AP pins: (I2C|UART)"/>
+  </control>
+  <control>
+    <name>servo_adcs_enabled</name>
+    <doc>Configure the servod device to read ADCs.</doc>
+    <params subtype="i2c_speed" interface="6" bus="ap" drv="ec3po_c2d2"
+      input_type="int" map="i2c_ap_onoff"/>
   </control>
 </root>
