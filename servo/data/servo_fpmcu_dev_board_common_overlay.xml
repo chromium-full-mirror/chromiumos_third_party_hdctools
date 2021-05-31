@@ -68,4 +68,9 @@
     <alias>fpmcu_slp_s3</alias>
     <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
   </control>
+  <control>
+    <!-- For FPMCU, WP set to 1 means that it is active -->
+    <name>fw_wp</name>
+    <params clobber_ok="" map="onoff"></params>
+  </control>
 </root>
