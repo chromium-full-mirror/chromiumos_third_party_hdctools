@@ -17,6 +17,9 @@ SAMPLE_TIME_KEY = 'Sample_msecs'
 
 # Default sample rate to query ec for battery power consumption
 DEFAULT_VBAT_RATE = 60
+# Default sample rate to query accumulator ADCs. Since these support
+# accumulation and averaging, they can be queried less frequently.
+DEFAULT_ADC_ACCUM_RATE = 60
 # Default sample rate to query ADCs for power consumption
 DEFAULT_ADC_RATE = 1
 
@@ -68,6 +71,10 @@ class ServodPowerTracker(threading.Thread):
     self._stats = timelined_stats_manager.TimelinedStatsManager(smid=tag,
                                                                 title=title)
     self._logger = logging.getLogger(type(self).__name__)
+    # Flag to indicate whether to skip the first reading. This is used
+    # for trackers that run averaging, and the first reading is used to reset
+    # the counters.
+    self._skip_first = False
     self.daemon = True
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
@@ -96,10 +103,17 @@ class ServodPowerTracker(threading.Thread):
 
     Query all |_ctrls| and take timestamp once at the start of |_rate| interval.
     """
+    skip = self._skip_first
     while not self._stop_signal.is_set():
-      sample_tuples, duration_ms = self._sample_ctrls(self._ctrls)
-      self._stats.AddSamples(sample_tuples)
+      if not skip:
+        sample_tuples, duration_ms = self._sample_ctrls(self._ctrls)
+        self._stats.AddSamples(sample_tuples)
+      else:
+        duration_ms = 0
+        self._logger.debug('ready bit not set, skipping sample round')
       self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
+      # We only skip the first reading if requested, and no others.
+      skip = False
 
   def _sample_ctrls(self, ctrls):
     """Helper to query all servod ctrls, and create (name, value) tuples.
@@ -232,6 +246,56 @@ class OnboardADCPowerTracker(HighResServodPowerTracker):
       self._logger.debug('Controls issued: %s', ' '.join(cfg_ctrls))
 
 
+class OnboardADCAccumPowerTracker(ServodPowerTracker):
+  """Off-the-shelf PowerTracker to measure onboard ADCs with accumulator."""
+
+  def __init__(self, host, port, stop_signal,
+               sample_rate=DEFAULT_ADC_ACCUM_RATE):
+    """Init by finding onboard ADC accum ctrls."""
+    title = 'Onboard ADC (w/ accum)'
+    super(OnboardADCAccumPowerTracker, self).__init__(host=host, port=port,
+                                                      stop_signal=stop_signal,
+                                                      ctrls=[],
+                                                      sample_rate=sample_rate,
+                                                      tag='onboard.accum',
+                                                      title=title)
+    self._ctrls = self._sclient.get('avg_power_rails')
+    self._clear_ctrls = self._sclient.get('accum_clear_ctrls')
+    if not self._ctrls or not self._clear_ctrls:
+      raise PowerTrackerError('No support for accum rails detected.')
+    self._logger.debug('Following avg power rail commands found: %s',
+                       ', '.join(self._ctrls))
+    self._ez_cfg_ctrls = [adc.replace('_avg_mw', '_ez_config') for adc in
+                          self._ctrls]
+    # Pre-process the accumulator clearing controls so they can be issued
+    # at once.
+    self._clear_ctrls = ['%s:yes' % c for c in self._clear_ctrls]
+    # The first reading on these has stale, old data. It needs to ignore the
+    # first reading, and only start at the second reading.
+    self._skip_first = True
+
+  def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
+    """prepare onboard ADC measurement by configuring ADCs for powerstate."""
+    # Note: |ez_config| on accumulator supporting ADCs automatically
+    # clears the accumulators.
+    cfg_ctrls = ['%s:on' % cfg_cmd for cfg_cmd in self._ez_cfg_ctrls]
+    try:
+      self._sclient.set_get_all(cfg_ctrls)
+    except client.ServoClientError:
+      self._logger.warning('Power rail configuration failed. Details in DEBUG.')
+      self._logger.debug('Controls issued: %s', ' '.join(cfg_ctrls))
+
+  def _clear_accum(self):
+    """Issue controls to clear all the accumulators on the ADCs."""
+    self._sclient.set_get_all(self._clear_ctrls)
+
+  def _sample_ctrls(self, ctrls):
+    """Overwite the base implementation to clear accumulator after reading."""
+    ret = super(OnboardADCAccumPowerTracker, self)._sample_ctrls(ctrls)
+    self._clear_accum()
+    return ret
+
+
 class ECPowerTracker(ServodPowerTracker):
   """Off-the-shelf PowerTracker to measure power-draw as seen by the EC."""
 
@@ -326,6 +390,7 @@ class PowerMeasurement(object):
                              'collection has finished.')
 
   def __init__(self, host, port, adc_rate=DEFAULT_ADC_RATE,
+               adc_accum_rate=DEFAULT_ADC_ACCUM_RATE,
                vbat_rate=DEFAULT_VBAT_RATE, fast=False, board=DEFAULT_BOARD):
     """Init PowerMeasurement class by attempting to create PowerTrackers.
 
@@ -333,6 +398,7 @@ class PowerMeasurement(object):
       host: host to reach servod instance
       port: port on host to reach servod instance
       adc_rate: sample rate for servod ADC controls
+      adc_accum_rate: sample rate for servod ADC accumulator/avg power controls
       vbat_rate: sample rate for servod ec vbat command
       fast: if true, no servod control verification is done before measuring
             power, nor the powerstate queried from the EC
@@ -373,6 +439,15 @@ class PowerMeasurement(object):
                                                      adc_rate))
       except PowerTrackerError:
         self._logger.warning('Onboard ADC tracker setup failed.')
+    if adc_accum_rate > 0:
+      try:
+        power_trackers.append(OnboardADCAccumPowerTracker(host, port,
+                                                          self._stop_signal,
+                                                          adc_accum_rate))
+      except PowerTrackerError:
+        self._logger.debug('Onboard ADC accumulators not supported, or setup '
+                           'failed.')
+
     if vbat_rate > 0:
       try:
         power_trackers.append(ECPowerTracker(host, port, self._stop_signal,

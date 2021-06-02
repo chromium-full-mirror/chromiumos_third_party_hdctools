@@ -114,6 +114,12 @@ def main(cmdline=sys.argv[1:]):
   adcg.add_argument('--adc-rate', default=measure_power.DEFAULT_ADC_RATE,
                     dest='adc_rate', type=float, help='rate (sec) to query the '
                     'ADCs, if <= 0 then ADCs will not be queried')
+  parser.add_argument('--adc-accum-rate',
+                      default=measure_power.DEFAULT_ADC_ACCUM_RATE,
+                      type=float,
+                      help='rate (sec) to query the ADCs accumulators for avg '
+                      'power numbers (if applicable), if <= 0 then ADC '
+                      'accumulators will not be queried')
   parser.add_argument('--vbat-rate', default=measure_power.DEFAULT_VBAT_RATE,
                       type=float,
                       help='rate (sec) to query the ec vbat command, if <= 0 '
@@ -156,6 +162,7 @@ def main(cmdline=sys.argv[1:]):
     pm_logger.addHandler(logfilehandler)
   pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
                                       adc_rate=args.adc_rate,
+                                      adc_accum_rate=args.adc_accum_rate,
                                       vbat_rate=args.vbat_rate,
                                       fast=args.fast,
                                       board=args.board)
