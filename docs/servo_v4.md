@@ -15,7 +15,7 @@ Servo v4 combines the functionality of the following devices into one:
 
 *   Ethernet-USB dongle
 *   Muxable USB port
-*   uSD to USB3.0 dongle
+*   microSD to USB3.0 dongle
 *   Keyboard emulator
 *   Pass through charger
 *   [Case-Closed Debug (CCD)][CCD] interface ([SuzyQ] debug cable)
@@ -52,7 +52,9 @@ Stop by your local Chromestop.
 
 ## How to Use Servo v4
 
-Servo v4 can be plugged into a host machine using a uB USB cable. This will
+The plastic case has labels `uSERVO`, `HOST`, and `DUT POWER`.
+
+Servo v4 can be plugged into a host machine using a micro-B USB cable. This will
 power Servo v4 while allowing the user to control Servo v4 using [`servod`].
 
 The DUT connector (which is a captive cable) can be plugged into a DUT,
@@ -68,7 +70,7 @@ From here other functionality is available. The following ports can be used to
 download data to a device:
 
 *   Ethernet
-*   uSD card
+*   microSD card
 *   USB stick
 
 Additionally Servo v4 can be used to power the DUT which becomes useful for
