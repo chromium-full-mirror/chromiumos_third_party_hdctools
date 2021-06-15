@@ -86,8 +86,7 @@
   <control>
     <name>ccd_keepalive_en</name>
     <doc>Enable/disable keepalive on CCD</doc>
-    <params subtype="ccd_keepalive_en" interface="9" drv="cr50"
-    map="onoff" clobber_ok="" init="on"></params>
+    <params clobber_ok="" init="on"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
