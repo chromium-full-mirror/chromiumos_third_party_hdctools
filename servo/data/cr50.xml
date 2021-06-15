@@ -239,4 +239,10 @@
     <params clobber_ok="" interface="2" drv="cr50_i2c" child="0x78" cmd="set"
     map="cr50_i2c_cmds" servo_v3_drv="na" />
   </control>
+  <control>
+    <name>ccd_keepalive_en</name>
+    <doc>Enable/disable keepalive on CCD</doc>
+    <params subtype="ccd_keepalive_en" interface="9" drv="cr50"
+    map="onoff" clobber_ok="" init="off"></params>
+  </control>
 </root>
