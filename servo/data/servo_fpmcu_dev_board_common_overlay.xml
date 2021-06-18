@@ -60,12 +60,12 @@
   </control>
   <control>
     <name>hpd</name>
-    <alias>fpmcu_slp_s0</alias>
+    <alias>fpmcu_slp</alias>
     <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>fw_up</name>
-    <alias>fpmcu_slp_s3</alias>
+    <alias>fpmcu_slp_alt</alias>
     <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
   </control>
   <control>
