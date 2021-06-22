@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 """Driver for board config controls tca6416 dual port (16bit) ioexpander.
 """
-from . import hw_driver
-from . import i2c_reg
+from servo.drv import hw_driver
+from servo.drv import i2c_reg
 
 
 class Tca6416Error(hw_driver.HwDriverError):
@@ -22,6 +22,9 @@ class tca6416(hw_driver.HwDriver):
   REG_OUT = 2
   REG_POL = 4
   REG_DIR = 6
+
+  PORT_VALID_MASK = 0x1
+  PORT_VALID_ERR_STR = '0 | 1'
 
   def __init__(self, interface, params):
     """Constructor.
@@ -147,6 +150,6 @@ class tca6416(hw_driver.HwDriver):
     if 'port' not in self._params:
       raise Tca6416Error('getting port')
     port = int(self._params['port'], 0)
-    if port & 0x1 != port:
-      raise Tca6416Error('port value should be 0 | 1')
+    if port & self.PORT_VALID_MASK != port:
+      raise Tca6416Error('port value should be %r' % self.PORT_VALID_ERR_STR)
     return port

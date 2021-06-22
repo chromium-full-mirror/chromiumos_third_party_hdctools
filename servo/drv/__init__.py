@@ -87,6 +87,7 @@ from . import sx1505
 from . import sx1506
 from . import sx1506_v4
 from . import tca6416
+from . import tca6424
 from . import tcs3414
 from . import uart
 from . import usb_downloader
