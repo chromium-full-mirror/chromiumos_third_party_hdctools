@@ -159,6 +159,12 @@
     </params>
   </control>
   <control>
+    <name>dut_eth_pwr_en</name>
+    <doc>Power enable for DUT-facing ethernet dongle.</doc>
+    <params interface="23" drv="tca6424" child="0x23" port="0"
+    offset="1" map="onoff" init="on"></params>
+  </control>
+  <control>
     <name>aux_usbkey_pwr</name>
     <doc>(bottom) muxable usb port mux.</doc>
     <alias>bottom_usbkey_pwr</alias>
