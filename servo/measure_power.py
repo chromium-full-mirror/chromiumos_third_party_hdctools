@@ -6,6 +6,7 @@ from __future__ import print_function
 
 import logging
 import os
+import re
 import threading
 import time
 
@@ -49,8 +50,16 @@ class ServodPowerTracker(threading.Thread):
     title: human-readable title of the PowerTracker
   """
 
+  # Note: the only suffixes used for us are '[avg_]rail_name[_avg]_mw'
+  # Refresher when reading this
+  # - ?: indicates we don't care to retrieve those match groups
+  # - ?P<rail>: ensures we can access the group by name
+  # - +?: ensures we do a non-greedy match so that we don't match 'avg' in the
+  #       rail group
+  RAIL_RE = re.compile('(?:avg_)?(?P<rail>[\w_]+?)(?:_avg)?_mw')
+
   def __init__(self, host, port, stop_signal, ctrls, sample_rate, tag='',
-               title='unnamed'):
+               title='unnamed', suffix='mw'):
     """Initialize ServodPowerTracker by making servod proxy & storing ctrls.
 
     Args:
@@ -61,12 +70,15 @@ class ServodPowerTracker(threading.Thread):
       sample_rate: rate for collecting samples for |ctrls|
       tag: string to prepend to summary & raw rail file names
       title: human-readable title of the PowerTracker
+      suffix: what metric is being measured (mw, ma, mv)
     """
     super(ServodPowerTracker, self).__init__()
     self._sclient = client.ServoClient(host=host, port=port)
     self._stop_signal = stop_signal
     self._ctrls = ctrls
     self._rate = sample_rate
+    if not title.endswith(suffix):
+      title = '%s (%s)' % (title, suffix)
     self.title = title
     self._stats = timelined_stats_manager.TimelinedStatsManager(smid=tag,
                                                                 title=title)
@@ -76,6 +88,36 @@ class ServodPowerTracker(threading.Thread):
     # the counters.
     self._skip_first = False
     self.daemon = True
+
+
+  @property
+  def empty(self):
+    """Whether the tracker has any controls."""
+    return bool(len(self._ctrls))
+
+  def _rail_name(self, ctrl_name):
+    """Strip suffix from rail to return core rail name.
+
+    Args:
+      ctrl_name: str, servod control name for a rail's data e.g. pp3300_h1_mw
+    """
+    return self.RAIL_RE.match(ctrl_name).group('rail')
+
+  @property
+  def rails(self):
+    """Return all rail-names that this tracker uses."""
+    return [self._rail_name(c) for c in self._ctrls]
+
+  def remove_rail(self, rail):
+    """Remove the servod control that would query |rail|.
+
+    Note: if |rail| is not in this tracker, this is effectively a noop
+
+    Args:
+      rail: str, rail name to remove e.g. pp3300_h1
+    """
+    # Remove by just rebuilding the list of ctrls.
+    self._ctrls = [c for c in self._ctrls if self._rail_name(c) != rail]
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """Do any setup work right before number collection begins.
@@ -123,11 +165,12 @@ class ServodPowerTracker(threading.Thread):
 
     Returns:
       tuple (sample_tuples, duration_ms)
-             sample_tuples: a list of (ctrl-name, value) tuples
+             sample_tuples: a list of (rail-name, value) tuples
                             value is a power reading on success, NaN on failure
              duration_ms: time it took to collect the sample, in milliseconds
     """
     start = time.time()
+    rails = [self._rail_name(c) for c in ctrls]
     try:
       samples = self._sclient.set_get_all(ctrls)
     except client.ServoClientError:
@@ -135,7 +178,7 @@ class ServodPowerTracker(threading.Thread):
                            ' all as NaN.', ', '.join(ctrls))
       samples = [float('nan')]*len(ctrls)
     duration_ms = (time.time() - start) * 1000
-    sample_tuples = list(zip(ctrls, samples))
+    sample_tuples = list(zip(rails, samples))
     sample_tuples.append((SAMPLE_TIME_KEY, duration_ms))
     return (sample_tuples, duration_ms)
 
@@ -426,22 +469,22 @@ class PowerMeasurement(object):
     self._power_trackers = []
     self._stats = {}
     power_trackers = []
+    adc_tracker = adc_accum_tracker = None
     # Setup ADCs on the servo device.
     self._sclient.set('servo_adcs_enabled', 'on')
     if self._sclient.get('servo_adcs_enabled') != 'on':
       raise PowerMeasurementError('ADCs setup failed.')
     if adc_rate > 0:
       try:
-        power_trackers.append(OnboardADCPowerTracker(host, port,
-                                                     self._stop_signal,
-                                                     adc_rate))
+        adc_tracker = OnboardADCPowerTracker(host, port, self._stop_signal,
+                                             adc_rate)
       except PowerTrackerError:
         self._logger.warning('Onboard ADC tracker setup failed.')
     if adc_accum_rate > 0:
       try:
-        power_trackers.append(OnboardADCAccumPowerTracker(host, port,
-                                                          self._stop_signal,
-                                                          adc_accum_rate))
+        adc_accum_tracker = OnboardADCAccumPowerTracker(host, port,
+                                                        self._stop_signal,
+                                                        adc_accum_rate)
       except PowerTrackerError:
         self._logger.debug('Onboard ADC accumulators not supported, or setup '
                            'failed.')
@@ -452,6 +495,23 @@ class PowerMeasurement(object):
                                              vbat_rate))
       except PowerTrackerError:
         self._logger.warning('EC Power tracker setup failed.')
+    # if an ADC supports accumulator controls, it also supports regular
+    # controls. In those cases, we do not need two sources of the same data.
+    # Therefore, we remove all controls from the |adc_tracker| that are also
+    # present in the |adc_accum_tracker|. If after that, the |adc_tracker|
+    # is empty, we skip it entirely.
+    if adc_tracker is not None and adc_accum_tracker is not None:
+      for rail in adc_accum_tracker.rails:
+        adc_tracker.remove_rail(rail)
+      if adc_tracker.empty:
+        self._logger.info('ADC tracker has no controls that are not already '
+                          'covered by the ADC accum tracker. Removing.')
+        adc_tracker = None
+    # After preprocesssing is done, append the trackers.
+    if adc_tracker is not None:
+      power_trackers.append(adc_tracker)
+    if adc_accum_tracker is not None:
+      power_trackers.append(adc_accum_tracker)
     self.Reset()
     for tracker in power_trackers:
       if not self._fast:
