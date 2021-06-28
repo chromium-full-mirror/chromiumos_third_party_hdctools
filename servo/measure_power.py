@@ -233,8 +233,7 @@ class OnboardADCPowerTracker(HighResServodPowerTracker):
       raise PowerTrackerError('No onboard ADCs found.')
     self._logger.debug('Following power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._ez_cfg_ctrls = [adc.replace('_mw', '_ez_config') for adc in
-                          self._ctrls]
+    self._ez_cfg_ctrls = self._sclient.get('adc_ez_config_ctrls')
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """prepare onboard ADC measurement by configuring ADCs for powerstate."""
@@ -265,8 +264,7 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
       raise PowerTrackerError('No support for accum rails detected.')
     self._logger.debug('Following avg power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._ez_cfg_ctrls = [adc.replace('_avg_mw', '_ez_config') for adc in
-                          self._ctrls]
+    self._ez_cfg_ctrls = self._sclient.get('adc_ez_config_ctrls')
     # Pre-process the accumulator clearing controls so they can be issued
     # at once.
     self._clear_ctrls = ['%s:yes' % c for c in self._clear_ctrls]

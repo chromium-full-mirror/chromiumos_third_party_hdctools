@@ -138,4 +138,11 @@
     <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
     tag="accum_clear_ctrls"/>
   </control>
+  <control>
+    <name>adc_ez_config_ctrls</name>
+    <doc>List of available controls to run easy configuration on all known
+         ADC controls.</doc>
+    <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
+    tag="adc_ez_config_ctrls"/>
+  </control>
 </root>

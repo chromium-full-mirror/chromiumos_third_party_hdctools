@@ -55,7 +55,8 @@ class ADCTemplate(object):
   FUNCTIONS_TAGS.update(dict(shuntmv='shuntmv', mv='bus_voltage_rail',
                              ma='current_rail', mw='power_rail',
                              avg_mw='avg_power_rails',
-                             acc_clear='accum_clear_ctrls'))
+                             acc_clear='accum_clear_ctrls',
+                             ez_config='adc_ez_config_ctrls'))
   # Whether a function uses a map in servod.
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   # Templates for string formatting to produce servod control docstrings.
