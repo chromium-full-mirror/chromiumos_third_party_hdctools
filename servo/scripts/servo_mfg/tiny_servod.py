@@ -23,12 +23,14 @@ class TinyServod(object):
     self.suart = stm32uart.Suart(vendor=vid, product=pid, interface=interface,
                                  serialname=serialname)
     self.suart.run()
-    self.pty = pty_driver.ptyDriver(self.suart, [])
+    # Pass a fake dictionary as params to appease the hw_driver API.
+    self.pty = pty_driver.ptyDriver(self.suart, dict(cmd='get'))
 
   def reinitialize(self):
     """Reinitialize the connect after a reset/disconnect/etc."""
     self.suart.reinitialize()
-    self.pty = pty_driver.ptyDriver(self.suart, [])
+    # Pass a fake dictionary as params to appease the hw_driver API.
+    self.pty = pty_driver.ptyDriver(self.suart, dict(cmd='get'))
 
   def close(self):
     """Close out the connection and release resources.
