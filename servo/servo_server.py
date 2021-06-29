@@ -373,7 +373,7 @@ class Servod(object):
       warm_reset             :: Reset the device warmly
       ------------------------> {'interface': '1', 'map': 'onoff_i', ... }
     """
-  return self._syscfg.display_config()
+    return self._syscfg.display_config()
 
   def doc(self, name):
     """Retreive doc string in system config file for given control name.
