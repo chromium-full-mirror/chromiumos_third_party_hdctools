@@ -73,6 +73,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._usb_power_restore = (
         ('yes' == self._params.get('usb_power_restore', 'no'))
         and interface._syscfg.is_control(self._USB3_PWR_EN))
+    self._ec_reboot_wait_ext_delay = float(self._params.get(
+        'ec_reboot_wait_ext_delay', 0.1))
     self._on = 'on'
     self._off = 'off'
 
@@ -137,6 +139,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._interface.set('ec_uart_regexp', '["Waiting"]')
         self._interface.set('ec_uart_cmd', 'reboot wait-ext %s' %
                             ap_off_option)
+        self._logger.debug('EC reboot wait-ext delay: %s',
+                           self._ec_reboot_wait_ext_delay)
+        time.sleep(self._ec_reboot_wait_ext_delay)
         # Reset the EC to force it back into RO code; this clears
         # the EC_IN_RW signal, so the system CPU will trust the
         # upcoming recovery mode request.
