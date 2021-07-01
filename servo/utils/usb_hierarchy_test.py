@@ -297,10 +297,10 @@ class TestUsbHierarchy(unittest.TestCase):
     valid = '%s.1' % no_parent
     full_dir_no_parent = os.path.join(self._usb_dir, no_parent)
     full_dir_valid = '%s.1' % full_dir_no_parent
-    # No parent is expectd to return none as the device hangs on the root hub.
-    assert Hierarchy.GetSysfsParentHubStub(no_parent) is None
+    # The root hub is returned when asking for the parent of a device without one
+    assert Hierarchy.GetSysfsParentHubStub(no_parent) == no_parent[0:-2]
     # The same is true if a full path is supplied.
-    assert Hierarchy.GetSysfsParentHubStub(full_dir_no_parent) is None
+    assert Hierarchy.GetSysfsParentHubStub(full_dir_no_parent) == full_dir_no_parent[0:-2]
     # The parent stub should be returned if there is a parent device.
     assert no_parent == Hierarchy.GetSysfsParentHubStub(valid)
     # If a full path is supplied the parent stub plus the directories leading up
@@ -328,7 +328,7 @@ class TestUsbHierarchy(unittest.TestCase):
     assert os.path.join(self._usb_dir, parent_stub) == found_stub
 
   def test_GetParentHubStubAttachedToRootHub(self):
-    """The parent hub path stub is None if attached to the root-hub."""
+    """The parent hub path stub is the root-hub if attached to the root-hub."""
     # Define own root hub number instead of using default to verify path name.
     root_hub = 3
     # Define own hub-port path without any sub-ports. Device is directly
@@ -342,7 +342,7 @@ class TestUsbHierarchy(unittest.TestCase):
                                      busnum=self._busnum)
     self._hierarchy.RefreshHierarchy()
     found_stub = self._hierarchy.GetParentHubStub(self._fake_dev)
-    assert found_stub is None
+    assert found_stub[-1] == str(root_hub)
 
   def test_DevOnHubPortOnConformingDevices(self):
     """DevOnHubPort is True when the device is a child of the hub stub."""

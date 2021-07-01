@@ -436,6 +436,13 @@ class Hierarchy(object):
     # or not.
     usbdir, dev_path = os.path.split(sysfs_dev_path.rstrip('/'))
     parent = '.'.join(dev_path.split('.')[:-1])
+
+    # If the device is mounted just behind the root hub (b/192534977), with no
+    # additional hub, then parent will be None.
+    # In that case, we still want to extract the root hub.
+    if not parent:
+      parent = dev_path.split('-')[0]
+
     return os.path.join(usbdir, parent) if parent else None
 
   def GetDevPortPath(self, usb_device):
@@ -516,6 +523,13 @@ class Hierarchy(object):
     #                          \--------- USB candidate
     # Check having '.' to make sure it is one of the ports of the internal hub.
     if dev_port_path.startswith(hub_stub + '.'):
+      return True
+
+    # In some special cases (b/192534977 for example), the device port can also
+    # be just behind the root hub.
+    # 'dev_port_path' will look like: /<path>/<root_hub>-<device_port>
+    # Check if 'hub_stub' and 'dev_port_path' start with this same prefix
+    if dev_port_path.startswith(hub_stub + '-'):
       return True
 
     return False
