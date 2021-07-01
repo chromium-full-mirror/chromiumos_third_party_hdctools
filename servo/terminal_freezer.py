@@ -13,17 +13,12 @@ import subprocess
 import time
 
 
-def CheckForPIDNamespace():
-  """Checks to see if we are running with PID namespaces.
-
-  Raises:
-    OSError if we are running within the chroot with PID namespaces.
-  """
+def PIDNamespaceUsed():
+  """Checks to see if we are running with PID namespaces."""
   with open('/proc/1/cmdline') as f:
     if 'cros_sdk' in f.readline():
-      raise OSError('You must run this tool in a chroot that was entered'
-                    ' with "cros_sdk --no-ns-pid" (see crbug.com/444931 for'
-                    ' details)')
+      return true
+  return false
 
 
 class TerminalFreezer(object):
@@ -33,7 +28,12 @@ class TerminalFreezer(object):
     self._tty = tty
     self._logger = logging.getLogger('Terminal Freezer (%s)' % self._tty)
     self._processes = None
-    CheckForPIDNamespace()
+    if PIDNamespaceUsed():
+      self._logger.warning('This chroot was not entered with'
+                           ' "cros_sdk --no-ns-pid", make sure not to interfere'
+                           ' on ptys used by servod.'
+                           ' Also note that "fwgdb" or "flash_ec" might not work'
+                           ' (crbug.com/444931).')
 
   def __enter__(self):
     ret = ''

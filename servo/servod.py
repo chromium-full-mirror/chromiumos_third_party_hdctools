@@ -183,10 +183,6 @@ class ServodStarter(object):
       # a dual instance or not.
       os.environ[servo_postinit.DUAL_V4_VAR] = servo_postinit.DUAL_V4_VAR_EMPTY
 
-    # Servod needs to be running in the chroot without PID namespaces in order
-    # to freeze terminals when reading from the UARTs.
-    terminal_freezer.CheckForPIDNamespace()
-
     self._logger.info('Start')
 
     servo_device = self.discover_servo(devopts)
