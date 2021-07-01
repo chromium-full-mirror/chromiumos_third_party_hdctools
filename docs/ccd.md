@@ -130,7 +130,7 @@ On your workstation, `servod` must also be running to communicate with Cr50:
 CPU/AP UART can be accessed by running:
 
 ```bash
-(chroot) $ miniterm.py --lf `dut-control cpu_uart_pty|cut -d ":" -f 2`
+(chroot) $ miniterm.py --eol LF `dut-control cpu_uart_pty|cut -d ":" -f 2`
 ```
 
 Note that on a normal install of Chrome OS the UART is not normally used. The
@@ -142,7 +142,7 @@ reasons, but they can be added back in with a custom AP firmware.
 EC UART:
 
 ```bash
-(chroot) $ miniterm.py --lf `dut-control ec_uart_pty|cut -d ":" -f 2`
+(chroot) $ miniterm.py --eol LF `dut-control ec_uart_pty|cut -d ":" -f 2`
 ```
 
 The console is read only, unless you have [opened CCD][Cr50 CCD]. The console
@@ -152,7 +152,7 @@ Cr50 itself has a console available, but most commands are locked by default for
 security:
 
 ```bash
-(chroot) $ miniterm.py --lf `dut-control cr50_uart_pty|cut -d ":" -f 2`
+(chroot) $ miniterm.py --eol LF `dut-control cr50_uart_pty|cut -d ":" -f 2`
 ```
 
 #### Features
