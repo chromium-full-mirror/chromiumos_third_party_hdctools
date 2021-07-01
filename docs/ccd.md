@@ -56,7 +56,10 @@ hub in the cable, which allows the host computer to access both the debug
 interface (on the SBU pins) and any gadget-mode interfaces exposed by the
 device-under-test (for example an ADB interface for debugging Android
 applications). [Reference schematics][SuzyQ Schematics] are available for the
-SuzyQ.
+SuzyQ. To run Tauto or TAST tests, you will generally need to attach a
+USB-to-ethernet adapter as well. While you could try to use wifi,
+any test that switches boot modes (i.e. normal -> dev) will erase the
+wifi settings and fail.
 
 This cable is available for purchase from Sparkfun:
 https://www.sparkfun.com/products/14746.
