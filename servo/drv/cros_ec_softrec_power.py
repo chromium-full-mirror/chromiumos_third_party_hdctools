@@ -204,26 +204,28 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
           self._boot_to_rec_screen_delay)
       time.sleep(self._boot_to_rec_screen_delay)
 
-      # If we are using CCD, make sure the DUT's Type-C port is a DFP so that
-      # the ethernet and USB ports will be connected.  Since servo_v4 has the
-      # power role of source, its data role is a "downstream facing port" (DFP)
-      # and therefore making the DUT's role an "upstream facing port" (UFP).
-      # When the data roles are as such, the ethernet port and USB/microSD ports
-      # will not be connected to the DUT.  Therefore, we will need to trigger a
-      # data role swap by via the EC console.
+      # If we are using a Type-C servo, make sure the DUT's port is a DFP so
+      # that the ethernet and USB ports will be connected.  Since servo_v4 has
+      # the power role of source, its data role is a "downstream facing port"
+      # (DFP) and therefore making the DUT's role an "upstream facing port"
+      # (UFP). When the data roles are as such, the ethernet port and
+      # USB/microSD ports will not be connected to the DUT.  Therefore, we will
+      # need to trigger a data role swap by via the EC console.
       #
       # This is needed because the data role swaps normally don't happen in
       # EC_RO (which is the image we MUST be in for entering recovery mode).
       #
       # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
       # this will be a no-op.
-      servo_type = self._interface.get('servo_type')
-      if 'ccd' in servo_type and 'servo_micro' not in servo_type:
-        try:
-          self._interface.set('dut_pd_data_role', 'DFP')
-        except Exception as e:
-          self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
-          pass
+      try:
+        if self._interface.get('root.dut_connection_type') == 'type-c':
+            self._interface.set('dut_pd_data_role', 'DFP')
+      except NameError as e:
+        self._logger.debug('Servo is not Type-C')
+        pass
+      except Exception as e:
+        self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
+        pass
 
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
