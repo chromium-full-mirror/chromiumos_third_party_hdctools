@@ -13,7 +13,9 @@ Provides the following EC controlled function:
   dev_mode (Temporary. See crosbug.com/p/9341)
 """
 import logging
+import re
 import time
+import typing
 
 from . import pty_driver
 
@@ -26,6 +28,12 @@ KEY_MATRIX = [[[(0, 4), (11, 4)], [(2, 4), None]], [[(0, 2), (11, 2)], [(2, 2),
 # EC console mask for enabling only command channel
 COMMAND_CHANNEL_MASK = 0x1
 
+# EC PD Flags
+PD_FLAGS_EXPLICIT_CONTRACT = 1 << 6
+PD_FLAGS_TS_DTS_PARTNER = 1 << 16
+PE_FLAGS_EXPLICIT_CONTRACT = 1 << 9
+TC_FLAGS_TS_DTS_PARTNER = 1 << 1
+TC_FLAGS_PARTNER_PD_CAPABLE = 1 << 12
 
 class ecError(pty_driver.ptyError):
   """Exception class for ec."""
@@ -542,3 +550,102 @@ class ec(pty_driver.ptyDriver):
     finally:
       self._restore_channel()
     return hex((int(result[1][1], 16) << 32) | int(result[0][1], 16))
+
+  def _read_port_role(self, p: int) -> typing.Tuple[str, int]:
+    """Reads the PD state.
+
+    The returned confidence score is to detect which port the servo is attached.
+    The port with the highest score is likely to be the servo.
+
+    Args:
+      p: The port to read
+
+    Returns: the tuple (data role, confidence score)
+    """
+    result = self._issue_cmd_get_results(
+        'pd %d state' % p,
+        [
+            r'Parameter 2 invalid|Role: ([A-Z]+)-([A-Z]+)(-\S*)? (.*)\n',
+        ])
+    # TC Flags should always be present on TPMCv2
+    tc_flags = 0
+    pe_flags = 0
+    v1_flags = 0
+    m = re.match(r'TC State: \S* Flags: (0x\S+)', result[0][4])
+    if m:
+      tc_flags = int(m.group(1), 16)
+      # PE Flags are only sometimes present
+      m = re.match(r'PE State: \S* Flags: (0x\S+)', result[0][4])
+      if m:
+        pe_flags = int(m.group(1), 16)
+    else:
+      # If no TC Flags, must be TPMCv1
+      m = re.match(r'.*Flags: (0x\S+)', result[0][4])
+      if m:
+        v1_flags = int(m.group(1), 16)
+    if result[0] == 'Parameter 2 invalid':
+      logging.warning(
+          "Model doesn't have %d USB-C ports, please edit dut_pd_data_role "
+          "port_count in the board overlay.xml file", p + 1)
+      return "", -1
+    confidence = 0
+    logging.debug("role=%s tc_flags=%x pe_flags=%x v1_flags=%x",
+                  result[0][2], tc_flags, pe_flags, v1_flags)
+    # Servo usually has DTS enabled, the cc command can enable or disable it.
+    if (tc_flags & TC_FLAGS_TS_DTS_PARTNER or
+        v1_flags & PD_FLAGS_TS_DTS_PARTNER):
+        confidence += 1
+    # Servo in src mode will have explicit contract
+    if (tc_flags & TC_FLAGS_PARTNER_PD_CAPABLE or
+        pe_flags & PE_FLAGS_EXPLICIT_CONTRACT or
+        v1_flags & PD_FLAGS_EXPLICIT_CONTRACT):
+        confidence += 1
+    return result[0][2], confidence
+
+  def _find_servo_port(self) -> typing.Tuple[int, str]:
+    """Find the USB-C port that has something (presumable servo) attached.
+
+    Returns: the tuple (port number, data role)
+    """
+    port_count = int(self._params.get('port_count'))
+    best_port = None
+    best_score = 0
+    best_role = None
+    for p in range(port_count):
+      role, confidence = self._read_port_role(p)
+      if confidence > best_score:
+        best_score = confidence
+        best_port = p
+        best_role = role
+    if best_role:
+      logging.debug('Assuming servo is on port %d role=%s',
+                    best_port, best_role)
+      return best_port, best_role
+    raise ecError('Could not find any connected USB-C port.')
+
+  def _Get_dut_pd_data_role(self) -> str:
+    self._limit_channel()
+    try:
+      port, role = self._find_servo_port()
+      return role
+    finally:
+      self._restore_channel()
+
+  def _Set_dut_pd_data_role(self, value: str) -> None:
+    value = value.upper()
+    if value not in ['DFP', 'UFP']:
+      raise ValueError("Bad data role (%s). Try 'DFP' or 'UFP'." % value)
+
+    self._limit_channel()
+    try:
+      port, role = self._find_servo_port()
+      if role == value:
+        return
+      self._issue_cmd('pd %d swap data' % port)
+      role, _ = self._read_port_role(port)
+      if role != value:
+        raise ecError(
+            'Failed to set port %d to PD role %s, got: %s' %
+            (port, value, role))
+    finally:
+      self._restore_channel()

@@ -145,4 +145,9 @@
     <params cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="unknown" />
   </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <doc>The USB PD data role from the perspective of the DUT. It is not possible to set to UFP when servo_pd_role is SNK.</doc>
+    <params interface="10" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" />
+  </control>
 </root>
