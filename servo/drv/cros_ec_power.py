@@ -1,10 +1,12 @@
 # Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-import time
 
 from . import power_state
+from . import polling_control
 
+CONTROL_COMMAND = 'ec_system_powerstate'
+CONTROL_OUTPUT_EXPECTED = 'G3'
 
 class CrosECPower(power_state.PowerStateDriver):
   """Driver for power_state for boards support EC command."""
@@ -24,5 +26,13 @@ class CrosECPower(power_state.PowerStateDriver):
   def _power_off(self, manage_delay=True):
     self._interface.set('ec_uart_regexp', 'None')
     self._interface.set('ec_uart_cmd', self._shutdown_ec_command)
+
     if manage_delay:
-      time.sleep(self._shutdown_delay)
+      if not polling_control.PollingControl().poll(self._interface,
+                                                   CONTROL_COMMAND,
+                                                   CONTROL_OUTPUT_EXPECTED,
+                                                   polling_timeout = self._shudown_delay):
+        self._logger.warn(
+          "Timeout waiting for '%s' to reach '%s' after '%f s'"
+          % (CONTROL_COMMAND, CONTROL_COMMAND_EXPECTED, self.shutdown_delay))
+
