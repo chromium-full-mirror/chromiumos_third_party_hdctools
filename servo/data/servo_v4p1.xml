@@ -194,43 +194,43 @@
   <control>
     <name>servo_dut_cc1_mv</name>
     <doc>DUT CC1 voltage level</doc>
-    <params cmd="get" subtype="adc" adc_name="DUT_CC1_PD" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <params cmd="get" uart_cmd="adc" regex="DUT_CC1_PD = (\d+)" interface="26"
+      drv="simple_ec" group="1"></params>
   </control>
 
   <control>
     <name>servo_dut_cc2_mv</name>
     <doc>DUT CC2 voltage level</doc>
-    <params cmd="get" subtype="adc" adc_name="DUT_CC2_PD" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <params cmd="get" uart_cmd="adc" regex="DUT_CC2_PD = (\d+)" interface="26"
+      drv="simple_ec" group="1"></params>
   </control>
 
   <control>
     <name>servo_chg_cc1_mv</name>
     <doc>Charge port CC1 voltage level</doc>
-    <params cmd="get" subtype="adc" adc_name="CHG_CC1_PD" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <params cmd="get" uart_cmd="adc" regex="CHG_CC1_PD = (\d+)" interface="26"
+      drv="simple_ec" group="1"></params>
   </control>
 
   <control>
     <name>servo_chg_cc2_mv</name>
     <doc>Charge port CC2 voltage level</doc>
-    <params cmd="get" subtype="adc" adc_name="CHG_CC2_PD" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <params cmd="get" uart_cmd="adc" regex="CHG_CC2_PD = (\d+)" interface="26"
+      drv="simple_ec" group="1"></params>
   </control>
 
   <control>
     <name>servo_dut_sbu1_mv</name>
     <doc>SBU1 voltage level</doc>
-    <params cmd="get" subtype="adc" adc_name="SBU1_DET" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <params cmd="get" uart_cmd="adc" regex="SBU1_DET = (\d+)" interface="26"
+      drv="simple_ec" group="1"></params>
   </control>
 
   <control>
     <name>servo_dut_sbu2_mv</name>
     <doc>SBU2 voltage level</doc>
-    <params cmd="get" subtype="adc" adc_name="SBU2_DET" interface="26"
-      drv="ec3po_servo_v4"></params>
+    <params cmd="get" uart_cmd="adc" regex="SBU2_DET = (\d+)" interface="26"
+      drv="ec3po_servo_v4" group="1"></params>
   </control>
   <control>
     <name>macaddr</name>
