@@ -235,8 +235,11 @@
   <control>
     <name>macaddr</name>
     <doc>cached mac address for NIC on servo v4</doc>
-    <params subtype="macaddr" interface="26" drv="ec3po_servo_v4"
-      input_type="str"></params>
+    <params cmd="get" interface="26" drv="simple_ec" uart_cmd="macaddr"
+            regex="([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})|Uninitialized"
+            group="0"/>
+    <params cmd="set" interface="26" drv="simple_ec" uart_cmd="macaddr set"
+            input_type="str"/>
   </control>
   <!-- firmware version introspection controls -->
   <control>
