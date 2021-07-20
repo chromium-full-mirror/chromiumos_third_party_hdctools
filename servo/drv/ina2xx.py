@@ -233,13 +233,13 @@ class ina2xx(base_pwr_adc.basePWRADC):
   def _wake(self):
     """Wake up the INA219 adc from sleep."""
     self._logger.debug('')
-    if self._mode is None or (self._mode != self.CFG_MODE_CONT):
+    if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_CONT):
       self._set_cfg_mode(self.CFG_MODE_CONT)
 
   def _sleep(self):
     """Place device in low-power ( no measurement state )."""
     self._logger.debug('')
-    if self._mode is None or (self._mode != self.CFG_MODE_SLEEP):
+    if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_SLEEP):
       self._reset()
       self._set_cfg_mode(self.CFG_MODE_SLEEP)
 
@@ -257,4 +257,4 @@ class ina2xx(base_pwr_adc.basePWRADC):
     cfg_reg = self._read_reg('cfg')
     self._write_reg('cfg', (cfg_reg & ~self.CFG_MODE_MASK) | mode)
 
-    self._mode = mode
+    self._cfg_mode = mode
