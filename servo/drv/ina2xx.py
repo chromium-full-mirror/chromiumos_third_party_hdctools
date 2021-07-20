@@ -159,18 +159,18 @@ class ina2xx(base_pwr_adc.basePWRADC):
     # milliwatts but be  unaware of the change for the milliamps calculations as
     # each control has a separate instance of ina219 object and therefore a
     # private copy of the calibration register.
-    calib_reg = self._calib_reg = self._read_reg('cal')
+    self._calib_reg = self._read_reg('cal')
 
     self._write_reg('cal', self.MAX_CALIB)
-    calib_reg = self.MAX_CALIB
+    self._calib_reg = self.MAX_CALIB
     is_ovf = self._get_next_ovf()
 
     while is_ovf:
-      if calib_reg == self.MIN_CALIB:
+      if self._calib_reg == self.MIN_CALIB:
         raise Ina2xxError('Failed to calibrate for lowest precision')
-      calib_reg = (calib_reg >> 1) & self.MAX_CALIB
-      self._logger.debug('writing calibrate to 0x%04x' % (calib_reg))
-      self._write_reg('cal', calib_reg)
+      self._calib_reg = (self._calib_reg >> 1) & self.MAX_CALIB
+      self._logger.debug('writing calibrate to 0x%04x' % (self._calib_reg))
+      self._write_reg('cal', self._calib_reg)
       is_ovf = self._get_next_ovf()
 
   def _Set_ez_config(self, _):
