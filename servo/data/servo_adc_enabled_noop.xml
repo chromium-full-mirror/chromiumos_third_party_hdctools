@@ -3,7 +3,7 @@
   <control>
     <name>servo_adcs_enabled</name>
     <doc>Noop control for this servod device. ADCs always work.</doc>
-    <params interface="servo" cmd="get" drv="echo" value="on"/>
-    <params interface="servo" cmd="set" drv="na"/>
+    <params interface="servo" cmd="get" drv="echo" value="on" clobber_ok=""/>
+    <params interface="servo" cmd="set" drv="na" clobber_ok=""/>
   </control>
 </root>
