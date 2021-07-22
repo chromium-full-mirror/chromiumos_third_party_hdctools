@@ -358,6 +358,7 @@ for board in [
     'grunt',
     'hatch',
     'hayato',
+    'herobrine',
     'jacuzzi',
     'kalista',
     'kukui',

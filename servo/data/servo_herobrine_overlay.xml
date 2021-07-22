@@ -1,0 +1,30 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>cr50.xml</name>
+  </include>
+
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="" interface="9" drv="fw_wp_ccd"/>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"/>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:pp1800"
+      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off"
+      />
+  </control>
+</root>
