@@ -288,7 +288,8 @@
   <control>
     <name>servo_adcs_enabled</name>
     <doc>Configure the servod device to read ADCs.</doc>
-    <params subtype="i2c_speed" interface="6" bus="ap" drv="ec3po_c2d2"
-      input_type="int" map="i2c_ap_onoff"/>
+    <params subtype="i2c_speed" interface="6" c2d2_interface="6" bus="ap"
+      c2d2_drv="ec3po_c2d2" drv="ec3po_c2d2" input_type="int"
+      map="i2c_ap_onoff"/>
   </control>
 </root>
