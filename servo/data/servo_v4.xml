@@ -287,7 +287,7 @@
             regex="([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})|Uninitialized"
             group="0"/>
     <params cmd="set" interface="26" drv="simple_ec" uart_cmd="macaddr set"
-            input_type="str"/>
+            input_type="str" choices="^([0-9A-Fa-f]{2}[:]){5}[0-9A-Fa-f]{2}$"/>
   </control>
   <!-- firmware version introspection controls -->
   <control>

@@ -141,12 +141,8 @@ There are a few built in safety mechanisms.
 2. choices: if a `drv` uses `_set` or `_Set_[subtype]`, then `HwDriver` will
    check the value passed into the method to make sure it's a valid choice. By
    default, everything is a valid choice. The `drv` can define
-   `self._choices = {'choice1', 'choice2'}` i.e. a container of valid choices.
-   Alternatively, the parameters can define a comma-separated list of valid
-   choices that will be parsed out.\
-   Note: choices are checked in their string representations i.e. if a user is
-   trying to set a value, the choices check is done by casting value to string,
-   and checking against the string choices.
+   `self._choices = re.compile('^(choice1|choice2)$')` i.e. a compiled-regex of
+   valid choices.
 
 ## key params  {#params}
 
@@ -190,11 +186,9 @@ The following special parameters exist, and are useful to know about
 
 *   `choices`
 
-    Comma-separated list of valid input choices for a set control. Note two
-    important factors. The check is done after casting the input value to a
-    string, and comparing it to the string defined in this list. The check also
-    only happens if the driver either defines `_set` rather than `set` or
-    defines a subtype (`_Set_[subtype]`)
+    Compiled-regex of valid input choices for a set control.
+    Note that the check only happens if the driver either defines `_set` rather
+    than `set` or defines a subtype (`_Set_[subtype]`).
 
 
 ### device specific params

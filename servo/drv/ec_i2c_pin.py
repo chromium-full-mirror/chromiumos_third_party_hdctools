@@ -52,9 +52,9 @@ class ecI2cPin(ec.ec):
   def __init__(self, interface, params):
     """Setup the commands."""
     super(ecI2cPin, self).__init__(interface, params)
-    # Set the valid input choices for this driver. Choices need to be set
-    # to be strings.
-    self._choices = {'0', '1'}
+    # Set the valid input choices for this driver.
+    # _choices needs to be a compiled regex
+    self._choices = re.compile('^(0|1)$')
     self._mask = int(self._params['mask'], 0)
     self._logger.debug('Mask %d' % self._mask)
     if bin(self._mask).count('1') != 1:

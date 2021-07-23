@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Access to Microchip PAC19next GPIO expander functionality."""
 
+import re
+
 from servo.drv import bit_util
 from servo.drv import hw_driver
 from servo.drv import pac1934
@@ -41,7 +43,7 @@ class pac19nextGpio(pac1934.pac1934):
     if self._pin not in [1, 2]:
       raise Pac19nextGpioError('Unknown pin %r' % self._pin)
     # Lastly, these things can only ever be set to 0 or 1. Enforce this.
-    self._choices = {'0', '1'}
+    self._choices = re.compile('^(0|1)$')
     # Bit 8 and 9 are used for pin 1 cfg, 10 and 11 for pin 2 cfg
     self._cfg_offset = 8
     if self._pin == 2:

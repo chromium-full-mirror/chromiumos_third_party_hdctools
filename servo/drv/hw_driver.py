@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Base class for servo drivers."""
+
+import re
+
 import logging
 import weakref
 
@@ -106,7 +109,7 @@ class HwDriver(object):
     # set.
     self._choices = None
     if 'choices' in self._params:
-      self._choices = set(self._params['choices'].split(','))
+      self._choices = re.compile(self._params['choices'])
       self._logger.debug('Valid input choices: %s', self._choices)
     self._io_type = _get_io_type(params)
 
@@ -192,19 +195,16 @@ class HwDriver(object):
   def _check_input(self, value):
     """Check whether |value| is a valid input.
 
-    If |self._choices| is defined, then |value| has to be in one of those
-    choices.
-
-    Note: the comparison here is done after casting value to a string.
+    If |self._choices| is defined, then |value| has to match.
 
     Args:
       value: value to check
 
     Raises:
-      HwDriverError: if |self._choices| is defined and str(|value|) is not in it
+      HwDriverError: if |self._choices| is defined and value does not match.
     """
-    if self._choices and str(value) not in self._choices:
-      raise HwDriverError('%r not a valid input choice' % value)
+    if self._choices and self._choices.match(value) is None:
+      raise HwDriverError('%r not a valid input choice (\'%s\')' % (value, self._choices.pattern))
 
   def _set(self, logical_value):
     """Set the control to |logical_value| or delegate to subtype

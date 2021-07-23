@@ -4,6 +4,8 @@
 
 """Software flag module to store and report binary status."""
 
+import re
+
 from . import hw_driver
 
 
@@ -23,7 +25,7 @@ class sflag(hw_driver.HwDriver):
     super(sflag, self).__init__(interface, params)
     # Set the valid input choices for this driver. Choices need to be set
     # to be strings.
-    self._choices = {'0', '1'}
+    self._choices = re.compile('^(0|1)$')
 
   def _set(self, value):
     """Set the value to |value|."""
