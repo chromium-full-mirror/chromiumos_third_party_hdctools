@@ -355,6 +355,7 @@ for board in [
     'fizz',
     'flapjack',
     'glados',
+    'goroh',
     'grunt',
     'hatch',
     'hayato',
