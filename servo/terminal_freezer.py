@@ -17,8 +17,8 @@ def PIDNamespaceUsed():
   """Checks to see if we are running with PID namespaces."""
   with open('/proc/1/cmdline') as f:
     if 'cros_sdk' in f.readline():
-      return true
-  return false
+      return True
+  return False
 
 
 class TerminalFreezer(object):
