@@ -44,7 +44,7 @@ class TerminalFreezer(object):
       # Ignore non-zero return codes.
       pass
 
-    self._processes = re.findall(r'^(?:R|p)(\d+)$', ret, re.MULTILINE)
+    self._processes = re.findall(r'^(?:R|p)(\d+)$', ret.decode('utf-8'), re.MULTILINE)
 
     # Don't kill servod, we need that.
     servod_processes = []
