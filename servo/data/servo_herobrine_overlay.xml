@@ -8,6 +8,9 @@
   <include>
     <name>cr50.xml</name>
   </include>
+  <include>
+    <name>cpu_fw_spi.xml</name>
+  </include>
 
   <!-- ******** Controls ******** -->
   <control>
@@ -19,14 +22,5 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"/>
-  </control>
-  <control>
-    <name>cpu_fw_spi</name>
-    <params clobber_ok=""
-      set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
-                   spi2_vref:pp1800"
-      set_value_0="warm_reset:off spi2_buf_en:off spi2_buf_on_flex_en:off
-                   spi2_vref:off"
-      />
   </control>
 </root>
