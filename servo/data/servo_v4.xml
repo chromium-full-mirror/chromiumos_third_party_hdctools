@@ -405,6 +405,7 @@
   <!-- Servo V4 Console Automation Controls -->
   <control>
     <name>servo_v4_uart_cmd</name>
+    <alias>root.servo_uart_cmd</alias>
     <doc>Set to send command to the servo v4 console. Get to obtain the
     matched results with the regular expression of
     servo_v4_uart_regexp.</doc>
