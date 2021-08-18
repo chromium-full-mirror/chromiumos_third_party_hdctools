@@ -261,7 +261,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       # controls.
       adc_temp = GetTemplate(ina_type)(addr, channel)
       for suffix, params in adc_temp.GetFunctionalParams(sense).items():
-        if not is_calib and suffix in ['ma', 'mw']:
+        if not is_calib and suffix in ['ma', 'mw', 'avg_mw']:
           # in some instances we may not know sense resistor size ( re-work ),
           # the size might be 0, or other custom factors may not allow for
           # calibration and those reliable readings on the current and power
