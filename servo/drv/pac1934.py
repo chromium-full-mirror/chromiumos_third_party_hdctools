@@ -61,7 +61,9 @@ class pac1934(ina2xx.ina2xx):
   SAMPLING_RATES = list(SAMPLE_BIT_MAP.keys())
 
   # How many bits to shift to the right to get the sample rate bits from reg.
-  SAMPLING_OFFSET = 6
+  SAMPLING_SHIFT = 6
+  # Mask that only has 1s on the sampling bit positions.
+  SAMPLING_MASK = 0xc0
 
   def __init__(self, interface, params):
     super(pac1934, self).__init__(interface, params)
