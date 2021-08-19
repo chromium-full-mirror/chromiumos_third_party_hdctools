@@ -203,8 +203,9 @@ class HwDriver(object):
     Raises:
       HwDriverError: if |self._choices| is defined and value does not match.
     """
-    if self._choices and self._choices.match(value) is None:
-      raise HwDriverError('%r not a valid input choice (\'%s\')' % (value, self._choices.pattern))
+    if self._choices and self._choices.match(str(value)) is None:
+      raise HwDriverError('%r not a valid input choice (%r)' %
+                          (value, self._choices.pattern))
 
   def _set(self, logical_value):
     """Set the control to |logical_value| or delegate to subtype

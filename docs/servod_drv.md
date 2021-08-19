@@ -142,7 +142,10 @@ There are a few built in safety mechanisms.
    check the value passed into the method to make sure it's a valid choice. By
    default, everything is a valid choice. The `drv` can define
    `self._choices = re.compile('^(choice1|choice2)$')` i.e. a compiled-regex of
-   valid choices.
+   valid choices.\
+   Note: choices are checked in their string representations i.e. if a user is
+   trying to set a value, the choices check is done by casting value to string,
+   and checking against the string choices.
 
 ## key params  {#params}
 
