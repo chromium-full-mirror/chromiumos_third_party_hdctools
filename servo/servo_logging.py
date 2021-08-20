@@ -479,8 +479,32 @@ class FuncNameAligner(logging.Filter):
     record.funcName = record.funcName.ljust(self.padding)
     return True
 
+  def __eq__(self, other):
+    """Equality check to prevent duplicates
 
-class _ControlWrapper(object):
+    Args:
+      other: Another object which may or may not be an instance of our class
+
+    Returns:
+      True when the objects have the same parameters
+    """
+    if isinstance(other, self.__class__):
+      return self.padding == other.padding
+    return False
+
+  def __ne__(self, other):
+    """Inequality check
+
+    Args:
+      other: Another object which may or may not be an instance of our class
+
+    Returns:
+      The negation of the equality operator
+    """
+    return not self.__eq__(other)
+
+
+class _ControlWrapper():
   """
   When running tests, it's nice to be able to see all the servod calls the test
   is making, without having to open the DEBUG log full of console output and
