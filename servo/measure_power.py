@@ -206,36 +206,46 @@ class HighResServodPowerTracker(ServodPowerTracker):
   as one data point.
   """
 
-  # This buffer is used to ensure that the Tracker doesn't attempt one
-  # last reading when there is barely any time left, and starts drifting.
-  BUFFER = 0.03
-
   def run(self):
     """run power collection thread.
 
     Query all |_ctrls| as much as possible during |_rate| interval before
-    reporting the mean of those samples as one data point. Timestamp is taken at
-    the end of |_rate| interval.
+    reporting the mean of those samples as one row of data. Timestamps are
+    computed based on the last measurement added.
     """
+    start_time = time.time()
+    temp_stats = None
+    last_row = 0
     while not self._stop_signal.is_set():
-      start = time.time()
-      end = start + self._rate
-      loop_end = end - self.BUFFER
+      # Discarding the duration_ms since the difference between the current
+      # time and the start time are being used.
+      sample_tuples, _ = self._sample_ctrls(self._ctrls)
       temp_stats = stats_manager.StatsManager()
-      while start < loop_end:
-        # Setting duration to _ as this PowerTracker does not need duration
-        # to calculate for how long to sleep.
-        sample_tuples, _ = self._sample_ctrls(self._ctrls)
-        for domain, sample in sample_tuples:
-          temp_stats.AddSample(domain, sample)
-        start = time.time()
-      temp_stats.CalculateStats()
-      temp_summary = temp_stats.GetSummary()
-      samples = [(measurement, summary['mean']) for
-                 measurement, summary in temp_summary.items()]
-      self._stats.AddSamples(samples)
-      # Sleep until the end of the sample rate
-      self._stop_signal.wait(max(0, end - time.time()))
+      for domain, sample in sample_tuples:
+        temp_stats.AddSample(domain, sample)
+      # If the last timestamp would have been in a new row on the table
+      # log the current set of measurements as the next row.
+      current_row = int((time.time() - start_time) / self._rate)
+      if last_row != current_row:
+        last_row = current_row
+        self._record_mean_samples(temp_stats)
+        temp_stats = None
+    # Record the last row of data
+    if temp_stats is not None:
+      self._record_mean_samples(temp_stats)
+
+  def _record_mean_samples(self, temp_stats):
+    """Converts a StatsManager object into a row of averaged measurements.
+
+    Args:
+    temp_stats: StatsManager object which may contain a collection
+                of rail measurements.
+    """
+    temp_stats.CalculateStats()
+    temp_summary = temp_stats.GetSummary()
+    samples = [(measurement, summary['mean']) for
+               measurement, summary in temp_summary.items()]
+    self._stats.AddSamples(samples)
 
   def process_measurement(self, tstart=None, tend=None):
     """Process the measurement by calculating stats.
