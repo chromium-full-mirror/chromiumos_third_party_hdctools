@@ -19,7 +19,7 @@ generate slightly-less-but-still human readable configuration files.
 
 ### Variables
 
-There are up to 3 variables inside the configuration file needed.
+There are up to 5 variables inside the configuration file needed.
 
 *   **`inas`:** A list of tuples that describe which INAs to configure. Each
     tuple consists of
@@ -58,6 +58,14 @@ There are up to 3 variables inside the configuration file needed.
 
     These are used to generate configurations using a standard naming scheme
     (see below).
+
+*   **`interface`*(optional)*:** If the board/device does not use the standard
+    i2c_interface (2) this can be used to overwrite this
+
+*   **`params`*(optional)*:** If the board/device requires specific servod
+    params to be fed into the *register* controls that will be generated,
+    the user can define a dictionary that will be passed to the register
+    control generation to define/overwrite params.
 
 ### File name conventions
 
