@@ -39,12 +39,12 @@ class TerminalFreezer(object):
     ret = ''
     try:
       ret = subprocess.check_output(['lsof', '-FR', self._tty],
-                                    stderr=subprocess.STDOUT)
+                                    stderr=subprocess.STDOUT, encoding='utf-8')
     except subprocess.CalledProcessError:
       # Ignore non-zero return codes.
       pass
 
-    self._processes = re.findall(r'^(?:R|p)(\d+)$', ret.decode('utf-8'), re.MULTILINE)
+    self._processes = re.findall(r'^(?:R|p)(\d+)$', ret, re.MULTILINE)
 
     # Don't kill servod, we need that.
     servod_processes = []
