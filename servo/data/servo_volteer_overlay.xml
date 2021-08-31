@@ -36,4 +36,10 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_int_spi" chip_for_ccd_cr50="npcx_uut"/>
   </control>
+  <!-- Overriding regex since Volteer EC seems to use "," instead of ":" -->
+  <control>
+    <name>ec_board</name>
+    <doc>The board name of the EC image</doc>
+    <params clobber_ok="" regex="RO[:,]\s+(\S*)_v?[\d.\w\+-]+[\n\r]"/>
+  </control>
 </root>
