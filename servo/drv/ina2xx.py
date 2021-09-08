@@ -161,6 +161,12 @@ class ina2xx(base_pwr_adc.basePWRADC):
     # private copy of the calibration register.
     self._calib_reg = self._read_reg('cal')
 
+    # (b/199008947) INA231 may have the CVRF (Conversion Ready Flag) bit set
+    # somewhere prior to this point, and we cannot be sure whether the
+    # calculation was overflowed if the bit is not consumed before we rewrite
+    # the calib register. Adding a CNVR read to ensure the bit is cleared.
+    self._read_cnvr()
+
     self._write_reg('cal', self.MAX_CALIB)
     self._calib_reg = self.MAX_CALIB
     is_ovf = self._get_next_ovf()
