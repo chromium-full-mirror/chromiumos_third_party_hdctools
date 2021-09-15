@@ -575,7 +575,7 @@ class ec(pty_driver.ptyDriver):
     if m:
       tc_flags = int(m.group(1), 16)
       # PE Flags are only sometimes present
-      m = re.match(r'PE State: \S* Flags: (0x\S+)', result[0][4])
+      m = re.match(r'.*PE State: \S* Flags: (0x\S+)', result[0][4])
       if m:
         pe_flags = int(m.group(1), 16)
     else:
@@ -609,7 +609,7 @@ class ec(pty_driver.ptyDriver):
     """
     port_count = int(self._params.get('port_count'))
     best_port = None
-    best_score = 0
+    best_score = -1
     best_role = None
     for p in range(port_count):
       role, confidence = self._read_port_role(p)
