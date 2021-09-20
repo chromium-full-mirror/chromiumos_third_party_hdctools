@@ -5,7 +5,6 @@
 
 from __future__ import print_function
 
-# pylint: disable=cros-logging-import
 import collections
 import ctypes
 import errno
