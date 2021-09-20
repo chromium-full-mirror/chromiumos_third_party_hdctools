@@ -14,11 +14,6 @@
 
   <!-- ******** Controls ******** -->
   <control>
-    <name>fw_wp_state</name>
-    <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" interface="9" drv="fw_wp_ccd"/>
-  </control>
-  <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"/>
