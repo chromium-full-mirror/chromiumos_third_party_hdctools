@@ -33,6 +33,9 @@ class Susb():
   WRITE_ENDPOINT = 0x1
   TIMEOUT_MS = 100
 
+  # Timeout to let a device debounce before trying to communicate with it again.
+  DEV_DEBOUNCE_S = 0.1
+
   # The time after which to throw arms up when the lock acquisition fails.
   LOCK_TIMEOUT_S = 60
 
@@ -131,7 +134,14 @@ class Susb():
     """Find device, setup configuration, and set up the usb endpoint"""
     # Find the stm32.
     devid = self.get_device_info()
-    dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
+    try:
+      dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
+    except (ValueError, usb.core.USBTimeoutError):
+      self._logger.debug('device not found on first attempt. Potentially '
+                         'debouncing.')
+      time.sleep(self.DEV_DEBOUNCE_S)
+      # The device should be found now. If not, let the error go through.
+      dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
     # TODO(crbug.com/1014672): investigate whether there is a better way not to
     # leak this many file descriptors for once system, and if there is a better
     # way to clean up the resources than the way/workaround implemented here.
