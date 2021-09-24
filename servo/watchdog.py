@@ -51,14 +51,17 @@ class DeviceWatchdog(threading.Thread):
     """Signal to watchdog to stop polling."""
     self.done.set()
 
-  def disconnect(self, device):
+  def disconnect(self, device=None):
     """Helper to turn down servod if device not found.
 
     Args:
       device: servo device object
     """
     # Device was not found and we can't reinitialize it. End servod.
-    self._logger.error('Device - %s - Turning down servod.', device)
+    if device is not None:
+      self._logger.error('Device - %s - Turning down servod.', device)
+    else:
+      self._logger.error('Servod reinit failed - Turning down servod.')
     # Watchdog should run in the same process as servod thread.
     os.kill(os.getpid(), self._turndown_signal)
     self.done.set()
@@ -97,7 +100,15 @@ class DeviceWatchdog(threading.Thread):
             if not missing_devices:
               # Once the last missing device has been found again, reinitialize
               # them all.
-              self._servod.reinitialize()
+              try:
+                self._servod.reinitialize()
+              except Exception as e:
+                # Has to be a broad except because we do not want to orphan the
+                # watchdog thread, but rather make sure that we disconnect
+                # or *any* reinit failure
+                self._logger.debug('Failed to reinit servod: %s', e,
+                                   exc_info=True, stack_info=True)
+                self.disconnect()
         else:
           # Device was not found.
           self._logger.debug('Device - %s not found when polling.', device)
