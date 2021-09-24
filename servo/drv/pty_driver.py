@@ -223,7 +223,9 @@ class ptyDriver(hw_driver.HwDriver):
     Args:
       cmds: The commands to send to the device, either a list or a string.
     """
-    self._issue_cmd_get_results(cmds, [])
+    # catch a '>' at least to make sure that the command was fully sent and
+    # executed before returning from servod.
+    self._issue_cmd_get_results(cmds, ['>'])
 
   def _issue_cmd_get_results(self, cmds, regex_list, flush=None,
                              timeout=DEFAULT_UART_TIMEOUT):
