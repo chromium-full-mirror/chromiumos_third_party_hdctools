@@ -305,6 +305,9 @@ class ServoV4PostInit(BasePostInit):
                                                name_prefix=ccd_prefix)
 
             self.servod._syscfg.hwinit = cached_hwinit
+            # Lastly, add a special 'dual_controller_config.xml overlay
+            # to adjust specific controls in the dual controller scenario.
+            self.servod._syscfg.add_cfg_file('dual_controller_config.xml')
             vid, pid = (ccd_usb_device.idVendor, ccd_usb_device.idProduct)
             interfaces = servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
             for interface in interfaces:
