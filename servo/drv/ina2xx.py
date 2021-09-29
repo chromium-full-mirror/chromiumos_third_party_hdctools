@@ -45,7 +45,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
   # maximum value of power output register.
   PWR_MAX = 0xffff
   # sign bit of the power output register.
-  PWR_SIGN = 0x8000
+  PWR_SIGN = 0
 
   # mask ( 3-bits ) for ina219 configuration modes
   CFG_MODE_MASK = 0x7
