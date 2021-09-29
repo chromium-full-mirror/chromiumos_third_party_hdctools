@@ -248,7 +248,7 @@ class Suart(uart.Uart):
         if (prop == 'baudrate' and
             (line_props[prop] % self.USB_USART_BAUD_MULTIPLIER) == 0):
           self._susb.control(self.USB_USART_SET_BAUD,
-                             line_props[prop] / self.USB_USART_BAUD_MULTIPLIER)
+                             line_props[prop] // self.USB_USART_BAUD_MULTIPLIER)
         elif prop == 'parity' and line_props[prop] in [0, 1, 2]:
           self._susb.control(self.USB_USART_SET_PARITY, line_props[prop])
         else:
