@@ -221,7 +221,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
                                                  inline=inline,
                                                  intro_comments=comments)
 
-  def DumpADCs(self, adcs, params={}):
+  def DumpADCs(self, adcs, params):
     """Dump XML formatted INAxxx adcs for servod.
 
     Args:
@@ -248,6 +248,12 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       parsed by servod daemon ( servo/system_config.py )
     """
     control_generators = []
+    # Pop out interface as we might rewrite it later depending on the servo
+    # device
+    if 'interface' not in params:
+      raise INAConfigGeneratorError('Please provide a servod interface '
+                                    'in the |params| to generate ADC ctrls')
+    interface = params.pop('interface')
     for (drvname, child, name, nom, sense, mux, is_calib) in adcs:
       drvpath = os.path.join(self._servo_drv_dir, drvname + '.py')
       if not os.path.isfile(drvpath):
@@ -301,7 +307,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       # Only sweetberry has |i2c_port| as non-zero. In that case, the actual
       # interface is |interface| (2) + i2c_port
       # |einterface| stands for effective interface.
-      einterface = params['interface'] + i2c_port
+      einterface = interface + i2c_port
       for reg, reg_params in adc_temp.GetRegisterParams(einterface).items():
         docstring = 'Raw register value of %s on i2c_mux:%s' % (reg, mux)
         ctrl_name = '%s_%s_reg' % (name, reg)
