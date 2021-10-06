@@ -44,6 +44,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   # EC feature bit for EFS2.
   _EC_FEATURE_EFS2 = 1 << 38
 
+  # EC console mask for enabling only command channel
+  COMMAND_CHANNEL_MASK = 0x1
+
   def __init__(self, interface, params):
     """Constructor
 
@@ -112,120 +115,144 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     if need_to_restore:
       self._usb3_pwr_restore()
 
-  def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
+  def _limit_channel(self):
+    """Save the current console channel setting and limit the output to the
+    command channel (only print output from commands issued on console).
+
+    Raises:
+      ecError: when failing to retrieve channel settings
+    """
     self._interface.set('ec_uart_regexp', 'None')
-    self._interface.set('ec_uart_cmd', '\r')
-    if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
-      if self._warm_reset_can_hold_ap:
-        # Hold warm reset so the AP doesn't boot when EC reboots.
-        # Note that this only seems to work reliably for ARM devices.
-        self._interface.set('warm_reset', 'on')
+    self._interface.set('ec_uart_cmd', 'chan save')
+    self._interface.set('ec_uart_cmd', 'chan %d' % self.COMMAND_CHANNEL_MASK)
 
-      try:
-        efs2 = bool(int(self._interface.get('ec_feat'), 16) &
-                    crosEcSoftrecPower._EC_FEATURE_EFS2)
-      except ec.ecError:
-        # Assume EFS2 is unsupported if the EC doesn't support the feat
-        # command.
-        efs2 = False
-      ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
-      try:
-        if self._wait_ext_is_fake:
-          raise Exception("wait-ext isn't supported")
-        # Before proceeding, we should really check that the EC has reset from
-        # our command.  Pexpect is minimally greedy so we won't be able to match
-        # the exact reset cause string.  But, this should be good enough.
-        self._interface.set('ec_uart_regexp', '["Waiting"]')
-        self._interface.set('ec_uart_cmd', 'reboot wait-ext %s' %
-                            ap_off_option)
-        self._logger.debug('EC reboot wait-ext delay: %s',
-                           self._ec_reboot_wait_ext_delay)
-        time.sleep(self._ec_reboot_wait_ext_delay)
-        # Reset the EC to force it back into RO code; this clears
-        # the EC_IN_RW signal, so the system CPU will trust the
-        # upcoming recovery mode request.
-        self._cold_reset()
-      except:
-        # If the EC doesn't support wait-ext, fallback to the old route.
-        # Reset the EC to force it back into RO code; this clears
-        # the EC_IN_RW signal, so the system CPU will trust the
-        # upcoming recovery mode request.
-        # For devices whose warm_reset can't hold AP, AP may boot faster that
-        # the original recovery reason is overwritten.
-        self._cold_reset()
-        # The following "reboot ap-off" command should be sent instantly.
-        # During boot-up, EC dumps massive messages. Flushing the incoming
-        # messages will delay the command. Should disable flushing.
-        self._interface.set('ec_uart_flush', 'off')
-        # Send reboot command to EC with only the ap-off argument.
-        # This will still prevent a race condition between the
-        # EC and AP when rebooting. However, the reboot will be triggered
-        # internally by the EC watchdog, and there is no external reset signal.
-        self._interface.set('ec_uart_regexp', '["Rebooting!"]')
-        self._interface.set('ec_uart_cmd', 'reboot %s' % ap_off_option)
-      finally:
-        self._interface.set('ec_uart_regexp', 'None')
-        self._interface.set('ec_uart_flush', 'on')
+  def _restore_channel(self):
+    """Load saved channel setting"""
+    # To improve backward compatibility on EC images that do not have save/
+    # restore, set channel mask to power-on default before running restore.
+    # TODO(shawnn): Remove this line once all test units have new EC image.
+    self._interface.set('ec_uart_regexp', 'None')
+    self._interface.set('ec_uart_cmd', 'chan 0xffffffff')
+    self._interface.set('ec_uart_cmd', 'chan restore')
 
-      self._logger.debug('Reset recovery wait: %s', self._reset_recovery_time)
-      time.sleep(self._reset_recovery_time)
+  def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
+    self._limit_channel()
+    try:
+      self._interface.set('ec_uart_regexp', 'None')
+      self._interface.set('ec_uart_cmd', '\r')
+      if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
+        if self._warm_reset_can_hold_ap:
+          # Hold warm reset so the AP doesn't boot when EC reboots.
+          # Note that this only seems to work reliably for ARM devices.
+          self._interface.set('warm_reset', 'on')
 
-      if self._warm_reset_can_hold_ap:
-        # Release warm reset after a potential cold reset settles.
-        self._interface.set('warm_reset', 'off')
+        try:
+          efs2 = bool(int(self._interface.get('ec_feat'), 16) &
+                      crosEcSoftrecPower._EC_FEATURE_EFS2)
+        except ec.ecError:
+          # Assume EFS2 is unsupported if the EC doesn't support the feat
+          # command.
+          efs2 = False
+        ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
+        try:
+          if self._wait_ext_is_fake:
+            raise Exception("wait-ext isn't supported")
+          # Before proceeding, we should really check that the EC has reset from
+          # our command.  Pexpect is minimally greedy so we won't be able to match
+          # the exact reset cause string.  But, this should be good enough.
+          self._interface.set('ec_uart_regexp', '["Waiting"]')
+          self._interface.set('ec_uart_cmd', 'reboot wait-ext %s' %
+                              ap_off_option)
+          self._logger.debug('EC reboot wait-ext delay: %s',
+                            self._ec_reboot_wait_ext_delay)
+          time.sleep(self._ec_reboot_wait_ext_delay)
+          # Reset the EC to force it back into RO code; this clears
+          # the EC_IN_RW signal, so the system CPU will trust the
+          # upcoming recovery mode request.
+          self._cold_reset()
+        except:
+          # If the EC doesn't support wait-ext, fallback to the old route.
+          # Reset the EC to force it back into RO code; this clears
+          # the EC_IN_RW signal, so the system CPU will trust the
+          # upcoming recovery mode request.
+          # For devices whose warm_reset can't hold AP, AP may boot faster that
+          # the original recovery reason is overwritten.
+          self._cold_reset()
+          # The following "reboot ap-off" command should be sent instantly.
+          # During boot-up, EC dumps massive messages. Flushing the incoming
+          # messages will delay the command. Should disable flushing.
+          self._interface.set('ec_uart_flush', 'off')
+          # Send reboot command to EC with only the ap-off argument.
+          # This will still prevent a race condition between the
+          # EC and AP when rebooting. However, the reboot will be triggered
+          # internally by the EC watchdog, and there is no external reset signal.
+          self._interface.set('ec_uart_regexp', '["Rebooting!"]')
+          self._interface.set('ec_uart_cmd', 'reboot %s' % ap_off_option)
+        finally:
+          self._interface.set('ec_uart_regexp', 'None')
+          self._interface.set('ec_uart_flush', 'on')
 
-    else:
-      # Need to clear the flag in secondary (B) copy of the host events if
-      # we're in non-recovery mode.
-      cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
+        self._logger.debug('Reset recovery wait: %s', self._reset_recovery_time)
+        time.sleep(self._reset_recovery_time)
+
+        if self._warm_reset_can_hold_ap:
+          # Release warm reset after a potential cold reset settles.
+          self._interface.set('warm_reset', 'off')
+
+      else:
+        # Need to clear the flag in secondary (B) copy of the host events if
+        # we're in non-recovery mode.
+        cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
+        try:
+          self._interface.set('ec_uart_regexp', '["Events:"]')
+          self._interface.set('ec_uart_cmd', cmd)
+        finally:
+          self._interface.set('ec_uart_regexp', 'None')
+
+      # Tell the EC to tell the CPU we're in recovery mode or non-recovery mode.
+      self._logger.debug('Hostevent delay: %s', self._hostevent_delay)
+      time.sleep(self._hostevent_delay)
+      cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
       try:
         self._interface.set('ec_uart_regexp', '["Events:"]')
         self._interface.set('ec_uart_cmd', cmd)
       finally:
         self._interface.set('ec_uart_regexp', 'None')
+      self._logger.debug('Recovery detection delay: %s',
+          self._RECOVERY_DETECTION_DELAY)
+      time.sleep(self._RECOVERY_DETECTION_DELAY)
 
-    # Tell the EC to tell the CPU we're in recovery mode or non-recovery mode.
-    self._logger.debug('Hostevent delay: %s', self._hostevent_delay)
-    time.sleep(self._hostevent_delay)
-    cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-    try:
-      self._interface.set('ec_uart_regexp', '["Events:"]')
-      self._interface.set('ec_uart_cmd', cmd)
+      self._power_on_ap()
+      if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
+        # Allow time to reach the recovery screen before yielding control.
+        self._logger.debug('Boot to rec screen delay: %s',
+            self._boot_to_rec_screen_delay)
+        time.sleep(self._boot_to_rec_screen_delay)
+
+        # If we are using a Type-C servo, make sure the DUT's port is a DFP so
+        # that the ethernet and USB ports will be connected.  Since servo_v4 has
+        # the power role of source, its data role is a "downstream facing port"
+        # (DFP) and therefore making the DUT's role an "upstream facing port"
+        # (UFP). When the data roles are as such, the ethernet port and
+        # USB/microSD ports will not be connected to the DUT.  Therefore, we will
+        # need to trigger a data role swap by via the EC console.
+        #
+        # This is needed because the data role swaps normally don't happen in
+        # EC_RO (which is the image we MUST be in for entering recovery mode).
+        #
+        # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
+        # this will be a no-op.
+        try:
+          if self._interface.get('root.dut_connection_type') == 'type-c':
+              self._interface.set('dut_pd_data_role', 'DFP')
+        except NameError as e:
+          self._logger.debug('Servo is not Type-C')
+          pass
+        except Exception as e:
+          self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
+          pass
     finally:
-      self._interface.set('ec_uart_regexp', 'None')
-    self._logger.debug('Recovery detection delay: %s',
-        self._RECOVERY_DETECTION_DELAY)
-    time.sleep(self._RECOVERY_DETECTION_DELAY)
-
-    self._power_on_ap()
-    if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
-      # Allow time to reach the recovery screen before yielding control.
-      self._logger.debug('Boot to rec screen delay: %s',
-          self._boot_to_rec_screen_delay)
-      time.sleep(self._boot_to_rec_screen_delay)
-
-      # If we are using a Type-C servo, make sure the DUT's port is a DFP so
-      # that the ethernet and USB ports will be connected.  Since servo_v4 has
-      # the power role of source, its data role is a "downstream facing port"
-      # (DFP) and therefore making the DUT's role an "upstream facing port"
-      # (UFP). When the data roles are as such, the ethernet port and
-      # USB/microSD ports will not be connected to the DUT.  Therefore, we will
-      # need to trigger a data role swap by via the EC console.
-      #
-      # This is needed because the data role swaps normally don't happen in
-      # EC_RO (which is the image we MUST be in for entering recovery mode).
-      #
-      # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
-      # this will be a no-op.
-      try:
-        if self._interface.get('root.dut_connection_type') == 'type-c':
-            self._interface.set('dut_pd_data_role', 'DFP')
-      except NameError as e:
-        self._logger.debug('Servo is not Type-C')
-        pass
-      except Exception as e:
-        self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
-        pass
+      self._restore_channel()
 
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
