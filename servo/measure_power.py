@@ -11,8 +11,7 @@ import threading
 import time
 
 from servo import client
-from servo import timelined_stats_manager
-import stats_manager
+from servo.utils import stats_manager, timelined_stats_manager
 
 SAMPLE_TIME_KEY = 'Sample_msecs'
 

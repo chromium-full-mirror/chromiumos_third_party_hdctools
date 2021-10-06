@@ -11,8 +11,8 @@ import tempfile
 import time
 import unittest
 
-import stats_manager
-from . import timelined_stats_manager
+from servo.utils import stats_manager
+from servo.utils import timelined_stats_manager
 
 
 class TestTimelinedStatsManager(unittest.TestCase):

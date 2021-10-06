@@ -9,7 +9,8 @@ import copy
 import time
 
 import numpy
-import stats_manager
+
+from servo.utils import stats_manager
 
 TIME_KEY = 'time'
 TLINE_KEY = 'timeline'
