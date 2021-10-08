@@ -55,7 +55,7 @@ class pac19next(pac1934.pac1934):
     """Retrieve the bus voltage full scale range (fsr)."""
     _, v_signed, _, v_fsr2 = self._signed_and_fsr()
     fsr = self._busv_fsr
-    if v_fsr2:
+    if v_signed and not v_fsr2:
       fsr = self._busv_fsr / 2.
     return fsr, v_signed
 
@@ -63,9 +63,7 @@ class pac19next(pac1934.pac1934):
     """Retrieve pwr full scale range (fsr)."""
     c_signed, v_signed, c_fsr2, v_fsr2 = self._signed_and_fsr()
     fsr = self._pwr_fsr
-    if c_fsr2 and v_fsr2:
-      fsr = self._pwr_fsr / 4.
-    elif c_fsr2 or v_fsr2:
+    if c_signed or v_signed and not (c_fsr2 or v_fsr2):
       fsr = self._pwr_fsr / 2.
     return fsr, c_signed or v_signed
 
@@ -73,7 +71,7 @@ class pac19next(pac1934.pac1934):
     """Retrieve full scale current (fsc)."""
     c_signed, _, c_fsr2, _ = self._signed_and_fsr()
     fsr = self._fsc
-    if c_fsr2:
+    if c_signed and not c_fsr2:
       fsr = self._fsc / 2.
     return fsr, c_signed
 
