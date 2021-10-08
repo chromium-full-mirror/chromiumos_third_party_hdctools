@@ -1,7 +1,7 @@
 # Copyright 2021 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Access to Microchip PAC19next.
+"""Access to Microchip PAC1954.
 
 Quad-Channel, High-Side Measurement, Shunt and Bus Voltage Monitor
 with i2c Interface.
@@ -12,12 +12,12 @@ from servo.drv import ina2xx
 from servo.drv import pac1934
 
 
-class Pac19nextError(ina2xx.Ina2xxError):
-  """Pac19next error class."""
+class Pac1954Error(ina2xx.Ina2xxError):
+  """Pac1954 error class."""
 
 
-class pac19next(pac1934.pac1934):
-  """Object to access drv=pac19next controls."""
+class pac1954(pac1934.pac1934):
+  """Object to access drv=pac1954 controls."""
 
   BUSV_MV_OFFSET = 0
   # In millivolts.
@@ -110,7 +110,7 @@ class pac19next(pac1934.pac1934):
       0 if regular resolution and 1 if high resolution
 
     Raises:
-      Pac19nextError: when failing to set current and voltage both to fsr/2
+      Pac1954Error: when failing to set current and voltage both to fsr/2
     """
     _, _, c_fsr2, v_fsr2 = self._signed_and_fsr()
     # If they are not the same, make them the same. Bias towards high
@@ -123,7 +123,7 @@ class pac19next(pac1934.pac1934):
       self._Set_resolution(self.HIGH_RESOLUTION)
       _, _, c_fsr2, v_fsr2 = self._signed_and_fsr()
     if c_fsr2 != v_fsr2:
-      raise Pac19nextError('Failed to synchronize current and voltage fsr2.')
+      raise Pac1954Error('Failed to synchronize current and voltage fsr2.')
     return int(c_fsr2)
 
   def _Set_resolution(self, val):

@@ -1,7 +1,7 @@
 # Copyright 2021 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Access to Microchip PAC19next GPIO expander functionality."""
+"""Access to Microchip PAC1954 GPIO expander functionality."""
 
 import re
 
@@ -10,19 +10,19 @@ from servo.drv import hw_driver
 from servo.drv import pac1934
 
 
-class Pac19nextGpioError(pac1934.Pac1934Error):
-  """Pac19nextGpio error class."""
+class Pac1954GpioError(pac1934.Pac1934Error):
+  """Pac1954Gpio error class."""
 
 
 # pylint: disable=invalid-name
 # servod drv identification follows this naming convention.
-class pac19nextGpio(pac1934.pac1934):
-  """Object to access drv=pac19nextGpio controls."""
+class pac1954Gpio(pac1934.pac1934):
+  """Object to access drv=pac1954Gpio controls."""
 
   # io_mode: one of 'input', 'output', 'slow'
   # base_name: symbolic name of ADC control on system to anchor control to
   #            e.g. 'pp3300_wlan_dx'. This is used to read/write registers.
-  #            NOTE: base_name map to a pac19next, otherwise the required
+  #            NOTE: base_name map to a pac1954, otherwise the required
   #                  registers won't be available.
   REQUIRED_GET_PARAMS = ['io_mode', 'pin', 'base_name']
   REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
@@ -39,9 +39,9 @@ class pac19nextGpio(pac1934.pac1934):
     self._base_name = self._params['base_name']
     # Assert the values are valid
     if self._io_mode not in ['input', 'output', 'slow']:
-      raise Pac19nextGpioError('Unknown mode %r' % self._io_mode)
+      raise Pac1954GpioError('Unknown mode %r' % self._io_mode)
     if self._pin not in [1, 2]:
-      raise Pac19nextGpioError('Unknown pin %r' % self._pin)
+      raise Pac1954GpioError('Unknown pin %r' % self._pin)
     # Lastly, these things can only ever be set to 0 or 1. Enforce this.
     self._choices = re.compile('^(0|1)$')
     # Bit 8 and 9 are used for pin 1 cfg, 10 and 11 for pin 2 cfg
@@ -78,7 +78,7 @@ class pac19nextGpio(pac1934.pac1934):
     elif mode == 0x3:
       return 'slow'
     else:
-      raise Pac19nextGpioError('Unknown GPIO mode 0x%02x' % v)
+      raise Pac1954GpioError('Unknown GPIO mode 0x%02x' % v)
 
   def _write(self, value):
     """write |value| to the GPIO."""
@@ -102,12 +102,12 @@ class pac19nextGpio(pac1934.pac1934):
       self._set_mode(mode)
     cm = self._read_mode()
     if cm != mode:
-      raise Pac19nextGpioError('Failed to set GPIO to %r mode' % mode)
+      raise Pac1954GpioError('Failed to set GPIO to %r mode' % mode)
 
   def _Set_gpio(self, value):
     """Set the |self._pin| to |value| if |self._io_mode| is 'output'."""
     if self._io_mode == 'input':
-      raise Pac19nextGpioError('GPIO is configured as input. Cannot set.')
+      raise Pac1954GpioError('GPIO is configured as input. Cannot set.')
     # This ensures that if something changed the mode from underneath us,
     # we can configure it back to the expected |self._io_mode|
     self._enable_mode()

@@ -501,10 +501,10 @@ class PAC1934Template(ADCTemplate):
     return idx
 
 
-class PAC19nextTemplate(PAC1934Template):
-  """Template for PAC 19next that handles the different channels."""
+class PAC1954Template(PAC1934Template):
+  """Template for PAC 1954 that handles the different channels."""
 
-  ADC_TYPE = 'pac19next'
+  ADC_TYPE = 'pac1954'
 
   REG_IDX = dict(refresh=0, ctrl=1, acc_count=0x2, acc_pwr=0x3, busv=0xf,
                  cur=0x13, pwr=0x17, smbus=0x1c, neg_pwr_fsr=0x1d,
@@ -519,10 +519,10 @@ class PAC19nextTemplate(PAC1934Template):
   REG_RO.update(dict(busv=True, pwr=True, cur=True, neg_pwr_fsr_act=True))
 
   def GetFunctionalParams(self, rsense, interface='servo'):
-    """pac19next specific overwrite to handle special 'slow' implementation."""
-    funcs = super(PAC19nextTemplate, self).GetFunctionalParams(rsense,
+    """pac1954 specific overwrite to handle special 'slow' implementation."""
+    funcs = super(PAC1954Template, self).GetFunctionalParams(rsense,
                                                                interface)
-    funcs['slow_enabled'].update(dict(subtype='slow', drv='pac19next_gpio',
+    funcs['slow_enabled'].update(dict(subtype='slow', drv='pac1954_gpio',
                                       interface=interface, io_mode='slow',
                                       pin='1'))
     return funcs
@@ -534,7 +534,7 @@ lookup['ina219'] = INA219Template
 lookup['ina231'] = INA231Template
 lookup['ina3221'] = INA3221Template
 lookup['pac1934'] = PAC1934Template
-lookup['pac19next'] = PAC19nextTemplate
+lookup['pac1954'] = PAC1954Template
 
 
 def GetTemplate(name):

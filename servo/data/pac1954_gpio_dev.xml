@@ -2,16 +2,16 @@
   <!-- Test to configure one gpio as an input and one as an output.-->
   <include>
     <!-- This config includes the register controls needed for the GPIOs. -->
-    <name>pac19next_dev.xml</name>
+    <name>pac1954_dev.xml</name>
   </include>
   <control>
     <name>mp1_gpio1_input</name>
-    <params interface="2" drv="pac19next_gpio" base_name='mp1'
+    <params interface="2" drv="pac1954_gpio" base_name='mp1'
       subtype="gpio" io_mode="input" pin="1"/>
   </control>
   <control>
     <name>mp1_gpio2_output</name>
-    <params interface="2" drv="pac19next_gpio" base_name='mp1'
+    <params interface="2" drv="pac1954_gpio" base_name='mp1'
       subtype="gpio" io_mode="output" pin="2"/>
   </control>
 </root>

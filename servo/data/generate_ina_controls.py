@@ -265,7 +265,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
       i2c_port = 0
       channel = 0
 
-      if ina_type in ['ina3221', 'pac1934', 'pac19next']:
+      if ina_type in ['ina3221', 'pac1934', 'pac1954']:
         addr, channel = addr.split(':')
       elif ina_type == 'ina231' and type(addr) == str and ':' in addr:
         # This only happens on sweetberry configurations. This is to report
