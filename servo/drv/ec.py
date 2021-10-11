@@ -566,7 +566,7 @@ class ec(pty_driver.ptyDriver):
         'pd %d state' % p,
         [
             r'Parameter 2 invalid|Role: ([A-Z]+)-([A-Z]+)(-\S*)? (.*)\n',
-        ])
+        ], flush=True)
     # TC Flags should always be present on TPMCv2
     tc_flags = 0
     pe_flags = 0
