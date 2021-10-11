@@ -129,7 +129,7 @@ class pac1934(ina2xx.ina2xx):
   def _Get_samples(self):
     """Return current samples per second setting."""
     cv = self._read_reg('ctrl_act', refresh=None)
-    smode = bit_util.extract_bitfield(cv, 0x3, self.SAMPLING_OFFSET)
+    smode = bit_util.extract_bitfield(cv, 0x3, self.SAMPLING_SHIFT)
     return self.BIT_SAMPLE_MAP[smode]
 
   def _Set_samples(self, value):
@@ -145,7 +145,7 @@ class pac1934(ina2xx.ina2xx):
       raise Pac1934Error('Unknown sampling rate %d' % value)
     smode = self.SAMPLE_BIT_MAP[value]
     cv = self._read_reg('ctrl', refresh=None)
-    rv = bit_util.set_bitfield(cv, 0x2, self.SAMPLING_SHIFT, smode)
+    rv = bit_util.set_bitfield(cv, 0x3, self.SAMPLING_SHIFT, smode)
     self._write_reg('ctrl', rv)
 
   def _Get_slow(self):
