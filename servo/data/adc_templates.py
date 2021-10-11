@@ -39,7 +39,7 @@ class ADCTemplate(object):
   # key is the function suffix, and the value is the function subtype
   # e.g. {'mw': 'milliwatts'}
   # NOTE: overwrite these in the subclass.
-  FUNCTIONS = None
+  FUNCTIONS = {}
   # Functions that are read-only. By default, all functions are RO as that's the
   # common case. Individual templates can expand
   FUNCTIONS_RO = collections.defaultdict(lambda: True)
@@ -418,15 +418,15 @@ class PAC1934Template(ADCTemplate):
   ADC_TYPE = 'pac1934'
 
   REG_IDX = dict(refresh=0, ctrl=1, acc_count=0x2, acc_pwr=0x3, busv=0xf,
-                 cur=0x13, pwr=0x17, refresh_v=0x1f, ctrl_act=0x21,
-                 neg_pwr_act=0x23)
+                 cur=0x13, pwr=0x17, neg_pwr=0x1d, refresh_v=0x1f,
+                 ctrl_act=0x21, neg_pwr_act=0x23)
 
   # Add 'refresh' shorthand for the refresh registers.
   REG_MAP = copy.copy(ADCTemplate.REG_MAP)
   REG_MAP.update(dict(refresh='refresh', refresh_v='refresh'))
 
   REG_LEN = collections.defaultdict(lambda: 2)
-  REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4, neg_pwr_act=1,
+  REG_LEN.update(dict(refresh=0, refresh_v=0, pwr=4, neg_pwr=1, neg_pwr_act=1,
                       ctrl=1, ctrl_act=1, acc_count=3, acc_pwr=6))
 
   REG_RO = collections.defaultdict(lambda: False)
