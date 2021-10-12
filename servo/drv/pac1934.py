@@ -115,6 +115,7 @@ class pac1934(ina2xx.ina2xx):
     """
     self._set_ctrl('slow_enabled', 'no')
     self._set_ctrl('res', 'high')
+    self._set_ctrl('signed', 'yes')
     self._set_ctrl('samples', 'highest')
     self._refresh(clear=True)
 
