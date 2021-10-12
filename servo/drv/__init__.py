@@ -32,7 +32,6 @@ from . import ec3po_servo_v4
 from . import ec_i2c_pin
 from . import ec_lm4
 from . import echo
-from . import error
 from . import fast_ec
 from . import fluffy
 from . import ftdii2c_cmd
@@ -94,6 +93,7 @@ from . import tca6416
 from . import tca6424
 from . import tcs3414
 from . import uart
+from . import undefined
 from . import usb_downloader
 from . import usb_image_manager
 from . import veyron_chromebox_power

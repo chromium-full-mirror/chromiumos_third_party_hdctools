@@ -5,9 +5,9 @@
 import errno
 import time
 
-from servo.drv import error
 from servo.drv import hw_driver
 from servo.drv import i2c_reg
+from servo.drv import undefined
 from servo.interface.stm32i2c import Si2cError
 
 
@@ -66,7 +66,7 @@ class i2cRegDrv(hw_driver.HwDriver):
       HwDriverError: if |self._read_only| is True
     """
     if self._read_only:
-      error.error.set(self, None)
+      undefined.undefined.set(self, None)
     # Set potential overwrites from default.
     # pylint: disable=protected-access
     # _dev object is used to share object across multiple registers
@@ -83,7 +83,7 @@ class i2cRegDrv(hw_driver.HwDriver):
       HwDriverError: if |self._write_only| is True
     """
     if self._write_only:
-      error.error.get(self)
+      undefined.undefined.get(self)
     last_exception = None
     for i in range(0, TIMEOUT_RETRIES):
       if i > 0:

@@ -17,7 +17,7 @@ SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG]
 ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
 
 # A control to use when set/get is explicitly not defined for a control.
-UNDEF_CONTROL_DICT = {'drv': 'error',
+UNDEF_CONTROL_DICT = {'drv': 'undefined',
                       'interface': 'servo',
                       'input_type': 'str'}
 
