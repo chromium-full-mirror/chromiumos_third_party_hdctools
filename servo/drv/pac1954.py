@@ -100,6 +100,26 @@ class pac1954(pac1934.pac1934):
     c_fsr2 = c_mode == self.NEG_PWR_FSR_BIP_FSR2
     return c_signed, v_signed, c_fsr2, v_fsr2
 
+  def _Get_signed(self):
+    """Whether the PAC is report signed values for current, voltage, power.
+
+    Note: while this can be controlled individually, in servod we simplify this
+    by saying that either both are signed, or neither. Since we keep signed
+    and fsr/2 in sync, we just delegate this to resolution.
+
+    Returns:
+      0 if unsigned, or 1 if signed values are used
+    """
+    return self._Get_resolution()
+
+  def _Set_signed(self, val):
+    """Set signed to be |val| (true or false).
+
+    Note: Since we keep signed and fsr/2 in sync, we just delegate this to
+    resolution.
+    """
+    self._Set_resolution(val)
+
   def _Get_resolution(self):
     """Whether current and voltage are using fsr/2.
 

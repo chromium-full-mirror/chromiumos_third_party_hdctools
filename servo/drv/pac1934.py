@@ -175,7 +175,7 @@ class pac1934(ina2xx.ina2xx):
   @property
   def _neg_pwr_current_offset(self):
     """Returns of offset for the channel's CHn_BIDI bank."""
-    return 6 - self._channel
+    return 7 - self._channel
 
   @property
   def _neg_pwr_voltage_offset(self):
@@ -193,6 +193,30 @@ class pac1934(ina2xx.ina2xx):
     c_signed = c_mode == self.NEG_PWR_BIP
     v_signed = v_mode == self.NEG_PWR_BIP
     return c_signed, v_signed
+
+  def _Set_signed(self, value):
+    """Set the ADC to be signed."""
+    # Make sure to reduce |value| to the write write mask
+    sbit = self.NEG_PWR_BIP if value else self.NEG_PWR_UNI
+    cv = self._read_reg('neg_pwr_act')
+    # 0x1 is used as the information is only in 1 bit.
+    rv = bit_util.set_bitfield(cv, 0x1, self._neg_pwr_voltage_offset, sbit)
+    rv = bit_util.set_bitfield(rv, 0x1, self._neg_pwr_current_offset, sbit)
+    self._write_reg('neg_pwr', rv)
+
+  def _Get_signed(self):
+    """Report whether the values are signed or unsigned."""
+    c_signed, v_signed = self._signed()
+    if c_signed != v_signed:
+      self._logger.debug('Voltage signed: %r, Current signed: %r, will sync.',
+                         v_signed, c_signed)
+      self._Set_signed(1)
+      c_signed, v_signed = self._signed()
+      if c_signed != v_signed:
+        raise Pac1934Error('Failed to sync voltage and current to both be '
+                           'signed.')
+    # It's sufficient to report one, since we made sure it's the same one.
+    return int(c_signed)
 
   def _read_reg(self, name, refresh='v'):
     """Specify whether we need to call refresh (and what kind) before read.

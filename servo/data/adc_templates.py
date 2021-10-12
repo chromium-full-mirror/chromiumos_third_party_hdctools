@@ -445,7 +445,7 @@ class PAC1934Template(ADCTemplate):
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
                    res='resolution', slow_enabled='slow', samples='samples',
                    ez_config='ez_config', avg_mw='accum_milliwatts',
-                   acc_clear='acc_clear')
+                   acc_clear='acc_clear', signed='signed')
   # Supply the resolution map
   FUNCTIONS_MAP = collections.defaultdict(lambda: None)
   FUNCTIONS_MAP['res'] = 'resolution'
@@ -453,6 +453,7 @@ class PAC1934Template(ADCTemplate):
   FUNCTIONS_MAP['samples'] = 'pac_samples'
   FUNCTIONS_MAP['ez_config'] = 'on'
   FUNCTIONS_MAP['acc_clear'] = 'yes'
+  FUNCTIONS_MAP['signed'] = 'yesno'
 
   # Mark relevant functions as r/w.
   FUNCTIONS_RO = copy.copy(ADCTemplate.FUNCTIONS_RO)
@@ -460,6 +461,7 @@ class PAC1934Template(ADCTemplate):
   FUNCTIONS_RO['slow_enabled'] = False
   FUNCTIONS_RO['samples'] = False
   FUNCTIONS_RO['acc_clear'] = False
+  FUNCTIONS_RO['signed'] = False
 
   FUNCTIONS_WO = copy.copy(ADCTemplate.FUNCTIONS_WO)
   FUNCTIONS_WO['acc_clear'] = True
@@ -476,6 +478,7 @@ class PAC1934Template(ADCTemplate):
   FUNC_DOCSTRING_TEMPLATES['slow_enabled'] = 'Slow pin ctrl enabled on %r rail'
   FUNC_DOCSTRING_TEMPLATES['samples'] = 'Samples per second of %r rail'
   FUNC_DOCSTRING_TEMPLATES['ez_config'] = 'Good default config for %r rail'
+  FUNC_DOCSTRING_TEMPLATES['signed'] = 'Readings are signed for %r rail'
 
   def reg_offset(self, reg):
     """PAC ADC specific offset logic.
