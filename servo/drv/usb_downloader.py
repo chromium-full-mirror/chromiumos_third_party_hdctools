@@ -88,7 +88,7 @@ class usbDownloader(hw_driver.HwDriver):
         # Pass or fail, we mustn't go without telling the kernel about
         # the change, or it will punish us with sporadic, hard-to-debug
         # failures.
-        subprocess.call(['sync'])
+        subprocess.call(['sync', usb_dev])
         subprocess.call(['blockdev', '--rereadpt', usb_dev])
     if errormsg:
       self._logger.error(errormsg)
