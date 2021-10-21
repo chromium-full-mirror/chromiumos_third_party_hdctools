@@ -115,37 +115,16 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     if need_to_restore:
       self._usb3_pwr_restore()
 
-  def _limit_channel(self):
-    """Save the current console channel setting and limit the output to the
-    command channel (only print output from commands issued on console).
-
-    Raises:
-      ecError: when failing to retrieve channel settings
-    """
-    self._interface.set('ec_uart_regexp', 'None')
-    self._interface.set('ec_uart_cmd', 'chan save')
-    self._interface.set('ec_uart_cmd', 'chan %d' % self.COMMAND_CHANNEL_MASK)
-
-  def _restore_channel(self):
-    """Load saved channel setting"""
-    # To improve backward compatibility on EC images that do not have save/
-    # restore, set channel mask to power-on default before running restore.
-    # TODO(shawnn): Remove this line once all test units have new EC image.
-    self._interface.set('ec_uart_regexp', 'None')
-    self._interface.set('ec_uart_cmd', 'chan 0xffffffff')
-    self._interface.set('ec_uart_cmd', 'chan restore')
-
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
-    self._limit_channel()
+    # ec_gpio is known to use the ec drv
+    _, ec_driver, _ = self._interface._get_param_drv('ec_gpio')
+    ec_driver._limit_channel()
     try:
-      self._interface.set('ec_uart_regexp', 'None')
-      self._interface.set('ec_uart_cmd', '\r')
       if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
         if self._warm_reset_can_hold_ap:
           # Hold warm reset so the AP doesn't boot when EC reboots.
           # Note that this only seems to work reliably for ARM devices.
           self._interface.set('warm_reset', 'on')
-
         try:
           efs2 = bool(int(self._interface.get('ec_feat'), 16) &
                       crosEcSoftrecPower._EC_FEATURE_EFS2)
@@ -160,9 +139,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
           # Before proceeding, we should really check that the EC has reset from
           # our command.  Pexpect is minimally greedy so we won't be able to match
           # the exact reset cause string.  But, this should be good enough.
-          self._interface.set('ec_uart_regexp', '["Waiting"]')
-          self._interface.set('ec_uart_cmd', 'reboot wait-ext %s' %
-                              ap_off_option)
+          ec_driver._issue_cmd_get_results(
+              'reboot wait-ext %s' %
+              ap_off_option, ["Waiting"], flush=True, timeout=6)
           self._logger.debug('EC reboot wait-ext delay: %s',
                             self._ec_reboot_wait_ext_delay)
           time.sleep(self._ec_reboot_wait_ext_delay)
@@ -181,16 +160,16 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
           # The following "reboot ap-off" command should be sent instantly.
           # During boot-up, EC dumps massive messages. Flushing the incoming
           # messages will delay the command. Should disable flushing.
-          self._interface.set('ec_uart_flush', 'off')
           # Send reboot command to EC with only the ap-off argument.
           # This will still prevent a race condition between the
           # EC and AP when rebooting. However, the reboot will be triggered
-          # internally by the EC watchdog, and there is no external reset signal.
-          self._interface.set('ec_uart_regexp', '["Rebooting!"]')
-          self._interface.set('ec_uart_cmd', 'reboot %s' % ap_off_option)
-        finally:
-          self._interface.set('ec_uart_regexp', 'None')
-          self._interface.set('ec_uart_flush', 'on')
+          # internally by the EC watchdog, and there is no external reset
+          # signal.
+          ec_driver._issue_cmd_get_results(
+              'reboot %s' %
+              ap_off_option,
+              ["Rebooting!"],
+              flush=False)
 
         self._logger.debug('Reset recovery wait: %s', self._reset_recovery_time)
         time.sleep(self._reset_recovery_time)
@@ -198,26 +177,16 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         if self._warm_reset_can_hold_ap:
           # Release warm reset after a potential cold reset settles.
           self._interface.set('warm_reset', 'off')
-
       else:
         # Need to clear the flag in secondary (B) copy of the host events if
         # we're in non-recovery mode.
         cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
-        try:
-          self._interface.set('ec_uart_regexp', '["Events:"]')
-          self._interface.set('ec_uart_cmd', cmd)
-        finally:
-          self._interface.set('ec_uart_regexp', 'None')
-
+        ec_driver._issue_cmd_get_results(cmd, ["Events:"])
       # Tell the EC to tell the CPU we're in recovery mode or non-recovery mode.
       self._logger.debug('Hostevent delay: %s', self._hostevent_delay)
       time.sleep(self._hostevent_delay)
       cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-      try:
-        self._interface.set('ec_uart_regexp', '["Events:"]')
-        self._interface.set('ec_uart_cmd', cmd)
-      finally:
-        self._interface.set('ec_uart_regexp', 'None')
+      ec_driver._issue_cmd_get_results(cmd, ["Events:"])
       self._logger.debug('Recovery detection delay: %s',
           self._RECOVERY_DETECTION_DELAY)
       time.sleep(self._RECOVERY_DETECTION_DELAY)
@@ -252,7 +221,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
           self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
           pass
     finally:
-      self._restore_channel()
+      ec_driver._restore_channel()
 
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:
