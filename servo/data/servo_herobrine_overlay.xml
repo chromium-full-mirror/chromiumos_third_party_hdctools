@@ -9,7 +9,7 @@
     <name>cr50.xml</name>
   </include>
   <include>
-    <name>cpu_fw_spi.xml</name>
+    <name>cpu_fw_spi_off.xml</name>
   </include>
 
   <!-- ******** Controls ******** -->
