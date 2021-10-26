@@ -23,4 +23,10 @@
     <doc>Used to turn the DUT off and on</doc>
     <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"/>
   </control>
+  <control>
+    <name>pch_disable</name>
+    <alias>h1_reset</alias>
+    <doc>Force H1 power-on reset</doc>
+    <params clobber_ok=""></params>
+  </control>
 </root>
