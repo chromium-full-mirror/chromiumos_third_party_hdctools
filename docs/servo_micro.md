@@ -169,6 +169,63 @@ wires on and use a standard FTDI pin header 3.3V cable.
 
 ![Servo Micro UART](images/servo_micro_uart.png)
 
+## Servo Micro As GSC Console
+
+Sometimes it is necessary to debug GSC interactions with the DUT, especially
+during early hardware bringup when GSC is still not communicating reliably
+over USB.
+
+This is when the direct access to the GSC console is needed. In this situation
+GSC console could be accessed over a dedicated device created by `servod`.
+
+But having to run `servod` (and create the Chrome OS chroot for that) is a
+pretty high barrier for many users. Luckily Servo Micro provides all necessary
+features directly, no need to create chroot and run servod to access them.
+
+To use Servo Micro as the GSC console, attach Servo Micro to the servo header
+on the DUT and connect it to the workstation as described above.
+
+The following command allows you to find tty USB devices created to access
+various consoles available through Servo Micro:
+
+```
+$ find /dev -type l -name '*Servo_Micro*' -exec readlink -f "{}" +
+/dev/ttyUSB2
+/dev/ttyUSB3
+/dev/ttyUSB0
+/dev/ttyUSB1
+```
+
+If you don't see the four devices unplug and re-plug the USB cable connecting
+to Servo Micro.
+
+Of the four `/dev/ttyUSBx` devices, the lowest index device is the GSC
+console, and the second lowest index is the Servo Micro console.
+
+To get access to GSC console, first connect to the Servo Micro console and
+send it commands to completely disengage Servo Micro from the DUT, leaving
+only GSC console connected:
+
+```
+$  minicom -D /dev/ttyUSB<second lowest>
+...
+> gpioset UART2_EN_L 1         # Disconnect the EC UART
+> gpioset UART1_EN_L 1         # Disconnect the AP UART
+> i2cxfer w 0 0x20 6 0xff      # Set all extended GPIOs as inputs
+> i2cxfer w 0 0x20 7 0xff
+> i2cxfer w 0 0x20 3 0         # Prepare GSC reset output level
+```
+
+To connect to the GSC console run ` minicom -D /dev/ttyUSB<lowest>`.
+
+To reset the GSC, issue the following two commands on the Servo Micro console
+
+```
+> i2cxfer w 0 0x20 7 0xbf     # Assert reset
+> i2cxfer w 0 0x20 7 0xff     # Deassert reset
+```
+
+
 <!-- Links -->
 
 [Servo Micro Schematics]: https://docs.google.com/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDo2Njk1MGFiOTRkY2E5MGM5
