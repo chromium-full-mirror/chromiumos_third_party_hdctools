@@ -1,0 +1,215 @@
+# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+ARG BUILD_ENV=production
+
+######################################################################
+
+FROM alpine as chromiumos_overlays
+RUN apk add --no-cache git
+WORKDIR /
+RUN git clone --filter=blob:none --no-checkout --depth 1 --sparse https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay
+WORKDIR /chromiumos-overlay
+RUN git sparse-checkout init --cone
+RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/files/confs/
+RUN git checkout
+
+######################################################################
+FROM gcc:10.3-buster as cbfstool
+
+RUN wget https://coreboot.org/releases/coreboot-4.14.tar.xz && tar xf coreboot-4.14.tar.xz && rm /coreboot-4.14.tar.xz
+RUN cd /coreboot-4.14/util/cbfstool && make
+
+######################################################################
+FROM python:3.7-buster as libftdi
+
+RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2 \
+    && tar xf libftdi1-1.2.tar.bz2 \
+    && rm libftdi1-1.2.tar.bz2
+COPY --from=chromiumos_overlays \
+    /chromiumos-overlay/dev-embedded/libftdi/files/libftdi-1.2-getopts.patch \
+    /libftdi1-1.2/
+
+COPY --from=chromiumos_overlays \
+    /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
+    /usr/share/libftdi/
+
+RUN apt-get update \
+    && apt-get install -y \
+        libusb-1.0-0-dev \
+        cmake \
+        tidy \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN cd /libftdi1-1.2 \
+    && git apply libftdi-1.2-getopts.patch \
+    && mkdir build \
+    && cd build \
+    && cmake -DCMAKE_INSTALL_PREFIX="/usr" ../ \
+    && make \
+    && make install
+RUN rm -rf /libftdi1-1.2
+
+######################################################################
+FROM libftdi as ec-developer
+COPY /ec /ec
+
+#######################################################################
+FROM libftdi AS ec-production
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
+
+######################################################################
+ARG BUILD_ENV
+FROM ec-$BUILD_ENV as ec-builder
+
+WORKDIR /
+
+RUN apt-get update \
+    && apt-get install -y \
+          libusb-1.0-0-dev \
+          curl \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
+RUN cd /flashmap && make && make install
+RUN rm -rf /flashmap
+
+WORKDIR /ec
+RUN make utils-host \
+    && make -C extra/usb_updater usb_updater2
+
+COPY hdctools/servo/dockerfiles/setup_ec.py .
+RUN PACKAGE="ec3po" python3 setup_ec.py bdist_wheel
+RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
+RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
+RUN PACKAGE="powerlog" python3 setup_ec.py bdist_wheel
+RUN PACKAGE="console" python3 setup_ec.py bdist_wheel
+RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
+
+RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shflags
+
+######################################################################
+FROM libftdi as hdctools-developer
+COPY hdctools/ hdctools/
+
+#######################################################################
+FROM libftdi AS hdctools-production
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
+
+######################################################################
+ARG BUILD_ENV
+FROM hdctools-$BUILD_ENV as hdctools-builder
+
+RUN pip install --upgrade pip && pip3 install pytest
+
+WORKDIR /hdctools
+RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
+RUN make -d
+RUN make install
+
+# Setuptools skips nested entry point. Adding custom setup.py to overcome.
+COPY /hdctools/servo/dockerfiles/setup_hdctools.py .
+RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
+RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
+RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
+
+######################################################################
+FROM gcc:10.3-buster as uhubctl
+
+RUN apt-get update \
+    && apt-get install -y \
+          libusb-1.0-0-dev
+
+RUN git clone https://github.com/mvp/uhubctl
+WORKDIR /uhubctl
+RUN make
+
+######################################################################
+FROM python:3.7-slim-buster
+
+RUN apt-get update \
+    && apt-get install -y \
+        iptables \
+        libusb-1.0-0-dev \
+        kmod \
+        lsof \
+        usbutils \
+        xz-utils \
+        dnsutils \
+        iputils-ping \
+        procps \
+        udev \
+    && rm -rf /var/lib/apt/lists/*
+RUN update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+
+# Install python packages.
+COPY /hdctools/servo/dockerfiles/requirements.txt /opt/requirements.txt
+RUN pip install --upgrade pip && pip3 install -r /opt/requirements.txt
+
+WORKDIR /hdctools/chromeos/
+COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
+WORKDIR /wheels
+COPY --from=hdctools-builder /hdctools/dist/* ./
+COPY --from=ec-builder /ec/dist/* ./
+RUN pip install *.whl
+WORKDIR /
+RUN rm -rf wheels
+
+# Install servo_firmware.
+RUN mkdir -p /usr/share/servo_updater/firmware/
+WORKDIR /usr/share/servo_updater/firmware/
+COPY /hdctools/servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
+RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
+
+COPY --from=chromiumos_overlays \
+    /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
+    /usr/share/libftdi/
+
+RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
+
+# Install ec tools
+COPY --from=ec-builder /ec/build/elm/util/ectool /usr/sbin/
+COPY --from=ec-builder /ec/build/elm/util/ec_parse_panicinfo /usr/sbin/
+COPY --from=ec-builder /ec/build/elm/util/ec_sb_firmware_update /usr/sbin/
+COPY --from=ec-builder /ec/extra/usb_updater/usb_updater2 /usr/sbin/
+COPY --from=ec-builder /ec/build/elm/util/stm32mon /usr/bin/
+COPY --from=ec-builder /ec/build/elm/util/uartupdatetool /usr/bin/
+COPY --from=ec-builder /ec/build/elm/util/iteflash /usr/bin/
+COPY --from=ec-builder /ec/util/flash_ec /usr/bin/
+COPY --from=ec-builder /ec/util/uart_stress_tester.py /usr/bin/
+RUN chmod u+x /usr/sbin/* /usr/bin/*
+
+COPY --from=ec-builder /usr/lib/libfmap.so* /usr/lib/
+COPY --from=ec-builder /usr/lib/libftdi* /usr/lib/
+
+COPY --from=hdctools-builder /hdctools/build/lib/libftdi* /usr/lib/
+
+COPY --from=ec-builder /usr/share/misc/shflags /usr/share/misc/shflags
+
+RUN mkdir -p /usr/share/ec-devutils
+COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
+
+# Install uhubctl
+COPY --from=uhubctl /uhubctl/uhubctl /usr/local/bin/
+RUN chmod 755 /usr/local/bin/uhubctl
+
+# Install cbfstool for flashrom and ec.
+COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
+RUN chmod 755 /usr/local/bin/cbfstool
+
+RUN mkdir -p /usr/share/ec-devutils
+
+# # Avoid watchtower updating servod, it gets pulled before every start of the
+# # container, we should not stop/start it in the case a new version is pushed.
+LABEL com.centurylinklabs.watchtower.enable="false"
+
+ENV UDEV 1
+ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
+
+COPY /hdctools/servo/dockerfiles/update_servo_firmware.py /
+COPY /hdctools/servo/dockerfiles/start_servod.sh /hdctools/servo/dockerfiles/stop_servod.sh /
+
+RUN apt-get remove -y \
+        xz-utils \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/*
