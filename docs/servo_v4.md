@@ -52,32 +52,35 @@ Stop by your local Chromestop.
 
 ## How to Use Servo v4
 
-The plastic case has labels `uSERVO`, `HOST`, and `DUT POWER`.
+The plastic case has labels `HOST`, `DUT POWER`, and `uSERVO`.
 
-Servo v4 can be plugged into a host machine using a micro-B USB cable. This will
-power Servo v4 while allowing the user to control Servo v4 using [`servod`].
+*   `HOST`: Servo v4 can be plugged into a host machine using a micro-B USB
+    cable via the micro-B USB port marked `HOST`. This will power Servo v4 while
+    allowing the user to control Servo v4 using [`servod`].
 
-The DUT connector (which is a captive cable) can be plugged into a DUT,
-providing the DUT access to the ethernet and blue USB port.
+*   `DUT POWER`: USB-C port labeled `DUT POWER` is for powering the DUT through
+    the Servo. Servo v4 can be used to power the DUT which becomes useful for
+    devices that use USB-C as their only charge port (tablets, phones etc.). The
+    Type-C port can be used to plug in any Type-C charger to provide full
+    charging capabilities as a charge through hub. If no charger is plugged,
+    Servo v4 will act as a passive hub.
 
-The Type-C captive cable enables debugging of devices that have a Cr50 (recent
-Chromebooks) through [CCD].
+*   `uSERVO`: On the side labeled `uSERVO` there are two connectors.
 
-The "uServo" USB port can be used to plug a servo micro to debug devices over
-the Yoshi debug header.
+    *   The DUT connector (which is a captive cable: servo side is permanently
+        connected) can be plugged into a DUT, providing the DUT access to the
+        ethernet and blue USB port. The Type-C captive cable enables debugging
+        of devices that have a Cr50 (recent Chromebooks) through [CCD].
 
-From here other functionality is available. The following ports can be used to
-download data to a device:
+    *   The "uServo" USB port can be used to plug a servo micro to debug DUT
+        over the Yoshi debug header.
 
-*   Ethernet
-*   microSD card
-*   USB stick
+*   The following ports on the unlabeled side can be used to download data to a
+    device:
 
-Additionally Servo v4 can be used to power the DUT which becomes useful for
-devices that use USB as their only charge port (tablets, phones etc.). The
-Type-C port can be used to plug in any Type-C charger to provide full charging
-capabilities as a charge through hub. If no charger is plugged, Servo v4 will
-act as a passive hub.
+    *   Ethernet
+    *   microSD card
+    *   USB stick
 
 Servo v4 has an embedded keyboard so keystrokes can be emulated on the DUT.
 
