@@ -150,16 +150,13 @@ class ina2xx(base_pwr_adc.basePWRADC):
     if not self._has_reg('cal'):
       raise Ina2xxError('ADC does NOT have calibration register')
 
-    # TODO(tbroch): should look at re-calibrating to increase precision if
-    # there's plenty of headroom in result
-
     # TODO(tbroch): remove read of calibration below once instantiation of INA
     # controls resolves that there is only one device for many controls.
     # Currently it is possible to overflow and adjust calibration say for the
     # milliwatts but be  unaware of the change for the milliamps calculations as
     # each control has a separate instance of ina219 object and therefore a
     # private copy of the calibration register.
-    self._calib_reg = self._read_reg('cal')
+    self._read_reg('cal')
 
     # (b/199008947) INA231 may have the CVRF (Conversion Ready Flag) bit set
     # somewhere prior to this point, and we cannot be sure whether the
@@ -167,8 +164,15 @@ class ina2xx(base_pwr_adc.basePWRADC):
     # the calib register. Adding a CNVR read to ensure the bit is cleared.
     self._read_cnvr()
 
-    self._write_reg('cal', self.MAX_CALIB)
-    self._calib_reg = self.MAX_CALIB
+    # None value means this is the first calibration after the reset, so we
+    # attempt the highest resolution (maximum calibration value).
+    # Otherwise, we just use the cached value.
+    # TODO(b/206879189): implement the bounce-back mechanism so the calibration
+    # value can gradually climb up when it's safe to.
+    if self._calib_reg is None:
+      self._calib_reg = self.MAX_CALIB
+
+    self._write_reg('cal', self._calib_reg)
     is_ovf = self._get_next_ovf()
 
     while is_ovf:
