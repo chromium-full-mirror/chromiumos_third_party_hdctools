@@ -49,7 +49,7 @@
     map="onoff" init="on" />
   </control>
   <control>
-    <name>cold_reset</name>
+    <name>cr50_reset_odl</name>
     <doc>Hold DUT in reset via H1 reset</doc>
     <params subtype="h1_reset" interface="6" drv="ec3po_c2d2" clobber_ok=""
     map="onoff" init="off" />
@@ -82,7 +82,8 @@
     map="onoff" init="off" />
   </control>
   <control>
-    <name>ec_reset</name>
+    <name>cold_reset</name>
+    <alias>ec_reset</alias>
     <doc>Holds the EC in reset via CR50 command</doc>
     <params subtype="cold_reset" interface="9" drv="cr50"
     map="onoff_i" clobber_ok=""></params>
