@@ -12,9 +12,10 @@ SCRIPT_DST = $(addprefix $(SCRIPT_DEST_DIR)/, $(subst .bash,,$(SCRIPT_SRC)))
 
 $(SCRIPT_DEST_DIR)/%: $(HDCTOOLS_SOURCE_DIR)/%.bash
 	$(MESSAGE) "Copying $(notdir $@)"
+	$(MKDIR) -p `dirname $@`
 	$(CP) $< $@
 
 all:
-	$(MKDIR) -p $(SCRIPT_DEST_DIR)
+	true
 
 install: $(SCRIPT_DST)
