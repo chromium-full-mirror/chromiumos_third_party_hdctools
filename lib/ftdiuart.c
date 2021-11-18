@@ -371,11 +371,16 @@ static int fuart_wr_rd_locked(struct fuart_context *fuartc) {
       rd_buf += bytes;
       bytes_remaining -= bytes;
     }
+    /* EAGAIN and EWOULDBLOCK might be identical (e.g. on Linux) and some
+     * gcc versions complain about that. Avoid the warning/error. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wlogical-op"
     if ((bytes == -1) && ((errno == EAGAIN) || (errno == EWOULDBLOCK)) &&
         (retries < 10)) {
       retries++;
       goto retry_write;
     }
+#pragma GCC diagnostic pop
 
     if (bytes == -1) {
       perror("writing ftdi data to pty");
