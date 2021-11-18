@@ -15,7 +15,7 @@ SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 all:    $(SUBDIRS)
 install:   $(SUBDIRS_INSTALL)
 clean:
-	@rm -rf $(HDCTOOLS_BUILD_DIR)
+	@rm -rf $(HDCTOOLS_BUILD_DIR) servo/sversion.py
 
 $(SUBDIRS): ver
 	@$(call remake,Building,$@,all)
