@@ -29,7 +29,7 @@ extern "C" {
 #define FTDI_CLK_MIN         100    // min clock (hz) for FTDI dev
 
 // global clock setup commands
-#define FTDI_CMD_X5_OFF      0x8a   // disable clock div 5 for 60mhz master clk
+#define FTDI_CMD_X5_OFF      0x8a   // disable clock div 5 for 60mhz main clk
 #define FTDI_CMD_3PHASE      0x8c   // 3 phase clocking needed for i2c
 #define FTDI_CMD_NO_ADAP_CLK 0x97   // turn off adaptive clocking
 #define FTDI_CMD_3PH_CLK     0x8d   // enable 3 phase clocking

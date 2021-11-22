@@ -183,7 +183,7 @@ static int fuart_open_locked(struct fuart_context *fuartc,
   }
 
   if ((fd = posix_openpt(O_RDWR | O_NOCTTY)) == -1) {
-    perror("opening pty master");
+    perror("opening pty main");
     return FUART_ERR_OPEN;
   }
   if (grantpt(fd) == -1) {

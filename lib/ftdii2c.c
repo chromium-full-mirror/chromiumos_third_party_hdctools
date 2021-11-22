@@ -248,7 +248,7 @@ int fi2c_setclock(struct fi2c_context *fic, uint32_t clk) {
   }
   if (clk > FTDI_CLK_MAX_X5) {
     buf[0] = FTDI_CMD_X5_OFF;
-    CHECK_FTDI(ftdi_write_data(fic->fc, buf, 1), "Set master clock 60mhz",
+    CHECK_FTDI(ftdi_write_data(fic->fc, buf, 1), "Set main clock 60mhz",
                fic->fc);
   }
   // 1.5 due to 3-phase requirement

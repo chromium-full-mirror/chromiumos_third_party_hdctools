@@ -13,7 +13,7 @@
     * dragonclaw (bloonchipper)
 
   See http://go/cros-fingerprint-dev-boards
-  and https://chromium.googlesource.com/chromiumos/platform/ec/+/master/docs/fingerprint/fingerprint-dev-for-partners.md
+  and https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/fingerprint/fingerprint-dev-for-partners.md
 
   SPI1 is the MCU SPI child interface.
   DUT JTAG is the STM32H7 JTAG interface.

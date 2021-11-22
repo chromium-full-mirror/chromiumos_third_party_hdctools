@@ -170,10 +170,10 @@ class EC3PO(uart.Uart):
     self._console_loglevel = self._logger.getEffectiveLevel()
 
     # Open a new pseudo-terminal pair.
-    (master_pty, user_pty) = pty.openpty()
+    (main_pty, user_pty) = pty.openpty()
     (interface_pty, control_pty) = pty.openpty()
 
-    tty.setraw(master_pty, termios.TCSADRAIN)
+    tty.setraw(main_pty, termios.TCSADRAIN)
     tty.setraw(interface_pty, termios.TCSADRAIN)
 
     # Set the permissions to 660.
@@ -202,7 +202,7 @@ class EC3PO(uart.Uart):
     os.close(user_pty)
 
     # Create a console.
-    c = console.Console(master_pty, user_pty_name, interface_pty,
+    c = console.Console(main_pty, user_pty_name, interface_pty,
                         cmd_pipe_interactive, dbg_pipe_interactive,
                         self._source)
     self._console = c
