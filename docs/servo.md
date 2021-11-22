@@ -269,5 +269,5 @@ symbolic name as as follows:
 [Servo v4.1]: ./servo_v4p1.md
 [Servo Micro]: ./servo_micro.md
 [servod_no_nspid]: https://groups.google.com/a/google.com/d/msg/chromeos-chatty-firmware/mDexO8T1TyM/rFONCSifAAAJ
-[CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/docs/case_closed_debugging_cr50.md
+[CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md
 [Servo Parsing]: ./servod.md#servo-parsing
