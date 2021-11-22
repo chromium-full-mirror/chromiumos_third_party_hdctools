@@ -161,5 +161,5 @@ For `servod`, the output is a `.xml` `servod` configuration file that defines
 *   `config_register`
 *   `calib_register` *(if available)*
 
-[powerlog.py]:https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/master/extra/usb_power/board.README
+[powerlog.py]:https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/extra/usb_power/board.README
 [sweetberry]: ./sweetberry.md

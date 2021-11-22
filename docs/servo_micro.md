@@ -231,7 +231,7 @@ To reset the GSC, issue the following two commands on the Servo Micro console
 [Servo Micro Schematics]: https://docs.google.com/viewer?a=v&pid=sites&srcid=Y2hyb21pdW0ub3JnfGRldnxneDo2Njk1MGFiOTRkY2E5MGM5
 [CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging.md
 [Servo v4 Type-A]: ./servo_v4.md
-[Servo Micro CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/master/board/servo_micro/ccd.md
+[Servo Micro CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/board/servo_micro/ccd.md
 [`servod`]: ./servod.md
 [Servo v2]: ./servo_v2.md
 [`lid_open`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/0c4e47b14d669deece85ad883069feaef9230899/servo/data/servo.xml#178

@@ -261,8 +261,8 @@ symbolic name as as follows:
 
 [FAFT]: https://www.chromium.org/for-testers/faft
 [FAFT setup image]: https://www.chromium.org/for-testers/faft/Servo2_with_labels.jpg
-[developer_guide]: https://chromium.googlesource.com/chromiumos/docs/+/master/developer_guide.md
-[servo library code]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/server/cros/servo/
+[developer_guide]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md
+[servo library code]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/HEAD/server/cros/servo/
 [Chromium OS autotest repo]: https://chromium.googlesource.com/chromiumos/third_party/autotest
 [Servo v2]: ./servo_v2.md
 [Servo v4]: ./servo_v4.md

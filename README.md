@@ -33,7 +33,7 @@ without the chroot.
 
 *   [Standalone hdctools]: Run common hardware debug tasks outside the chroot.
 *   [File a Bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards)
-*   [Contact](https://chromium.googlesource.com/chromiumos/docs/+/master/contact.md)
+*   [Contact](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/contact.md)
 
 [Standalone hdctools]: https://chromium.googlesource.com/chromiumos/platform/standalone-hdctools
-[Developer guide]: https://chromium.googlesource.com/chromiumos/docs/+/master/developer_guide.md
+[Developer guide]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md
