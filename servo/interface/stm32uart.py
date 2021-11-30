@@ -124,7 +124,7 @@ class Suart(uart.Uart):
           # ep.read() also throws USBError on timeout, which we discard.
           self._logger.debug('rx %s: %s', self.get_pty(), e)
       else:
-        self._done.wait(.01)
+        self._done.wait(.1)
 
   def run_tx_thread(self):
     self._logger.debug('tx thread started on %s' % self.get_pty())
@@ -138,7 +138,7 @@ class Suart(uart.Uart):
       # Check if the pty is connected to anything, or hungup.
       if not events:
         try:
-          if readp.poll():
+          if readp.poll(.1):
             r = os.read(self._ptym, 64)
             # TODO(crosbug.com/936182): Remove when the servo v4/micro console
             # issues are fixed.
@@ -155,7 +155,7 @@ class Suart(uart.Uart):
         except Exception as e:
           self._logger.debug('tx %s: %s' % (self.get_pty(), e))
       else:
-        self._done.wait(.01)
+        self._done.wait(.1)
 
   def run(self):
     """Creates pthreads to poll stm32 & PTY for data.
