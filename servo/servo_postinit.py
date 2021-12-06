@@ -60,7 +60,7 @@ CCD_SERVO_TYPES = [
         vid_pid_pairs=servo_interfaces.CCD_CR50_DEFAULTS,
     ),
     ServoType(
-        control_prefix='ccd_ti50',
+        control_prefix='ccd_gsc',
         cfg_file_name='ccd_ti50.xml',
         serial_key='ccd',
         vid_pid_pairs=servo_interfaces.CCD_TI50_DEFAULTS,
