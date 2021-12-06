@@ -217,7 +217,7 @@ class cr50(pty_driver.ptyDriver):
     """
     try:
       result = self._issue_cmd_get_results('version',
-                                           [r'RW_(A|B):\s+\*\s+(\S+)\s'])[0]
+                                           [r'RW_(A|B):\s+\*\s+([\S ]+)\s'])[0]
     except (pty_driver.ptyError, cr50Error) as e:
       raise cr50Error('Cannot retrieve the version result on cr50 console. %s'
                       % str(e))
