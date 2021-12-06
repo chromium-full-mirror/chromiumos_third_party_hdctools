@@ -88,7 +88,7 @@ class cr50(pty_driver.ptyDriver):
         trys_left -= 1
         try:
           super(cr50, self)._issue_cmd_get_results('\n\n',
-                                                   ['(>|Console is enabled)'])
+                                                   [r'(>|Console is enabled)'])
           break
         except pty_driver.ptyError as e:
           logging.debug("cr50 prompt detection failed, %d attempts left.", trys_left)
@@ -192,7 +192,7 @@ class cr50(pty_driver.ptyDriver):
     Returns:
         The reset count
     """
-    result = self._issue_cmd_get_results('sysinfo', ['Reset count: (\d+)'])[0]
+    result = self._issue_cmd_get_results('sysinfo', [r'Reset count: (\d+)'])[0]
     if result is None:
       raise cr50Error('Cannot retrieve the reset count on cr50 console.')
     return result[1]
@@ -204,7 +204,7 @@ class cr50(pty_driver.ptyDriver):
         The cr50 devid string
     """
     result = self._issue_cmd_get_results(
-        'sysinfo', ['DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})'])[0][1]
+        'sysinfo', [r'DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})'])[0][1]
     if result is None:
       raise cr50Error('Cannot retrieve the devid result on cr50 console.')
     return result
@@ -217,7 +217,7 @@ class cr50(pty_driver.ptyDriver):
     """
     try:
       result = self._issue_cmd_get_results('version',
-                                           ['RW_(A|B):\s+\*\s+(\S+)\s'])[0]
+                                           [r'RW_(A|B):\s+\*\s+(\S+)\s'])[0]
     except (pty_driver.ptyError, cr50Error) as e:
       raise cr50Error('Cannot retrieve the version result on cr50 console. %s'
                       % str(e))
@@ -241,7 +241,7 @@ class cr50(pty_driver.ptyDriver):
         The cr50 board property setting string
     """
     return self._issue_cmd_get_results('brdprop',
-                                       ['properties = (\S+)\s'])[0][1]
+                                       [r'properties = (\S+)\s'])[0][1]
 
   def _Set_cr50_reboot(self, value):
     """Reboot cr50 ignoring the value."""
@@ -254,7 +254,7 @@ class cr50(pty_driver.ptyDriver):
       lock, unlock, or open based on the current ccd privilege level.
     """
     result = self._issue_cmd_get_results('ccd',
-                                         ['State:\s+(Lock|Unlock|Open)'])[0]
+                                         [r'State:\s+(Lock|Unlock|Open)'])[0]
     if result is None:
       raise cr50Error('Cannot retrieve ccd privilege level on cr50 console.')
     return result[1].lower()
@@ -266,7 +266,7 @@ class cr50(pty_driver.ptyDriver):
       string of the current idle state setting
     """
     result = self._issue_cmd_get_results('idle',
-                                         ['idle action:\s+(\w+)'])[0]
+                                         [r'idle action:\s+(\w+)'])[0]
     if result is None:
       raise cr50Error('Cannot retrieve idle setting on cr50 console.')
     return result[1].lower()
@@ -291,7 +291,7 @@ class cr50(pty_driver.ptyDriver):
 
   def _get_ccd_cap_state(self, cap):
     """Get the current state of the ccd capability"""
-    result = self._issue_cmd_get_results('ccdstate', ['%s:([^\n]*)\n' % cap])
+    result = self._issue_cmd_get_results('ccdstate', [r'%s:([^\n]*)\n' % cap])
     return result[0][1].strip()
 
   def _Get_ccd_testlab(self):
@@ -352,8 +352,9 @@ class cr50(pty_driver.ptyDriver):
       'UnlessLocked': Enabled unless CCD is locked.
       'IfOpened': Enabled if CCD is opened.
     """
-    cap_state = self._issue_cmd_get_results('ccd', ['\s+' + cap_name +
-        '\s+[YN]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)'])[0][1]
+    cap_state = self._issue_cmd_get_results('ccd', [
+        r'\s+%s\s+[YN]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)' %
+        cap_name])[0][1]
     return cap_state
 
   def _Get_ccd_cap_i2c(self):
@@ -434,7 +435,7 @@ class cr50(pty_driver.ptyDriver):
   def _Get_ec_boot_mode(self):
     boot_mode = 'off'
     result = self._issue_cmd_get_results('gpioget EC_FLASH_SELECT',
-                                         ['\s+([01])\*?\s+EC_FLASH_SELECT'])[0]
+                                         [r'\s+([01])\*?\s+EC_FLASH_SELECT'])[0]
     if result:
       if result[1] == '1':
         boot_mode = 'on'
@@ -446,14 +447,14 @@ class cr50(pty_driver.ptyDriver):
 
   def _Get_uut_boot_mode(self):
     result = self._issue_cmd_get_results('gpiocfg', ['gpiocfg(.*)>'])[0][0]
-    if re.search('GPIO0_GPIO15:\s+read 0 drive 0', result):
+    if re.search(r'GPIO0_GPIO15:\s+read 0 drive 0', result):
         return 'on'
     return 'off'
 
   def _Get_ap_flash_select(self):
     flash_select = 'off'
     result = self._issue_cmd_get_results('gpioget AP_FLASH_SELECT',
-                                         ['\s+([01])\*?\s+AP_FLASH_SELECT'])[0]
+                                         [r'\s+([01])\*?\s+AP_FLASH_SELECT'])[0]
     if result:
       if result[1] == '1':
         flash_select = 'on'
@@ -473,7 +474,8 @@ class cr50(pty_driver.ptyDriver):
       The cr50 servo state string: 'undetectable', 'disconnected', or
       'connected'
     """
-    result = self._issue_cmd_get_results('ccdstate', ['Servo:\s+(\S+)\s'])[0][1]
+    result = self._issue_cmd_get_results('ccdstate',
+                                         [r'Servo:\s+(\S+)\s'])[0][1]
     if result is None:
       raise cr50Error('Cannot retrieve the ccdstate result on cr50 console.')
     return result
@@ -500,7 +502,7 @@ class cr50(pty_driver.ptyDriver):
       1 if cr50 can detect servo even with ccd enabled.
     """
     result = self._issue_cmd_get_results(
-        'ccdstate', ['CCD ports blocked:([\S ]+)[\n\r]'])[0][1]
+        'ccdstate', [r'CCD ports blocked:([\S ]+)[\n\r]'])[0][1]
     if result is None:
       raise cr50Error('Cannot retrieve the ccdblock result on cr50 console.')
     return 1 if ' SERVO' in result else 0
@@ -508,7 +510,7 @@ class cr50(pty_driver.ptyDriver):
   def _Get_ccd_state_flags(self):
     """Getter of the cr50 ccd state flags."""
     result = self._issue_cmd_get_results(
-        'ccdstate', ['State flags:([\S ]*)[\n\r]'])[0][1]
+        'ccdstate', [r'State flags:([\S ]*)[\n\r]'])[0][1]
     if result is None:
       raise cr50Error('Cannot retrieve the ccd state flags on cr50 console.')
     return result
@@ -516,7 +518,7 @@ class cr50(pty_driver.ptyDriver):
 
   def _Get_rec_btn_force(self):
     result = self._issue_cmd_get_results(
-        'recbtnforce', ['RecBtn:([\S ]+)[\n\r]'])[0][1]
+        'recbtnforce', [r'RecBtn:([\S ]+)[\n\r]'])[0][1]
     if result is None:
       raise cr50Error('Cannot retrieve the recbtnforce on cr50 console.')
     if 'not pressed' in result:
@@ -543,9 +545,9 @@ class cr50(pty_driver.ptyDriver):
   def _Get_rec_mode(self):
     result = 'off'
     gpio = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
-                                       ['\s+([01])\*?\s+CCD_REC_LID_SWITCH'])[0]
-    if gpio:
-      if gpio[1] == '0':
+                                       [r'\s+([01])\*?\s+CCD_REC_LID_SWITCH'])
+    if gpio[0]:
+      if gpio[0][1] == '0':
         result = 'on'
 
     if result != self._Get_rec_btn_force():
@@ -558,8 +560,8 @@ class cr50(pty_driver.ptyDriver):
 
   def _Get_lid_open(self):
     gpio = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
-                                       ['\s+([01])\*?\s+CCD_REC_LID_SWITCH'])[0]
-    return gpio[1]
+                                       [r'\s+([01])\*?\s+CCD_REC_LID_SWITCH'])
+    return gpio[1][0]
 
   def _Set_lid_open(self, value):
     self._issue_cmd('gpioset CCD_REC_LID_SWITCH %s' % value)
