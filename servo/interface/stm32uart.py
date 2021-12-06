@@ -156,6 +156,7 @@ class Suart(uart.Uart):
           self._logger.debug('tx %s: %s' % (self.get_pty(), e))
       else:
         self._done.wait(.1)
+    self._logger.debug('tx %s: done', self.get_pty())
 
   def run(self):
     """Creates pthreads to poll stm32 & PTY for data.
