@@ -61,8 +61,11 @@ USB-to-ethernet adapter as well. While you could try to use wifi,
 any test that switches boot modes (i.e. normal -> dev) will erase the
 wifi settings and fail.
 
-This cable is available for purchase from Sparkfun:
-https://www.sparkfun.com/products/14746.
+Historically, this cable used to be available for [purchase from
+Sparkfun][SparkFun SuzyQable], but as of late 2021, this product will
+likely be unavailable for the foreseeable future due to a supply chain
+shortage.  See the instructions below for [making your
+own](#making-your-own-suzyq).
 
 ![suzyq](images/suzyq.png "SuzyQ")
 
@@ -95,6 +98,13 @@ A4, A9, B4, B9 (VBUS)  | VBUS, 5V
 A5 (CC1)               | 22 kΩ resistor to VBUS
 B5 (CC2)               | 56 kΩ resistor to VBUS
 A1, A12, B1, B12 (GND) | GND
+
+Note that unlike the [Sparkfun SuzyQable], this cable does not include
+an internal USB hub, so you won't be able to use the same cable for
+ADB and CCD at the same time.
+
+There is a [video tutorial on making your own SuzyQable] available for
+those interested.
 
 ### Servo v4
 
@@ -193,7 +203,9 @@ see a login prompt). x86 devices disable it for performance / power reasons, but
 [CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/board/servo_micro/ccd.md
 [Cr50 CCD]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md
 [servo_micro ccd]: https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/board/servo_micro/ccd.md
+[Sparkfun SuzyQable]: https://www.sparkfun.com/products/14746
 [USB Type-C Male breakout board]: https://www.google.com/search?q=USB+Type-C+Breakout+Board+Male
+[video tutorial on making your own SuzyQable]: https://youtu.be/WGsyXlgSxFk
 [SuzyQ Schematics]: https://www.chromium.org/chromium-os/ccd/951-00273-01_20180607_suzyqable_SCH_1.pdf
 [Developer Guide]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md
 [Developer Mode]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_mode.md
