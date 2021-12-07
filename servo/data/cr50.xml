@@ -1,17 +1,17 @@
 <?xml version="1.0"?>
 <!-- Throughout this configuration all controls are labeled as na if used on
-     servo v3. This is because v3 does not have a cr50 uart. However, if a user
-     or the lab has a compelling reason to still use v3 on a cr50 enabled device
+     servo v3. This is because v3 does not have a gsc uart. However, if a user
+     or the lab has a compelling reason to still use v3 on a gsc enabled device
      then it should not break as long as those controls aren't used. -->
 <root>
   <!-- ******** Map ******** -->
   <map>
-    <name>cr50_i2c_cmds</name>
-    <doc>Special i2c commands to CR50</doc>
+    <name>gsc_i2c_cmds</name>
+    <doc>Special i2c commands to GSC</doc>
     <!-- NAME               : VALUE : DESCRIPTION
          .................................................................
          ite_debugger_mode: :     0 : For ITE ECs only.
-                                      This requests CR50 to send a special
+                                      This requests GSC to send a special
                                       waveform to ITE EC, which triggers
                                       'DEBUGGER' mode.
          .................................................................-->
@@ -19,138 +19,151 @@
   </map>
   <map>
     <name>idle_states</name>
-    <doc>Different levels of sleep the CR50 enters during idle time</doc>
+    <doc>Different levels of sleep the GSC enters during idle time</doc>
     <params active="wfi" sleep="sleep" />
   </map>
-  <!-- cr50 is also named 'usbpd' for compatibility with previous scripts -->
+  <!-- gsc is also named 'usbpd' and 'cr50' for compatibility with previous
+       scripts -->
   <control>
     <name>uart4_pty</name>
-    <alias>raw_cr50_uart_pty,raw_usbpd_uart_pty</alias>
-    <doc>Pseudo-terminal (pty) thats connnected to cr50 uart console</doc>
+    <alias>raw_gsc_uart_pty,raw_cr50_uart_pty,raw_usbpd_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) thats connnected to the gsc uart console</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
     servo_v3_drv="na"></params>
   </control>
-  <!-- This control must be available prior to accessing the cr50 console over
-       micro, so must be initialized prior to the cr50_version control (which
-       relies on cr50 console access during initialization).  -->
+  <!-- This control must be available prior to accessing the gsc console over
+       micro, so must be initialized prior to the gsc_version control (which
+       relies on gsc console access during initialization).  -->
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
     <params clobber_ok="" init="glados" c2d2_drv="na"></params>
   </control>
-  <!-- EC-3PO console interpreter for cr50 -->
+  <!-- EC-3PO console interpreter for gsc -->
   <control>
-    <name>cr50_loglevel</name>
-    <doc>cr50 console loglevel</doc>
+    <name>gsc_loglevel</name>
+    <alias>cr50_loglevel</alias>
+    <doc>gsc console loglevel</doc>
     <params interface="9" drv="ec3po_driver" input_type="str"
     subtype="loglevel" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_raw_debug</name>
-    <doc>Turn on per-message-received logs to the Cr50 console messages.</doc>
+    <name>gsc_uart_raw_debug</name>
+    <alias>cr50_uart_raw_debug</alias>
+    <doc>Turn on per-message-received logs to the gsc console messages.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="off"
     subtype="raw_debug" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_timestamp</name>
-    <doc>Add timestamps to the Cr50 console messages</doc>
+    <name>gsc_uart_timestamp</name>
+    <alias>cr50_uart_timestamp</alias>
+    <doc>Add timestamps to the GSC console messages</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>ec3po_cr50_uart</name>
-    <alias>ec3po_usbpd_uart_pty,cr50_uart_pty,usbpd_uart_pty</alias>
-    <doc>cr50 UART console provided via EC-3PO console interpreter.</doc>
+    <name>ec3po_gsc_uart</name>
+    <alias>ec3po_cr50_uart,cr50_uart_pty,ec3po_usbpd_uart_pty,usbpd_uart_pty
+    gsc_uart_pty</alias>
+    <doc>gsc UART console provided via EC-3PO console interpreter.</doc>
     <params cmd="get" subtype="pty" interface="9" drv="uart" servo_v3_drv="na">
     </params>
   </control>
   <control>
-    <name>cr50_ec3po_interp_connect</name>
-    <alias>usbpd_ec3po_interp_connect</alias>
-    <doc>State indicating if interpreter is listening to the Cr50 UART.</doc>
+    <name>gsc_ec3po_interp_connect</name>
+    <alias>cr50_ec3po_interp_connect,usbpd_ec3po_interp_connect</alias>
+    <doc>State indicating if interpreter is listening to the gsc UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_baudrate</name>
-    <alias>cr50_uart_baudrate,usbpd_console_baudrate</alias>
-    <doc>Baudrate for cr50 uart console</doc>
+    <alias>cr50_uart_baudrate,gsc_uart_baudrate,usbpd_console_baudrate</alias>
+    <doc>Baudrate for gsc uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate" clobber_ok=""
     interface="1" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_parity</name>
-    <alias>cr50_uart_parity,usbpd_console_parity</alias>
-    <doc>Parity for cr50 uart console</doc>
+    <alias>cr50_uart_parity,gsc_uart_parity,usbpd_console_parity</alias>
+    <doc>Parity for gsc uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity" clobber_ok=""
     interface="1" map="uart_parity" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
-    <alias>cr50_uart_sbits,usbpd_console_sbits</alias>
-    <doc>Number of stop bits for cr50 uart console</doc>
+    <alias>cr50_uart_sbits,gsc_uart_sbits,usbpd_console_sbits</alias>
+    <doc>Number of stop bits for gsc uart console</doc>
     <params drv="uart" subtype="props" line_prop="sbits" clobber_ok=""
     interface="1" map="uart_sbits" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>uart4_bits</name>
-    <alias>cr50_uart_bits,usbpd_console_bits</alias>
-    <doc>Number of data bits for cr50 uart console</doc>
+    <alias>cr50_uart_bits,gsc_uart_bits,usbpd_console_bits</alias>
+    <doc>Number of data bits for gsc uart console</doc>
     <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
     interface="1" map="uart_bits" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_timeout</name>
-    <doc>Timeout value for waiting cr50 console response of issuing an EC
+    <name>gsc_uart_timeout</name>
+    <alias>cr50_uart_timeout</alias>
+    <doc>Timeout value for waiting gsc console response of issuing an EC
     command.</doc>
     <params subtype="uart_timeout" interface="9" drv="uart" input_type="float"
     servo_v3_drv="na"></params>
   </control>
-  <!-- Cr50 Console Automation Controls -->
+  <!-- GSC Console Automation Controls -->
   <control>
-    <name>cr50_uart_cmd</name>
-    <doc>Set to send command to the Cr50 console. Get to obtain the matched
-    results with the regular expression of cr50_uart_regexp.</doc>
+    <name>gsc_uart_cmd</name>
+    <alias>cr50_uart_cmd</alias>
+    <doc>Set to send command to the gsc console. Get to obtain the matched
+    results with the regular expression of gsc_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="9" drv="uart" input_type="str"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_multicmd</name>
-    <doc>Set to send multiple commands to the Cr50 console.</doc>
+    <name>gsc_uart_multicmd</name>
+    <alias>cr50_uart_multicmd</alias>
+    <doc>Set to send multiple commands to the GSC console.</doc>
     <params interface="9" drv="na" cmd="get" clobber_ok="" servo_v3_drv="na">
     </params>
     <params subtype="uart_multicmd" interface="9" drv="uart" input_type="str"
     cmd="set" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_regexp</name>
+    <name>gsc_uart_regexp</name>
+    <alias>cr50_uart_regexp</alias>
     <doc>List of regular expressions to match the response of
-    cr50_uart_cmd.</doc>
+    gsc_uart_cmd.</doc>
     <params subtype="uart_regexp" interface="9" drv="uart" input_type="str"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_capture</name>
-    <doc>cr50_uart_capture</doc>
+    <name>gsc_uart_capture</name>
+    <alias>cr50_uart_capture</alias>
+    <doc>Enable gsc uart capture</doc>
     <params subtype="uart_capture" interface="9" drv="uart" map="onoff"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_uart_stream</name>
-    <doc>Cr50 console stream collected while cr50_uart_capture on</doc>
+    <name>gsc_uart_stream</name>
+    <alias>cr50_uart_stream</alias>
+    <doc>GSC console stream collected while gsc_uart_capture on</doc>
     <params cmd="get" subtype="uart_stream" interface="9" drv="uart"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
-  <!-- cr50 controls -->
+  <!-- gsc controls -->
   <control>
-    <name>cr50_reboot</name>
-    <doc>reboot cr50</doc>
+    <name>gsc_reboot</name>
+    <alias>cr50_reboot</alias>
+    <doc>reboot the gsc</doc>
     <params cmd="get" interface="9" drv="na" clobber_ok=""></params>
     <params cmd="set" subtype="cr50_reboot" interface="9" drv="cr50"
     map="onoff" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_ccd_level</name>
+    <name>gsc_ccd_level</name>
+    <alias>cr50_ccd_level</alias>
     <doc>State of CCD</doc>
     <params cmd="get" subtype="ccd_level" interface="9" drv="cr50"
     input_type="str" clobber_ok="" servo_v3_drv="na"></params>
@@ -162,45 +175,52 @@
     input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_testlab</name>
-    <doc>Cr50 testlab state</doc>
+    <name>gsc_testlab</name>
+    <alias>cr50_testlab</alias>
+    <doc>gsc testlab state</doc>
     <params subtype="ccd_testlab" interface="9" drv="cr50" input_type="str"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_reset_count</name>
-    <doc>Cr50 reset count</doc>
+    <name>gsc_reset_count</name>
+    <alias>cr50_reset_count</alias>
+    <doc>GSC reset count</doc>
     <params cmd="get" subtype="reset_count" interface="9" drv="cr50"
     input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_devid</name>
-    <doc>current cr50 devid</doc>
+    <name>gsc_devid</name>
+    <alias>cr50_devid</alias>
+    <doc>current gsc devid</doc>
     <params cmd="get" subtype="devid" interface="9" drv="cr50" input_type="str"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_servo</name>
-    <doc>get the servo state from cr50 ccdstate</doc>
+    <name>gsc_servo</name>
+    <alias>cr50_servo</alias>
+    <doc>get the servo state from gsc ccdstate</doc>
     <params cmd="get" subtype="servo_state" interface="9" drv="cr50"
     input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_force_servo_detect</name>
+    <name>gsc_force_servo_detect</name>
+    <alias>cr50_force_servo_detect</alias>
     <doc>Control ccdblock to control detecting servo.</doc>
     <params subtype="detect_servo" interface="9" drv="cr50" map="onoff"
     clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_idle_level</name>
-    <doc>Controls the level of sleep the CR50 will enter when idling.</doc>
+    <name>gsc_idle_level</name>
+    <alias>cr50_idle_level</alias>
+    <doc>Controls the level of sleep the gsc will enter when idling.</doc>
     <params subtype="idle_state" interface="9" drv="cr50" input_type="str"
     map="idle_states"></params>
   </control>
-  <!-- cr50 UART Buffers & VREF Controls -->
+  <!-- gsc UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
-    <alias>cr50_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <alias>cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en
+    </alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
     <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
     child="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
@@ -208,36 +228,40 @@
   </control>
   <control>
     <name>jtag_buf_en</name>
-    <alias>cr50_uart_en,usbpd_uart_en</alias>
+    <alias>cr50_uart_en,gsc_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
     <params servo_v3_drv="na" ccd_cr50_drv="na" servo_micro_drv="na"
     clobber_ok="" init="on" c2d2_drv="na">
     </params>
   </control>
   <control>
-    <name>cr50_version</name>
-    <doc>current cr50 version</doc>
+    <name>gsc_version</name>
+    <alias>cr50_version</alias>
+    <doc>current gsc version</doc>
     <params cmd="get" subtype="version" interface="9" drv="cr50" map="print"
     init="print" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_brdprop</name>
-    <doc>current cr50 board properties</doc>
+    <name>gsc_brdprop</name>
+    <alias>cr50_brdprop</alias>
+    <doc>current gsc board properties</doc>
     <params cmd="get" subtype="brdprop" interface="9" drv="cr50" clobber_ok=""
     servo_v3_drv="na"></params>
   </control>
   <control>
-    <name>cr50_ccd_state_flags</name>
+    <name>gsc_ccd_state_flags</name>
+    <alias>cr50_ccd_state_flags</alias>
     <doc>CCD state flags that are currently enabled.</doc>
     <params cmd="get" subtype="ccd_state_flags" interface="9" drv="cr50" clobber_ok=""
     servo_v3_drv="na"></params>
   </control>
-  <!-- cr50 I2C controls -->
+  <!-- gsc I2C controls -->
   <control>
-    <name>cr50_i2c_ctrl</name>
-    <doc>Send a special command to CR50 (write-only)</doc>
+    <name>gsc_i2c_ctrl</name>
+    <alias>cr50_i2c_ctrl</alias>
+    <doc>Send a special command to GSC (write-only)</doc>
     <params clobber_ok="" interface="2" drv="cr50_i2c" child="0x78" cmd="set"
-    map="cr50_i2c_cmds" servo_v3_drv="na" />
+    map="gsc_i2c_cmds" servo_v3_drv="na" />
   </control>
   <control>
     <name>ccd_keepalive_en</name>
