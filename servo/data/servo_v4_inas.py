@@ -9,4 +9,4 @@ inas = [
 # TODO(b/197780517)
 params = dict(interface=23,
               servo_v4_with_c2d2_interface=23,
-              servo_v4_with_c2d2_and_ccd_interface=23)
+              servo_v4_with_c2d2_and_ccd_cr50_interface=23)
