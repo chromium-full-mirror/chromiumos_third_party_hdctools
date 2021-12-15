@@ -208,7 +208,7 @@
   <control>
     <name>spi_hold</name>
     <doc>spi_hold</doc>
-    <params interface="2" drv="tca6416" child="0x20" port="0"
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
     offset="4" map="onoff_i"></params>
   </control>
   <control>
