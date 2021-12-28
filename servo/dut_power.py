@@ -160,6 +160,12 @@ def main(cmdline=sys.argv[1:]):
     logfilehandler = logging.StreamHandler(tmplogfile)
     logfilehandler.setLevel(logging.DEBUG)
     pm_logger.addHandler(logfilehandler)
+  if args.time < args.adc_accum_rate:
+    # ADC accumulator tracker is meaningless when total measurement time is
+    # less than the tracker rate.
+    pm_logger.info('Disabling ADC accumulator queries because the '
+                   'measurement time is too short.')
+    args.adc_accum_rate = 0
   pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
                                       adc_rate=args.adc_rate,
                                       adc_accum_rate=args.adc_accum_rate,
