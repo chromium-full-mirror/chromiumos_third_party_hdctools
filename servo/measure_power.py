@@ -92,7 +92,7 @@ class ServodPowerTracker(threading.Thread):
   @property
   def empty(self):
     """Whether the tracker has any controls."""
-    return bool(len(self._ctrls))
+    return len(self._ctrls) == 0
 
   def _rail_name(self, ctrl_name):
     """Strip suffix from rail to return core rail name.
