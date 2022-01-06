@@ -1,5 +1,10 @@
 # hdctools: Chrome OS Hardware Debug & Control Tools
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/README.md
+***
+
 This repository contains source code and documentation for the Servo debug
 boards. The tools in this repository require the full [CrOS chroot][Developer
 guide], while the [Standalone hdctools] can be used without the chroot.

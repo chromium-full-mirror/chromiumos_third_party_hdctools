@@ -1,5 +1,10 @@
 # Servod Overview
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servod.md
+***
+
 This is intended to give a brief overview of how the servo code works, enabling
 developers to quickly make additions, and improve the servo framework.
 

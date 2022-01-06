@@ -1,5 +1,10 @@
 # Introduction
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/servo/interface/README.md
+***
+
 A servo interface (effectively) maps to a usb end-point on a servo device that
 can perform a certain task. More generally, the idea is that a servo device
 supports multiple interfaces to perform multiple separate tasks. So far, we

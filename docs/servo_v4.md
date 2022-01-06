@@ -1,5 +1,10 @@
 # Servo v4
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4.md
+***
+
 Servo v4 is a debug device in the Servo family.
 
 Servo v4 functions as a configurable USB hub to support developer and lab

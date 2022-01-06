@@ -1,5 +1,10 @@
 # Servod FAQ
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servod_faq.md
+***
+
 [TOC]
 
 ## How do I turn off servod?

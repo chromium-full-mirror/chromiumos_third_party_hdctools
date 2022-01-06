@@ -1,5 +1,10 @@
 # Closed Case Debug (CCD)
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/ccd.md
+***
+
 [TOC]
 
 ## Introduction

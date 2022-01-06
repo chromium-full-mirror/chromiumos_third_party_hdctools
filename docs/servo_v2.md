@@ -1,5 +1,10 @@
 # Servo v2
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v2.md
+***
+
 Servo v2 is a debug device in the Servo family. It is no longer manufactured,
 but still frequently used for early bringup or in cases where JTAG/SWD is
 needed.

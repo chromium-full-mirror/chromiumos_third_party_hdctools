@@ -1,5 +1,10 @@
 # Chrome OS Power Measurement
 
+*** note
+**Warning: This document is old & has moved.  Please update any links:**<br>
+https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/power_measurement.md
+***
+
 This document details how developers can use hardware tools like Servo and
 Sweetberry and software tools within [`dev-util/hdctools`][8] and other repos to
 measure power on a Chrome OS device (DUT, device under test).
