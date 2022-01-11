@@ -303,7 +303,7 @@ class ADCTemplate(object):
     This needs to return at least the following keys
     - mv - bus voltage reading
     - ma - current reading
-    - ma - power reading
+    - mw - power reading
     and can return additional keys if the ADC has additional functions.
 
     Args:
