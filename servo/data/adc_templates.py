@@ -52,7 +52,8 @@ class ADCTemplate(object):
   # Tags used for specific functions. Do not overwrite in the subtype as
   # this is to tie together the system regardless of which ADCs are used.
   FUNCTIONS_TAGS = collections.defaultdict(lambda: None)
-  FUNCTIONS_TAGS.update(dict(shuntmv='shuntmv', mv='bus_voltage_rail',
+  FUNCTIONS_TAGS.update(dict(shuntmv='shunt_voltage_rail',
+                             mv='bus_voltage_rail',
                              ma='current_rail', mw='power_rail',
                              avg_mw='avg_power_rails',
                              acc_clear='accum_clear_ctrls',
