@@ -561,7 +561,7 @@ class cr50(pty_driver.ptyDriver):
   def _Get_lid_open(self):
     gpio = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
                                        [r'\s+([01])\*?\s+CCD_REC_LID_SWITCH'])
-    return gpio[1][0]
+    return gpio[0][1]
 
   def _Set_lid_open(self, value):
     self._issue_cmd('gpioset CCD_REC_LID_SWITCH %s' % value)
