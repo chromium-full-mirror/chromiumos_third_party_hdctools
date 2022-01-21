@@ -8,9 +8,6 @@
   <include>
     <name>cr50.xml</name>
   </include>
-  <include>
-    <name>cpu_fw_spi_off.xml</name>
-  </include>
 
   <!-- ******** Controls ******** -->
   <control>
@@ -38,5 +35,20 @@
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_uut"/>
+  </control>
+  <control>
+    <name>ap_flash_select</name>
+    <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
+    <params subtype="ap_flash_select" interface="9" drv="cr50"
+      map="onoff" init="off" />
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok=""
+      set_value_1="spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:off
+                   ap_flash_select:on cold_reset:on spi_hold:off"
+      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
+                   ap_flash_select:off cold_reset:off spi_hold:off"
+      />
   </control>
 </root>
