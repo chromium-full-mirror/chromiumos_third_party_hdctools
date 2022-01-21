@@ -44,8 +44,7 @@ class Scratch(object):
     """
     self._dir = scratch
     self._logger = logging.getLogger(type(self).__name__)
-    if not os.path.exists(self._dir):
-      os.makedirs(self._dir)
+    os.makedirs(self._dir, exist_ok=True)
     self._Sanitize()
 
   def _EntryF(self, entry):
