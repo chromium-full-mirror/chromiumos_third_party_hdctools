@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>cr50.xml</name>
+  </include>
+  <control>
+    <name>gsc_version</name>
+    <alias>ti50_version</alias>
+    <params clobber_ok="" />
+  </control>
+</root>
