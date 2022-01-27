@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+### BEGIN INIT INFO
+# Provides:           local-docker-registry
+# Required-Start:     docker
+# Required-Stop:      docker
+# Default-Start:      2 3 4 5
+# Default-Stop:       0 1 6
+# Short-Description:  Create lightweight, portable, self-sufficient containers.
+# Description: Docker registry to allow for local local development
+### END INIT INFO
+
+
+. /lib/lsb/init-functions
+
+# Carry out specific functions when asked to by the system
+case "$1" in
+    start)
+        echo "Starting script local "
+        /usr/bin/docker run --rm -d -p 5000:5000 --name registry registry:2
+    ;;
+    stop)
+        echo "Stopping script local-registry"
+        /usr/bin/docker stop registry
+    ;;
+    e)
+        echo "Usage: /etc/init.d/local-docker-registry {start|stop}"
+        exit 1
+    ;;
+esac
+
+exit 0

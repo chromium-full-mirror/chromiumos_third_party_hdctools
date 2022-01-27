@@ -1,0 +1,12 @@
+# base image
+FROM nginx:alpine
+
+COPY nginx.conf /etc/nginx
+
+RUN rm -f /etc/nginx/conf.d/*
+RUN rm -f /docker-entrypoint.d/*
+
+EXPOSE 80
+
+# run nginx
+CMD ["nginx", "-g", "daemon off;"]
