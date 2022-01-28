@@ -29,4 +29,14 @@
     <doc>Force H1 power-on reset</doc>
     <params clobber_ok=""></params>
   </control>
+  <!--
+    Simple property indicating what model of EC we have.  We use a Nuvoton EC
+    and the UART programmer, hence "npcx_uut".
+  -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut"/>
+  </control>
 </root>
