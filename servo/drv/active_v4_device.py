@@ -139,15 +139,16 @@ class activeV4Device(hw_driver.HwDriver):
       return False
     flags = self._interface.get('cr50_ccd_state_flags')
     brdprop = int(self._interface.get('cr50_brdprop'), base=16)
-    basic_ccd_enabled = 'SPI' in flags or 'UARTAP+TX' in flags
+    ccd_enabled_flags = {'SPI', 'UARTAP+TX', 'UARTFPMCU+TX'}
 
     # If BOARD_EC_CR50_COMM_SUPPORT flag is set in board property,
     # EC UART might be enabled occasionally regardless of CCD connection or CCD
     # capability. CCD activeness in this test should not check EC UART status
     # in this case.
-    if brdprop & self.BOARD_EC_CR50_COMM_SUPPORT:
-      return basic_ccd_enabled
-    return basic_ccd_enabled or 'UARTEC+TX' in flags
+    if not brdprop & self.BOARD_EC_CR50_COMM_SUPPORT:
+      ccd_enabled_flags.add('UARTEC+TX')
+
+    return bool(ccd_enabled_flags.intersection(flags.split(' ')))
 
   def _Get_device(self):
     """Return the active device.
