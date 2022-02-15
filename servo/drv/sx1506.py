@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 """Driver for sx1506 16bit ioexpander.
 """
-from . import hw_driver
-from . import i2c_reg
+from servo.drv import hw_driver
+from servo.drv import i2c_reg
 
 
 class Sx1506Error(hw_driver.HwDriverError):

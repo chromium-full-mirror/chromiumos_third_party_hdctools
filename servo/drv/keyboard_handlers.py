@@ -10,7 +10,7 @@ import logging
 import os
 import time
 
-from . import hw_driver
+from servo.drv import hw_driver
 import serial
 
 

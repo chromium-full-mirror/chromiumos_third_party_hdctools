@@ -17,7 +17,7 @@ import colorsys
 import time
 
 # servo libs
-from . import hw_driver
+from servo.drv import hw_driver
 
 # I/O registers
 REG_COMMAND_BIT = 0x80

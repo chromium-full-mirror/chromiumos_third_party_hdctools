@@ -9,7 +9,7 @@ Provides the following EC controlled function:
 import os
 import time
 
-from . import pty_driver
+from servo.drv import pty_driver
 
 class parrotEcError(pty_driver.ptyError):
   """Exception class for parrot ec."""

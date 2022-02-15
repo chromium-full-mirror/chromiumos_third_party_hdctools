@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 """Driver for Parade PS8742 USB mux.."""
 
-from . import hw_driver
-from . import i2c_reg
+from servo.drv import hw_driver
+from servo.drv import i2c_reg
 
 
 class Ps8742Error(hw_driver.HwDriverError):

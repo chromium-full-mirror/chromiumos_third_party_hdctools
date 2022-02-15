@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from . import interface
+from servo.interface import interface
 
 
 class GpioInterface(interface.Interface):

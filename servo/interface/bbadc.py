@@ -5,8 +5,8 @@
 import glob
 import os
 
-from . import common as c
-from . import interface
+from servo.interface import common as c
+from servo.interface import interface
 
 
 class BBadcError(c.InterfaceError):

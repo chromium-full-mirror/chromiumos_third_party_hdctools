@@ -14,7 +14,7 @@ import time
 import tty
 import usb
 
-from . import stm32usb
+from servo.scripts.servo_mfg import stm32usb
 
 
 class SuartError(Exception):

@@ -10,8 +10,8 @@ import optparse
 import os
 import sys
 
-from . import common as c
-from . import ftdi_common
+from servo.interface import common as c
+from servo.interface import ftdi_common
 import servo.libftdi_for_servo
 
 

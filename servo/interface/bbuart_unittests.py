@@ -8,7 +8,7 @@ import os
 import subprocess
 import unittest
 
-from . import bbuart
+from servo.interface import bbuart
 
 SET_PROP_EXPECTED_ARGS = [
     'stty', '-F', '/dev/ttyO1', '115200', 'cs8', '-cstopb', '-parenb'

@@ -9,7 +9,7 @@ import signal
 import time
 
 from servo.utils import scratch
-from . import tool
+from servo.tools import tool
 
 
 class InstanceError(Exception):

@@ -8,9 +8,9 @@ import logging
 import os
 import textwrap
 
-from . import client
-from . import servo_logging
-from . import sversion_util
+from servo import client
+from servo import servo_logging
+from servo import sversion_util
 from servo.utils import scratch
 
 

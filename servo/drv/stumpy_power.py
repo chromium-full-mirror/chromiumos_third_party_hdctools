@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Driver for power_state for stumpy boards.
 """
-from . import alex_power
+from servo.drv import alex_power
 
 
 class stumpyPower(alex_power.alexPower):

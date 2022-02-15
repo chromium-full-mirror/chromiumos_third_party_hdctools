@@ -28,7 +28,7 @@ EEPROM:
 """
 import logging
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 REG_CTRL_LEN = 1
 EEPROM_BYTES = 256

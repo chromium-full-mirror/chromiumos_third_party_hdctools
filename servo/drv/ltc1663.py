@@ -13,8 +13,8 @@ bandgap reference will set the full-scale output voltage range to
 2.5V. Selecting the supply as the reference sets the output voltage range
 to the supply voltage.
 """
-from . import hw_driver
-from . import i2c_reg
+from servo.drv import hw_driver
+from servo.drv import i2c_reg
 
 # TODO(tbroch)
 # Evaluate implementing the sync address functionality via the quick command

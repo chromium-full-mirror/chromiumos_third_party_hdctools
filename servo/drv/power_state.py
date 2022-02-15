@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 class PowerStateDriver(hw_driver.HwDriver):

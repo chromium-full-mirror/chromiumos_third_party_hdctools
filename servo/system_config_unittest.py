@@ -6,7 +6,7 @@
 
 import unittest
 
-from . import system_config
+from servo import system_config
 
 
 class TestSystemConfig(unittest.TestCase):

@@ -5,7 +5,7 @@
 """
 import logging
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 # dictionary key'd off (interface, child) with value == Ina219 instance such
 # that multiple controls that map to same physical IC on same I2C bus share one

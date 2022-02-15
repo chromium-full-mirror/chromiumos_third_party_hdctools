@@ -20,7 +20,7 @@ import socket
 import SocketServer
 import sys
 
-from . import poll_common
+from polld import poll_common
 from poll_server import Polld, PolldError
 
 

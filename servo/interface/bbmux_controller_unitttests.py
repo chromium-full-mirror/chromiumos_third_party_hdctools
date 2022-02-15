@@ -8,7 +8,7 @@ import mox
 import os
 import unittest
 
-from . import bbmux_controller
+from servo.interface import bbmux_controller
 
 FAKE_MUX_FILE = 'mux_file'
 FAKE_MUX_FILE_PATH = '/sys/kernel/debug/omap_mux/mux_file'

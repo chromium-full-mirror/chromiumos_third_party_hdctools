@@ -5,7 +5,7 @@
 """
 import logging
 
-from . import pty_driver
+from servo.drv import pty_driver
 
 
 class uartError(pty_driver.ptyError):

@@ -7,10 +7,10 @@ devices."""
 import logging
 import ctypes
 
-from . import common as c
-from . import ftdi_common
-from . import ftdi_utils
-from . import gpio_interface
+from servo.interface import common as c
+from servo.interface import ftdi_common
+from servo.interface import ftdi_utils
+from servo.interface import gpio_interface
 
 class FgpioError(c.InterfaceError):
   """Class for exceptions of Fgpio."""

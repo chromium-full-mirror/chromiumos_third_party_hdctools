@@ -7,10 +7,10 @@
 import ctypes
 import logging
 
-from . import common as c
-from . import ftdi_common
-from . import ftdi_utils
-from . import i2c_base
+from servo.interface import common as c
+from servo.interface import ftdi_common
+from servo.interface import ftdi_utils
+from servo.interface import i2c_base
 
 
 MAX_I2C_CLOCK_HZ = 100000

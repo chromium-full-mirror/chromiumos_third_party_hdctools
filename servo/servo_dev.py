@@ -8,7 +8,7 @@ import logging
 import os
 import threading
 
-from . import servo_interfaces
+from servo import servo_interfaces
 import servo.utils.usb_hierarchy as usb_hierarchy
 
 

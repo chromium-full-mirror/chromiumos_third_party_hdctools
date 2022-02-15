@@ -12,9 +12,9 @@ import subprocess
 import time
 import usb
 
-from . import recovery
-from . import servo_interfaces
-from . import system_config
+from servo import recovery
+from servo import servo_interfaces
+from servo import system_config
 from servo.utils import diagnose
 from servo.utils import usb_hierarchy
 

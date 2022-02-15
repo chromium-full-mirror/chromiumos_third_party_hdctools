@@ -4,8 +4,8 @@
 
 """Collection of available tools in the system."""
 
-from . import device
-from . import instance
+from servo.tools import device
+from servo.tools import instance
 
 REGISTERED_TOOLS = [
     device.Device,

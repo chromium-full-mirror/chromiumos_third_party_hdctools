@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import unittest
 
-from . import bbgpio
+from servo.interface import bbgpio
 
 GPIO_ROOT = 'sys/class/gpio'
 GPIO_FILE_PATH = 'sys/class/gpio/gpio57'

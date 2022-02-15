@@ -14,8 +14,8 @@ import contextlib
 import os
 import sys
 
-from . import pca9500
-from . import pca9537
+from servo.drv import pca9500
+from servo.drv import pca9537
 
 
 @contextlib.contextmanager

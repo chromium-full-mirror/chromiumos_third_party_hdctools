@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from . import power_state
-from . import polling_control
+from servo.drv import power_state
+from servo.drv import polling_control
 
 CONTROL_COMMAND = 'ec_system_powerstate'
 CONTROL_OUTPUT_EXPECTED = 'G3'

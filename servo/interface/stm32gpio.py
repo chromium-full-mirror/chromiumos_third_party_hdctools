@@ -7,9 +7,9 @@ import array
 import logging
 import struct
 
-from . import common as c
-from . import gpio_interface
-from . import stm32usb
+from servo.interface import common as c
+from servo.interface import gpio_interface
+from servo.interface import stm32usb
 import usb
 
 

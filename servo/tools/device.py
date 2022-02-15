@@ -12,7 +12,7 @@ import time
 import servo.servo_interfaces
 from servo.drv.pty_driver import ptyError
 import servo.utils.usb_hierarchy as uh
-from . import tool
+from servo.tools import tool
 from servo_mfg import tiny_servod
 import usb
 

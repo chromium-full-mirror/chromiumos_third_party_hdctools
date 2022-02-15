@@ -5,7 +5,7 @@
 """A empty interface. This can be used for accounting purposes."""
 
 
-from . import interface
+from servo.interface import interface
 
 
 class Empty(interface.Interface):

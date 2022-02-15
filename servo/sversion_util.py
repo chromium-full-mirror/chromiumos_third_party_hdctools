@@ -11,7 +11,7 @@ try:
   # The sversion file might not exist if something goes wrong in the Makefile
   # This just ensures that the system does not break if for some reason
   # version information is missing.
-  from . import sversion
+  from servo import sversion
   vdict = sversion.VER_DICT
 except ImportError:
   # This means that the version dictionary was somehow not generated.

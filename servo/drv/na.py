@@ -11,7 +11,7 @@ Presently this is used for the following purposes:
     - uart_multicmd
     - cr50_reboot
 """
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 class na(hw_driver.HwDriver):

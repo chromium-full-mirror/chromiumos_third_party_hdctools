@@ -7,7 +7,7 @@ import contextlib
 import threading
 import time
 
-from . import common as c
+from servo.interface import common as c
 import usb
 
 from servo.utils import usb_hierarchy

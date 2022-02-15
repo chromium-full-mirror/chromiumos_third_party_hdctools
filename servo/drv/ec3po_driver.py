@@ -5,7 +5,7 @@
 
 import logging
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 NO_UART_ERR = 'There is no UART on this servo for this specific interface.'

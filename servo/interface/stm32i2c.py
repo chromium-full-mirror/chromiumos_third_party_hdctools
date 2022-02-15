@@ -6,9 +6,9 @@
 import errno
 import logging
 
-from . import common as c
-from . import i2c_base
-from . import stm32usb
+from servo.interface import common as c
+from servo.interface import i2c_base
+from servo.interface import stm32usb
 
 _MAX_WRITE_SIZE = (1 << 12) - 1
 _MAX_READ_SIZE = (1 << 15) - 1

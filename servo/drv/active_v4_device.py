@@ -5,7 +5,7 @@
 
 import time
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 class activeV4DeviceError(hw_driver.HwDriverError):

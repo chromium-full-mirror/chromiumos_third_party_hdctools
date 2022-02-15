@@ -17,7 +17,7 @@ import re
 import time
 import typing
 
-from . import pty_driver
+from servo.drv import pty_driver
 
 KEY_STATE = [0, 1, 1, 1, 1]
 

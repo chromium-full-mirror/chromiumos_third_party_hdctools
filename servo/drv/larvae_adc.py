@@ -7,7 +7,7 @@ It returns Larvae's ADC sensors' value (AIN0 to AIN6).
 """
 
 # servo libs
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 class larvaeAdc(hw_driver.HwDriver):

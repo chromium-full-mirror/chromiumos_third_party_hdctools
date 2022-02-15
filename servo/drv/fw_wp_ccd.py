@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from . import cr50
-from . import fw_wp_state
+from servo.drv import cr50
+from servo.drv import fw_wp_state
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 class fwWpCcdError(hw_driver.HwDriverError):
   """Exception class for fwWpCcd."""

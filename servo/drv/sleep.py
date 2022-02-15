@@ -5,7 +5,7 @@
 """
 import time
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 class sleep(hw_driver.HwDriver):

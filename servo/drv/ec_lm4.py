@@ -6,7 +6,7 @@
 Provides lm4-specific lid_open controls for backward compatibility on boards
 where 'lidstate' console function does not exist.
 """
-from . import ec
+from servo.drv import ec
 
 # The memory address storing lid switch state on lm4 ECs
 LID_STATUS_ADDR = '0x40080730'

@@ -5,7 +5,7 @@
 """
 import time
 
-from . import power_state
+from servo.drv import power_state
 
 
 class parrotPower(power_state.PowerStateDriver):

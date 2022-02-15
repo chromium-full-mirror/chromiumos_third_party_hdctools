@@ -14,7 +14,7 @@ import logging
 import re
 import time
 
-from . import pty_driver
+from servo.drv import pty_driver
 
 class cr50Error(pty_driver.ptyError):
   """Exception class for Cr50."""

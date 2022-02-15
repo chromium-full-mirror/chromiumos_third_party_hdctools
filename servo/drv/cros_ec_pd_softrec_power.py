@@ -17,7 +17,7 @@ See crbug.com/606062#c26 for more information.
 """
 import time
 
-from . import cros_ec_softrec_power
+from servo.drv import cros_ec_softrec_power
 
 
 class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):

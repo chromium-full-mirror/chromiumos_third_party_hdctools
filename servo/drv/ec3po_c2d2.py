@@ -7,8 +7,8 @@
 import logging
 import time
 
-from . import ec3po_servo
-from . import pty_driver
+from servo.drv import ec3po_servo
+from servo.drv import pty_driver
 
 
 class ec3poC2d2Error(pty_driver.ptyError):

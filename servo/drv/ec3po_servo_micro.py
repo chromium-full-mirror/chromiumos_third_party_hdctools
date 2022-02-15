@@ -10,8 +10,8 @@ Provides the following console controlled function subtypes:
 import logging
 import time
 
-from . import ec3po_servo
-from . import pty_driver
+from servo.drv import ec3po_servo
+from servo.drv import pty_driver
 import servo
 
 # Controls to set in batch operations.

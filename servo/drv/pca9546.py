@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """
 """
-from . import hw_driver
+from servo.drv import hw_driver
 
 CMD_MASK = 0xf
 

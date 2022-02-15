@@ -11,8 +11,8 @@ import shutil
 import tempfile
 import unittest
 
-from .usb_hierarchy import Hierarchy
-from .usb_hierarchy import HierarchyError
+from servo.utils.usb_hierarchy import Hierarchy
+from servo.utils.usb_hierarchy import HierarchyError
 
 
 class TestUsbHierarchy(unittest.TestCase):

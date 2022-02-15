@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-from . import power_state
+from servo.drv import power_state
 
 
 class beltinoPower(power_state.PowerStateDriver):

@@ -5,7 +5,7 @@
    This is for the special-purpose commands that Cr50 can handle.
 """
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 CMD_MASK=0xFF
 

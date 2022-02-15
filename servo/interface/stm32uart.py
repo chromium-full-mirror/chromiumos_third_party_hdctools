@@ -14,9 +14,9 @@ import tty
 
 import usb
 
-from . import common as c
-from . import stm32usb
-from . import uart
+from servo.interface import common as c
+from servo.interface import stm32usb
+from servo.interface import uart
 
 
 

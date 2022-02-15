@@ -27,16 +27,16 @@ import time
 
 import usb
 
-from . import interface
-from . import recovery
-from . import servo_interfaces
-from . import servo_logging
-from . import servo_parsing
-from . import servo_postinit
-from . import servo_server
-from . import system_config
-from . import terminal_freezer
-from . import watchdog
+from servo import interface
+from servo import recovery
+from servo import servo_interfaces
+from servo import servo_logging
+from servo import servo_parsing
+from servo import servo_postinit
+from servo import servo_server
+from servo import system_config
+from servo import terminal_freezer
+from servo import watchdog
 from servo.utils import scratch
 from servo.utils import usb_hierarchy
 

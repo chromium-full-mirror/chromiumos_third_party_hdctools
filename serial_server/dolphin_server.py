@@ -20,7 +20,7 @@ import subprocess
 import sys
 import time
 
-from . import serial_server
+from serial_server import serial_server
 
 # server address
 DEFAULT_PORT = 9997

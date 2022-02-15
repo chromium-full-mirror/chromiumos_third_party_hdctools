@@ -26,7 +26,7 @@ For subtype 'r2p5k', 'r10k', 'r50k', 'r100k':
     (Note: you may not 'get' the same value after 'set' due to this)
   - get: get equivalent output resistance value (in Ohm).
 """
-from . import hw_driver
+from servo.drv import hw_driver
 
 WIPER_RESISTANCE = 160
 FULL_RESISTANCE_SPEC = {

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import time
 
-from . import cros_ec_hardrec_power
+from servo.drv import cros_ec_hardrec_power
 
 
 class crosEcHardrecPbinitidlePower(cros_ec_hardrec_power.crosEcHardrecPower):

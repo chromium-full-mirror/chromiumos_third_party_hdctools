@@ -10,7 +10,7 @@ import socket
 import tempfile
 import unittest
 
-from . import scratch
+from servo.utils import scratch
 
 
 class TestScratch(unittest.TestCase):

@@ -6,7 +6,7 @@
 
 import re
 
-from . import hw_driver
+from servo.drv import hw_driver
 
 
 # pylint: disable=invalid-name

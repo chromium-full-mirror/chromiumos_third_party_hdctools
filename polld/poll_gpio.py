@@ -11,7 +11,7 @@ import select
 import socket
 import threading
 
-from . import poll_common
+from polld import poll_common
 
 
 # Ref: https://www.kernel.org/doc/Documentation/gpio/sysfs.txt
