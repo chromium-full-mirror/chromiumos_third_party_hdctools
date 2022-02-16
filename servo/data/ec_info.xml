@@ -3,8 +3,8 @@
   <control>
     <name>ec_board</name>
     <doc>The board name of the EC image</doc>
-    <params clobber_ok="" interface="10" drv="simple_ec" uart_cmd="vers"
-      regex="RO:\s+(\S*)_v?[\d.\w\+-]+[\n\r]" group="1" formatting="strip"/>
+    <params clobber_ok="" interface="10" drv="simple_ec" uart_cmd="version"
+      regex="RO:\s+(\S*)_v?[\d.\w\+:,-]+[\n\r]" group="1" formatting="strip"/>
   </control>
   <control>
     <name>ec_active_copy</name>
