@@ -276,11 +276,6 @@
     init="force_off" />
   </control>
   <control>
-    <name>cpu_fw_spi</name>
-    <doc>Enable SPI mode for flashing CPU firmware (fake in CCD)</doc>
-    <params interface="servo" drv="na"/>
-  </control>
-  <control>
     <name>ap_pin_mode</name>
     <doc>Whether the AP pins are in UART or I2C mode.</doc>
     <params drv="simple_ec" interface="6" uart_cmd="bus_status" group="1"
