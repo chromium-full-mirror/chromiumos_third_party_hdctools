@@ -14,9 +14,19 @@
     <params enabled="1" disabled="0"></params>
   </map>
   <map>
+    <name>enabled_re</name>
+    <doc>map enabled/disabled/access denied to on and off</doc>
+    <params on="ena" off="dis" unsupported="Access Denied"></params>
+  </map>
+  <map>
     <name>onoff_i</name>
     <doc>assertive low map for on/off</doc>
     <params on="0" off="1"></params>
+  </map>
+  <map>
+    <name>asserted_re</name>
+    <doc>map asserted/deasserted for on/off</doc>
+    <params off="^deasserted" on="^asserted"></params>
   </map>
   <map>
     <name>yes</name>
@@ -42,6 +52,16 @@
     <name>press_i</name>
     <doc>map for press and release of buttons (inverted)</doc>
     <params press="1" release="0"></params>
+  </map>
+  <map>
+    <name>press_re</name>
+    <doc>map for press and release of buttons with regex</doc>
+    <params press="press" release="release"></params>
+  </map>
+  <map>
+    <name>servo_re</name>
+    <doc>map a string that contains servo to on, otherwise to off</doc>
+    <params on="servo" off="^((?!servo).)*$"></params>
   </map>
   <map>
     <name>uart_parity</name>
@@ -168,7 +188,7 @@
   </control>
   <control>
     <name>servo_mcu_panicinfo</name>
-    <doc>List of available rail controls to measure power.</doc>
+    <doc>Controls to query panicinfo from servo mcu (v4, micro, etc).</doc>
     <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
     tag="servo_mcu_panicinfo"/>
   </control>

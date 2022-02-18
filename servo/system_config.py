@@ -546,6 +546,17 @@ class SystemConfig(object):
     """
     return hex(int_val)
 
+  def _Fmt_lowercase(self, val):
+    """Lowercase the output
+
+    Args:
+      val: intput string
+
+    Returns:
+      lowercased input
+    """
+    return val.lower()
+
   def reformat_val(self, params, value):
     """Reformat value.
 
@@ -584,9 +595,17 @@ class SystemConfig(object):
       map_dict = self._lookup(MAP_TAG, params['map'])
       if map_dict:
         for keyname, val in map_dict['map_params'].items():
-          if val == reformat_value:
-            reformat_value = keyname
-            break
+          # try treating val as a regex expression
+          try:
+            if re.search(val, reformat_value):
+              reformat_value = keyname
+              break
+          # if error, val is not a regex expression
+          # try matching it as a simple string
+          except re.error:
+            if val == reformat_value:
+              reformat_value = keyname
+              break
     return reformat_value
 
   def display_config(self, tag=None, prefix=None):

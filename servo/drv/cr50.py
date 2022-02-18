@@ -16,10 +16,6 @@ import time
 
 from servo.drv import pty_driver
 
-class cr50Error(pty_driver.ptyError):
-  """Exception class for Cr50."""
-
-
 def restricted_command(func):
   """Decorator for methods which use restricted console command."""
 
@@ -27,14 +23,18 @@ def restricted_command(func):
   def wrapper(instance, *args, **kwargs):
     try:
       return func(instance, *args, **kwargs)
-    except pty_driver.ptyError as e:
-      if str(e) == 'Timeout waiting for response.':
-        if instance._Get_ccd_level() == 'Locked':
-          raise cr50Error('CCD console is locked. Perform the unlock process!')
+    except cr50Error as e:
+      if str(e) in ['Timeout waiting for response.', 'No data was sent from the pty.']:
+        e.message += 'CCD console might be locked. Check and unlock with instructions \
+          https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs\
+          /case_closed_debugging_cr50.md'
       # Raise the original exception
       raise
 
   return wrapper
+
+class cr50Error(pty_driver.ptyError):
+  """Exception class for Cr50."""
 
 
 class cr50(pty_driver.ptyDriver):
@@ -75,6 +75,16 @@ class cr50(pty_driver.ptyDriver):
           'baudrate': None
       }
 
+  @restricted_command
+  def _get(self):
+    # Explicit call parent class method to apply annotation.
+    return super(cr50, self)._get()
+
+  @restricted_command
+  def _set(self, value):
+    # Explicit call parent class method to apply annotation.
+    return super(cr50, self)._set(value)
+
   def _issue_cmd_get_results(self, cmds, regex_list, flush=None,
                              timeout=pty_driver.DEFAULT_UART_TIMEOUT):
     """Send \n to make sure cr50 is awake before sending cmds
@@ -90,42 +100,17 @@ class cr50(pty_driver.ptyDriver):
           super(cr50, self)._issue_cmd_get_results('\n\n',
                                                    [r'(>|Console is enabled)'])
           break
-        except pty_driver.ptyError as e:
+        except pty_driver.ptyError:
           logging.debug("cr50 prompt detection failed, %d attempts left.", trys_left)
           if trys_left <= 0:
               self._logger.warn('Consider checking whether the servo device has '
                                 'read/write access to the Cr50 UART console.')
               raise cr50Error('cr50 uart is unresponsive')
-          else:
-              time.sleep(self.PROMPT_DETECTION_INTERVAL)
+          time.sleep(self.PROMPT_DETECTION_INTERVAL)
 
     return super(cr50, self)._issue_cmd_get_results(cmds, regex_list,
                                                     flush=flush,
                                                     timeout=timeout)
-
-  def _Get_cold_reset(self):
-    """Getter of cold_reset (active low).
-
-    Returns:
-      0: cold_reset on.
-      1: cold_reset off.
-    """
-    result = self._issue_cmd_get_results(
-        'ecrst', ['EC_RST_L is (asserted|deasserted)'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve ecrst result on cr50 console.')
-    return 0 if result[1] == 'asserted' else 1
-
-  def _Set_cold_reset(self, value):
-    """Setter of cold_reset (active low).
-
-    Args:
-      value: 0=on, 1=off.
-    """
-    if value == 0:
-      self._issue_cmd('ecrst on')
-    else:
-      self._issue_cmd('ecrst off')
 
   def _Get_ccd_state(self):
     """Run a basic command that should take a short amount of time to check
@@ -137,153 +122,21 @@ class cr50(pty_driver.ptyDriver):
     try:
       # If gettime fails then the cr50 console is not working, which means
       # ccd is not working
-      result = self._issue_cmd_get_results('gettime', ['.'], 3)
+      self._issue_cmd_get_results('gettime', ['.'], 3)
     except:
       return 0
     return 1
-
-  def _Get_warm_reset(self):
-    """Getter of warm_reset (active low).
-
-    Returns:
-      0: warm_reset on.
-      1: warm_reset off.
-    """
-    result = self._issue_cmd_get_results(
-        'sysrst', ['SYS_RST_L is (asserted|deasserted)'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve sysrst result on cr50 console.')
-    return 0 if result[1] == 'asserted' else 1
-
-  def _Set_warm_reset(self, value):
-    """Setter of warm_reset (active low).
-
-    Args:
-      value: 0=on, 1=off.
-    """
-    if value == 0:
-      self._issue_cmd('sysrst on')
-    else:
-      self._issue_cmd('sysrst off')
-
-  @restricted_command
-  def _Get_pwr_button(self):
-    """Getter of pwr_button.
-
-    Returns:
-      0: power button press.
-      1: power button release.
-    """
-    result = self._issue_cmd_get_results(
-        'powerbtn', ['powerbtn: (forced press|pressed|released)'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve power button result on cr50 console.')
-    return 1 if result[1] == 'released' else 0
-
 
   def _Set_pwr_button(self, value):
     """CCD doesn't support pwr_button. Tell user about pwr_button_hold"""
     raise cr50Error('pwr_button not supported use pwr_button_hold')
 
-
-  def _Get_reset_count(self):
-    """Getter of reset count.
-
-    Returns:
-        The reset count
-    """
-    result = self._issue_cmd_get_results('sysinfo', [r'Reset count: (\d+)'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve the reset count on cr50 console.')
-    return result[1]
-
-  def _Get_devid(self):
-    """Getter of devid.
-
-    Returns:
-        The cr50 devid string
-    """
-    result = self._issue_cmd_get_results(
-        'sysinfo', [r'DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})'])[0][1]
-    if result is None:
-      raise cr50Error('Cannot retrieve the devid result on cr50 console.')
-    return result
-
-  def _Get_version(self):
-    """Getter of version.
-
-    Returns:
-        The cr50 version string
-    """
-    try:
-      result = self._issue_cmd_get_results('version',
-                                           [r'RW_(A|B):\s+\*\s+([\S ]+)\s'])[0]
-    except (pty_driver.ptyError, cr50Error) as e:
-      raise cr50Error('Cannot retrieve the version result on cr50 console. %s'
-                      % str(e))
-    return result[2]
-
-  def _Set_version(self, value):
-    """'Setter' of version.
-
-    Args:
-        value: should equal print/0
-    Prints:
-        The version string
-    """
-    version = self._Get_version()
-    self._logger.info('------------- cr50 version: %s', version)
-
-  def _Get_brdprop(self):
-    """Getter of cr50 board properties.
-
-    Returns:
-        The cr50 board property setting string
-    """
-    return self._issue_cmd_get_results('brdprop',
-                                       [r'properties = (\S+)\s'])[0][1]
-
   def _Set_cr50_reboot(self, value):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd('reboot')
 
-  def _Get_ccd_level(self):
-    """Getter of ccd_level.
-
-    Returns:
-      lock, unlock, or open based on the current ccd privilege level.
-    """
-    result = self._issue_cmd_get_results('ccd',
-                                         [r'State:\s+(Lock|Unlock|Open)'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve ccd privilege level on cr50 console.')
-    return result[1].lower()
-
-  def _Get_idle_state(self):
-    """Getter of idle state level for CR50.
-
-    Returns:
-      string of the current idle state setting
-    """
-    result = self._issue_cmd_get_results('idle',
-                                         [r'idle action:\s+(\w+)'])[0]
-    if result is None:
-      raise cr50Error('Cannot retrieve idle setting on cr50 console.')
-    return result[1].lower()
-
-  def _Set_idle_state(self, value):
-    """Setter of idle state level for CR50.
-
-    Note that not all values returned from get are valid for set.
-
-    Parameters:
-      value: 'wfi' or 'sleep' to set idle state setting
-    """
-    self._issue_cmd('idle %s' % value)
-
   def _Set_ccd_noop(self, value):
     """Used to ignore servo controls"""
-    pass
 
   def _Get_ccd_noop(self):
     """Used to ignore servo controls"""
@@ -293,34 +146,6 @@ class cr50(pty_driver.ptyDriver):
     """Get the current state of the ccd capability"""
     result = self._issue_cmd_get_results('ccdstate', [r'%s:([^\n]*)\n' % cap])
     return result[0][1].strip()
-
-  def _Get_ccd_testlab(self):
-    """Getter of ccd_testlab.
-
-    Returns:
-      'on' or 'off' if ccd testlab mode is enabled or disabled. 'unsupported'
-      if cr50 doesn't have testlab support.
-    """
-    result = self._issue_cmd_get_results(
-        'ccd testlab', ['(CCD test lab mode (ena|dis)|Access Denied)'])[0][1]
-    if result == 'Access Denied':
-      return 'unsupported'
-    return 'on' if 'ena' in result else 'off'
-
-  def _Set_ccd_testlab(self, value):
-    """Setter of ccd_testlab.
-
-    We dont want to accidentally disable ccd testlab mode. Only accept the value
-    open. This will change the ccd privilege level without any physical
-    presence.
-
-    Args:
-      value: 'open'
-    """
-    if value == 'open':
-      self._issue_cmd('ccd testlab open')
-    else:
-      raise ValueError("Invalid ccd testlab setting: '%s'. Try 'open'" % value)
 
   def _Get_ccd_keepalive_en(self):
     """Getter of ccd_keepalive_en.
@@ -342,31 +167,6 @@ class cr50(pty_driver.ptyDriver):
     else:
       rv = 'keep' in rddstate.group('rdd')
     return int(rv)
-
-  def _Get_ccd_cap(self, cap_name):
-    """Getter of CCD capability state for the given capability name.
-
-    Returns:
-      'Default': Default value.
-      'Always': Enabled always.
-      'UnlessLocked': Enabled unless CCD is locked.
-      'IfOpened': Enabled if CCD is opened.
-    """
-    cap_state = self._issue_cmd_get_results('ccd', [
-        r'\s+%s\s+[YN]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)' %
-        cap_name])[0][1]
-    return cap_state
-
-  def _Get_ccd_cap_i2c(self):
-    """Getter of CCD I2C capability flag.
-
-    Returns:
-      'Default': Default value.
-      'Always': Enabled always.
-      'UnlessLocked': Enabled unless CCD is locked.
-      'IfOpened': Enabled if CCD is opened.
-    """
-    return self._Get_ccd_cap('I2C')
 
   def _Set_ccd_keepalive_en(self, value):
     """Setter of ccd_keepalive_en.
@@ -467,19 +267,6 @@ class cr50(pty_driver.ptyDriver):
   def _Set_uut_boot_mode(self, value):
     self._issue_cmd('gpioset EC_TX_CR50_RX_OUT %s' % value)
 
-  def _Get_servo_state(self):
-    """Getter of servo_state.
-
-    Returns:
-      The cr50 servo state string: 'undetectable', 'disconnected', or
-      'connected'
-    """
-    result = self._issue_cmd_get_results('ccdstate',
-                                         [r'Servo:\s+(\S+)\s'])[0][1]
-    if result is None:
-      raise cr50Error('Cannot retrieve the ccdstate result on cr50 console.')
-    return result
-
   def _Set_detect_servo(self, val):
     """Setter of the servo detection state.
 
@@ -495,27 +282,6 @@ class cr50(pty_driver.ptyDriver):
     else:
       self._issue_cmd('ccdblock servo disable')
 
-  def _Get_detect_servo(self):
-    """Getter of the servo detection state.
-
-    Returns:
-      1 if cr50 can detect servo even with ccd enabled.
-    """
-    result = self._issue_cmd_get_results(
-        'ccdstate', [r'CCD ports blocked:([\S ]+)[\n\r]'])[0][1]
-    if result is None:
-      raise cr50Error('Cannot retrieve the ccdblock result on cr50 console.')
-    return 1 if ' SERVO' in result else 0
-
-  def _Get_ccd_state_flags(self):
-    """Getter of the cr50 ccd state flags."""
-    result = self._issue_cmd_get_results(
-        'ccdstate', [r'State flags:([\S ]*)[\n\r]'])[0][1]
-    if result is None:
-      raise cr50Error('Cannot retrieve the ccd state flags on cr50 console.')
-    return result
-
-
   def _Get_rec_btn_force(self):
     result = self._issue_cmd_get_results(
         'recbtnforce', [r'RecBtn:([\S ]+)[\n\r]'])[0][1]
@@ -523,10 +289,9 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error('Cannot retrieve the recbtnforce on cr50 console.')
     if 'not pressed' in result:
       return 'off'
-    elif 'forced pressed' in result:
+    if 'forced pressed' in result:
       return 'on'
-    else:
-      raise cr50Error('Invalid value for recbtnforce')
+    raise cr50Error('Invalid value for recbtnforce')
 
   def _Set_rec_btn_force(self, value):
     try:
@@ -557,11 +322,3 @@ class cr50(pty_driver.ptyDriver):
   def _Set_rec_mode(self, value):
     self._issue_cmd('gpioset CCD_REC_LID_SWITCH %d' % value)
     self._Set_rec_btn_force(value == 0)
-
-  def _Get_lid_open(self):
-    gpio = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
-                                       [r'\s+([01])\*?\s+CCD_REC_LID_SWITCH'])
-    return gpio[0][1]
-
-  def _Set_lid_open(self, value):
-    self._issue_cmd('gpioset CCD_REC_LID_SWITCH %s' % value)

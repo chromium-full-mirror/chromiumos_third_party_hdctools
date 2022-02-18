@@ -58,9 +58,12 @@
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>cold_reset</name>
-    <doc>cold_reset</doc>
-    <params subtype="cold_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    <doc>cold_reset (active low).</doc>
+    <params cmd="get" uart_cmd="ecrst"
+    regex="EC_RST_L is (asserted|deasserted)" group="1" 
+    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    <params cmd="set" uart_cmd="ecrst" choices="^(on|off)$" interface="9" drv="cr50"
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_state</name>
@@ -70,15 +73,21 @@
   </control>
   <control>
     <name>warm_reset</name>
-    <doc>warm_reset</doc>
-    <params subtype="warm_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    <doc>warm_reset (active low)</doc>
+    <params cmd="get" uart_cmd="sysrst"
+    regex="SYS_RST_L is (asserted|deasserted)" group="1"
+    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    <params cmd="set" uart_cmd="sysrst" choices="^(on|off)$" interface="9" drv="cr50"
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
-    <params subtype="pwr_button" interface="9" drv="cr50" map="press"
-    clobber_ok=""></params>
+    <params cmd="get" uart_cmd="powerbtn"
+    regex="powerbtn: (forced press|pressed|released)" group="1"
+    interface="9" drv="cr50" map="press_re" clobber_ok=""></params>
+    <params cmd="set" subtype="pwr_button" interface="9" drv="cr50"
+    map="press" clobber_ok=""></params>
   </control>
   <control>
     <name>lid_open</name>

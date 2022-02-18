@@ -8,6 +8,6 @@
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
-    <params clobber_ok="" od="PU" map="onoff_i" init="off"/>
+    <params clobber_ok="" od="PU" init="off"/>
   </control>
 </root>

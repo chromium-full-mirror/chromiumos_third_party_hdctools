@@ -14,15 +14,6 @@ class fwWpCcdError(hw_driver.HwDriverError):
 class fwWpCcd(fw_wp_state.FwWpStateDriver, cr50.cr50):
   """Driver for fw_wp_state for boards with CCD."""
 
-  def __init__(self, interface, params):
-    """Constructor.
-
-    Args:
-      interface: driver interface object
-      params: dictionary of params
-    """
-    super(fwWpCcd, self).__init__(interface, params)
-
   def _force_on(self):
     """Force the firmware to write-protected."""
     self._issue_cmd('wp on')
@@ -40,17 +31,14 @@ class fwWpCcd(fw_wp_state.FwWpStateDriver, cr50.cr50):
     """Get the firmware write-protection state."""
     # The output string is defined in ec/board/cr50/wp.c
     result = self._issue_cmd_get_results(
-        'wp', ['Flash WP:\s*(forced)?\s*(enabled|disabled)'])[0]
+        'wp', [r'Flash WP:\s*(forced)?\s*(enabled|disabled)'])[0]
     if result is None:
       raise fwWpCcdError('Cannot retrieve wp result on CCD console.')
 
     if result[2] == 'enabled':
       if result[1] == 'forced':
         return self._STATE_FORCE_ON
-      else:
-        return self._STATE_ON
-    else:
-      if result[1] == 'forced':
-        return self._STATE_FORCE_OFF
-      else:
-        return self._STATE_OFF
+      return self._STATE_ON
+    if result[1] == 'forced':
+      return self._STATE_FORCE_OFF
+    return self._STATE_OFF

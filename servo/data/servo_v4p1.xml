@@ -465,14 +465,18 @@
   <control>
     <name>usbc_prswap</name>
     <doc>USB-PD power role</doc>
-    <params subtype="usbc_prswap" interface="26" drv="ec3po_servo_v4"
-    input_type="str"></params>
+    <params cmd="get" uart_cmd="usbc_action prswap"
+    regex="allow_pr_swap = \d" group="0" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="usbc_action prswap"
+    interface="26" drv="ec3po_servo" input_type="str" choices="^(0|1)$"/>
   </control>
   <control>
     <name>usbc_drswap</name>
     <doc>USB-PD data role</doc>
-    <params subtype="usbc_drswap" interface="26" drv="ec3po_servo_v4"
-    input_type="str"></params>
+    <params cmd="get" uart_cmd="usbc_action drswap"
+    regex="allow_dr_swap = \d" group="0" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="usbc_action drswap"
+    interface="26" drv="ec3po_servo" input_type="str" choices="^(0|1)$"/>
   </control>
   <control>
     <name>fw_wp_state</name>
@@ -483,7 +487,7 @@
   <control>
     <name>servo_v4p1_panicinfo</name>
     <doc>Get panicinfo output for servo v4p1.</doc>
-    <params interface="26" drv="simple_ec" subtype="output"
+    <params interface="26" drv="simple_ec"
       uart_cmd="panicinfo" regex="panicinfo(.*)>" group="1"
       tags="servo_mcu_panicinfo" formatting="strip"/>
   </control>

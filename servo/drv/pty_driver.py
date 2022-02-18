@@ -6,10 +6,9 @@ import ast
 import contextlib
 import errno
 import os
+import time
 import pexpect
 from pexpect import fdpexpect
-import re
-import time
 
 from servo.drv import hw_driver
 import servo.terminal_freezer
@@ -21,7 +20,6 @@ FLUSH_UART_TIMEOUT = 1
 class ptyError(hw_driver.HwDriverError):
   """Exception class for pty errors."""
 
-
 UART_PARAMS = {
     'uart_cmd': None,
     'uart_flush': True,
@@ -30,9 +28,13 @@ UART_PARAMS = {
     'uart_timeout': DEFAULT_UART_TIMEOUT
 }
 
-
 class ptyDriver(hw_driver.HwDriver):
   """."""
+
+  # The default regex to use for set. It simply checks whether the control
+  # finished and a new line is printed. This helps servod avoid returning before
+  # the control has actually finished executing on the console.
+  SET_RE_DEFAULT = '>'
 
   def __init__(self, interface, params):
     """."""
@@ -118,6 +120,66 @@ class ptyDriver(hw_driver.HwDriver):
           raise
         self._logger.debug('pty read returned EAGAIN')
         break
+
+  def _get(self):
+    """Generic get from MCU console.
+     Otherwise, use |self._params| for cmd and regex. Runs |self._uart_cmd|
+     on |self._interface| (has to be a uart interface) and matches the output
+     with |self._regex| before returning the result.
+
+    Returns:
+      result of |self._uart_cmd| after matching with |self._regex| and
+      processing
+    """
+    if 'uart_cmd' in self._params:
+      if 'regex' not in self._params:
+        raise ptyError('Required param \'regex\' not in params')
+      if 'group' not in self._params:
+        raise ptyError('Required param \'group\' not in params')
+      self._uart_cmd = self._params['uart_cmd']
+      self._regex = self._params['regex']
+      self._group = int(self._params['group'])
+      results = self._issue_cmd_get_results(self._uart_cmd, [self._regex])
+      # |results| should always be a list of tuples.
+      # TODO(b/180764962) remove this
+      if not isinstance(results[0], tuple):
+        results[0] = results[0],
+      # The desired output is inside the self._group member of |results|. However,
+      # given how python regex works, this can be None, and we cannot marshall
+      # None across the channel, so make sure to cast it into a string first.
+      result = results[0][self._group]
+      if result is None:
+        self._logger.debug('Requested result group returned None, casting '
+                         'into string.')
+        result = str(result)
+      return result
+    raise NotImplementedError('Get method should be implemented in subclass.')
+
+  def _set(self, value):
+    """Generic set method.
+
+    Use |self._params| for cmd and regex. Set |self._uart_cmd| + str(|value|)
+    with |self._regex| on |self._interface| (has to be a uart interface).
+    Note: the control to send to the |self._interface| console is created
+    by appending a space and the string cast of |value| to |self._uart_cmd|.
+
+    Args:
+      value: the value passed through by servod to set
+    """
+    # NOTE: This mechanism is limited, but effective for many use-cases.
+    # Should the situation arise multiple times where a more complex control
+    # generation is required e.g. string formatting so that the value is
+    # in the middle of the string somewhere, please file a feature request bug.
+    if 'uart_cmd' in self._params:
+      self._uart_cmd = self._params['uart_cmd']
+      self._regex = self._params.get('regex', self.SET_RE_DEFAULT)
+      self._group = int(self._params.get('group', '0'))
+      full_cmd = '%s %s' % (self._uart_cmd, value)
+      self._logger.debug('About to issue %r', full_cmd)
+      # Ignore the return type as we only want to send the |cmd|
+      self._issue_cmd_get_results(full_cmd, [self._regex])
+      return None
+    raise NotImplementedError('Set is not implemented.')
 
   def _make_xml_friendly(self, result, error=True):
     """

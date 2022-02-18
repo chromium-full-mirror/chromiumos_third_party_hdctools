@@ -85,8 +85,11 @@
     <name>cold_reset</name>
     <alias>ec_reset</alias>
     <doc>Holds the EC in reset via CR50 command</doc>
-    <params subtype="cold_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    <params cmd="get" uart_cmd="ecrst"
+    regex="EC_RST_L is (asserted|deasserted)" group="1" 
+    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    <params cmd="set" uart_cmd="ecrst" choices="^(on|off)$" interface="9" drv="cr50"
+    input_type="str" clobber_ok=""></params>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
@@ -255,9 +258,12 @@
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>warm_reset</name>
-    <doc>warm_reset</doc>
-    <params subtype="warm_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    <doc>warm_reset (active low)</doc>
+    <params cmd="get" uart_cmd="sysrst"
+    regex="SYS_RST_L is (asserted|deasserted)" group="1" 
+    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    <params cmd="set" uart_cmd="sysrst" choices="^(on|off)$" interface="9" drv="cr50"
+    input_type="str" clobber_ok=""></params>
   </control>
   <control>
     <name>rec_mode</name>
@@ -266,8 +272,11 @@
   </control>
   <control>
     <name>lid_open</name>
-    <params subtype="lid_open" interface="9" drv="cr50"
+    <params cmd="get" uart_cmd="gpioget CCD_REC_LID_SWITCH"
+    regex="\s+([01])\*?\s+CCD_REC_LID_SWITCH" group="1" interface="9" drv="cr50"
     map="yesno" clobber_ok="" init="yes"></params>
+    <params cmd="set" uart_cmd="lid_open" regex="gpioset CCD_REC_LID_SWITCH" 
+    interface="9" drv="cr50" map="yesno" clobber_ok="" init="yes"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
