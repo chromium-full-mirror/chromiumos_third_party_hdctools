@@ -81,7 +81,17 @@ class simpleEc(ec.ec):
           if isinstance(pre_result, list):
             pre_result = [int(m) for m in pre_result]
           else:
-            int(pre_result)
+            pre_result = int(pre_result, 0)
+        elif request == "float":
+          pre_result = float(pre_result)
+        elif request == "bool":
+          pre_result = bool(pre_result)
+        elif request == 'negative':
+          pre_result = pre_result * -1
+        elif request == 'gpio':
+          pre_result = '\n' + pre_result.replace('gpioget', '').replace('\r', '')[:-1]
+        elif request == 'map_open':
+          pre_result = 1 if pre_result == 'open' else 0
         else:
           self._logger.debug('ec output formatting %r unknown. Ignoring.',
                              request)
@@ -119,17 +129,24 @@ class simpleEc(ec.ec):
       ecError: if the output from the |self._uart_cmd| matched with the
                |self._regex| is None
     """
-    try:
-      self._limit_channel()
-      results = self._issue_cmd_get_results(cmd, [regex])
-      # |results| should always be a list of tuples.
-      # TODO(b/180764962) remove this
-      if not isinstance(results[0], tuple):
-        results[0] = results[0],
-      self._restore_channel()
-    except hw_driver.HwDriverError as e:
-      # Any known error is coming through as a HwDriverError derivative.
-      self._error(cmd, regex, e)
+    retries = int(self._params['retries']) if 'retries' in self._params else 1
+    while retries > 0:
+      retries -= 1
+      try:
+        self._limit_channel()
+        results = self._issue_cmd_get_results(cmd, [regex])
+        break
+      except hw_driver.HwDriverError as e:
+        if retries <= 0:
+          # Any known error is coming through as a HwDriverError derivative.
+          self._error(cmd, regex, e)
+        self._logger.warn('Retry retrieving output for %r matching regex %r' % (cmd, regex))
+      finally:
+        self._restore_channel()
+    # |results| should always be a list of tuples.
+    # TODO(b/180764962) remove this
+    if not isinstance(results[0], tuple):
+      results[0] = results[0],
     if results is None:
       self._error(cmd, regex)
     # Extract the requested group. This control does not support a list of regex

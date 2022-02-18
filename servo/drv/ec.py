@@ -86,20 +86,6 @@ class ec(pty_driver.ptyDriver):
 
     self._issue_cmd('chan restore')
 
-  def _Get_gpio(self):
-    """Getter of current gpio settings.
-
-    Returns:
-        ec gpios and their current state 1|0
-    """
-    self._limit_channel()
-    result = self._issue_cmd_get_results('gpioget', ['gpioget.*>'])[0]
-    self._restore_channel()
-    if result is None:
-      raise ecError('Cannot retrieve the ec gpios states on EC console.')
-    # [:-1] is to remove the trailing >
-    return '\n' + result.replace('gpioget', '').replace('\r', '')[:-1]
-
   def _set_key_pressed(self, key_rc, pressed):
     """Press/release a key.
 
@@ -202,29 +188,6 @@ class ec(pty_driver.ptyDriver):
     """Getter of kbd_m2_a1."""
     return self._interface._uart_state['kbd'][self._get_mx_ax_index(1, 1)]
 
-  def _Get_lid_open(self):
-    """Getter of lid_open.
-
-    Returns:
-      0: Lid closed.
-      1: Lid opened.
-    """
-    retries = 3
-    while retries > 0:
-        retries -= 1
-        try:
-          self._limit_channel()
-          result = self._issue_cmd_get_results('lidstate',
-                                              ['lid state: (open|closed)'])[0]
-          self._restore_channel()
-          break
-        except pty_driver.ptyError as e:
-            if retries <= 0:
-                raise
-            logging.warning('Failed to get lidstate. %s', e)
-
-    return 1 if result[1] == 'open' else 0
-
   def _Set_lid_open(self, value):
     """Setter of lid_open.
 
@@ -324,24 +287,8 @@ class ec(pty_driver.ptyDriver):
     else:
       self._issue_cmd('power on')
 
-  def _Get_cpu_temp(self):
-    """Getter of cpu_temp.
-
-    Reads CPU temperature through PECI. Only works when device is powered on.
-
-    Returns:
-      CPU temperature in degree C.
-    """
-    self._limit_channel()
-    result = self._issue_cmd_get_results(
-        'temps', ['PECI[ \t]*:[ \t]*[0-9]* K[ \t]*=[ \t]*([0-9]*)[ \t]*C'])[0]
-    self._restore_channel()
-    if result is None:
-      raise ecError('Cannot retrieve CPU temperature.')
-    return result[1]
-
-  def _get_battery_values(self):
-    """Retrieves various battery related values.
+  def _Get_milliwatts(self):
+    """Retrieves power measurements for the battery.
 
     Battery command in the EC currently exposes the following information:
        Temp:      0x0be1 = 304.1 K (31.0 C)
@@ -367,14 +314,9 @@ class ec(pty_driver.ptyDriver):
 
     Returns:
       Dictionary where:
-        tempc: battery temperature in degC
         mv: battery voltage in millivolts
         ma: battery amps in milliamps
         mw: battery power in milliwatts
-        charge_percent: battery charge in percent
-        charge_mah: battery charge in mAh
-        full_mah: battery last full charge in mAh
-        design_mah: battery design full capacity in mAh
     """
     # The uart often drops some of the output of the battery cmd.
     retries = 3
@@ -383,13 +325,8 @@ class ec(pty_driver.ptyDriver):
       try:
         self._limit_channel()
         results = self._issue_cmd_get_results('battery', [
-            r'Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)',
             r'V:[\s0-9a-fx]*= (-*\d+) mV',
-            r'I:[\s0-9a-fx]*= (-*\d+) mA',
-            r'Charge:\s*(\d+) %',
-            r'Remaining:\s*(\d+) mAh',
-            r'Cap-full:\s*(\d+) mAh',
-            r'Design:\s*(\d+) mAh',
+            r'I:[\s0-9a-fx]*= (-*\d+) mA'
         ])
         self._restore_channel()
         break
@@ -398,155 +335,10 @@ class ec(pty_driver.ptyDriver):
           raise
         logging.warning('Battery cmd failed, retrying: %s', e)
     result = {
-        'tempc': float(results[0][1]),
-        'mv': int(results[1][1], 0),
-        'ma': int(results[2][1], 0) * -1,
-        'charge_percent': int(results[3][1], 0),
-        'charge_mah': int(results[4][1], 0),
-        'full_mah': int(results[5][1], 0),
-        'design_mah': int(results[6][1], 0)
-    }
-    result['mw'] = result['ma'] * result['mv'] / 1000.0
-    return result
-
-  def _Get_battery_tempc(self):
-    """Retrieves temperature measurements for the battery."""
-    return self._get_battery_values()['tempc']
-
-  def _Get_milliamps(self):
-    """Retrieves current measurements for the battery."""
-    return self._get_battery_values()['ma']
-
-  def _Get_millivolts(self):
-    """Retrieves voltage measurements for the battery."""
-    return self._get_battery_values()['mv']
-
-  def _Get_milliwatts(self):
-    """Retrieves power measurements for the battery."""
-    return self._get_battery_values()['mw']
-
-  def _Get_battery_charge_percent(self):
-    """Retrieves battery charge in percent for the battery."""
-    return self._get_battery_values()['charge_percent']
-
-  def _Get_battery_charge_mah(self):
-    """Retrieves battery charge in mAh for the battery."""
-    return self._get_battery_values()['charge_mah']
-
-  def _Get_battery_full_charge_mah(self):
-    """Retrieves battery last full charge in mAh for the battery."""
-    return self._get_battery_values()['full_mah']
-
-  def _Get_battery_full_design_mah(self):
-    """Retrieves battery design full capacity in mAh for the battery."""
-    return self._get_battery_values()['design_mah']
-
-  def _Get_battery_charging(self):
-    """Retrieves whether the battery is charging from chargestate cmd."""
-    self._limit_channel()
-    cmd = 'chgstate'
-    rgx = 'batt_is_charging = (\d)[\r\n]+'
-    try:
-      results = self._issue_cmd_get_results(cmd, [rgx])
-    finally:
-      self._restore_channel()
-    return bool(int(results[0][1]))
-
-  def _Get_ac_attached(self):
-    """Retrieve whether an AC charger is attached."""
-    self._limit_channel()
-    cmd = 'chgstate'
-    rgx = 'ac = (\d)[\r\n]+'
-    try:
-      results = self._issue_cmd_get_results(cmd, [rgx])
-    finally:
-      self._restore_channel()
-    return bool(int(results[0][1]))
-
-  def _get_pwr_avg(self):
-    """Uses ec pwr_avg command to retrieve battery power average.
-
-    pwr_avg function provides a one minute power average based on battery data.
-
-    > pwr_avg
-    mv = xxxx
-    ma = xxxx
-    mw = xxxx
-
-    Returns:
-      Dictionary where:
-        mv: battery voltage in millivolts
-        ma: battery amps in milliamps
-        mw: battery power in milliwatts
-    """
-    self._limit_channel()
-    cmd = 'pwr_avg'
-    cmd_not_found_regex = "Command '%s' not found" % cmd
-    results = self._issue_cmd_get_results(cmd, [
-        r'mv = (-?\d+)[\r\n]+'
-        'ma = (-?\d+)[\r\n]+'
-        'mw = (-?\d+)[\r\n]+|%s' % cmd_not_found_regex
-    ])
-    self._restore_channel()
-    resultline = results[0]
-    if cmd_not_found_regex in resultline:
-      raise ecError('cmd |%s| is not available on the ec.' % cmd)
-    result = {
         'mv': int(results[0][1], 0),
-        'ma': int(results[0][2], 0) * -1,
-        'mw': int(results[0][3], 0) * -1
+        'ma': int(results[1][1], 0) * -1
     }
-    return result
-
-  def _Get_avg_milliamps(self):
-    """Retrieves one minute running avg current from the battery."""
-    return self._get_pwr_avg()['ma']
-
-  def _Get_avg_millivolts(self):
-    """Retrieves one minute running avg voltage from the battery."""
-    return self._get_pwr_avg()['mv']
-
-  def _Get_avg_milliwatts(self):
-    """Retrieves one minute running avg power from the battery."""
-    return self._get_pwr_avg()['mw']
-
-  def _get_fan_values(self):
-    """Retrieve fan related values.
-
-    'faninfo' command in the EC exposes the following information:
-      Fan actual speed: 6694 rpm
-          target speed: 6600 rpm
-          duty cycle:   41%
-          status:       2
-          enabled:      yes
-          powered:      yes
-
-    This method returns a subset of above.
-
-    Returns:
-      List [fan_act_rpm, fan_trg_rpm, fan_duty] where:
-        fan_act_rpm: Actual fan RPM.
-        fan_trg_rpm: Target fan RPM.
-        fan_duty: Current fan duty cycle.
-    """
-    self._limit_channel()
-    results = self._issue_cmd_get_results('faninfo', [
-        'Actual:[ \t]*(\d+) rpm', 'Target:[ \t]*(\d+) rpm', 'Duty:[ \t]*(\d+)%'
-    ])
-    self._restore_channel()
-    return [int(results[0][1], 0), int(results[1][1], 0), int(results[2][1], 0)]
-
-  def _Get_fan_actual_rpm(self):
-    """Retrieve actual fan RPM."""
-    return self._get_fan_values()[0]
-
-  def _Get_fan_target_rpm(self):
-    """Retrieve target fan RPM."""
-    return self._get_fan_values()[1]
-
-  def _Get_fan_duty(self):
-    """Retrieve current fan duty cycle."""
-    return self._get_fan_values()[2]
+    return result['ma'] * result['mv'] / 1000.0
 
   def _Set_fan_target_rpm(self, value):
     """Set target fan RPM.
@@ -562,20 +354,6 @@ class ec(pty_driver.ptyDriver):
     else:
       # "-1" is treated as max fan RPM in EC, so we don't need to handle that
       self._issue_cmd('fanset %d' % value)
-
-  def _Get_flash_size(self):
-    """Getter of usable EC flash size in Kbytes.
-
-    Returns:
-        The flash memory size in Kbytes.
-    """
-    self._limit_channel()
-    result = self._issue_cmd_get_results('flashinfo',
-                                         ['(?i)Usable:\s*(\d+)\sKB'])[0]
-    self._restore_channel()
-    if result is None:
-      raise ecError('Cannot retrieve the flash memory size of EC.')
-    return result[1]
 
   def _Get_feat(self):
     """Retrieves the EC feature flags encoded as a hexadecimal."""
