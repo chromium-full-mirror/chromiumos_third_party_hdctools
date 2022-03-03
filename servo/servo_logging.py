@@ -9,23 +9,24 @@ The basic structure is that inside a directory (by default /var/log/ there
 are servod log directories, one per port. As there can only be at most one
 instance per port, this removes the need to coordinate file writing and
 rotation across instances.
-Inside that directory, the logs are compressed after rotation, except for the
-log file currently in use and another 4 left for convenience.
-Each log file has the following naming convention.
-log.YYYY-MM-DD--HH-MM-SS.MS.LOGLEVEL[.x.tbz2]
-(prefix).(invocation date & time (UTC))(log level)[seq num][compressed type]
+Inside that directory, the logs are rotated. Each log file has the following
+naming convention.
+log.YYYY-MM-DD--HH-MM-SS.MS.LOGLEVEL[.x]
+(prefix).(invocation date & time (local time))(log level)[seq num]
 e.g. log.2019-07-01--21-21-06.9582.DEBUG.1.tbz2
 When a new instance is started on the same port, the old open log is closed
 and rotated, and a new log file with a new timestamp is started.
 So all files for one invocation share the same timestamp in the filename,
 and can be read sequentially by using the sequence numbers.
+We only keep a fixed size of logs for an instance. If the log size grows beyond
+the limit, the oldest log of the instance will be removed. Logs of the older
+instances will also be cleaned up.
 All instances on the same port are in the same directory.
 """
 # pylint: disable=invalid-name
 # File is an extension to the standard library logger. Conform to their code
 # style.
 
-import collections
 import datetime
 import logging
 import logging.handlers
@@ -63,23 +64,14 @@ extractor_re = re.compile(r'(?P<%s>%s)([.]\d+)?$'
                           % (LOGLEVEL_RE_GROUP,
                              '|'.join(f.upper() for f in LOGLEVEL_FILES)))
 
-# Max log size for one log file. ~100 kB
-MAX_LOG_BYTES_COMPRESSED = 1024 * 100
-
-# Tests have shown this to be roughly accurate for servod log compression.
-SERVO_LOG_COMPRESSION_RATIO = 20
-
-# This is used to calculate how big to let a file grow before compression.
-MAX_LOG_BYTES = MAX_LOG_BYTES_COMPRESSED * SERVO_LOG_COMPRESSION_RATIO
+# Max log size for one log file. ~5 MB
+MAX_LOG_BYTES = 5 * 1024 * 1024
 
 # Max number of logs to keep around per port.
 # Since logging is used for multiple concurrent logfiles (DEBUG, INFO, WARNING)
 # this limit is set assuming that the output of INFO + WARNING will not be more
 # than DEBUG.
-LOG_BACKUP_COUNT = 8
-
-# Uncompressed backup count is kept small for convenience.
-UNCOMPRESSED_BACKUP_COUNT = 5
+LOG_BACKUP_COUNT = 20
 
 # Filetype suffix used for compressed logs.
 COMPRESSION_SUFFIX = 'tbz2'
@@ -101,7 +93,6 @@ TS_FILE = 'ts'
 TS_FORMAT = '%Y-%m-%d--%H-%M-%S.%f'
 
 
-# pylint: disable=g-bad-exception-name
 # Follows servod error naming convetion.
 class ServoLoggingError(Exception):
   """Error to throw on logging issues."""
@@ -201,35 +192,6 @@ def _sortLogs(logfiles, loglevel):
   return chronological_logfiles
 
 
-def _compressOldFiles(logdir):
-  """Helper to compress files that aren't using the current |logging_ts|.
-
-  When starting/stopping logging, previous servod instances might have left
-  behind uncompressed files. Since only one instance can be running on a given
-  port, servo_logging can compress all files beyond the uncompressed limit for
-  each logfile.
-
-  The policy is that each loglevel here can keep up to the uncompressed
-  limit before compression sets in.
-
-  Args:
-    logdir: str, path to servod instance log directory (e.g. /..../servod_9999/)
-  """
-  uncompressed_logs = collections.defaultdict(list)
-  for logfile in os.listdir(logdir):
-    logpath = os.path.join(logdir, logfile)
-    if not os.path.islink(logpath) and COMPRESSION_SUFFIX not in logpath:
-      # Extract the loglevel from the names.
-      loglevel = _loglevelFromF(logfile)
-      uncompressed_logs[loglevel].append(logpath)
-  for loglevel, logfiles in uncompressed_logs.items():
-    chronological_logfiles = _sortLogs(logfiles, loglevel)
-    # + 1 here as backupCount in the logger works by having up to that
-    # number of backups in addition to the original file.
-    for logpath in chronological_logfiles[UNCOMPRESSED_BACKUP_COUNT + 1:]:
-      ServodRotatingFileHandler.compressFn(logpath)
-
-
 def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
   """Setup servod logging.
 
@@ -279,26 +241,6 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
       # Ensure that the global backup limit is kept across instances.
       fh.pruneOldLogsAcrossInstances()
       root_logger.addHandler(fh)
-    # Compress and rotate currently open files with the old timestamps beyond
-    # the uncompressed limit.
-    # It's safe to modify these files, as no 2 servod instances can be listening
-    # on the same port. Therefore, the files currently 'alive' is not being
-    # logged to anymore, and can be safely rotated and compressed.
-    # This is called after the new loggers are initialized to ensure that
-    # the backup counts (compressed and uncompressed) are maintained.
-    _compressOldFiles(instance_logdir)
-
-
-def cleanup():
-  """Helper to clean up by rotating out all open files."""
-  # Find all unique directories where the loggers have been logging to.
-  # This should only be one, but that is not enforced.
-  logdirs = set()
-  for handler in logging.getLogger().handlers:
-    if isinstance(handler, ServodRotatingFileHandler):
-      logdirs.add(handler.logdir)
-  for logdir in logdirs:
-    _compressOldFiles(logdir)
 
 
 class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
@@ -329,9 +271,6 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
     self.logdir = logdir
     self.levelBackupCount = backup_count
     filename = self._buildFilename(ts)
-    # The +1 here is to ensure that the last file still gets rotated
-    # before logging can compress it.
-    backup_count = min(UNCOMPRESSED_BACKUP_COUNT + 1, self.levelBackupCount)
     logging.handlers.RotatingFileHandler.__init__(self, filename=filename,
                                                   backupCount=backup_count,
                                                   maxBytes=MAX_LOG_BYTES)
@@ -424,11 +363,6 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
         # Exclude the linkname from search and sort.
         loglevel_logs.append(logpath)
     sorted_logs = _sortLogs(loglevel_logs, self.levelsuffix)
-    # There might be trailing logs form a previous instance that were not
-    # compressed. Treat those the same way after sorting.
-    for log in sorted_logs[self.backupCount:self.levelBackupCount + 1]:
-      # This does not recompress the file again if it was already compressed.
-      ServodRotatingFileHandler.compressFn(log)
     # The +1 here is needed as the idea is to keep |backupCount| backups
     # around in addition to the active logfile.
     remove_logs = sorted_logs[self.levelBackupCount + 1:]
@@ -436,28 +370,14 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
       os.remove(fp)
 
   def doRollover(self):
-    """Extend stock doRollover to support compression.
+    """Extend stock doRollover to prune old logs.
 
-    In addition to regular filename rotation (on the compressed logs) this also
-    ensures that the backup count does not grow beyond the backup count across
-    the |logdir| and not just the baseFilename.
+    In addition to regular filename rotation this also ensures that the backup
+    count does not grow beyond the backup count across the |logdir| and not just
+    the baseFilename.
     """
     logging.handlers.RotatingFileHandler.doRollover(self)
     self.updateConvenienceLink()
-    # The first file that needs compressing is the first file after the
-    # backup count.
-    first_compressable_fn = '%s.%d' % (self.baseFilename,
-                                       self.backupCount)
-    if os.path.exists(first_compressable_fn):
-      # If a rollover actually occured, we need to compress and rotate all
-      # old compressed files.
-      for i in range(self.levelBackupCount, 0, -1):
-        src = '%s.%d.%s' % (self.baseFilename, i, COMPRESSION_SUFFIX)
-        dst = '%s.%d.%s' % (self.baseFilename, i + 1, COMPRESSION_SUFFIX)
-        if os.path.exists(src):
-          os.rename(src, dst)
-      # Compress the latest rotated doc.
-      ServodRotatingFileHandler.compressFn(first_compressable_fn)
     self.pruneOldLogsAcrossInstances()
 
 

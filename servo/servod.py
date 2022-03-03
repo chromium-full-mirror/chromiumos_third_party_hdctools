@@ -314,11 +314,8 @@ class ServodStarter(object):
                              help='Max number of backup logs that will be '
                              'kept per loglevel for one servod port. Reminder: '
                              'files get rotated on new instance, by user '
-                             'request or when they grow past %d bytes. After '
-                             'the newest %d files they are compressed. '
-                             'inactive when no log dir requested.' %
-                             (servo_logging.MAX_LOG_BYTES,
-                              servo_logging.UNCOMPRESSED_BACKUP_COUNT))
+                             'request or when they grow past %d bytes.' %
+                             servo_logging.MAX_LOG_BYTES)
     server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
                              action='store_true',
                              help='Allow dual micro and ccd on servo v4.')
@@ -540,7 +537,6 @@ class ServodStarter(object):
     self._scratchutil.RemoveEntry(self._servo_port)
     self._logger.info('Server on %s port %s turned down', self._host,
                       self._servo_port)
-    servo_logging.cleanup()
 
   def _serve(self):
     """Wrapper around rpc server's serve_forever to catch server errors."""
