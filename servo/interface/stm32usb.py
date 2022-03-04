@@ -142,6 +142,11 @@ class Susb():
       time.sleep(self.DEV_DEBOUNCE_S)
       # The device should be found now. If not, let the error go through.
       dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
+    if not dev:
+      raise usb_hierarchy.HierarchyError(
+        'No device found for id {0.vid:02x}:{0.pid:02x} serial {0.serialname}'
+        .format(devid))
+
     # TODO(crbug.com/1014672): investigate whether there is a better way not to
     # leak this many file descriptors for once system, and if there is a better
     # way to clean up the resources than the way/workaround implemented here.
