@@ -286,6 +286,44 @@ class ec(pty_driver.ptyDriver):
     # Issuing a console command is async. Wait the button release.
     time.sleep(value/1000.0)
 
+  def _Get_warm_reset(self):
+    """Getter of warm_reset (active low).
+
+    Query the power sequence state. Return the value as if it is the legacy
+    servo warm_reset pin.
+
+    Returns:
+      0: warm_reset on.
+      1: warm_reset off.
+    """
+    self._limit_channel()
+    try:
+      result = self._issue_cmd_get_results(
+          'powerinfo', ['power state [0-9]* = (.*),'])[0][1]
+      if 'S0' in result or 'S3' in result:
+        return 1
+    except pty_driver.ptyError:
+      # If EC UART has no respond, treat it as warm_reset on.
+      pass
+    finally:
+      self._restore_channel()
+    return 0
+
+  def _Set_warm_reset(self, value):
+    """Setter of warm_reset (active low).
+
+    Use the power sequence to emulate the legacy servo warm_reset pin.
+    The servo warm_reset pin is active low.
+
+    Args:
+      value: 0=on  -> power off the AP
+             1=off -> power on the AP
+    """
+    if value == 0:
+      self._issue_cmd('power off')
+    else:
+      self._issue_cmd('power on')
+
   def _Get_cpu_temp(self):
     """Getter of cpu_temp.
 

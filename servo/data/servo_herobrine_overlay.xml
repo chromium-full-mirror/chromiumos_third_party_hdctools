@@ -36,6 +36,16 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_uut"/>
   </control>
+  <!--
+    Use the power sequence to emulate the legacy servo warm_reset pin.
+    Send the power sequence command to the EC UART.
+  -->
+  <control>
+    <name>warm_reset</name>
+    <doc>warm_reset</doc>
+    <params subtype="warm_reset" interface="10" drv="ec"
+    map="onoff_i" clobber_ok=""></params>
+  </control>
   <control>
     <name>ap_flash_select</name>
     <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
