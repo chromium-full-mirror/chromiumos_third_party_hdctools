@@ -222,38 +222,29 @@ class SystemConfig(object):
     for tag in SYSCFG_TAG_LIST:
       for element in root.findall(tag):
         element_str = xml.etree.ElementTree.tostring(element)
-        try:
-          name = element.find('name').text
+        name = element.find('name')
+        if name is not None:
+          name = name.text
           if tag == CONTROL_TAG and name_prefix:
             name = name_prefix + name
-        except AttributeError:
+        else:
           # TODO(tbroch) would rather have lineno but dumping element seems
           # better than nothing.  Utimately a DTD/XSD for the XML schema will
           # catch these anyways.
           raise SystemConfigError('%s: no name ... see XML\n%s' % (tag,
                                                                    element_str))
-        try:
-          doc = ' '.join(element.find('doc').text.split())
-        except AttributeError:
-          doc = 'undocumented'
-        try:
-          alias = element.find('alias').text
-        except AttributeError:
-          alias = None
-        try:
-          remap = element.find('remap').text
-        except AttributeError:
-          remap = None
+        doc = element.findtext('doc', default='undocumented')
+        doc = ' '.join(doc.split())
+        alias = element.findtext('alias')
+        remap = element.findtext('remap')
 
         if remap:
-          try:
-            if name_prefix:
-              remap = name_prefix + remap
+          if name_prefix:
+            remap = name_prefix + remap
+          # Sometimes the remap control doesn't exist (e.g. fw_up in servo
+          # v4).  Just ignore it and continue on.
+          if name in self.syscfg_dict[tag]:
             self.syscfg_dict[tag][remap] = self.syscfg_dict[tag][name]
-          except KeyError:
-            # Sometimes the remap control doesn't exist (e.g. fw_up in servo
-            # v4).  Just ignore it and continue on.
-            pass
           continue
 
         get_dict = None
