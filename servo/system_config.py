@@ -316,12 +316,13 @@ class SystemConfig(object):
             # |cmd| is not set. assume it's the same for both.
             get_dict = copy.copy(pd)
             set_dict = copy.copy(pd)
-          # Lastly, to allow the |drv| full visibility in whether it's a set
-          # or a get instance, make sure to store set and get in the dict
-          # regardless of whether it was already there or has been inferred
-          # here.
-          get_dict['cmd'] = 'get'
-          set_dict['cmd'] = 'set'
+          if tag == CONTROL_TAG:
+            # Lastly, to allow the |drv| full visibility in whether it's a set
+            # or a get instance, make sure to store set and get in the dict
+            # regardless of whether it was already there or has been inferred
+            # here.
+            get_dict['cmd'] = 'get'
+            set_dict['cmd'] = 'set'
         else:
           raise SystemConfigError('%s %s has illegal number of params %d\n%s' %
                                   (tag, name, len(params_list), element_str))
@@ -640,7 +641,7 @@ def test():
   scfg.add_cfg_file(os.path.join('data', 'servo.xml'))
   scfg.display_config()
 
-  control_dict = scfg._lookup('control', 'goog_rec_mode')
+  control_dict = scfg._lookup('control', 'rec_mode')
   # checking mapping functionality
   control_params = control_dict['get_params']
   control_params = control_dict['set_params']
