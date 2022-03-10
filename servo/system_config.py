@@ -237,6 +237,7 @@ class SystemConfig(object):
         doc = ' '.join(doc.split())
         alias = element.findtext('alias')
         remap = element.findtext('remap')
+        clone = element.findtext('clone')
 
         if remap:
           if name_prefix:
@@ -245,6 +246,15 @@ class SystemConfig(object):
           # v4).  Just ignore it and continue on.
           if name in self.syscfg_dict[tag]:
             self.syscfg_dict[tag][remap] = self.syscfg_dict[tag][name]
+          continue
+
+        # Similar to the above remap tag, but use deepcopy().
+        if clone:
+          if name_prefix:
+            clone = name_prefix + clone
+          if name in self.syscfg_dict[tag]:
+            self.syscfg_dict[tag][clone] = copy.deepcopy(
+                self.syscfg_dict[tag][name])
           continue
 
         get_dict = None

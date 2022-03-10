@@ -279,7 +279,8 @@ class TestControlIntegrity(object):
                                          ('doc', (0, 1)),
                                          ('params', (1, 2)),
                                          ('alias', (0, 1)),
-                                         ('remap', (0, 1))])
+                                         ('remap', (0, 1)),
+                                         ('clone', (0, 1))])
   def element(self, request):
     """Helper to parameterize over all control components.
 
@@ -304,6 +305,17 @@ class TestControlIntegrity(object):
     """
     return request.param
 
+  def _use_all_elements(self, control):
+    """Helper to determine if |control| uses all elements.
+
+    Args:
+      control: dictionary with control elements
+
+    Returns:
+      True if |control| uses all element; False otherwise.
+    """
+    return 'remap' not in control and 'clone' not in control
+
   def test_ControlElement(self, control, element):
     """|element|[0] is in |control| one of |element|[1] number of times.
 
@@ -313,8 +325,8 @@ class TestControlIntegrity(object):
                tuple containing all acceptable numbers of that element showing
                up in a control
     """
-    if 'remap' in control:
-      pytest.skip('remap controls do not use all elements.')
+    if not self._use_all_elements(control):
+      pytest.skip('controls do not use all elements.')
     num_expected = element[1]
     element_vals = control[element[0]]
     assert len(element_vals) in num_expected
@@ -331,8 +343,8 @@ class TestControlIntegrity(object):
       if 'clobber_ok' in param:
         pytest.skip('clobber_ok controls are update controls, and do not '
                     'require all elements of a full control.')
-      if 'remap' in control:
-        pytest.skip('remap controls do not use all elements.')
+      if not self._use_all_elements(control):
+        pytest.skip('controls do not use all elements.')
       assert param_attrib in param
 
   def test_DoubleParams(self, control):
