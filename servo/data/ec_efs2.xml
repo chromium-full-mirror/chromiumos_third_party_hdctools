@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<root>
+  <!--
+    Reconfigure the existing `cold_reset` control. On top of the existing
+    implementation, which is based on the servo type, e.g. driving a servo
+    pin if using the servo v2, ask GSC to execute the EC reset command.
+
+    This is the way to hint the GSC to reset the EFS boot_mode. Changing
+    the servo pin can't reset this EFS boot_mode, as the GSC doesn't
+    monitor this signal change. Failing to reset the EFS boot_mode will
+    block the recovery boot, if the old boot_mode is NO_BOOT.
+
+    The implementation:
+     * Clone the existing `cold_reset` control to `cold_reset_servo`
+     * Add a new `cold_reset_gsc` control, which sends the EC reset command
+       to the GSC console. Make this control N/A if using CCD or C2D2
+       because the `cold_reset_servo` (the original `cold_reset`) does sent
+       the command and don't need this one; otherwise, the command is sent
+       twice.
+     * Reconfigure the `cold_reset` to macro, which sets both the
+       `cold_reset_servo` and `cold_reset_gsc`.
+
+    Note that the `cold_reset_gsc` requires CCD open. It does nothing if
+    the device is not CCD-opened.
+  -->
+  <control>
+    <name>cold_reset</name>
+    <clone>cold_reset_servo</clone>
+  </control>
+  <control>
+    <name>cold_reset_gsc</name>
+    <doc>cold_reset_gsc</doc>
+    <params subtype="cold_reset" interface="9" drv="cr50" ccd_cr50_drv="na"
+    c2d2_drv="na" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>cold_reset</name>
+    <doc>cold_reset</doc>
+    <!-- get_value only depends on cold_reset_servo, in case CCD not opened -->
+    <params subtype="" interface="servo" drv="macro" map="onoff" clobber_ok=""
+      set_value_1="cold_reset_servo:on cold_reset_gsc:on"
+      set_value_0="cold_reset_servo:off cold_reset_gsc:off"
+      get_value="cold_reset_servo"
+      />
+  </control>
+</root>
