@@ -23,7 +23,7 @@ class loglevel(hw_driver.HwDriver):
     self._interface = interface
     self._params = params
 
-  def set(self, new_level):
+  def _set(self, new_level):
     """Changes the current loglevel of the root logger.
 
     Args:
@@ -63,7 +63,7 @@ class loglevel(hw_driver.HwDriver):
       handler.setFormatter(logging.Formatter(fmt=fmt_string))
 
 
-  def get(self):
+  def _get(self):
     """Gets the current loglevel of the root logger."""
     root_logger = logging.getLogger()
     if len(root_logger.handlers) == 1:

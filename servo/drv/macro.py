@@ -47,7 +47,7 @@ class macro(hw_driver.HwDriver):
     """Returns True if control is available in current interface."""
     return self._interface._syscfg.is_control(control)
 
-  def set(self, new_state):
+  def _set(self, new_state):
     """Transit to a new state."""
     state_name = str(new_state)
     if state_name not in self._states:
@@ -62,7 +62,7 @@ class macro(hw_driver.HwDriver):
       # TODO(hungte) Support more commands like sleep(ms).
       self._interface.set(control, state)
 
-  def get(self):
+  def _get(self):
     """Checks and returns current state."""
     if not self._get_list:
       return self._STATE_UNKNOWN

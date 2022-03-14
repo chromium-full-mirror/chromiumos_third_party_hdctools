@@ -154,7 +154,7 @@ class simpleEc(ec.ec):
     # the results (results[0]) always.
     return results[0]
 
-  def get(self):
+  def _get(self):
     """Generic get from MCU console, using |self._params| for cmd and regex.
 
     Runs |self._uart_cmd| on |self._interface| (has to be a uart interface)

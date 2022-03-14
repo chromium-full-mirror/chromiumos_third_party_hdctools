@@ -207,83 +207,87 @@ class HwDriver(object):
       raise HwDriverError('%r not a valid input choice (%r)' %
                           (value, self._choices.pattern))
 
-  def _set(self, logical_value):
-    """Set the control to |logical_value| or delegate to subtype
-
-    If the driver is deemed worthy of more complication, this method will
-    dispatch to the subclasses "_Set_%s" % params['subtype'] method.
-
-    TODO(tbroch) logical_value will need float support for DAC's
-
-    Args:
-      logical_value: Integer value to write to hardware.
-
-    Returns:
-      Value from subclass method.
-
-    Raises:
-      HwDriverError: If unable to locate subclass method.
-      NotImplementedError: There's no subtype param and _set() unimplemented
-        in the subclass.
-    """
-    if 'subtype' in self._params:
-      fn_name = '_Set_%s' % self._params['subtype']
-      if not hasattr(self, fn_name):
-        raise HwDriverError('Finding set function %s' % (fn_name,))
-    else:
-      raise NotImplementedError('Set should be implemented in subclass.')
-    return getattr(self, fn_name)(logical_value)
-
   def set(self, logical_value):
     """Set hardware control to a particular value.
 
-    In the case of simpler drivers, a single 'set' method is
-    implemented in the subclass.
+    This function first check that |logical_value| is a valid choice before
+    passing it down. Then, it tries to set the value:
+    1. If `subtype` is specified in the self._params, run _Set_[subtype]()
+    2. Otherwise, run _set()
 
-    This function is a safety wrapper around _set() to check that
-    |lt ogical_value| is a valid choice before passing it down if valid choices
-    have been defined.
-
-    If a (simple) driver desires more safety, by checking that input values
-    are valid, it can implement '_set' rather than 'set'. The only difference
-    is that before dispatching to '_set', the input value will be checked to
-    ensure it valid.
+    DO NOT OVERRIDE THIS METHOD in the subclass. Instead, override _set().
 
     Args:
       logical_value: Integer value to write to hardware.
 
     Returns:
-      Value from _set()
+      Value from _Set_[subtype]() or _set()
+
+    Raises:
+      HwDriverError: If unable to locate _Set_[subtype]() method.
     """
     self._logger.debug('logical_value = %s', logical_value)
     self._check_input(logical_value)
+    if 'subtype' in self._params:
+      if self._params['subtype'] == '':
+        raise HwDriverError('Subtype should not be empty. \
+          Please remove subtype param if it is unnecessary.')
+      fn_name = '_Set_%s' % self._params['subtype']
+      if hasattr(self, fn_name):
+        return getattr(self, fn_name)(logical_value)
+      raise HwDriverError('Cannot find set subtype function %s' % (fn_name,))
     return self._set(logical_value)
 
-  def get(self):
-    """Get control value and return it
+  def _set(self, logical_value):
+    """Set the control to |logical_value|.
 
-    In the case of simpler drivers, a single 'get' method is
-    implemented in the subclass.  If however the driver is deemed
-    worthy of more complication, this method will dispatch to the
-    subclasses "_Get_%s" % params['subtype'] method.
+    Args:
+      logical_value: Integer value to write to hardware.
 
     Returns:
       Value from subclass method.
 
     Raises:
-      HwDriverError: If unable to locate subclass method.
-      NotImplementedError: There's no subtype param and get method
-        wasn't implemented in the subclass.
+      NotImplementedError: _set() unimplemented in the subclass.
     """
-    self._logger.debug('')
+    raise NotImplementedError('_set should be implemented in subclass.')
+
+  def get(self):
+    """Get hardware control to a particular value.
+
+    This function tries to get the value:
+    1. If `subtype` is specified in the self._params, run _Get_[subtype]()
+    2. Otherwise, run _get()
+
+    DO NOT OVERRIDE THIS METHOD in the subclass. Instead, override _get().
+
+    Returns:
+      Value from _Get_[subtype]() or _get()
+
+    Raises:
+      HwDriverError: If unable to locate _Get_[subtype]() method.
+    """
     if 'subtype' in self._params:
+      if self._params['subtype'] == '':
+        raise HwDriverError('Subtype should not be empty. \
+          Please remove subtype param if it is unnecessary.')
       fn_name = '_Get_%s' % self._params['subtype']
       if hasattr(self, fn_name):
         return getattr(self, fn_name)()
-      else:
-        raise HwDriverError('Finding get function %s' % fn_name)
-    else:
-      raise NotImplementedError('Get method should be implemented in subclass.')
+      raise HwDriverError('Cannot find get subtype function %s' % fn_name)
+    return self._get()
+
+  def _get(self):
+    """Get the control.
+
+    Returns:
+      Value from subclass method.
+
+    Raises:
+      NotImplementedError: _get() unimplemented in the subclass.
+    """
+    raise NotImplementedError('_get method should be implemented in subclass.')
+
 
   def _create_logical_value(self, hw_value):
     """Create logical value using mask & offset.

@@ -29,7 +29,7 @@ class gpio(hw_driver.HwDriver):
     self._chip = params.get('chip', None)
     self._muxfile = params.get('muxfile', None)
 
-  def get(self):
+  def _get(self):
     """Get value for gpio driver
 
     Returns:
@@ -47,7 +47,7 @@ class gpio(hw_driver.HwDriver):
       return self._interface.wr_rd(offset, width, chip=self._chip,
                                    muxfile=self._muxfile)
 
-  def set(self, value):
+  def _set(self, value):
     """Set value for gpio driver
 
     Args:

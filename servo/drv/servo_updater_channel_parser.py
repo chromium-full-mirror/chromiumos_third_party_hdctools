@@ -29,7 +29,7 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
     self._logger.debug('')
     self._current_fw_cmd = '%s_version' % (self._board,)
 
-  def get(self):
+  def _get(self):
     """Get available firmware version for |self._board| on |self._channel|.
 
     Returns:
