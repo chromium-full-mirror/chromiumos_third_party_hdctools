@@ -40,7 +40,7 @@ class ftdii2cCmd(hw_driver.HwDriver):
       raise ftdii2cCmdError('No ftdi_i2c object found.')
     self._ftdii2c = interface._interface_list[index]
 
-  def set(self, cmd):
+  def _set(self, cmd):
     """Execute |cmd| on |self._ftdii2c| object.
 
     Args:
@@ -53,6 +53,6 @@ class ftdii2cCmd(hw_driver.HwDriver):
     self._logger.debug('Running %s on ftdii2c interface.', cmd)
     func()
 
-  def get(self):
+  def _get(self):
     """Raise error as a command needs to be specified."""
     raise ftdii2cCmdError('No cmd specified for ftdii2c_cmd')

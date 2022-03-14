@@ -143,7 +143,7 @@ class PowerStateDriver(hw_driver.HwDriver):
     # the Watchdog should be attempting to catch & reinitalize it.
     self._interface.reinitialize()
 
-  def set(self, statename):
+  def _set(self, statename):
     """Set power state according to `statename`."""
     if statename == self._STATE_OFF:
       self._power_off()

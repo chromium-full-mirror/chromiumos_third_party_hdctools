@@ -30,12 +30,12 @@ class pca9546(hw_driver.HwDriver):
     self._logger.debug('')
     self._child = int(self._params['child'], 0)
 
-  def get(self):
+  def _get(self):
     """Get PCA9546 mux.
     """
     return self._interface.wr_rd(self._child, [], 1)[0]
 
-  def set(self, value):
+  def _set(self, value):
     """Set PCA954 mux.
 
     Args:

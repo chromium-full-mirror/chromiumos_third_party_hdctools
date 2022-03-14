@@ -20,6 +20,6 @@ class sleep(hw_driver.HwDriver):
     """
     super(sleep, self).__init__(interface, params.copy())
 
-  def set(self, seconds):
+  def _set(self, seconds):
     """Sleep for the given number of seconds."""
     time.sleep(seconds)

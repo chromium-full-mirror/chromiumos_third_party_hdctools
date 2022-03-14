@@ -17,7 +17,7 @@ class larvaeAdc(hw_driver.HwDriver):
     """Constructor."""
     super(larvaeAdc, self).__init__(interface, params)
 
-  def get(self):
+  def _get(self):
     """Reads ADC inputs.
 
     Returns:
