@@ -28,7 +28,7 @@ class powerKb(hw_driver.HwDriver):
     # pylint: disable=protected-access
     self._handler = keyboard_handlers._BaseHandler(self._interface)
 
-  def _set(self, duration):
+  def set(self, duration):
     """Press power button for |duration| seconds.
 
     Args:

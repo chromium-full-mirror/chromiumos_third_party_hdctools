@@ -73,7 +73,7 @@ class i2cRegDrv(hw_driver.HwDriver):
     self._dev._write_reg(self._offset, value, reg_len=self._reg_len,
                          no_read=self._no_read)
 
-  def _get(self):
+  def get(self):
     """"Read out the value from |self._offset| register on |self._dev|.
 
     Returns:

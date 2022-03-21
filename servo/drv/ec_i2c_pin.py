@@ -121,7 +121,7 @@ class ecI2cPin(ec.ec):
     val = int(val_str, 16)
     return val
 
-  def _get(self):
+  def get(self):
     """Read out the value."""
     # Cast through bool to make it binary (it's set or it's not), and then
     # through int to return a proper int as required by the servod code.

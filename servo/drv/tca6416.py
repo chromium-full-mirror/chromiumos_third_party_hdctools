@@ -68,7 +68,7 @@ class tca6416(hw_driver.HwDriver):
         no_read=False, use_reg_cache=False)
     self._port = self._get_port()
 
-  def _get(self):
+  def get(self):
     """Get gpio value.
 
     tca6416 has a dedicated input register ( per port ) so GPIO's current value
@@ -81,7 +81,7 @@ class tca6416(hw_driver.HwDriver):
     value = self._i2c_obj._read_reg(self.REG_INP + self._port)
     return self._create_logical_value(value)
 
-  def _set(self, fmt_value):
+  def set(self, fmt_value):
     """Set value on ioexpander.
 
     1. Read Output register

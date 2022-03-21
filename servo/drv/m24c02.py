@@ -27,7 +27,7 @@ class M24C02Device(object):
     self._offset = offset
     self._read_count = read_count
 
-  def _set(self, offset, read_count):
+  def set(self, offset, read_count):
     """Set offset and read count.
 
     Args:
@@ -45,7 +45,7 @@ class M24C02Device(object):
     self._offset = offset
     self._read_count = read_count
 
-  def _get(self):
+  def get(self):
     """Get the operating parameters.
 
     Returns:

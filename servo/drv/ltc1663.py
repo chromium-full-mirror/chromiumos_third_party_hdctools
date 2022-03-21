@@ -58,7 +58,7 @@ class ltc1663(hw_driver.HwDriver):
         self._interface, self._child, addr_len=1, reg_len=2, msb_first=False,
         no_read=True, use_reg_cache=False)
 
-  def _set(self, value):
+  def set(self, value):
     """Set 10-bit DAC value of LTC1663.
 
     Args:
@@ -67,6 +67,7 @@ class ltc1663(hw_driver.HwDriver):
     Raises:
       Ltc1663Error: if value is out of bounds
     """
+    self._logger.debug('value = %s' % str(value))
     if value & ~DATA_MASK:
       raise Ltc1663Error("DAC value %x can't be greater than %x" % (value,
                                                                     DATA_MASK))

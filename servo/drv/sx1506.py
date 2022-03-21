@@ -87,7 +87,7 @@ class sx1506(hw_driver.HwDriver):
     self._i2c_obj._write_reg(reg + 1, (val & 0xff))
     self._i2c_obj._write_reg(reg, (val >> 8))
 
-  def _get(self):
+  def get(self):
     """Get gpio value.
 
     sx1506 has data registers REG_DATA. GPIO's current value
@@ -96,10 +96,11 @@ class sx1506(hw_driver.HwDriver):
     Returns:
       integer in formatted representation
     """
+    self._logger.debug('')
     value = self.read16(self.REG_DATA)
     return self._create_logical_value(value)
 
-  def _set(self, fmt_value):
+  def set(self, fmt_value):
     """Set value on ioexpander.
 
     1. Read cached value

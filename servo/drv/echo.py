@@ -23,6 +23,6 @@ class echo(hw_driver.HwDriver):
     super(echo, self).__init__(interface, params)
     self._val = self._params.get('value', 'unknown')
 
-  def _get(self):
+  def get(self):
     """Return the value."""
     return self._val

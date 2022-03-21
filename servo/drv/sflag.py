@@ -33,7 +33,7 @@ class sflag(hw_driver.HwDriver):
     # are converted to on/off, we still need to make sure.
     self.vstore[0] = value
 
-  def _get(self):
+  def get(self):
     """Return the |self.vstore| for this flag."""
     if self.vstore[0] is None:
       # Initialize with a 0 unless a default is provided. Pass through |set|

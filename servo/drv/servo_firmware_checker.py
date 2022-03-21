@@ -44,7 +44,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
     self._fw_channel_cmd = '%s_firmware_channel' % (self._board,)
     self._always_warn = WARN_ONLY_ON_UNKNOWN_ENV not in os.environ
 
-  def _get(self):
+  def get(self):
     """Get available firmware version for |self._board| on |self._channel|.
 
     Returns:
@@ -55,7 +55,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
     latest = self._interface.get(self._latest_fw_cmd)
     return int(latest == current)
 
-  def _set(self, _):
+  def set(self, _):
     """Print what the current firmware is, what the latest available is."""
     current = self._interface.get(self._current_fw_cmd)
     latest = self._interface.get(self._latest_fw_cmd)

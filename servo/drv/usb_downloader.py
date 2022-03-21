@@ -31,12 +31,12 @@ class usbDownloader(hw_driver.HwDriver):
 
   _HTTP_PREFIX = 'http://'
 
-  def _get(self):
+  def get(self):
     """Improved error reporting for misuse."""
     raise usbDownloaderError('Download requires image path. Please use set '
                              'version of the control to provide path.')
 
-  def _set(self, image_path):
+  def set(self, image_path):
     """Download image and save to the USB device found by host_usb_dev.
 
     If the image_path is a URL, it will download this url to the USB path;

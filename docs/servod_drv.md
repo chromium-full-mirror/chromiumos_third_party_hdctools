@@ -23,20 +23,18 @@ on the `drv` instance whenever executing it.
 
 ## dispatching
 
-`HwDriver`'s `get` and `set` performs dispatching and value safety checks. Before 
-dispatching, `HwDriver` `set` checks the dispatched values and ensures it is a 
-valid choice. A `drv` should never override `set` and `get` unless it wants to 
-override the common dispatching logic.
+There are three layers of abstraction for dispatching. At the most basic level,
+a `drv` can overwrite `set` and `get` at which point, the `drv` will just
+execute those.\
+The next layer is defining `_set` instead of `set`. This guarantees that some
+safety checks are performed on the passed in value before running it, but is
+otherwise identical to `set`.\
+Should a driver not expose `set/_set` and/or `get`, then the `HwDriver`
+dispatcher kicks in to look for `_Set_[subtype]` or `_Get_[subtype]` (where
+subtype is provided through the params).
 
-`HwDriver` defines the common dispatching logic in `set` and `get`:
-1. If `subtype` is provided in a control's params, the dispatcher looks for 
-   `_Set_[subtype]` or `_Get_[subtype]`and executes them. In case of not found, 
-   the dispatcher will throw an error.
-2. If `subtype` is not provided through a control's params, the dispatcher 
-   delegates execution to `_set` and `_get`. A `drv` should override `_set`
-   and `_get` for common getting/setting logic.
 
-In general, a simple `drv` try to just expose `_get` and `_set` to make the code
+So in general, simple `drv` try to just expose `get` and `_set` to make the code
 easy to read, and the params easy to write. You should leverage subtypes if
 there is
 1. data you need to share across multiple functionalities
@@ -192,6 +190,8 @@ The following special parameters exist, and are useful to know about
 *   `choices`
 
     Compiled-regex of valid input choices for a set control.
+    Note that the check only happens if the driver either defines `_set` rather
+    than `set` or defines a subtype (`_Set_[subtype]`).
 
 
 ### device specific params

@@ -31,7 +31,7 @@ class cr50I2c(hw_driver.HwDriver):
     self._logger.debug('')
     self._child = int(self._params['child'], 0)
 
-  def _set(self, value):
+  def set(self, value):
     """send a special command to CR50.
 
     Args:
@@ -40,6 +40,7 @@ class cr50I2c(hw_driver.HwDriver):
     Raises:
       cr50I2cError: if value is out of bounds
     """
+    self._logger.debug('value = %r' % (value,))
     if value & ~CMD_MASK:
       raise cr50I2cError("command value 0x%X does not match 0x%X" %
                          (value, CMD_MASK))

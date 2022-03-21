@@ -52,7 +52,7 @@ class FwWpStateDriver(hw_driver.HwDriver):
     """Get the firmware write-protection state."""
     raise NotImplementedError()
 
-  def _set(self, statename):
+  def set(self, statename):
     """Set firmware write-protection state according to `statename`."""
     if statename == self._STATE_FORCE_ON:
       self._force_on()
@@ -66,6 +66,6 @@ class FwWpStateDriver(hw_driver.HwDriver):
                        (statename, self._STATE_FORCE_ON, self._STATE_FORCE_OFF,
                         self._STATE_RESET))
 
-  def _get(self):
+  def get(self):
     """Get firmware write-protection state."""
     return self._get_state()
