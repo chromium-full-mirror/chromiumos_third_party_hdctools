@@ -37,7 +37,7 @@
     <name>cold_reset</name>
     <doc>cold_reset</doc>
     <!-- get_value only depends on cold_reset_servo, in case CCD not opened -->
-    <params subtype="" interface="servo" drv="macro" map="onoff" clobber_ok=""
+    <params interface="servo" drv="macro" map="onoff" clobber_ok=""
       set_value_1="cold_reset_servo:on cold_reset_gsc:on"
       set_value_0="cold_reset_servo:off cold_reset_gsc:off"
       get_value="cold_reset_servo"
