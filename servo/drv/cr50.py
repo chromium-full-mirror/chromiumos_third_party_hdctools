@@ -112,6 +112,28 @@ class cr50(pty_driver.ptyDriver):
                                                     flush=flush,
                                                     timeout=timeout)
 
+  def _Set_cold_reset(self, value):
+    """Setter of cold_reset (active low).
+
+    Args:
+      value: 0=on, 1=off.
+    """
+    if value == 0:
+      self._issue_cmd('ecrst on')
+    else:
+      self._issue_cmd('ecrst off')
+
+  def _Set_warm_reset(self, value):
+    """Setter of warm_reset (active low).
+
+    Args:
+      value: 0=on, 1=off.
+    """
+    if value == 0:
+      self._issue_cmd('sysrst on')
+    else:
+      self._issue_cmd('sysrst off')
+
   def _Get_ccd_state(self):
     """Run a basic command that should take a short amount of time to check
     if ccd endpoints are still working.

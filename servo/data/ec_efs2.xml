@@ -30,8 +30,11 @@
   <control>
     <name>cold_reset_gsc</name>
     <doc>cold_reset_gsc</doc>
-    <params subtype="cold_reset" interface="9" drv="cr50" ccd_cr50_drv="na"
-    c2d2_drv="na" map="onoff_i"></params>
+    <params cmd="get" uart_cmd="ecrst"
+    regex="EC_RST_L is (asserted|deasserted)" group="1" 
+    interface="9" drv="cr50" map="asserted_re" ccd_cr50_drv="na" c2d2_drv="na"></params>
+    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
+    map="onoff_i" ccd_cr50_drv="na" c2d2_drv="na"></params>
   </control>
   <control>
     <name>cold_reset</name>

@@ -88,8 +88,8 @@
     <params cmd="get" uart_cmd="ecrst"
     regex="EC_RST_L is (asserted|deasserted)" group="1" 
     interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
-    <params cmd="set" uart_cmd="ecrst" choices="^(on|off)$" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok=""></params>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
@@ -262,8 +262,8 @@
     <params cmd="get" uart_cmd="sysrst"
     regex="SYS_RST_L is (asserted|deasserted)" group="1" 
     interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
-    <params cmd="set" uart_cmd="sysrst" choices="^(on|off)$" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    <params cmd="set" subtype="warm_reset" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok=""></params>
   </control>
   <control>
     <name>rec_mode</name>
