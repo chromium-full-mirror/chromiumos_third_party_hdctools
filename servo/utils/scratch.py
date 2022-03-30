@@ -145,7 +145,7 @@ class Scratch(object):
         try:
           entries.append(json.load(f))
         except ValueError:
-          self._logger.warn('Removing file %r as it contains invalid JSON.',
+          self._logger.warning('Removing file %r as it contains invalid JSON.',
                             entryf)
           # Invalid json file
           os.remove(entryf)
@@ -169,7 +169,7 @@ class Scratch(object):
     try:
       sclient = client.ServoClient(port=port)
       if sclient._server.echo(msg) == expected_output:
-        self._logger.warn('Port %r not registered but has a servod '
+        self._logger.warning('Port %r not registered but has a servod '
                           'instance bound to it. Retroactively adding the '
                           'instance.', port)
         serials = sclient._server.get_servo_serials()
@@ -220,7 +220,7 @@ class Scratch(object):
       port = entry['port']
       try:
         testsock.bind(('localhost', port))
-        self._logger.warn('Port %r still registered but not bound to a '
+        self._logger.warning('Port %r still registered but not bound to a '
                           'servod instance. Removing entry.', str(port))
         self.RemoveEntry(port)
         testsock.close()

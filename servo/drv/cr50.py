@@ -103,7 +103,7 @@ class cr50(pty_driver.ptyDriver):
         except pty_driver.ptyError:
           logging.debug("cr50 prompt detection failed, %d attempts left.", trys_left)
           if trys_left <= 0:
-              self._logger.warn('Consider checking whether the servo device has '
+              self._logger.warning('Consider checking whether the servo device has '
                                 'read/write access to the Cr50 UART console.')
               raise cr50Error('cr50 uart is unresponsive')
           time.sleep(self.PROMPT_DETECTION_INTERVAL)

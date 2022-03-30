@@ -237,7 +237,7 @@ def do_iteration(requests, options, sclient, stats):
     for request_str in requests:
       control = request_str
       if ':' in request_str:
-        logging.warn("Ignoring %s, can't perform set with --info", request_str)
+        logging.warning("Ignoring %s, can't perform set with --info", request_str)
         continue
       results.append(sclient.doc(control))
   else:

@@ -97,7 +97,7 @@ class BBgpio(gpio_interface.GpioInterface):
           self._logger.debug('writing %d to %s', gpio_index, EXPORT_FILE)
           f.write('%d' % gpio_index)
       except IOError:
-        self._logger.warn('GPIO: %s was already exported.', gpio_index)
+        self._logger.warning('GPIO: %s was already exported.', gpio_index)
       if gpio_index not in self._exported_gpios:
         self._exported_gpios.append(gpio_index)
 

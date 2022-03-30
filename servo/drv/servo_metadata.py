@@ -56,7 +56,7 @@ class servoMetadata(hw_driver.HwDriver):
                 isinstance(h, servo.servo_logging.ServodRotatingFileHandler)]
     self._logger.info('Rotating out the log file per user request.')
     if not handlers:
-      self._logger.warn('No ServodRotatingFileHandlers on this instance. noop.')
+      self._logger.warning('No ServodRotatingFileHandlers on this instance. noop.')
     for h in handlers:
       h.doRollover()
 

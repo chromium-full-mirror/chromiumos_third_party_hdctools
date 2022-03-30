@@ -59,7 +59,7 @@ class kbHandlerInit(hw_driver.HwDriver):
       # Use servo onboard keyboard emulator.
       if not self._servo._syscfg.is_control('atmega_rst'):
         msg = 'No atmega in servo board. So no keyboard support.'
-        self._logger.warn(msg)
+        self._logger.warning(msg)
         raise kbHandlerInitError(msg)
       # This flag is used in servo v2/v3 to setup the atmega chip properly.
       legacy_atmega = 'init_atmega_uart' in self._params
@@ -95,7 +95,7 @@ class kbHandlerInit(hw_driver.HwDriver):
         else:
           # This might be working as intended e.g. micro without a v4.
           # Warn the user about this, but don't make a scene.
-          self._logger.warn('The servo setup does not have a usb keyboard '
+          self._logger.warning('The servo setup does not have a usb keyboard '
                             'emulator. Will not throw an error, but note '
                             'that the keyboard controls will fail, as only '
                             'noop keyboard could be setup.')

@@ -198,7 +198,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
       if trimmed_samples:
         self._data[domain] = trimmed_samples
       else:
-        self._logger.warn('Trimming to start ts: %.2f end ts: %.2f offset: %d'
+        self._logger.warning('Trimming to start ts: %.2f end ts: %.2f offset: %d'
                           ' has caused domain %r to become empty. Removing it '
                           'from the TimelinedStatsManager.', tstart, tend,
                           offset, domain)

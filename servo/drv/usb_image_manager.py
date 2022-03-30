@@ -193,11 +193,11 @@ class usbImageManager(hw_driver.HwDriver):
       time.sleep(self._POLLING_DELAY_S)
     # Split and join to help with error message formatting from XML that might
     # introduce multiple white-spaces.
-    self._logger.warn(' '.join(self._error_msg.split()))
-    self._logger.warn('Stick should be at one of the usb image dev file '
+    self._logger.warning(' '.join(self._error_msg.split()))
+    self._logger.warning('Stick should be at one of the usb image dev file '
                       'candidates: %s', ', '.join(image_location_candidates))
     if self._supports_hub_on_port:
-      self._logger.warn('If using a hub on the image key port, please make '
+      self._logger.warning('If using a hub on the image key port, please make '
                         'sure to use port %d on the hub. This should be at '
                         'one of: %s.', STORAGE_ON_HUB_PORT,
                         ', '.join(hub_location_candidates))

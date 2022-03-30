@@ -70,8 +70,8 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         # Send a more explicit warning and let the user know how to upgrade
         self._logger.info('latest %r firmware: %s', self._board, latest)
         # Warn the user to upgrade if needed.
-        self._logger.warn('======Warning======')
-        self._logger.warn('Not running latest stable firmware.')
-        self._logger.warn('Please run %r if desired to rectify.',
+        self._logger.warning('======Warning======')
+        self._logger.warning('Not running latest stable firmware.')
+        self._logger.warning('Please run %r if desired to rectify.',
                           'sudo servo_updater --board %s' % self._board)
-        self._logger.warn('======Warning======')
+        self._logger.warning('======Warning======')

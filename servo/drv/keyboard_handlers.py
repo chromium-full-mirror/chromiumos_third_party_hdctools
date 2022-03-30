@@ -53,11 +53,11 @@ class NoopHandler(_HandlerTemplate):
 
   def open(self):
     """Print warning only."""
-    self._logger.warn(self._BASE_WRN)
+    self._logger.warning(self._BASE_WRN)
 
   def close(self):
     """Print warning only."""
-    self._logger.warn(self._BASE_WRN)
+    self._logger.warning(self._BASE_WRN)
 
 
 class _BaseHandler(_HandlerTemplate):

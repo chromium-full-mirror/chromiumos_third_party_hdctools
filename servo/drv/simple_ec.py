@@ -140,7 +140,7 @@ class simpleEc(ec.ec):
         if retries <= 0:
           # Any known error is coming through as a HwDriverError derivative.
           self._error(cmd, regex, e)
-        self._logger.warn('Retry retrieving output for %r matching regex %r' % (cmd, regex))
+        self._logger.warning('Retry retrieving output for %r matching regex %r' % (cmd, regex))
       finally:
         self._restore_channel()
     # |results| should always be a list of tuples.

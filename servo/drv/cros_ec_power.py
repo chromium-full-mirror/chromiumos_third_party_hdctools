@@ -33,7 +33,7 @@ class CrosECPower(power_state.PowerStateDriver):
                                                    CONTROL_OUTPUT_EXPECTED,
                                                    logger = self._logger,
                                                    polling_timeout = self._shutdown_delay):
-        self._logger.warn(
+        self._logger.warning(
           "Timeout waiting for '%s' to reach '%s' after '%f s'"
           % (CONTROL_COMMAND, CONTROL_OUTPUT_EXPECTED, self._shutdown_delay))
 

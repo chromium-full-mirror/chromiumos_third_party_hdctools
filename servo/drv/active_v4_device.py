@@ -173,7 +173,7 @@ class activeV4Device(hw_driver.HwDriver):
       return self.get_v4_device_info('default')
 
     if using_servo == using_ccd:
-      self._logger.warn('No v4 device is enabled.')
+      self._logger.warning('No v4 device is enabled.')
       return 'neither'
 
     devices = self.get_v4_device_info('usable_devices')

@@ -390,18 +390,18 @@ class ServodStarter(object):
 
     (rlist, _, _) = select.select([sys.stdin], [], [], 10)
     if not rlist:
-      self._logger.warn('Timed out waiting for your choice\n')
+      self._logger.warning('Timed out waiting for your choice\n')
       return None
 
     rsp = rlist[0].readline().strip()
     try:
       rsp = int(rsp)
     except ValueError:
-      self._logger.warn('%s not a valid choice ... ignoring', rsp)
+      self._logger.warning('%s not a valid choice ... ignoring', rsp)
       return None
 
     if rsp < 0 or rsp >= len(all_servos):
-      self._logger.warn('%s outside of choice range ... ignoring', rsp)
+      self._logger.warning('%s outside of choice range ... ignoring', rsp)
       return None
 
     logging.info('')
@@ -509,12 +509,12 @@ class ServodStarter(object):
     iserial = usb_get_iserial(servo)
     self._logger.debug('iserial = %s', iserial)
     if not iserial:
-      self._logger.warn('Servo device has no iserial value')
+      self._logger.warning('Servo device has no iserial value')
     else:
       try:
         (lot_id, _) = iserial.split('-')
       except ValueError:
-        self._logger.warn("Servo device's iserial was unrecognized.")
+        self._logger.warning("Servo device's iserial was unrecognized.")
     return lot_id
 
   def get_auto_configs(self, board_version):

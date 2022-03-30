@@ -146,7 +146,7 @@ class I2cPseudoAdapter(object):
       assert self._started is not None
 
       if self._started:
-        self._logger.warn('I2C pseudo adapter already started')
+        self._logger.warning('I2C pseudo adapter already started')
         return
 
       self._started = True
@@ -387,7 +387,7 @@ class I2cPseudoAdapter(object):
     elif cmd_name == b'I2C_PSEUDO_ID':
       self._cmd_i2c_pseudo_id(line)
     else:
-      self._logger.warn(
+      self._logger.warning(
           'unrecognized I2C pseudo controller device command name %r' %
           (cmd_name,))
 

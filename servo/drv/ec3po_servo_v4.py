@@ -103,7 +103,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         optional_res = self._issue_safe_cmd_get_results('cc', [rx])
         return optional_res[0][1]
       except pty_driver.ptyError:
-        self._logger.warn('%s unsupported, return %s. Update the servo v4 fw.' %
+        self._logger.warning('%s unsupported, return %s. Update the servo v4 fw.' %
                           (warn_str, str(default)))
       return default
 

@@ -138,7 +138,7 @@ class pac1954(pac1934.pac1934):
     if c_fsr2 != v_fsr2:
       cs = 'using' if c_fsr2 else 'not using'
       vs = 'using' if v_fsr2 else 'not using'
-      self._logger.warn('current %s fsr2 while bus voltage is %s fsr2. Setting '
+      self._logger.warning('current %s fsr2 while bus voltage is %s fsr2. Setting '
                         'both to use fsr2.', cs, vs)
       self._Set_resolution(self.HIGH_RESOLUTION)
       _, _, c_fsr2, v_fsr2 = self._signed_and_fsr()
