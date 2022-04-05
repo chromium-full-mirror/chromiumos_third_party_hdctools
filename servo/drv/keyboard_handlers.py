@@ -576,6 +576,39 @@ class ChromeECHandler(_BaseHandler):
     """Simulate an arbitrary key press."""
     self._press_and_release_keys([self._arb_key], press_secs)
 
+class ChromeECBansheeHandler(ChromeECHandler):
+  """Banshee is a brya family device that is re-using its OEM's custom
+     keyboard matrix, thus it requires a custom key matrix here.
+     """
+
+  KEY_MATRIX = {'`': (4, 2), '1': (5, 2), '2': (5, 5), '3': (5, 4), '4': (5, 6),
+                '5': (4, 6), '6': (4, 7), '7': (5, 7), '8': (5, 10), '9': (5, 8),
+                '0': (4, 13), '-': (2, 13), '=': (4, 14), 'q': (0, 2), 'w': (6, 5),
+                'e': (2, 4), 'r': (6, 6), 't': (3, 6), 'y': (3, 7), 'u': (6, 7),
+                'i': (6, 10), 'o': (3, 8), 'p': (5, 13), '[': (6, 13), ']': (6, 14),
+                '\\': (2, 8), 'a': (7, 2), 's': (4, 5), 'd': (7, 14), 'f': (7, 6),
+                'g': (2, 6), 'h': (2, 7), 'j': (7, 7), 'k': (7, 10), 'l': (7, 8),
+                ';': (7, 13), '\'': (0, 14), 'z': (1, 5), 'x': (0, 5), 'c': (0, 0),
+                'v': (0, 6), 'b': (1, 6), 'n': (1, 7), 'm': (0, 7), ',': (0, 10),
+                '.': (0, 8), '/': (0, 13), ' ': (1, 4), '<right>': (2, 15),
+                '<alt_r>': (0, 3), '<down>': (1, 8), '<tab>': (3, 2),
+                '<f10>': (4, 8), '<shift_r>': (0, 9), '<ctrl_r>': (0, 12),
+                '<esc>': (7, 5), '<backspace>': (5, 14), '<f2>': (2, 5),
+                '<alt_l>': (1, 3), '<ctrl_l>': (1, 12), '<f1>': (3, 5),
+                '<search>': (4, 4), '<f3>': (6, 4), '<f4>': (3, 4), '<f5>': (4, 10),
+                '<f6>': (3, 10), '<f7>': (2, 10), '<f8>': (1, 15), '<f9>': (3, 11),
+                '<up>': (1, 13), '<shift_l>': (1, 9), '<enter>': (1, 14),
+                '<left>': (6, 11)}
+
+  def __init__(self, servo):
+    """Sets up the servo communication infrastructure.
+
+        @param servo: A Servo object representing
+                           the host running servod.
+        """
+    super(ChromeECBansheeHandler, self).__init__(servo)
+    self.open()
+
 
 class USBkm232Handler(_BaseHandler):
   """Keyboard handler for devices without internal keyboard."""
