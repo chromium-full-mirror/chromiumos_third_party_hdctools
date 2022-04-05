@@ -166,6 +166,8 @@ The following special parameters exist, and are useful to know about
 *   `map`
 
     As a parameter map tells servod what map to use for input on this control.
+    If a `map` name ends with `_re`, the map uses regex for matching, otherwise
+    it performs simple string matching.
 
 *   `cmd`
 

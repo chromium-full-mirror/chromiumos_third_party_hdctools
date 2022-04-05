@@ -596,13 +596,12 @@ class SystemConfig(object):
       if map_dict:
         for keyname, val in map_dict['map_params'].items():
           # try treating val as a regex expression
-          try:
+          if params['map'].endswith('_re'):
             if re.search(val, reformat_value):
               reformat_value = keyname
               break
-          # if error, val is not a regex expression
           # try matching it as a simple string
-          except re.error:
+          else:
             if val == reformat_value:
               reformat_value = keyname
               break

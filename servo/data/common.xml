@@ -15,7 +15,7 @@
   </map>
   <map>
     <name>enabled_re</name>
-    <doc>map enabled/disabled/access denied to on and off</doc>
+    <doc>map enabled/disabled/access denied to on and off using a regex</doc>
     <params on="ena" off="dis" unsupported="Access Denied"></params>
   </map>
   <map>
@@ -25,7 +25,7 @@
   </map>
   <map>
     <name>asserted_re</name>
-    <doc>map asserted/deasserted for on/off</doc>
+    <doc>map asserted/deasserted for on/off using a regex</doc>
     <params off="^deasserted" on="^asserted"></params>
   </map>
   <map>
@@ -55,12 +55,12 @@
   </map>
   <map>
     <name>press_re</name>
-    <doc>map for press and release of buttons with regex</doc>
+    <doc>map for press and release of buttons using a regex</doc>
     <params press="press" release="release"></params>
   </map>
   <map>
     <name>servo_re</name>
-    <doc>map a string that contains servo to on, otherwise to off</doc>
+    <doc>map a string that contains servo to on, otherwise to off using a regex</doc>
     <params on="servo" off="^((?!servo).)*$"></params>
   </map>
   <map>

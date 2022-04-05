@@ -256,7 +256,7 @@
     <alias>cr50_version</alias>
     <doc>current gsc version</doc>
     <params cmd="get" uart_cmd="version"
-    regex="RW_(A|B):\s+\*\s+([\S ]+)\s" group="2" interface="9" drv="cr50" 
+    regex="RW_(A|B):\s+\*\s+([\S ]+)\s" group="2" interface="9" drv="cr50"
     map="print" init="print" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
