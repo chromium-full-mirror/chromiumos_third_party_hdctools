@@ -82,6 +82,8 @@ class macro(hw_driver.HwDriver):
       for control, state in rules:
         if control not in self._get_list or not self._has_control(control):
           continue
+        if get_value(control) == 'not_applicable':
+          continue
         if get_value(control) != state:
           break
         matched += 1
