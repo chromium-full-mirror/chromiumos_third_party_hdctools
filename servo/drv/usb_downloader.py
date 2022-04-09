@@ -53,6 +53,7 @@ class usbDownloader(hw_driver.HwDriver):
     self._logger.debug('image_path(%s)', image_path)
     self._logger.debug('Detecting USB stick device...')
     usb_dev = self._interface.get(self._IMAGE_DEV)
+    self._logger.debug('USB Device is at %s', usb_dev)
     # |errormsg| is usd later to indicate the error
     errormsg = ''
     if not usb_dev:
@@ -63,24 +64,31 @@ class usbDownloader(hw_driver.HwDriver):
       try:
         if image_path.startswith(self._HTTP_PREFIX):
           self._logger.debug('Image path is a URL, downloading image')
+          self._logger.debug('Copy Started %s %s' % (image_path, usb_dev))
           urlretrieve(image_path, usb_dev)
+          self._logger.debug('Copy Ended')
         else:
           shutil.copyfile(image_path, usb_dev)
         # Ensure that after the download the usb-device is still attached, as
         # copyfile does not raise an error stick is removed mid-writing for
         # instance.
+        self._logger.debug('Checking stable after copy')
         if not self._interface.get('image_usbkey_dev'):
           raise usbDownloaderError('Device file %s not found again after '
                                    'copy completed.' % usb_dev)
       except ContentTooShortError:
+        self._logger.debug('Error ContentTooShortError')
         errormsg = 'Failed to download URL: %s to USB device: %s' % (image_path,
                                                                      usb_dev)
       except (IOError, OSError) as e:
+        self._logger.debug('Error IOError')
         errormsg = ('Failed to transfer image to USB device: %s ( %s ) ' %
                     (e.strerror, e.errno))
       except usbDownloaderError as e:
+        self._logger.debug('Error usbDownloaderError')
         errormsg = 'Failed to transfer image to USB device: %s' % e.message
       except BaseException as e:
+        self._logger.debug('Error BaseException')
         errormsg = ('Unexpected exception downloading %s to %s: %s' %
                     (image_path, usb_dev, str(e)))
       finally:
@@ -88,8 +96,13 @@ class usbDownloader(hw_driver.HwDriver):
         # Pass or fail, we mustn't go without telling the kernel about
         # the change, or it will punish us with sporadic, hard-to-debug
         # failures.
-        subprocess.call(['sync', usb_dev])
-        subprocess.call(['blockdev', '--rereadpt', usb_dev])
+        usb_dev = self._interface.get(self._IMAGE_DEV)
+        self._logger.debug('USB Device is at %s', usb_dev)
+        if self._interface.get(self._IMAGE_DEV):
+          self._logger.debug('Calling Sync')
+          subprocess.call(['sync', self._interface.get(self._IMAGE_DEV)])
+          self._logger.debug('Calling blockdev')
+          subprocess.call(['blockdev', '--rereadpt', self._interface.get(self._IMAGE_DEV)])
     if errormsg:
       self._logger.error(errormsg)
       raise usbDownloaderError(errormsg)

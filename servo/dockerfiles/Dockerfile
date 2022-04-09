@@ -223,6 +223,10 @@ COPY /hdctools/servo/dockerfiles/update_servo_firmware.py \
      /hdctools/servo/dockerfiles/start_servod.sh /hdctools/servo/dockerfiles/stop_servod.sh \
      /
 
+RUN mv /bin/sync /usr/local/bin/real_sync
+COPY /hdctools/servo/dockerfiles/sync /bin
+RUN chmod 755 /bin/sync
+
 RUN apt-get remove -y \
         xz-utils \
     && apt-get autoclean \

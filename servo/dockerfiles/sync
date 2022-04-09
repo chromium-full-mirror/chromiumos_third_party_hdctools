@@ -1,0 +1,14 @@
+# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+#!/bin/bash
+
+set -x
+
+if [ $# -eq 0 ]; then
+    echo "Calling sync without arguments is not allowed"
+    exit 0
+fi
+
+/usr/local/bin/real_sync "$@"
