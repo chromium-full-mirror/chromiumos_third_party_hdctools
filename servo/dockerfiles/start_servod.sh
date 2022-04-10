@@ -99,6 +99,19 @@ fi
 
 echo "Launching servod for $BOARD $MODEL_MSG on port $PORT $SERIAL_MSG"
 
+if [ "${1//[[:blank:]]/}" = "--non-privileged" ]; then
+    for i in $(seq 1 255); do mknod /dev/ttyUSB$i c 189 $i; done
+
+    count=0
+    second_count=26
+    for i in {a..z}; do
+        mknod /dev/sd$i b 189 $count
+        mknod /dev/sda$i b 189 $second_count
+        ((count++))
+        ((second_count++))
+    done
+fi
+
 servod \
     --host 0.0.0.0 \
     --log-dir-backup-count $LOG_BACKUP_COUNT \
