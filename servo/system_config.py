@@ -238,6 +238,9 @@ class SystemConfig(object):
         alias = element.findtext('alias')
         remap = element.findtext('remap')
         clone = element.findtext('clone')
+        # only patch existing controls, otherwise ignore
+        # TODO: can be cleaned up with a single source of control xmls
+        patch = element.findtext('patch')
 
         if remap:
           if name_prefix:
@@ -367,6 +370,9 @@ class SystemConfig(object):
           if doc != 'undocumented':
             self.syscfg_dict[tag][name]['doc'] = doc
         else:
+          if patch:
+            self._logger.debug('Cannot patch nonexistent control %s.' % name)
+            continue
           # it's a new control
           self.syscfg_dict[tag][name] = {
               'doc': doc,

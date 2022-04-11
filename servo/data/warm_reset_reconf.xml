@@ -5,6 +5,14 @@
     <remap>warm_reset</remap>
   </control>
   <!-- overwrite its config as pull-up and reversed polarity -->
+  <!-- TODO: can be cleaned up with a single source of control xmls -->
+  <control>
+    <name>hpd</name>
+    <doc>hpd</doc>
+    <patch>hpd</patch>
+    <params map="onoff_i" clobber_ok=""/>
+  </control>
+  <!-- Not overwrite the map for warm_reset as it might not be using onoff or onoff_i -->
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
