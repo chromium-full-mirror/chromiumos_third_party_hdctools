@@ -35,8 +35,8 @@ COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
 
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update --no-install-recommends  \
+    && apt-get install -y --no-install-recommends  \
         libusb-1.0-0-dev \
         cmake \
         tidy \
@@ -65,8 +65,8 @@ FROM ec-$BUILD_ENV as ec-builder
 
 WORKDIR /
 
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
           libusb-1.0-0-dev \
           curl \
     && rm -rf /var/lib/apt/lists/*
@@ -117,7 +117,7 @@ RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
 FROM gcc:10.3-buster as uhubctl
 
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get install -y --no-install-recommends \
           libusb-1.0-0-dev
 
 RUN git clone https://github.com/mvp/uhubctl
@@ -125,10 +125,20 @@ WORKDIR /uhubctl
 RUN make
 
 ######################################################################
+FROM python:3.7-buster as firmware-installer
+
+RUN pip install --upgrade pip && pip3 install gsutil
+
+RUN mkdir -p /usr/share/servo_updater/firmware/
+WORKDIR /usr/share/servo_updater/firmware/
+COPY /hdctools/servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
+RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
+
+######################################################################
 FROM python:3.7-slim-buster
 
-RUN apt-get update \
-    && apt-get install -y \
+RUN apt-get update --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
         iptables \
         libusb-1.0-0-dev \
         kmod \
@@ -139,8 +149,8 @@ RUN apt-get update \
         iputils-ping \
         procps \
         udev \
-    && rm -rf /var/lib/apt/lists/*
-RUN update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+    && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
 # Install python packages.
 COPY /hdctools/servo/dockerfiles/requirements.txt /opt/requirements.txt
@@ -157,37 +167,40 @@ RUN rm -rf wheels
 
 # Install servo_firmware.
 RUN mkdir -p /usr/share/servo_updater/firmware/
-WORKDIR /usr/share/servo_updater/firmware/
-COPY /hdctools/servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
-RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
+COPY --from=firmware-installer /usr/share/servo_updater/firmware/ /usr/share/servo_updater/firmware/
+RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
 
 COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
 
-RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
+
 
 # Install ec tools
-COPY --from=ec-builder /ec/build/elm/util/ectool /usr/sbin/
-COPY --from=ec-builder /ec/build/elm/util/ec_parse_panicinfo /usr/sbin/
-COPY --from=ec-builder /ec/build/elm/util/ec_sb_firmware_update /usr/sbin/
-COPY --from=ec-builder /ec/extra/usb_updater/usb_updater2 /usr/sbin/
-COPY --from=ec-builder /ec/build/elm/util/stm32mon /usr/bin/
-COPY --from=ec-builder /ec/build/elm/util/uartupdatetool /usr/bin/
-COPY --from=ec-builder /ec/build/elm/util/iteflash /usr/bin/
-COPY --from=ec-builder /ec/util/flash_ec /usr/bin/
-COPY --from=ec-builder /ec/util/uart_stress_tester.py /usr/bin/
+COPY --from=ec-builder \
+    /ec/build/elm/util/ectool \
+    /ec/build/elm/util/ec_parse_panicinfo \
+    /ec/build/elm/util/ec_sb_firmware_update \
+    /ec/extra/usb_updater/usb_updater2 \
+    /ec/build/elm/util/stm32mon \
+    /ec/build/elm/util/uartupdatetool \
+    /ec/build/elm/util/iteflash \
+    /ec/util/flash_ec \
+    /ec/util/uart_stress_tester.py \
+    /usr/sbin/
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 
-COPY --from=ec-builder /usr/lib/libfmap.so* /usr/lib/
-COPY --from=ec-builder /usr/lib/libftdi* /usr/lib/
+COPY --from=ec-builder \
+        /usr/lib/libfmap.so* \
+        /usr/lib/libftdi* \
+        /usr/lib/
+
+COPY --from=ec-builder /usr/share/misc/shflags /usr/share/misc/shflags
+COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
 COPY --from=hdctools-builder /hdctools/build/lib/libftdi* /usr/lib/
 
-COPY --from=ec-builder /usr/share/misc/shflags /usr/share/misc/shflags
-
 RUN mkdir -p /usr/share/ec-devutils
-COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
 # Install uhubctl
 COPY --from=uhubctl /uhubctl/uhubctl /usr/local/bin/
@@ -206,8 +219,9 @@ LABEL com.centurylinklabs.watchtower.enable="false"
 ENV UDEV 1
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
-COPY /hdctools/servo/dockerfiles/update_servo_firmware.py /
-COPY /hdctools/servo/dockerfiles/start_servod.sh /hdctools/servo/dockerfiles/stop_servod.sh /
+COPY /hdctools/servo/dockerfiles/update_servo_firmware.py \
+     /hdctools/servo/dockerfiles/start_servod.sh /hdctools/servo/dockerfiles/stop_servod.sh \
+     /
 
 RUN apt-get remove -y \
         xz-utils \

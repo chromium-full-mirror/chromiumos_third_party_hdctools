@@ -1,6 +1,6 @@
-gsutil
 numpy
 pexpect
 pyserial
 pyusb
 pytest
+six
