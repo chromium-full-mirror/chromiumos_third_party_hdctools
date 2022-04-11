@@ -49,7 +49,6 @@ RUN cd /libftdi1-1.2 \
     && cmake -DCMAKE_INSTALL_PREFIX="/usr" ../ \
     && make \
     && make install
-RUN rm -rf /libftdi1-1.2
 
 ######################################################################
 FROM libftdi as ec-developer
@@ -72,7 +71,6 @@ RUN apt-get update --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
 RUN cd /flashmap && make && make install
-RUN rm -rf /flashmap
 
 WORKDIR /ec
 RUN make utils-host \
@@ -114,7 +112,7 @@ RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
 
 ######################################################################
-FROM gcc:10.3-buster as uhubctl
+FROM gcc:10.3-buster as uhubctl-builder
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -135,6 +133,34 @@ COPY /hdctools/servo/dockerfiles/servo_firmware_provision.py servo_firmware_prov
 RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
 
 ######################################################################
+FROM libftdi as flashrom-builder
+
+WORKDIR /
+RUN pip3 install meson ninja
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
+
+RUN apt-get update \
+    && apt-get install -y \
+        libusb-1.0-0-dev \
+        cmake \
+	    libpci-dev
+
+WORKDIR /flashrom
+RUN meson builddir && cd builddir && meson install
+
+######################################################################
+FROM flashrom-builder as futility-builder
+
+# Install vboot.
+WORKDIR /
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference
+WORKDIR /vboot_reference
+RUN make && make install
+
+RUN strip /usr/bin/futility
+
+######################################################################
+
 FROM python:3.7-slim-buster
 
 RUN apt-get update --no-install-recommends \
@@ -149,6 +175,7 @@ RUN apt-get update --no-install-recommends \
         iputils-ping \
         procps \
         udev \
+        libpci-dev \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
@@ -203,15 +230,25 @@ COPY --from=hdctools-builder /hdctools/build/lib/libftdi* /usr/lib/
 RUN mkdir -p /usr/share/ec-devutils
 
 # Install uhubctl
-COPY --from=uhubctl /uhubctl/uhubctl /usr/local/bin/
+COPY --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
 RUN chmod 755 /usr/local/bin/uhubctl
+
+# Install flashrom
+COPY --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/
+RUN chmod 755 /usr/local/sbin/flashrom
+# Install futility
+COPY --from=futility-builder /usr/bin/futility /usr/bin/
+RUN chmod 755 /usr/bin/futility
+COPY --from=futility-builder /usr/local/lib/x86_64-linux-gnu/libflashrom.so.1.0.0 /usr/lib
+RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
+    ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
+
 
 # Install cbfstool for flashrom and ec.
 COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
 
 RUN mkdir -p /usr/share/ec-devutils
-
 # # Avoid watchtower updating servod, it gets pulled before every start of the
 # # container, we should not stop/start it in the case a new version is pushed.
 LABEL com.centurylinklabs.watchtower.enable="false"
