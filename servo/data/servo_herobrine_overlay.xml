@@ -57,9 +57,15 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
+    <!--
+      The order does matter. The device has to be put in reset with cr50 idle
+      set to active before any other configuration, so cr50 settings won't get
+      cleared by a deep sleep reset.
+    -->
     <params clobber_ok=""
-      set_value_1="spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:off
-                   ap_flash_select:on cold_reset:on spi_hold:off"
+      set_value_1="cold_reset:on sleep:2 gsc_idle_level:active spi2_buf_en:on
+                   spi2_buf_on_flex_en:on spi2_vref:off ap_flash_select:on
+                   spi_hold:off"
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
                    ap_flash_select:off cold_reset:off spi_hold:off"
       />
