@@ -108,11 +108,12 @@ class Device(tool.Tool):
     ts.pty._issue_cmd_get_results('chan 0', ['>'])
     try:
       ts.pty._issue_cmd_get_results('reboot', ['>'])
-    except ptyError as e:
+    except ptyError as ex:
       # We except a no-data error here occasionally, if the reboot
       # was too quick for the console to send a newline. That's fine.
-      if 'No data was sent from the pty' not in str(e):
+      if 'No data was sent from the pty' not in str(ex):
         raise
+      e = ex
     # Make sure the device comes back with a new devnum before attempting
     # to comminucate with it.
     self._check_devnum_reset(dev_path, devnum, 'reboot')
@@ -127,10 +128,11 @@ class Device(tool.Tool):
                                       [r'Serial number: ([^\r\n]+)[\n\r]+'])
         ts.pty._issue_cmd_get_results('chan restore', ['>'])
         return
-      except Exception as e:
+      except Exception as ex:
         # store the exception in e here so that we have access to it later
         # if we need to print it.
-        self._logger.debug(e)
+        self._logger.debug(ex)
+        e = ex
       time.sleep(self.REBOOT_SLEEP_S)
     self.error('Device %04x:%04x %s issue after reboot: %s',
                vid, pid, args.serial, e)
