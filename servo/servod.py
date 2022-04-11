@@ -499,6 +499,14 @@ class ServodStarter(object):
   def get_lot_id(self, servo):
     """Get lot_id for a given servo.
 
+    This is a legacy method, It used to be that the serials were formatted
+    a certain way and from there you can extract a lot id and this was helpful
+    because a bunch of v2 are laying around that have the wrong vid/pid.
+
+    The lot_id is useful in that case.
+
+    This code should be removed when V2 support is finally removed.
+
     Args:
       servo: usb.Device object
 
@@ -509,12 +517,15 @@ class ServodStarter(object):
     iserial = usb_get_iserial(servo)
     self._logger.debug('iserial = %s', iserial)
     if not iserial:
-      self._logger.warning('Servo device has no iserial value')
+      self._logger.debug('Servo device has no iserial value')
     else:
       try:
         (lot_id, _) = iserial.split('-')
       except ValueError:
-        self._logger.warning("Servo device's iserial was unrecognized.")
+        self._logger.debug((
+          "Servo device's iserial does not support lot_id format."
+          "This is expected unless you are running servo v2 [%s]", iserial
+          ))
     return lot_id
 
   def get_auto_configs(self, board_version):
