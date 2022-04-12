@@ -163,9 +163,9 @@
   </control>
   <control>
     <name>gsc_ccd_level</name>
-    <alias>cr50_ccd_level, which can be lock, unlock, or open based on the current
-    ccd privilege level.</alias>
-    <doc>State of CCD</doc>
+    <alias>cr50_ccd_level</alias>
+    <doc>State of CCD, which can be lock, unlock, or open based on the current
+    ccd privilege level.</doc>
     <params cmd="get" uart_cmd="ccd" regex="State:\s+(Lock|Unlock|Open)" group="1" fmt="lowercase" interface="9" drv="cr50" input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
