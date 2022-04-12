@@ -228,10 +228,10 @@
     <alias>cr50_idle_level</alias>
     <doc>Controls the level of sleep the gsc will enter when idling.</doc>
     <params cmd="get" uart_cmd="idle"
-    regex="idle action:\s+(\w+)" group="1" fmt="lowercase" interface="9" 
+    regex="idle action:\s+(\w+)" group="1" fmt="lowercase" interface="9"
     drv="cr50" input_type="str" map="idle_states"></params>
-    <params cmd="set" uart_cmd="idle" choices="^(wfi|sleep)$" interface="9" 
-    drv="cr50" input_type="str"></params>
+    <params cmd="set" uart_cmd="idle" interface="9" drv="cr50" input_type="str"
+    map="idle_states"></params>
   </control>
   <!-- gsc UART Buffers & VREF Controls -->
   <control>
