@@ -117,7 +117,7 @@
   <control>
     <name>ccd_cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over CCD</doc>
-    <params clobber_ok=""
+    <params clobber_ok="" interface="servo" drv="macro" map="onoff"
       set_value_1="ap_flash_select:on cold_reset:on"
       set_value_0="ap_flash_select:off cold_reset:off"
       />
