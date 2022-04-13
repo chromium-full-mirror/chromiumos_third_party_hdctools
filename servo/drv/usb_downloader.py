@@ -98,11 +98,11 @@ class usbDownloader(hw_driver.HwDriver):
         # failures.
         usb_dev = self._interface.get(self._IMAGE_DEV)
         self._logger.debug('USB Device is at %s', usb_dev)
-        if self._interface.get(self._IMAGE_DEV):
+        if usb_dev:
           self._logger.debug('Calling Sync')
-          subprocess.call(['sync', self._interface.get(self._IMAGE_DEV)])
+          subprocess.call(['sync', usb_dev])
           self._logger.debug('Calling blockdev')
-          subprocess.call(['blockdev', '--rereadpt', self._interface.get(self._IMAGE_DEV)])
+          subprocess.call(['blockdev', '--rereadpt', usb_dev])
     if errormsg:
       self._logger.error(errormsg)
       raise usbDownloaderError(errormsg)
