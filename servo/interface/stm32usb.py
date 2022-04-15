@@ -234,9 +234,9 @@ class Susb():
     """
     devid = self.get_device_info()
     if devid not in self.DEV_EP_STORE:
-      raise SusbError('Device %r has no endpoints setup' % devid)
+      raise SusbError('Device %r has no endpoints setup' % (devid,))
     if self._interface not in self.DEV_EP_STORE[devid]:
-      raise SusbError('Device %r has no edpoints setup for interface %d' %
+      raise SusbError('Device %r has no endpoints setup for interface %d' %
                       (devid, self._interface))
     if write:
       return self.DEV_EP_STORE[devid][self._interface].write_ep
