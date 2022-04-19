@@ -91,6 +91,51 @@ Note that `$CONFIG_FILE.xml` is generated in the previous step. Both `dut-power`
 and `dut-control` are servod clients that talk to servod and fetch power data
 from the Servo or Sweetberry.
 
+### Unlock CCD
+
+If the current-sensor data is to be read out from USB-C interface (CCD), the
+GSC must be configured to forward the I2C current sensor bus to the SBU (USB)
+interface. You can check whether this is already the case by running `ccd` in
+GSC console:
+
+```bash
+>> ccd
+	State: Locked
+	Password: none
+	Flags: 0x000000
+	Capabilities: 0000000000000000
+	UartGscRxAPTx   Y 0=Default (Always)
+	UartGscTxAPRx   Y 0=Default (Always)
+	UartGscRxECTx   Y 0=Default (Always)
+	UartGscTxECRx   - 0=Default (IfOpened)
+	FlashAP         - 0=Default (IfOpened)
+	FlashEC         - 0=Default (IfOpened)
+	OverrideWP      - 0=Default (IfOpened)
+	RebootECAP      - 0=Default (IfOpened)
+	GscFullConsole  - 0=Default (IfOpened)
+	UnlockNoReboot  Y 0=Default (Always)
+	UnlockNoShortPP Y 0=Default (Always)
+	OpenNoTPMWipe   - 0=Default (IfOpened)
+	OpenNoLongPP    - 0=Default (IfOpened)
+	BatteryBypassPP Y 0=Default (Always)
+	Unused          Y 0=Default (Always)
+	I2C             - 0=Default (IfOpened)
+	FlashRead       Y 0=Default (Always)
+	OpenNoDevMode   Y 0=Default (Always)
+	OpenFromUSB     Y 0=Default (Always)
+	OverrideBatt    - 0=Default (IfOpened)
+	APROCheckVC     - 0=Default (IfOpened)
+```
+
+`I2C` flag will be set to `(Always)` if this bus can be accessed via CCD.
+`(IfOpened)` means the bus is inaccessible by default.
+
+To unlock the I2C bus, run `ccd open` and follow the instructions printed on
+the console. `ccd reset factory` will save these flags into GSC's non-volatile
+memory, so that the unlocked state will be retained. You can revert back to
+locked mode with `ccd reset` (usually required before device leaves the
+factory).
+
 ### dut-power
 
 Recommended, for users who only want measurements in power.
