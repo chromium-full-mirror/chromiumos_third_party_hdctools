@@ -16,17 +16,54 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM gcc:10.3-buster as cbfstool
+FROM debian:buster as clang-builder
+
+RUN apt-get update \
+    && apt-get install -y \
+        autoconf \
+        build-essential \
+        clang \
+        curl \
+        git \
+        libssl-dev \
+        libtool \
+        pkg-config \
+        python3 \
+        python3-distutils \
+        python3-setuptools \
+        uuid-dev \
+        wget
+
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3 ./get-pip.py
+RUN pip3 install --upgrade pip && pip3 install wheel
+
+######################################################################
+FROM clang-builder as cbfstool
 
 RUN wget https://coreboot.org/releases/coreboot-4.14.tar.xz && tar xf coreboot-4.14.tar.xz && rm /coreboot-4.14.tar.xz
 RUN cd /coreboot-4.14/util/cbfstool && make
 
 ######################################################################
-FROM python:3.7-buster as libftdi
+FROM clang-builder as libusb-builder
+
+RUN git clone https://github.com/libusb/libusb
+WORKDIR /libusb
+
+# Disable udev to avoid issues of libusb thinking the device is still attached
+# after a software reboot.
+RUN ./bootstrap.sh && ./configure --with-pic --disable-udev && make && make install
+
+# Change the package config to have pthread for linking.
+RUN sed -i 's/Libs: -L\${libdir} -lusb-1.0/Libs: -L\${libdir} -lusb-1.0 -lpthread /g' /libusb/libusb-1.0.pc
+
+#####################################################################
+FROM clang-builder as libftdi
 
 RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2 \
     && tar xf libftdi1-1.2.tar.bz2 \
     && rm libftdi1-1.2.tar.bz2
+
 COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/libftdi-1.2-getopts.patch \
     /libftdi1-1.2/
@@ -37,18 +74,32 @@ COPY --from=chromiumos_overlays \
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
-        libusb-1.0-0-dev \
         cmake \
         tidy \
     && rm -rf /var/lib/apt/lists/*
 
-RUN cd /libftdi1-1.2 \
-    && git apply libftdi-1.2-getopts.patch \
-    && mkdir build \
+
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+
+WORKDIR /libftdi1-1.2
+
+RUN git apply libftdi-1.2-getopts.patch
+
+# The examples have a linking issue, not used for anything, disable them.
+RUN sed -i s/.*examples.*//g CMakeLists.txt
+RUN sed -i s/.*examples.*//g libftdi1.spec.in
+
+
+RUN mkdir build \
     && cd build \
     && cmake -DCMAKE_INSTALL_PREFIX="/usr" ../ \
     && make \
     && make install
+
+WORKDIR /
 
 ######################################################################
 FROM libftdi as ec-developer
@@ -56,6 +107,7 @@ COPY /ec /ec
 
 #######################################################################
 FROM libftdi AS ec-production
+
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 
 ######################################################################
@@ -64,13 +116,15 @@ FROM ec-$BUILD_ENV as ec-builder
 
 WORKDIR /
 
-RUN apt-get update --no-install-recommends \
-    && apt-get install -y --no-install-recommends \
-          libusb-1.0-0-dev \
-          curl \
-    && rm -rf /var/lib/apt/lists/*
 RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
 RUN cd /flashmap && make && make install
+
+# Install libusb.
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
+ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
 RUN make utils-host \
@@ -98,7 +152,7 @@ RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 ARG BUILD_ENV
 FROM hdctools-$BUILD_ENV as hdctools-builder
 
-RUN pip install --upgrade pip && pip3 install pytest
+RUN pip3 install pytest
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
@@ -111,15 +165,19 @@ RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
 
-######################################################################
-FROM gcc:10.3-buster as uhubctl-builder
+#####################################################################
+FROM clang-builder as uhubctl-builder
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-          libusb-1.0-0-dev
+RUN apt-get update --no-install-recommends  \
+    && apt-get install -y --no-install-recommends  \
+        libudev-dev
 
 RUN git clone https://github.com/mvp/uhubctl
 WORKDIR /uhubctl
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN make
 
 ######################################################################
@@ -141,7 +199,6 @@ RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 
 RUN apt-get update \
     && apt-get install -y \
-        libusb-1.0-0-dev \
         cmake \
 	    libpci-dev
 
@@ -163,19 +220,26 @@ RUN strip /usr/bin/futility
 
 FROM python:3.7-slim-buster
 
+# Install libusb.
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
+        dnsutils \
         iptables \
-        libusb-1.0-0-dev \
+        iputils-ping \
         kmod \
+        libatomic1 \
+        libpci-dev \
         lsof \
+        procps \
+        sudo \
+        udev \
         usbutils \
         xz-utils \
-        dnsutils \
-        iputils-ping \
-        procps \
-        udev \
-        libpci-dev \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
@@ -200,8 +264,6 @@ RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
 COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
-
-
 
 # Install ec tools
 COPY --from=ec-builder \
@@ -236,13 +298,13 @@ RUN chmod 755 /usr/local/bin/uhubctl
 # Install flashrom
 COPY --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/
 RUN chmod 755 /usr/local/sbin/flashrom
+
 # Install futility
 COPY --from=futility-builder /usr/bin/futility /usr/bin/
 RUN chmod 755 /usr/bin/futility
 COPY --from=futility-builder /usr/local/lib/x86_64-linux-gnu/libflashrom.so.1.0.0 /usr/lib
 RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
     ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
-
 
 # Install cbfstool for flashrom and ec.
 COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
