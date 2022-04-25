@@ -225,7 +225,7 @@ COPY --from=ec-builder \
 COPY --from=ec-builder /usr/share/misc/shflags /usr/share/misc/shflags
 COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
-COPY --from=hdctools-builder /hdctools/build/lib/libftdi* /usr/lib/
+COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
 
 RUN mkdir -p /usr/share/ec-devutils
 

@@ -22,7 +22,7 @@ def setup():
     return client
 
 
-def start_servod(client, dut_hostname, board, model, serial_no):
+def start_servod(client, dut_hostname, board, model, serial_no, test=False):
     environment = [
         "BOARD=%s" % board,
         "MODEL=%s" % model,
@@ -32,6 +32,10 @@ def start_servod(client, dut_hostname, board, model, serial_no):
 
     name = "%s-docker_servod" % dut_hostname
     logs_volume = "%s_log" % dut_hostname
+
+    command = ["bash", "/start_servod.sh"]
+    if test:
+        command = ["pytest", "/hdctools/servo/tests/"]
 
     cont = client.containers.run(
         IMAGE,
@@ -43,17 +47,20 @@ def start_servod(client, dut_hostname, board, model, serial_no):
         detach=True,
         volumes=["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume],
         environment=environment,
-        command=["bash", "/start_servod.sh"],
+        command=command,
     )
     log_lines = cont.logs(stream=True, follow=True)
     started = False
     while log_lines and not started:
+        cont.reload()
         for line in log_lines:
             print(line.decode("utf-8").strip())
             if b"servod - INFO - Listening on 0.0.0.0 port" in line:
                 started = True
                 logging.info("Detected servod has started.")
                 break
+        if cont.status == "removing":
+            break
 
 
 if __name__ == "__main__":
@@ -78,6 +85,14 @@ if __name__ == "__main__":
         type=str,
         help="The serial number of the servo.",
     )
+    parser.add_argument(
+        "-t",
+        "--run_tests",
+        action=argparse.BooleanOptionalAction,
+        help="Run the servod tests and exist.",
+    )
     args = parser.parse_args()
     client = setup()
-    start_servod(client, args.hostname, args.board, args.model, args.serial)
+    start_servod(
+        client, args.hostname, args.board, args.model, args.serial, args.run_tests
+    )
