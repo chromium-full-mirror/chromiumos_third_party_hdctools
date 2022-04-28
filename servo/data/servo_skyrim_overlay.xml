@@ -6,7 +6,7 @@
     <name>x86_ec_common.xml</name>
   </include>
   <include>
-    <name>cr50.xml</name>
+    <name>ti50.xml</name>
   </include>
   <include>
     <name>cpu_fw_spi.xml</name>
