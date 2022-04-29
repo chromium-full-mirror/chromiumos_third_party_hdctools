@@ -51,6 +51,12 @@ class Susb():
   # no two threads try to set the configuration at the same time.
   DEVICE_LOCKS = collections.defaultdict(threading.Lock)
 
+  # Device-level events used to signal when a thread is trying to reinitialize the
+  # interface on a device. Since endpoints are being read in a (tight) loop like in
+  # the UART interfaces, we want the tight loop to pause and give the right-of-way
+  # to reinit interfaces (including non-UART interfaces) on the same device.
+  REINIT_DONE_EVENTS = collections.defaultdict(threading.Event)
+
   def __init__(self, vendor=0x18d1, product=0x500f, interface=1,
                serialname=None, logger=None):
     """Susb constructor.
@@ -70,11 +76,6 @@ class Susb():
       raise SusbError('No logger defined')
     self._logger = logger
     self._logger.debug('')
-    # An event used to signal when a thread is trying to reinitialize the
-    # interface.
-    self._reset_done = threading.Event()
-    # Only clear the flag when performing a reset.
-    self._reset_done.set()
     # Setting up the read and write locks. These are per instance, as each
     # instance represents one interface.
     self._read_ep_lock = threading.Lock()
@@ -87,7 +88,12 @@ class Susb():
     self._interface = interface
     self._serialname = serialname
     self._dev = None
+
+    # An event used to signal when a thread is trying to reinitialize the
+    # interface. Only clear the flag when performing a reset.
+    self.REINIT_DONE_EVENTS[self.get_device_info()].set()
     self._find_device()
+
 
   @contextlib.contextmanager
   def _hold_lock(self, lock):
@@ -102,29 +108,31 @@ class Susb():
     """Potentially give the resetting thread preference.
 
     When endpoints are being read in a (tight) loop like in the UART interfaces,
-    a rice might happen between the reinitialization thread and the UART threads
-    the reinitialization thread keeps losing out on the lock.
+    a race might happen between the reinitialization threads and the UART threads
+    and the reinitialization threads keep losing out on the lock. The reinitialization
+    threads might not be UART threads, and the UART threads should still give the
+    right-of-way to the reinitialization threads regardless.
 
-    With this helper, the thread can indicate that a reinit is about to happen,
-    encouraging other threads that are performing read/write to stop asking for
-    the lock, and wait until reinit is done.
+    With this helper, the thread can indicate that a reinit is about to happen on the 
+    same device, encouraging other threads that are performing read/write to stop asking 
+    for the lock, and wait until reinit is done.
     """
     # Set a very generous timeout for resetting to complete i.e the timeout
     # acquire both locks slowly, and one more lock timeout as buffer.
-    if not self._reset_done.wait(3*self.LOCK_TIMEOUT_S):
+    if not self.REINIT_DONE_EVENTS[self.get_device_info()].wait(3*self.LOCK_TIMEOUT_S):
       raise SusbError('Reset seems to have never finished for %04x:%04x %s' %
                       self.get_device_info())
 
   def reset_usb(self):
     """Reinitializes USB based on the device based settings from __init__"""
     # Signal that resetting is about to happen.
-    self._reset_done.clear()
+    self.REINIT_DONE_EVENTS[self.get_device_info()].clear()
     # Reading and writing is unavailable until the reset has finished.
     with self._hold_lock(self._read_ep_lock):
       with self._hold_lock(self._write_ep_lock):
         self._find_device()
     # Signal that resetting is done.
-    self._reset_done.set()
+    self.REINIT_DONE_EVENTS[self.get_device_info()].set()
 
   def get_device_info(self):
     """Returns a tuple (vid, pid, serialname)."""
