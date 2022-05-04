@@ -102,17 +102,15 @@ RUN mkdir build \
 WORKDIR /
 
 ######################################################################
-FROM libftdi as ec-developer
-COPY /ec /ec
 
-#######################################################################
-FROM libftdi AS ec-production
+FROM libftdi as ec-builder
 
+# This is setup for the most normal case, developers and cloud builds
+# to pull the code from the checked in ec repo.
+# If you wish to build/test changes to the ec repo as a developer
+# uncomment the copy line and comment out the git clone line.
+# COPY /ec /ec
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
-
-######################################################################
-ARG BUILD_ENV
-FROM ec-$BUILD_ENV as ec-builder
 
 WORKDIR /
 
@@ -143,14 +141,13 @@ RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output
 ######################################################################
 FROM libftdi as hdctools-developer
 COPY hdctools/ hdctools/
+FROM libftdi as hdctools-builder
 
-#######################################################################
-FROM libftdi AS hdctools-production
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
-
-######################################################################
-ARG BUILD_ENV
-FROM hdctools-$BUILD_ENV as hdctools-builder
+# For cloud build and for developers copying the local source is correct, if
+# you need to build from checked in code vs you local source comment out the
+# copy command and uncomment the clone command.
+COPY hdctools/ hdctools/
+#RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
 RUN pip3 install pytest
 
@@ -168,9 +165,6 @@ RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
 #####################################################################
 FROM clang-builder as uhubctl-builder
 
-RUN apt-get update --no-install-recommends  \
-    && apt-get install -y --no-install-recommends  \
-        libudev-dev
 
 RUN git clone https://github.com/mvp/uhubctl
 WORKDIR /uhubctl
@@ -237,7 +231,6 @@ RUN apt-get update --no-install-recommends \
         lsof \
         procps \
         sudo \
-        udev \
         usbutils \
         xz-utils \
     && rm -rf /var/lib/apt/lists/* \
@@ -315,7 +308,6 @@ RUN mkdir -p /usr/share/ec-devutils
 # # container, we should not stop/start it in the case a new version is pushed.
 LABEL com.centurylinklabs.watchtower.enable="false"
 
-ENV UDEV 1
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
 COPY /hdctools/servo/dockerfiles/update_servo_firmware.py \
