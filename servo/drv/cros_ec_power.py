@@ -7,7 +7,7 @@ from servo.drv import power_state
 from servo.drv import polling_control
 
 CONTROL_COMMAND = 'ec_system_powerstate'
-CONTROL_OUTPUT_EXPECTED = 'G3'
+CONTROL_OUTPUT_EXPECTED = ['S5', 'G3']
 
 class CrosECPower(power_state.PowerStateDriver):
   """Driver for power_state for boards support EC command."""
