@@ -8,6 +8,7 @@ from servo.drv import polling_control
 
 CONTROL_COMMAND = 'ec_system_powerstate'
 CONTROL_OUTPUT_EXPECTED = ['S5', 'G3']
+POWER_OFF_POLLING_INTERVAL_S = 0.5
 
 class CrosECPower(power_state.PowerStateDriver):
   """Driver for power_state for boards support EC command."""
@@ -43,11 +44,13 @@ class CrosECPower(power_state.PowerStateDriver):
     self._interface.set('ec_uart_cmd', self._shutdown_ec_command)
 
     if manage_delay:
-      if not polling_control.PollingControl().poll(self._interface,
-                                                   CONTROL_COMMAND,
-                                                   CONTROL_OUTPUT_EXPECTED,
-                                                   logger = self._logger,
-                                                   polling_timeout = self._shutdown_delay):
+      if not polling_control.PollingControl().poll(
+          self._interface,
+          CONTROL_COMMAND,
+          CONTROL_OUTPUT_EXPECTED,
+          logger=self._logger,
+          polling_interval=POWER_OFF_POLLING_INTERVAL_S,
+          polling_timeout=self._shutdown_delay):
         self._logger.warning(
           "Timeout waiting for '%s' to reach '%s' after '%f s'"
           % (CONTROL_COMMAND, CONTROL_OUTPUT_EXPECTED, self._shutdown_delay))
