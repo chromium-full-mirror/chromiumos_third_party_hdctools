@@ -80,7 +80,6 @@ COPY --from=chromiumos_overlays \
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
         cmake \
-        tidy \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -345,4 +344,3 @@ RUN apt-get remove --purge -y \
     && rm -rf /var/cache/debconf \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
-

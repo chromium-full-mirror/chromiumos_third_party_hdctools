@@ -15,6 +15,7 @@ import re
 import sys
 import time
 
+
 class ServoConfigGeneratorError(Exception):
   """Error class for INA control generation errors."""
   pass
@@ -44,19 +45,13 @@ class XMLElementGenerator(object):
     self._attribute_string = ''.join(' %s="%s"' %
                                      (k, attributes[k]) for k in keys)
 
-  def GetXML(self, newline_for_text=False):
+  def GetXML(self):
     """Retrieves XML string for element.
-
-    Args:
-      newline_for_text: if |True|, introduce a newline after opening
-                        tag and before closing tag.
 
     Returns:
       formatted string for the element.
     """
-    output_format = '<%s%s>\n%s\n</%s>'
-    if not newline_for_text:
-      output_format.replace('\n', '')
+    output_format = '<%s%s>%s</%s>'
     return output_format % (self._name, self._attribute_string,
                             self._text, self._name)
 
@@ -119,7 +114,7 @@ class ServoControlGenerator(object):
     """
     # for each control element, generate the XML and join together into one
     # string.
-    ctrl_text = '\n'.join(element.GetXML() for element in self._ctrl_elements)
+    ctrl_text = ''.join(element.GetXML() for element in self._ctrl_elements)
     ctrl_element = XMLElementGenerator('control', ctrl_text, {})
     return ctrl_element.GetXML()
 
@@ -146,38 +141,49 @@ class ServoConfigFileGenerator(object):
       includes: list of xml files to include
       intro_comments: comments to add in the beginning
     """
-    self._text = '<?xml version="%s"?>\n' % self.XML_VERSION
+    self._text = '<?xml version="%s"?>' % self.XML_VERSION
     body = ''
     if intro_comments:
-      body += '<!-- %s -->\n' % intro_comments
+      body += '<!-- %s -->' % intro_comments
     if includes:
       for include in includes:
         name_element = XMLElementGenerator(name='name', text=include)
         include_tag = XMLElementGenerator(name='include',
                                           text=name_element.GetXML())
-        body += '%s\n' % include_tag.GetXML()
+        body += include_tag.GetXML()
     if inline:
-      body += '%s\n' % inline
+      body += inline
     for generator in ctrl_generators:
       body += generator.GetControlXML()
     file_as_element = XMLElementGenerator(name='root', text=body)
-    self._text += file_as_element.GetXML(newline_for_text=True)
+    self._text += file_as_element.GetXML()
 
-  def WriteToFile(self, destination, run_tidy=True):
+    level = -1
+    output = ''
+    for i, c in enumerate(self._text):
+      output += c
+      try:
+        if self._text[i:i+2] == '</':
+          level -= 1
+        elif self._text[i:i+3] == '><!':
+          output += '\n' + '  ' * level
+        elif self._text[i:i+3] == '></':
+          output += '\n' + '  ' * level
+        elif self._text[i:i+2] == '><':
+          level += 1
+          output += '\n' + '  ' * level
+      except IndexError:
+        pass
+    self._text = output
+
+  def WriteToFile(self, destination):
     """Helper to write to file. Runs tidy after file is written.
 
     Args:
       destination: dest where to save the file.
-      run_tidy: runs tidy if |True|
     """
     with open(destination, 'w') as f:
       f.write(self._text)
-
-    if run_tidy:
-      rv = os.system('tidy -quiet -mi -xml %s' % destination)
-      if rv:
-        raise ServoConfigGeneratorError('Running tidy on %s failed.'
-                                      % destination)
 
   def GetAsString(self):
     """Get entire XML configuration file as a string.
