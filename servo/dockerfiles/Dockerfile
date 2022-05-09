@@ -5,9 +5,7 @@
 ARG BUILD_ENV=production
 
 ######################################################################
-
-FROM alpine as chromiumos_overlays
-RUN apk add --no-cache git
+FROM alpine/git as chromiumos_overlays
 WORKDIR /
 RUN git clone --filter=blob:none --no-checkout --depth 1 --sparse https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay
 WORKDIR /chromiumos-overlay
@@ -16,7 +14,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:buster as clang-builder
+FROM debian:bullseye-slim as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -34,15 +32,22 @@ RUN apt-get update \
         uuid-dev \
         wget
 
+RUN update-alternatives --auto c++
+RUN update-alternatives --auto cc
+
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN python3 ./get-pip.py
 RUN pip3 install --upgrade pip && pip3 install wheel
+
+ENV CC=clang
+ENV CXX=clang++
 
 ######################################################################
 FROM clang-builder as cbfstool
 
 RUN wget https://coreboot.org/releases/coreboot-4.14.tar.xz && tar xf coreboot-4.14.tar.xz && rm /coreboot-4.14.tar.xz
 RUN cd /coreboot-4.14/util/cbfstool && make
+RUN strip /coreboot-4.14/util/cbfstool/cbfstool
 
 ######################################################################
 FROM clang-builder as libusb-builder
@@ -81,7 +86,7 @@ RUN apt-get update --no-install-recommends  \
 
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 
 WORKDIR /libftdi1-1.2
@@ -102,7 +107,6 @@ RUN mkdir build \
 WORKDIR /
 
 ######################################################################
-
 FROM libftdi as ec-builder
 
 # This is setup for the most normal case, developers and cloud builds
@@ -115,12 +119,14 @@ RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 WORKDIR /
 
 RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
-RUN cd /flashmap && make && make install
+
+WORKDIR /flashmap
+RUN make && make install
 
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
 COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
@@ -137,6 +143,13 @@ RUN PACKAGE="console" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
 
 RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shflags
+
+RUN strip /ec/extra/usb_updater/usb_updater2 \
+          /ec/build/elm/util/stm32mon \
+          /ec/build/elm/util/uartupdatetool \
+          /ec/build/elm/util/iteflash
+
+RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
 FROM libftdi as hdctools-developer
@@ -170,12 +183,13 @@ RUN git clone https://github.com/mvp/uhubctl
 WORKDIR /uhubctl
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN make
+RUN strip  /uhubctl/uhubctl
 
 ######################################################################
-FROM python:3.7-buster as firmware-installer
+FROM python:3.10-bullseye as firmware-installer
 
 RUN pip install --upgrade pip && pip3 install gsutil
 
@@ -198,6 +212,7 @@ RUN apt-get update \
 
 WORKDIR /flashrom
 RUN meson builddir && cd builddir && meson install
+RUN strip /usr/local/sbin/flashrom
 
 ######################################################################
 FROM flashrom-builder as futility-builder
@@ -211,13 +226,12 @@ RUN make && make install
 RUN strip /usr/bin/futility
 
 ######################################################################
-
-FROM python:3.7-slim-buster
+FROM python:3.10-slim-bullseye
 
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.0.3.0 /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 RUN apt-get update --no-install-recommends \
@@ -238,13 +252,13 @@ RUN apt-get update --no-install-recommends \
 
 # Install python packages.
 COPY /hdctools/servo/dockerfiles/requirements.txt /opt/requirements.txt
-RUN pip install --upgrade pip && pip3 install -r /opt/requirements.txt
+RUN pip install --upgrade pip && pip3 --no-cache-dir install -r /opt/requirements.txt
 
 WORKDIR /hdctools/chromeos/
 COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --from=hdctools-builder /hdctools/dist/* ./
-COPY --from=ec-builder /ec/dist/* ./
+COPY --from=ec-builder /ec/dist/*.whl ./
 RUN pip install *.whl
 WORKDIR /
 RUN rm -rf wheels
@@ -304,8 +318,8 @@ COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
 
 RUN mkdir -p /usr/share/ec-devutils
-# # Avoid watchtower updating servod, it gets pulled before every start of the
-# # container, we should not stop/start it in the case a new version is pushed.
+# Avoid watchtower updating servod, it gets pulled before every start of the
+# container, we should not stop/start it in the case a new version is pushed.
 LABEL com.centurylinklabs.watchtower.enable="false"
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
@@ -314,11 +328,21 @@ COPY /hdctools/servo/dockerfiles/update_servo_firmware.py \
      /hdctools/servo/dockerfiles/start_servod.sh /hdctools/servo/dockerfiles/stop_servod.sh \
      /
 
+# Running sync in the container with no params will crash the host bare metal as all disks
+# are mounted, put a script in the place of sync that checks are lease one argument is passed
+# if no arguments are passed an error is thrown.
 RUN mv /bin/sync /usr/local/bin/real_sync
 COPY /hdctools/servo/dockerfiles/sync /bin
 RUN chmod 755 /bin/sync
 
-RUN apt-get remove -y \
+# Try to remove as much as possible to make the container smaller
+RUN apt-get remove --purge -y \
         xz-utils \
     && apt-get autoclean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/python3.10/site-packages/numpy/core/tests \
+    && python -m pip uninstall -y pip \
+    && rm -rf /var/cache/debconf \
+    && rm -rf /usr/share/doc \
+    && rm -rf /usr/share/zoneinfo/
+
