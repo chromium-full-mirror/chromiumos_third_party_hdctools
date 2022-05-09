@@ -12,6 +12,9 @@
   <include>
     <name>cr50.xml</name>
   </include>
+  <include>
+    <name>select_cold_reset.xml</name>
+  </include>
   <!-- Maps -->
   <map>
     <name>onoff_vref_sel</name>
@@ -82,14 +85,18 @@
     map="onoff" init="off" />
   </control>
   <control>
-    <name>cold_reset</name>
-    <alias>ec_reset</alias>
+    <name>ec_reset</name>
     <doc>Holds the EC in reset via CR50 command</doc>
     <params cmd="get" uart_cmd="ecrst"
     regex="EC_RST_L is (asserted|deasserted)" group="1" 
     interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
     <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
     map="onoff_i" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>cold_reset_select</name>
+    <doc>Use h1 reset as the default cold reset control</doc>
+    <params init="ec_reset" clobber_ok=""/>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
