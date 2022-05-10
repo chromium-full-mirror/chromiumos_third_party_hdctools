@@ -85,7 +85,7 @@ RUN apt-get update --no-install-recommends  \
 
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 
 WORKDIR /libftdi1-1.2
@@ -125,7 +125,7 @@ RUN make && make install
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
 COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
@@ -182,7 +182,7 @@ RUN git clone https://github.com/mvp/uhubctl
 WORKDIR /uhubctl
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN make
 RUN strip  /uhubctl/uhubctl
@@ -230,11 +230,13 @@ FROM python:3.10-slim-bullseye
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.* /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
+        bzip2 \
+        curl \
         dnsutils \
         iptables \
         iputils-ping \
@@ -245,6 +247,7 @@ RUN apt-get update --no-install-recommends \
         procps \
         sudo \
         usbutils \
+        udev \
         xz-utils \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
