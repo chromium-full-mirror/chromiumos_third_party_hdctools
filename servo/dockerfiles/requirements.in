@@ -1,7 +1,6 @@
 numpy
 pexpect
 pyserial
-pytest
 pyusb
-requests
+pytest
 six

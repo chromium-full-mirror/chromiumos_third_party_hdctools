@@ -6,12 +6,6 @@
 #
 attrs==21.4.0
     # via pytest
-certifi==2021.10.8
-    # via requests
-charset-normalizer==2.0.12
-    # via requests
-idna==3.3
-    # via requests
 iniconfig==1.1.1
     # via pytest
 numpy==1.21.4
@@ -34,11 +28,7 @@ pytest==7.1.1
     # via -r requirements.in
 pyusb==1.2.1
     # via -r requirements.in
-requests==2.27.1
-    # via -r requirements.in
 six==1.16.0
     # via -r requirements.in
 tomli==2.0.1
     # via pytest
-urllib3==1.26.9
-    # via requests
