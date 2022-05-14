@@ -17,7 +17,7 @@ except ImportError:
 import contextlib
 import os
 
-from requests import head
+from requests import head, get
 from requests.exceptions import Timeout
 from servo.drv import hw_driver
 
@@ -55,9 +55,10 @@ class usbDownloader(hw_driver.HwDriver):
     data file as well as the resulting HTTPMessage object.
     """
 
-    with contextlib.closing(urlopen(url)) as fp:
-        headers = fp.info()
+    with contextlib.closing(get(url, timeout=900, stream=True)) as resp:
+        headers = resp.headers
         self._logger.debug('Block size %d', bs)
+        self._logger.debug('Request Get Headers %s', headers)
         tfp = open(filename, 'wb', 0)
         with tfp:
             result = filename, headers
@@ -69,8 +70,7 @@ class usbDownloader(hw_driver.HwDriver):
             if reporthook:
                 reporthook(blocknum, bs, size)
 
-            while True:
-                block = fp.read(bs)
+            for block in resp.iter_content(chunk_size=bs):
                 if not block:
                     break
                 read += len(block)
@@ -123,7 +123,7 @@ class usbDownloader(hw_driver.HwDriver):
           self._logger.debug('Testing webserver')
           response = head(image_path, timeout=900)
           response.raise_for_status()
-          self._logger.debug('Headers %s' % response.headers)
+          self._logger.debug('Test Headers %s' % response.headers)
           self._logger.debug('Webserver test pass')
 
           # Get the block size of the device so we can write in
