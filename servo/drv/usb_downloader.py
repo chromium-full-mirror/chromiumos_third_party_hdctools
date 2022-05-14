@@ -17,7 +17,8 @@ except ImportError:
 import contextlib
 import os
 
-from requests import get
+from requests import head
+from requests.exceptions import Timeout
 from servo.drv import hw_driver
 
 
@@ -120,9 +121,9 @@ class usbDownloader(hw_driver.HwDriver):
           # Check the webserver is working by getting the first 100
           # bytes of the file.
           self._logger.debug('Testing webserver')
-          headers = {"Range": "bytes=0-100"}  # first 100 bytes
-          response = get(image_path, headers=headers)
+          response = head(image_path, timeout=900)
           response.raise_for_status()
+          self._logger.debug('Headers %s' % response.headers)
           self._logger.debug('Webserver test pass')
 
           # Get the block size of the device so we can write in
@@ -159,6 +160,8 @@ class usbDownloader(hw_driver.HwDriver):
         self._logger.debug('Error ContentTooShortError')
         errormsg = 'Failed to download URL: %s to USB device: %s' % (image_path,
                                                                      usb_dev)
+      except Timeout as e:
+        errormsg = 'Requesting the headers of the URL timed out after 900 seconds: %s' % e.message
       except (IOError, OSError) as e:
         self._logger.debug('Error IOError/OSError')
         errormsg = ('Failed to transfer image to USB device: %s ( %s ) ' %
