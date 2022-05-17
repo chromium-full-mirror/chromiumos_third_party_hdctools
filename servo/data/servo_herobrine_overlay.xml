@@ -11,6 +11,9 @@
   <include>
     <name>ec_efs2.xml</name>
   </include>
+  <include>
+    <name>gsc_lid_open.xml</name>
+  </include>
 
   <!-- ******** Controls ******** -->
   <control>

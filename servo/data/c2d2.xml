@@ -15,6 +15,9 @@
   <include>
     <name>select_cold_reset.xml</name>
   </include>
+  <include>
+    <name>gsc_lid_open.xml</name>
+  </include>
   <!-- Maps -->
   <map>
     <name>onoff_vref_sel</name>
@@ -276,15 +279,6 @@
     <name>rec_mode</name>
     <params subtype="rec_mode" interface="9" drv="cr50"
     map="onoff_i" clobber_ok="" init="off"></params>
-  </control>
-  <control>
-    <name>lid_open</name>
-    <params cmd="get" uart_cmd="gpioget CCD_REC_LID_SWITCH"
-    regex="\s+([01])\*?\s+CCD_REC_LID_SWITCH" group="1" interface="9" drv="cr50"
-    map="yesno" clobber_ok="" init="yes"></params>
-    <params cmd="set" uart_cmd="gpioset CCD_REC_LID_SWITCH"
-    interface="9" drv="cr50" input_type="str" choices="^(0|1)$"
-    map="yesno" clobber_ok="" init="yes"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
