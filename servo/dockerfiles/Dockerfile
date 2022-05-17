@@ -133,7 +133,7 @@ WORKDIR /ec
 RUN make utils-host \
     && make -C extra/usb_updater usb_updater2
 
-COPY hdctools/servo/dockerfiles/setup_ec.py .
+COPY servo/dockerfiles/setup_ec.py .
 RUN PACKAGE="ec3po" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
@@ -151,14 +151,12 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
-FROM libftdi as hdctools-developer
-COPY hdctools/ hdctools/
 FROM libftdi as hdctools-builder
 
 # For cloud build and for developers copying the local source is correct, if
 # you need to build from checked in code vs you local source comment out the
 # copy command and uncomment the clone command.
-COPY hdctools/ hdctools/
+COPY / hdctools/
 #RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
 RUN pip3 install pytest
@@ -169,7 +167,7 @@ RUN make -d
 RUN make install
 
 # Setuptools skips nested entry point. Adding custom setup.py to overcome.
-COPY /hdctools/servo/dockerfiles/setup_hdctools.py .
+COPY /servo/dockerfiles/setup_hdctools.py .
 RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
@@ -194,7 +192,7 @@ RUN pip install --upgrade pip && pip3 install gsutil
 
 RUN mkdir -p /usr/share/servo_updater/firmware/
 WORKDIR /usr/share/servo_updater/firmware/
-COPY /hdctools/servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
+COPY /servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
 RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
 
 ######################################################################
@@ -253,7 +251,7 @@ RUN apt-get update --no-install-recommends \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
 # Install python packages.
-COPY /hdctools/servo/dockerfiles/requirements.txt /opt/requirements.txt
+COPY /servo/dockerfiles/requirements.txt /opt/requirements.txt
 RUN pip install --upgrade pip && pip3 --no-cache-dir install -r /opt/requirements.txt
 
 WORKDIR /hdctools/chromeos/
@@ -326,15 +324,15 @@ LABEL com.centurylinklabs.watchtower.enable="false"
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
-COPY /hdctools/servo/dockerfiles/update_servo_firmware.py \
-     /hdctools/servo/dockerfiles/start_servod.sh /hdctools/servo/dockerfiles/stop_servod.sh \
+COPY /servo/dockerfiles/update_servo_firmware.py \
+     /servo/dockerfiles/start_servod.sh /servo/dockerfiles/stop_servod.sh \
      /
 
 # Running sync in the container with no params will crash the host bare metal as all disks
 # are mounted, put a script in the place of sync that checks are lease one argument is passed
 # if no arguments are passed an error is thrown.
 RUN mv /bin/sync /usr/local/bin/real_sync
-COPY /hdctools/servo/dockerfiles/sync /bin
+COPY /servo/dockerfiles/sync /bin
 RUN chmod 755 /bin/sync
 
 # Try to remove as much as possible to make the container smaller
