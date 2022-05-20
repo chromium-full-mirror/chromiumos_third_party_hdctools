@@ -33,22 +33,19 @@ def start_servod(client, dut_hostname, board, model, serial_no, test=False):
     name = "%s-docker_servod" % dut_hostname
     logs_volume = "%s_log" % dut_hostname
 
-    command = ["bash", "/start_servod.sh", "--non-privileged"]
+    command = ["bash", "/start_servod.sh"]
     if test:
         command = ["pytest", "/hdctools/servo/tests/"]
 
     cont = client.containers.run(
         IMAGE,
         remove=True,
-        privileged=False,
+        privileged=True,
         name=name,
         hostname=name,
-        device_cgroup_rules=["c 189:* rwm", "b 189:* rwm"],
+        cap_add=["NET_ADMIN"],
         detach=True,
-        volumes={"/dev/bus": {"bind": "/dev/bus", "mode": "ro"},
-                 "/dev/serial": {"bind": "/dev/serial", "mode": "ro"},
-                 logs_volume: {"bind": "/var/log/servod_9999/", "mode": "rw"}
-                },
+        volumes=["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume],
         environment=environment,
         command=command,
     )
