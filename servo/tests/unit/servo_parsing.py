@@ -151,7 +151,7 @@ class TestServodRCParser(unittest.TestCase):
   def test_NameSerial(self):
     """Serial and name defined: raise an error."""
     cmdline = ['--name', self._valid_name, '--serialname', self._serialname]
-    with self.assertRaisesRegexp(SystemExit, '2'):
+    with self.assertRaisesRegex(SystemExit, '2'):
       _ = self._parser.parse_known_args(cmdline)
 
   def test_NameNoSerialBoard(self):
@@ -172,7 +172,7 @@ class TestServodRCParser(unittest.TestCase):
   def test_NameNotInRCNoSerial(self):
     """Name is provided but no in RC: SystmExit from the parser."""
     cmdline = ['--name', self._invalid_name]
-    with self.assertRaisesRegexp(servo_parsing.ServodParserError,
+    with self.assertRaisesRegex(servo_parsing.ServodParserError,
                                  'Name %r not in rc' % self._invalid_name):
       _ = self._parser.parse_known_args(cmdline)
 
@@ -254,7 +254,7 @@ class TestServodClientParser(unittest.TestCase):
     # Regenerate the parser as this test modifies the os.environ map.
     self.SetupParser()
     cmdline = []
-    with self.assertRaisesRegexp(servo_parsing.ServodParserError,
+    with self.assertRaisesRegex(servo_parsing.ServodParserError,
                                  'Name %r not in rc' % rc_name):
       _ = self._parser.parse_known_args(cmdline)
 
@@ -283,7 +283,7 @@ class TestServodClientParser(unittest.TestCase):
     # Regenerate the parser as this test modifies the os.environ map.
     self.SetupParser()
     cmdline = []
-    with self.assertRaisesRegexp(SystemExit, '2'):
+    with self.assertRaisesRegex(SystemExit, '2'):
       _ = self._parser.parse_known_args(cmdline)
 
   def test_NoPortNoSerial(self):
@@ -296,7 +296,7 @@ class TestServodClientParser(unittest.TestCase):
     """No port and serialname in cmdline, serialname not in scratch: error."""
     cmdline = ['--serialname', self._invalid_serial]
     # Argparse raises sys.exit(2) on error.
-    with self.assertRaisesRegexp(SystemExit, '2'):
+    with self.assertRaisesRegex(SystemExit, '2'):
       _ = self._parser.parse_known_args(cmdline)
 
 if __name__ == '__main__':

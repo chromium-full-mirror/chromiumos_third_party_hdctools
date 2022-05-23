@@ -182,10 +182,10 @@
     <alias>cr50_testlab</alias>
     <doc>gsc testlab state</doc>
     <params cmd="get" uart_cmd="ccd testlab"
-    regex="(CCD test lab mode (ena|dis)|Access Denied)" group="1" 
+    regex="(CCD test lab mode (ena|dis)|Access Denied)" group="1"
     interface="9" drv="cr50" map="enabled_re"
     clobber_ok="" servo_v3_drv="na"></params>
-    <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="9" 
+    <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="9"
     drv="cr50" input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
@@ -201,16 +201,16 @@
     <alias>cr50_devid</alias>
     <doc>current gsc devid</doc>
     <params cmd="get" uart_cmd="sysinfo"
-    regex="DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})" group="1" interface="9" 
+    regex="DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})" group="1" interface="9"
     drv="cr50" input_type="str" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <control>
     <name>gsc_servo</name>
     <alias>cr50_servo</alias>
-    <doc>Get the servo state from gsc ccdstate. Can be 'undetectable', 
+    <doc>Get the servo state from gsc ccdstate. Can be 'undetectable',
     'disconnected', or 'connected'</doc>
-    <params cmd="get" uart_cmd="ccdstate" regex="Servo:\s+(\S+)\s" group="1" 
-    interface="9" drv="cr50" input_type="str" clobber_ok="" servo_v3_drv="na">  
+    <params cmd="get" uart_cmd="ccdstate" regex="Servo:\s+(\S+)\s" group="1"
+    interface="9" drv="cr50" input_type="str" clobber_ok="" servo_v3_drv="na">
     </params>
   </control>
   <control>
@@ -271,7 +271,7 @@
     <name>gsc_ccd_state_flags</name>
     <alias>cr50_ccd_state_flags</alias>
     <doc>CCD state flags that are currently enabled.</doc>
-    <params cmd="get" uart_cmd="ccdstate" regex="State flags:([\S ]*)[\n\r]" 
+    <params cmd="get" uart_cmd="ccdstate" regex="State flags:([\S ]*)[\n\r]"
     group="1" interface="9" drv="cr50" clobber_ok="" servo_v3_drv="na"></params>
   </control>
   <!-- gsc I2C controls -->

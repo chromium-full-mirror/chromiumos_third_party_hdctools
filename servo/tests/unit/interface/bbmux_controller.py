@@ -60,8 +60,8 @@ class TestBBmuxController(mox.MoxTestBase):
     open(FAKE_MUX_FILE_PATH, 'r').AndReturn(mux_file)
     self.mox.ReplayAll()
     mux_controller = bbmux_controller.BBmuxController()
-    self.assertEquals(EXPECTED_PIN_NAME_MAP, mux_controller._pin_name_map)
-    self.assertEquals(EXPECTED_PIN_MODE_MAP, mux_controller._pin_mode_map)
+    self.assertEqual(EXPECTED_PIN_NAME_MAP, mux_controller._pin_name_map)
+    self.assertEqual(EXPECTED_PIN_MODE_MAP, mux_controller._pin_mode_map)
 
   def _writeToMuxFileHelper(self):
     mux_file = self.mox.CreateMockAnything()

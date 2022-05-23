@@ -215,19 +215,19 @@
     <name>cold_reset</name>
     <doc>cold_reset</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="5" map="onoff_i" init="off"></params>
+    offset="5" map="onoff_i" init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="6" map="press" init="release"></params>
+    offset="6" map="press" init="release" clobber_ok=""></params>
   </control>
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="7" map="onoff_i" init="off"></params>
+    offset="7" map="onoff_i" init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>rec_mode</name>
@@ -246,13 +246,13 @@
     <alias>t20_rec,proc_hot,ec_boot_mode</alias>
     <doc>Firmware update mode via USB</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
-    offset="3" map="onoff_i" init="off"></params>
+    offset="3" map="onoff_i" init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>lid_open</name>
     <doc>lid open GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
-    offset="4" map="yesno" init="yes"></params>
+    offset="4" map="yesno" init="yes" clobber_ok=""></params>
   </control>
   <control>
     <name>dev_mode</name>
@@ -278,7 +278,7 @@
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="servo" drv="fw_wp_servoflex" input_type="str"
-    fw_wp_vref="pp1800" />
+    fw_wp_vref="pp1800" clobber_ok=""/>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
@@ -471,7 +471,7 @@
     <doc>State indicating if interpreter is listening to the usb pd
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect"></params>
+    subtype="interp_connect" clobber_ok=""></params>
   </control>
   <control>
     <name>usbpd_uart_routing</name>

@@ -32,7 +32,7 @@ class TestUsbHierarchy(unittest.TestCase):
       self.address = devnum
 
   def setUp(self):
-    """Setup testing by creating a mocked /sys/bus/usb/devices directory.
+    """Setup testing by creating a mocked /sys/bus/usb/devices  .
 
     This also sets up a few convenience objects and values to mock usb devices
     for the tests below.
@@ -270,7 +270,7 @@ class TestUsbHierarchy(unittest.TestCase):
                                      pid=self._pid,
                                      serial=self._serial)
     vid, pid, sid = self._vid, self._pid, self._serial
-    with self.assertRaisesRegexp(HierarchyError, 'Found 2 devices with'):
+    with self.assertRaisesRegex(HierarchyError, 'Found 2 devices with'):
       _ = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
 
   def test_GetDevPortPath(self):
@@ -396,7 +396,7 @@ class TestUsbHierarchy(unittest.TestCase):
                                             serial=self._serial,
                                             vid=self._vid,
                                             pid=self._pid)
-    with self.assertRaisesRegexp(HierarchyError, 'Requested sysfs attribute '
+    with self.assertRaisesRegex(HierarchyError, 'Requested sysfs attribute '
                                  '.* cannot be read because the file cannot '
                                  'be found.'):
       Hierarchy.DevNumFromSysfs(devd)
@@ -434,7 +434,7 @@ class TestUsbHierarchy(unittest.TestCase):
     content = 'not-int-castable'
     with open(devnum_f, 'w') as f:
       f.write(content)
-    with self.assertRaisesRegexp(HierarchyError, 'Unexpected content %r at '
+    with self.assertRaisesRegex(HierarchyError, 'Unexpected content %r at '
                                  'sysfs file %r' % (content, devnum_f)):
       _ = Hierarchy.DevNumFromSysfs(devd)
 
@@ -477,6 +477,6 @@ class TestUsbHierarchy(unittest.TestCase):
     vid_f = os.path.join(devd, Hierarchy.VID_FILE)
     with open(vid_f, 'w') as f:
       f.write(bad_vid)
-    with self.assertRaisesRegexp(HierarchyError, 'Unexpected content %r at '
+    with self.assertRaisesRegex(HierarchyError, 'Unexpected content %r at '
                                  'sysfs file %r' % (bad_vid, vid_f)):
       _ = Hierarchy.VendorIDFromSysfs(devd)
