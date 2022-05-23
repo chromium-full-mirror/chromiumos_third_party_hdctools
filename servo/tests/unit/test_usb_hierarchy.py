@@ -32,7 +32,7 @@ class TestUsbHierarchy(unittest.TestCase):
       self.address = devnum
 
   def setUp(self):
-    """Setup testing by creating a mocked /sys/bus/usb/devices directory.
+    """Setup testing by creating a mocked /sys/bus/usb/devices  .
 
     This also sets up a few convenience objects and values to mock usb devices
     for the tests below.

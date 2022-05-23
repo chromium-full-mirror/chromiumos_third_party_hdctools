@@ -100,7 +100,7 @@ class TestBBuart(mox.MoxTestBase):
         STTY_GET_ATTRIBUTES_OUTPUT)
     self.mox.ReplayAll()
     uart = bbuart.BBuart(self._interface)
-    self.assertEquals(GET_UART_PROPS_EXPECTED_RESULTS, uart.get_uart_props())
+    self.assertEqual(GET_UART_PROPS_EXPECTED_RESULTS, uart.get_uart_props())
 
   def testGetUartPropsFailure(self):
     """Test get_uart_props failure case.
@@ -127,7 +127,7 @@ class TestBBuart(mox.MoxTestBase):
     self.mox.ReplayAll()
     uart = bbuart.BBuart(self._interface)
     uart_speed = uart._get_value(STTY_GET_ATTRIBUTES_OUTPUT, bbuart.SPEED_RE)
-    self.assertEquals(int(uart_speed, 0), 115200)
+    self.assertEqual(int(uart_speed, 0), 115200)
 
   def testGetValueFailByBadOutput(self):
     """Test the _get_value helper function.
@@ -156,11 +156,11 @@ class TestBBuart(mox.MoxTestBase):
     self.mox.ReplayAll()
     uart = bbuart.BBuart(self._interface)
     # Test no parity.
-    self.assertEquals(0, uart._get_parity('speed 115200 baud; -parenb'))
+    self.assertEqual(0, uart._get_parity('speed 115200 baud; -parenb'))
     # Test odd parity.
-    self.assertEquals(1, uart._get_parity('speed 115200 baud; parodd'))
+    self.assertEqual(1, uart._get_parity('speed 115200 baud; parodd'))
     # Test even parity.
-    self.assertEquals(1, uart._get_parity('speed 115200 baud; -parodd'))
+    self.assertEqual(1, uart._get_parity('speed 115200 baud; -parodd'))
 
 
 if __name__ == '__main__':

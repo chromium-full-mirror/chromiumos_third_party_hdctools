@@ -45,7 +45,7 @@ class TestBBi2c(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.bbi2c = bbi2c.BBi2c({'bus_num': 2})
     result = self.bbi2c.wr_rd(SLAVE_ADDRESS, [DATA_ADDRESS], len(data))
-    self.assertEquals(result, data)
+    self.assertEqual(result, data)
 
   def testMultiByteRead(self):
     data = [0x10, 0x01]
@@ -53,7 +53,7 @@ class TestBBi2c(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.bbi2c = bbi2c.BBi2c({'bus_num': 2})
     result = self.bbi2c.wr_rd(SLAVE_ADDRESS, [DATA_ADDRESS], len(data))
-    self.assertEquals(result, data)
+    self.assertEqual(result, data)
 
   def testSingleByteWrite(self):
     data = [0x7]
@@ -91,7 +91,7 @@ class TestBBi2c(mox.MoxTestBase):
     self.mox.ReplayAll()
     self.bbi2c = bbi2c.BBi2c({'bus_num': 2})
     result = self.bbi2c.wr_rd(SLAVE_ADDRESS, wr_data, len(rd_data))
-    self.assertEquals(result, rd_data)
+    self.assertEqual(result, rd_data)
 
 
 if __name__ == '__main__':

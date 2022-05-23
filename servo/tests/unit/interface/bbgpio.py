@@ -60,10 +60,10 @@ class TestBBgpio(mox.MoxTestBase):
     with open(self._value_file, 'w') as f:
       f.write('1')
     rd_value = gpio_controller.wr_rd(OFFSET, WIDTH, dir_val=0, chip=CHIP)
-    self.assertEquals(rd_value, 1)
+    self.assertEqual(rd_value, 1)
     with open(self._direction_file, 'r') as f:
       direction = f.read()
-    self.assertEquals(direction, 'in')
+    self.assertEqual(direction, 'in')
 
   def testWrite(self):
     self._mock_mux()
@@ -72,10 +72,10 @@ class TestBBgpio(mox.MoxTestBase):
     gpio_controller.wr_rd(OFFSET, WIDTH, dir_val=1, wr_val=0, chip=CHIP)
     with open(self._direction_file, 'r') as f:
       direction = f.read()
-    self.assertEquals(direction, 'out')
+    self.assertEqual(direction, 'out')
     with open(self._value_file, 'r') as f:
       value = f.read()
-    self.assertEquals(value, '0')
+    self.assertEqual(value, '0')
 
 
 if __name__ == '__main__':

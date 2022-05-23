@@ -4,7 +4,7 @@
     <name>ec_boot_mode</name>
     <doc>EC boot mode GPIO</doc>
     <params interface="2" servo_v3_interface="6" drv="pca95xx"
-    subtype="gpio" child="0x26" offset="1" map="onoff"></params>
+    subtype="gpio" child="0x26" offset="1" map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>swd_reset</name>

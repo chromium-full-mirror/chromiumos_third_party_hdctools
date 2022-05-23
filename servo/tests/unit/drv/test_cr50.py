@@ -19,7 +19,7 @@ class TestPromptDetection(unittest.TestCase):
     def test_normal_prompt(self, issueCmdMock):
         issueCmdMock.return_value = "value"
         uut = self.cr50()
-        self.assertEquals('value', uut._issue_cmd_get_results('cmd\n', []))
+        self.assertEqual('value', uut._issue_cmd_get_results('cmd\n', []))
         issueCmdMock.assert_called_with('cmd\n', [], flush=None,
                                         timeout=pty_driver.DEFAULT_UART_TIMEOUT)
 
@@ -31,11 +31,11 @@ class TestPromptDetection(unittest.TestCase):
                 raise pty_driver.ptyError('error')
         issueCmdMock.side_effect = fakeIssueCmd
         uut = self.cr50()
-        self.assertEquals('value', uut._issue_cmd_get_results('cmd\n', []))
+        self.assertEqual('value', uut._issue_cmd_get_results('cmd\n', []))
         issueCmdMock.assert_called_with('cmd\n', [], flush=None,
                                         timeout=pty_driver.DEFAULT_UART_TIMEOUT)
         # Prompt detection tries + issue of actual command
-        self.assertEquals(cr50.cr50.PROMPT_DETECTION_TRIES+1,
+        self.assertEqual(cr50.cr50.PROMPT_DETECTION_TRIES+1,
                           issueCmdMock.call_count)
 
     def test_no_prompt(self, issueCmdMock):
@@ -43,5 +43,5 @@ class TestPromptDetection(unittest.TestCase):
         uut = self.cr50()
         with self.assertRaises(pty_driver.ptyError):
             uut._issue_cmd_get_results('cmd\n', [])
-        self.assertEquals(cr50.cr50.PROMPT_DETECTION_TRIES,
+        self.assertEqual(cr50.cr50.PROMPT_DETECTION_TRIES,
                           issueCmdMock.call_count)

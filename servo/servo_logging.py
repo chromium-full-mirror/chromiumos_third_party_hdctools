@@ -79,6 +79,10 @@ COMPRESSION_SUFFIX = 'tbz2'
 # Each servo-port receives its own log directory. This is the prefix for those
 # directory names.
 LOG_DIR_PREFIX = 'servod'
+# This ensures when running e2e tests in parralel that each run has its own unique path.
+if 'PYTEST_XDIST_TESTRUNUID' in os.environ:
+  LOG_DIR_PREFIX += os.environ['PYTEST_XDIST_TESTRUNUID']
+
 
 # Each logfile starts with this prefix.
 LOG_FILE_PREFIX = 'log'

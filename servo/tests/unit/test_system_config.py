@@ -105,7 +105,7 @@ class TestSystemConfig(unittest.TestCase):
     """A non-existant map raises a SystemConfigError."""
     fake_map_name = 'fake_map'
     control_params = {'map': fake_map_name}
-    with self.assertRaisesRegexp(system_config.SystemConfigError,
+    with self.assertRaisesRegex(system_config.SystemConfigError,
                                  "Map %s isn't defined" % fake_map_name):
       # 'random_key' passed as key as the key does not matter for this test.
       self.syscfg.resolve_val(control_params, 'random_key')
@@ -121,7 +121,7 @@ class TestSystemConfig(unittest.TestCase):
     # These are the params from the control using the map. In this case they
     # need to include the map name.
     control_params = {'map': map_name}
-    with self.assertRaisesRegexp(system_config.SystemConfigError,
+    with self.assertRaisesRegex(system_config.SystemConfigError,
                                  "Map %r doesn't contain "
                                  'key %r' % (map_name, fake_map_key)):
       self.syscfg.resolve_val(control_params, fake_map_key)

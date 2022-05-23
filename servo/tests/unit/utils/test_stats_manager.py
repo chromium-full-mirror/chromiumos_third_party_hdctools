@@ -81,11 +81,11 @@ class TestStatsManager(unittest.TestCase):
   def test_AddSampleNoFloatNotAcceptNaN(self):
     """Adding a non-number raises a StatsManagerError if accept_nan is False."""
     self.data = stats_manager.StatsManager(accept_nan=False)
-    with self.assertRaisesRegexp(stats_manager.StatsManagerError,
+    with self.assertRaisesRegex(stats_manager.StatsManagerError,
                                  'accept_nan is false. Cannot add NaN sample.'):
       # adding a fake NaN: one that gets converted into NaN internally
       self.data.AddSample('Test', 'fiesta')
-    with self.assertRaisesRegexp(stats_manager.StatsManagerError,
+    with self.assertRaisesRegex(stats_manager.StatsManagerError,
                                  'accept_nan is false. Cannot add NaN sample.'):
       # adding a real NaN
       self.data.AddSample('Test', float('NaN'))
@@ -233,7 +233,7 @@ class TestStatsManager(unittest.TestCase):
     data.AddSample('D-domain', 17)
     data.CalculateStats()
     summary_str = data.SummaryToString()
-    self.assertRegexpMatches(summary_str, d_b_a_c_regexp)
+    self.assertRegex(summary_str, d_b_a_c_regexp)
 
   def test_MakeUniqueFName(self):
     data = stats_manager.StatsManager()

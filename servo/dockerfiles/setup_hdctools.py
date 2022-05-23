@@ -49,7 +49,8 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
     package_dir = {'': 'build'},
     py_modules=['servo.servod', 'servo.dut_control'],
     packages=['servo', 'servo.data', 'servo.drv', 'servo.interface',
-                'servo.tools', 'servo.utils', 'servo.tests'],
+                'servo.tools', 'servo.utils', 'servo.tests', 'servo.tests.e2e',
+                'servo.tests.fixtures', 'servo.tests.unit', 'servo.tests.data'],
     package_data={
         'servo': [
             'data/*.xml',
