@@ -105,6 +105,12 @@ def main(cmdline=sys.argv[1:]):
                       help='time (sec) to wait before measuring power')
   parser.add_argument('-t', '--time', default=60, type=float,
                       help='time (sec) to measure power for')
+  # This is the filter group - to either remove or only keep depending on regex
+  fg = parser.add_mutually_exclusive_group()
+  fg.add_argument('--filter-out', default=None, type=str,
+                  help='filter out rails names that match this regex')
+  fg.add_argument('--filter', default=None, type=str,
+                  help='only measure rail names that match this regex')
   adcg = parser.add_mutually_exclusive_group()
   # TODO(coconutruben): remove --ina-rate as legacy name once all dependencies
   # are removed, and people have had time to switch scripts/docs/workflows
@@ -144,6 +150,7 @@ def main(cmdline=sys.argv[1:]):
     args.save_logs = args.save_raw_data = args.save_summary = True
   pm_logger = logging.getLogger('')
   pm_logger.setLevel(logging.INFO)
+  pm_logger.handlers.clear()
   if not args.port:
     args.port = client.DEFAULT_PORT
   stdout_handler = logging.StreamHandler(sys.stdout)
@@ -166,12 +173,18 @@ def main(cmdline=sys.argv[1:]):
     pm_logger.info('Disabling ADC accumulator queries because the '
                    'measurement time is too short.')
     args.adc_accum_rate = 0
-  pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
-                                      adc_rate=args.adc_rate,
-                                      adc_accum_rate=args.adc_accum_rate,
-                                      vbat_rate=args.vbat_rate,
-                                      fast=args.fast,
-                                      board=args.board)
+  try:
+    pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
+                                        adc_rate=args.adc_rate,
+                                        adc_accum_rate=args.adc_accum_rate,
+                                        vbat_rate=args.vbat_rate,
+                                        fast=args.fast,
+                                        board=args.board,
+                                        rgx_to_keep=args.filter,
+                                        rgx_to_remove=args.filter_out)
+  except measure_power.NoSourceError as e:
+    pm_logger.info(e)
+    sys.exit(1)
   # pylint: disable=undefined-variable
   # Event.wait() is used as a preemptible way to sleep and control the
   # ProgressPrinters while handling the SIGTERM/SIGINT signals

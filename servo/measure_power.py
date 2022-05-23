@@ -40,6 +40,10 @@ class PowerTrackerError(Exception):
   """Error class to invoke on PowerTracker errors."""
 
 
+class NoSourceError(PowerTrackerError):
+  """Specific error when no power data source was setup successfully."""
+
+
 class ServodPowerTracker(threading.Thread):
   """Threaded PowerTracker using servod as power number source.
 
@@ -195,6 +199,10 @@ class ServodPowerTracker(threading.Thread):
     self._stats.CalculateStats()
     return self._stats
 
+  def __str__(self):
+    """Helper to print out the tracker name."""
+    return self.title
+
 
 class HighResServodPowerTracker(ServodPowerTracker):
   """High Resolution implementation of ServodPowerTracker.
@@ -272,7 +280,8 @@ class HighResServodPowerTracker(ServodPowerTracker):
 class OnboardADCPowerTracker(HighResServodPowerTracker):
   """Off-the-shelf PowerTracker to measure onboard ADCs through servod."""
 
-  def __init__(self, host, port, stop_signal, sample_rate=DEFAULT_ADC_RATE):
+  def __init__(self, host, port, stop_signal, cfilter,
+               sample_rate=DEFAULT_ADC_RATE):
     """Init by finding onboard ADC ctrls."""
     super(OnboardADCPowerTracker, self).__init__(host=host, port=port,
                                                  stop_signal=stop_signal,
@@ -280,12 +289,12 @@ class OnboardADCPowerTracker(HighResServodPowerTracker):
                                                  sample_rate=sample_rate,
                                                  tag='onboard',
                                                  title='Onboard ADC')
-    self._ctrls = self._sclient.get('power_rails')
+    self._ctrls = cfilter(self._sclient.get('power_rails'))
     if not self._ctrls:
       raise PowerTrackerError('No onboard ADCs found.')
     self._logger.debug('Following power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._ez_cfg_ctrls = self._sclient.get('adc_ez_config_ctrls')
+    self._ez_cfg_ctrls = cfilter(self._sclient.get('adc_ez_config_ctrls'))
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """prepare onboard ADC measurement by configuring ADCs for powerstate."""
@@ -300,7 +309,7 @@ class OnboardADCPowerTracker(HighResServodPowerTracker):
 class OnboardADCAccumPowerTracker(ServodPowerTracker):
   """Off-the-shelf PowerTracker to measure onboard ADCs with accumulator."""
 
-  def __init__(self, host, port, stop_signal,
+  def __init__(self, host, port, stop_signal, cfilter,
                sample_rate=DEFAULT_ADC_ACCUM_RATE):
     """Init by finding onboard ADC accum ctrls."""
     title = 'Onboard ADC (w/ accum)'
@@ -310,19 +319,20 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
                                                       sample_rate=sample_rate,
                                                       tag='onboard.accum',
                                                       title=title)
-    self._ctrls = self._sclient.get('avg_power_rails')
-    self._clear_ctrls = self._sclient.get('accum_clear_ctrls')
+    self._ctrls = cfilter(self._sclient.get('avg_power_rails'))
+    self._clear_ctrls = cfilter(self._sclient.get('accum_clear_ctrls'))
     if not self._ctrls or not self._clear_ctrls:
       raise PowerTrackerError('No support for accum rails detected.')
     self._logger.debug('Following avg power rail commands found: %s',
                        ', '.join(self._ctrls))
-    self._ez_cfg_ctrls = self._sclient.get('adc_ez_config_ctrls')
+    self._ez_cfg_ctrls = cfilter(self._sclient.get('adc_ez_config_ctrls'))
     # Pre-process the accumulator clearing controls so they can be issued
     # at once.
     self._clear_ctrls = ['%s:yes' % c for c in self._clear_ctrls]
     # The first reading on these has stale, old data. It needs to ignore the
     # first reading, and only start at the second reading.
     self._skip_first = True
+    # Filter out the right controls
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """prepare onboard ADC measurement by configuring ADCs for powerstate."""
@@ -349,7 +359,8 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
 class ECPowerTracker(ServodPowerTracker):
   """Off-the-shelf PowerTracker to measure power-draw as seen by the EC."""
 
-  def __init__(self, host, port, stop_signal, sample_rate=DEFAULT_VBAT_RATE):
+  def __init__(self, host, port, stop_signal, cfilter,
+               sample_rate=DEFAULT_VBAT_RATE):
     """Init EC power measurement by setting up ec 'vbat' servod control."""
     self._ec_cmd = 'ppvar_vbat_mw'
     self._avg_ec_cmd = 'avg_ppvar_vbat_mw'
@@ -366,7 +377,7 @@ class ECPowerTracker(ServodPowerTracker):
     super(ECPowerTracker, self).verify()
     # Then get ambitious and check if the newer avg_ppvar_vbat_mw is also
     # available.
-    self._ctrls = [self._avg_ec_cmd]
+    self._ctrls = cfilter([self._avg_ec_cmd])
     try:
       super(ECPowerTracker, self).verify()
       # This means that avg_ppvar_vbat_mw worked fine.
@@ -376,7 +387,7 @@ class ECPowerTracker(ServodPowerTracker):
       self._logger.info(str(e))
       self._logger.info('%s not supported, using %r instead.', self._avg_ec_cmd,
                         self._ec_cmd)
-      self._ctrls = [self._ec_cmd]
+      self._ctrls = cfilter([self._ec_cmd])
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """Reduce the time needed to enter deep-sleep after console interaction."""
@@ -400,6 +411,45 @@ class ECPowerTracker(ServodPowerTracker):
     self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
     super(ECPowerTracker, self).run()
 
+class RegexFilter(object):
+  """Filter out control names based on regex."""
+
+  def __init__(self, rgx_to_keep, rgx_to_remove):
+    """"""
+    self._logger = logging.getLogger(type(self).__name__)
+    self.rgx_to_keep = rgx_to_keep
+    self.rgx_to_remove = rgx_to_remove
+
+  def __call__(self, control_names):
+    """Filter out |control_names|
+
+    Args:
+      control_names: a list of control names
+
+    Note: rgx filters
+      The caller should really only specify one of them, but if both are
+      specified, only first the |rgx_to_remove| are removed, and then
+      only those matchin the |rgx_to_keep| are kept
+
+    Returns:
+      filtered controls: a list (potentially empty) after filtering
+    """
+    controls = control_names.copy()
+    if self.rgx_to_remove is not None:
+      controls = []
+      for c in control_names:
+        if re.match(self.rgx_to_remove, c):
+          self._logger.info('Filtering out control %r', c)
+        else:
+          controls.append(c)
+    if self.rgx_to_keep is not None:
+      controls = []
+      for c in control_names:
+        if not re.match(self.rgx_to_keep, c):
+          self._logger.info('Filtering out control %r', c)
+        else:
+          controls.append(c)
+    return controls
 
 class PowerMeasurementError(Exception):
   """Error class to invoke on PowerMeasurement errors."""
@@ -441,7 +491,8 @@ class PowerMeasurement(object):
 
   def __init__(self, host, port, adc_rate=DEFAULT_ADC_RATE,
                adc_accum_rate=DEFAULT_ADC_ACCUM_RATE,
-               vbat_rate=DEFAULT_VBAT_RATE, fast=False, board=DEFAULT_BOARD):
+               vbat_rate=DEFAULT_VBAT_RATE, fast=False, board=DEFAULT_BOARD,
+               rgx_to_keep=None, rgx_to_remove=None):
     """Init PowerMeasurement class by attempting to create PowerTrackers.
 
     Args:
@@ -454,6 +505,10 @@ class PowerMeasurement(object):
             power, nor the powerstate queried from the EC
       board: board name to use. If this is not provided, then an attempt
              is made to query it from the EC
+      rgx_to_keep: regex, only keep rails matching this regex
+      rgx_to_remove: regex, remove all rails that match this regex
+
+    Note: rgx filters - read comment on RegexFilter class
 
     Raises:
       PowerMeasurementError: if no PowerTracker setup successful
@@ -478,7 +533,9 @@ class PowerMeasurement(object):
     self._power_trackers = []
     self._stats = {}
     power_trackers = []
-    adc_tracker = adc_accum_tracker = None
+    # build out the filter
+    cfilter = RegexFilter(rgx_to_keep, rgx_to_remove)
+    adc_tracker = adc_accum_tracker = ec_tracker = None
     # Setup ADCs on the servo device.
     self._sclient.set('servo_adcs_enabled', 'on')
     if self._sclient.get('servo_adcs_enabled') != 'on':
@@ -486,13 +543,14 @@ class PowerMeasurement(object):
     if adc_rate > 0:
       try:
         adc_tracker = OnboardADCPowerTracker(host, port, self._stop_signal,
-                                             adc_rate)
+                                             cfilter, adc_rate)
       except PowerTrackerError:
         self._logger.warning('Onboard ADC tracker setup failed.')
     if adc_accum_rate > 0:
       try:
         adc_accum_tracker = OnboardADCAccumPowerTracker(host, port,
                                                         self._stop_signal,
+                                                        cfilter,
                                                         adc_accum_rate)
       except PowerTrackerError:
         self._logger.debug('Onboard ADC accumulators not supported, or setup '
@@ -500,8 +558,8 @@ class PowerMeasurement(object):
 
     if vbat_rate > 0:
       try:
-        power_trackers.append(ECPowerTracker(host, port, self._stop_signal,
-                                             vbat_rate))
+        ec_tracker = ECPowerTracker(host, port, self._stop_signal, cfilter,
+                                    vbat_rate)
       except PowerTrackerError:
         self._logger.warning('EC Power tracker setup failed.')
     # if an ADC supports accumulator controls, it also supports regular
@@ -515,12 +573,14 @@ class PowerMeasurement(object):
       if adc_tracker.empty:
         self._logger.info('ADC tracker has no controls that are not already '
                           'covered by the ADC accum tracker. Removing.')
-        adc_tracker = None
     # After preprocesssing is done, append the trackers.
-    if adc_tracker is not None:
-      power_trackers.append(adc_tracker)
-    if adc_accum_tracker is not None:
-      power_trackers.append(adc_accum_tracker)
+    for tracker in [adc_tracker, adc_accum_tracker, ec_tracker]:
+      if tracker is not None:
+        if not tracker.empty:
+          power_trackers.append(tracker)
+        else:
+          self._logger.info('Will not be using %r tracker (nothing to track)',
+                            tracker)
     self.Reset()
     for tracker in power_trackers:
       if not self._fast:
@@ -532,8 +592,7 @@ class PowerMeasurement(object):
           continue
       self._power_trackers.append(tracker)
     if not self._power_trackers:
-      raise PowerMeasurementError('No power measurement source successfully'
-                                  ' setup.')
+      raise NoSourceError('No power measurement source successfully setup.')
 
   def Reset(self):
     """Reset PowerMeasurement object to reuse for a new measurement.
