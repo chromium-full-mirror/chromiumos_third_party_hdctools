@@ -360,7 +360,7 @@ class Hierarchy(object):
                            (complement_candidates, busnum))
     return complement_candidates[0]
 
-  def RefreshHierarchy(self):
+  def _RefreshHierarchy(self):
     """Walk through usb sysfs files and gather device information.
 
     The usb sysfs dir contains dirs of the following format:
@@ -397,8 +397,10 @@ class Hierarchy(object):
           continue
 
         hierarchy[(bus, dev)] = usb_dir
+    return hierarchy
 
-    self.hierarchy = hierarchy
+  def RefreshHierarchy(self):
+    self.hierarchy = self._RefreshHierarchy()
 
   @staticmethod
   def GetSysfsParentHubStub(sysfs_dev_path):
