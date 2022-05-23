@@ -69,6 +69,16 @@
     <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
   </control>
   <control>
+    <name>warm_reset</name>
+    <alias>fp_sensor_sel</alias>
+    <params clobber_ok="" od="PU" map="onoff" init="on"></params>
+  </control>
+  <control>
+    <name>rec_mode</name>
+    <alias>transport_sel</alias>
+    <params clobber_ok="" od="PU" map="onoff" init="on"></params>
+  </control>
+  <control>
     <!-- For FPMCU, WP set to 1 means that it is active -->
     <name>fw_wp</name>
     <params clobber_ok="" map="onoff"></params>
