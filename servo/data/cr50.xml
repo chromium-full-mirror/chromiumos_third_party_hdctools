@@ -248,7 +248,7 @@
     <alias>cr50_uart_en,gsc_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
     <params servo_v3_drv="na" ccd_cr50_drv="na" servo_micro_drv="na"
-    clobber_ok="" init="on" c2d2_drv="na">
+    clobber_ok="" init="on" c2d2_drv="na" ccd_ti50_drv="na" ccd_gsc_drv="na">
     </params>
   </control>
   <control>
