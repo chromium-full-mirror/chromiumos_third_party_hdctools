@@ -1,8 +1,0 @@
-<root>
-  <include>
-    <name>servo_beltino_overlay.xml</name>
-  </include>
-  <include>
-    <name>cpu_fw_spi_pp3300.xml</name>
-  </include>
-</root>

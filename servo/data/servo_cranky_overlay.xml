@@ -1,8 +1,0 @@
-<root>
-  <include>
-    <name>servo_rambi_overlay.xml</name>
-  </include>
-  <include>
-    <name>usb_kb_main_kb.xml</name>
-  </include>
-</root>
