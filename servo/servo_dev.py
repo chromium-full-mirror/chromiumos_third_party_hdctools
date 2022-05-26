@@ -8,7 +8,7 @@ import logging
 import os
 import threading
 
-from servo import servo_interfaces
+from servo import servo_dev_templates
 import servo.utils.usb_hierarchy as usb_hierarchy
 
 
@@ -21,7 +21,7 @@ class ServoDevice(object):
   """Device class to track disconnects and device information."""
 
   # Reinit capable devices.
-  REINIT_CAPABLE = set(servo_interfaces.CCD_DEFAULTS)
+  REINIT_CAPABLE = set([servo_dev_templates.CcdCr50.ID, servo_dev_templates.CcdTi50.ID])
 
   # Available attempts to reconnect a device
   REINIT_ATTEMPTS = 100

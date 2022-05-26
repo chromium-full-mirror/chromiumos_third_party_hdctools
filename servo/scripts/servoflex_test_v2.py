@@ -16,10 +16,12 @@ import sys
 import string
 import time
 
+import servo_dev_templates
+
 # Servo V2 PID
-V2_PID = 0x5002
+V2_PID = servo_dev_templates.ServoV2.PID
 # Servo V3 PID
-V3_PID = 0x5004
+V3_PID = servo_dev_templates.ServoV3.PID
 
 def do_cmd(cmd, timeout, plist=None, flist=None):
   """Executes a shell command

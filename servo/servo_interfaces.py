@@ -7,8 +7,6 @@ import collections
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
-SERVO_ID_DEFAULTS = [(0x0403, 0x6014), (0x18d1, 0x5001)]
-
 # servo v1
 INTERFACE_DEFAULTS[0x18d1][0x5001] = \
   ['empty',
@@ -43,8 +41,6 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-SERVO_ID_DEFAULTS.extend(SERVO_V2_DEFAULTS)
-
 # servo v3
 SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
 for vid, pid in SERVO_V3_DEFAULTS:
@@ -68,7 +64,6 @@ for vid, pid in SERVO_V3_DEFAULTS:
     ]
 
 INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
-SERVO_ID_DEFAULTS.extend(SERVO_V3_DEFAULTS)
 
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
@@ -89,7 +84,6 @@ for vid, pid in RAIDEN_DEFAULTS:
      'empty',                                #11
     ]
 
-SERVO_ID_DEFAULTS.extend(RAIDEN_DEFAULTS)
 
 # cr50 CCD
 CCD_CR50_DEFAULTS = [(0x18d1, 0x5014)]
@@ -112,8 +106,6 @@ for vid, pid in CCD_CR50_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-SERVO_ID_DEFAULTS.extend(CCD_CR50_DEFAULTS)
-
 # ti50 CCD
 CCD_TI50_DEFAULTS = [(0x18d1, 0x504a)]
 for vid, pid in CCD_TI50_DEFAULTS:
@@ -135,8 +127,6 @@ for vid, pid in CCD_TI50_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-SERVO_ID_DEFAULTS.extend(CCD_TI50_DEFAULTS)
-
 CCD_DEFAULTS = CCD_CR50_DEFAULTS + CCD_TI50_DEFAULTS
 
 # Sweetberry
@@ -153,8 +143,6 @@ for vid, pid in SWEETBERRY_ID_DEFAULTS:
      {'name': 'ec3po_uart',                  # 7: EC3PO(Sweetberry)
       'raw_pty': 'raw_sweetberry_uart_pty', 'source': 'sweetberry'},
     ]
-
-SERVO_ID_DEFAULTS.extend(SWEETBERRY_ID_DEFAULTS)
 
 # Servo micro
 SERVO_MICRO_DEFAULTS = [(0x18d1, 0x501a)]
@@ -178,8 +166,6 @@ for vid, pid in SERVO_MICRO_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-SERVO_ID_DEFAULTS.extend(SERVO_MICRO_DEFAULTS)
-
 # C2D2
 C2D2_DEFAULTS = [(0x18d1, 0x5041)]
 for vid, pid in C2D2_DEFAULTS:
@@ -202,8 +188,6 @@ for vid, pid in C2D2_DEFAULTS:
      {'name': 'ec3po_uart',                  #11: EC3PO for CPU
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
-
-SERVO_ID_DEFAULTS.extend(C2D2_DEFAULTS)
 
 # Servo v4
 # Note: the (0x18d1, 0x520d) pair is actually servo v4.1
@@ -245,8 +229,6 @@ for vid, pid in SERVO_V4_DEFAULTS:
   # Slots for relocating Hammer interfaces.
   INTERFACE_DEFAULTS[vid][pid] += ['empty'] * SERVO_V4_SLOT_SIZE
 
-SERVO_ID_DEFAULTS.extend(SERVO_V4_DEFAULTS)
-
 # miniservo
 MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18d1, 0x5000)]
 for vid, pid in MINISERVO_ID_DEFAULTS:
@@ -256,8 +238,6 @@ for vid, pid in MINISERVO_ID_DEFAULTS:
      'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
-
-SERVO_ID_DEFAULTS.extend(MINISERVO_ID_DEFAULTS)
 
 # Toad
 TOAD_ID_DEFAULTS = [(0x403, 0x6015)]
@@ -269,8 +249,6 @@ for vid, pid in TOAD_ID_DEFAULTS:
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
-SERVO_ID_DEFAULTS.extend(TOAD_ID_DEFAULTS)
-
 # Reston
 RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
 for vid, pid in RESTON_ID_DEFAULTS:
@@ -280,8 +258,6 @@ for vid, pid in RESTON_ID_DEFAULTS:
      'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
-
-SERVO_ID_DEFAULTS.extend(RESTON_ID_DEFAULTS)
 
 # Fruitpie
 FRUITPIE_ID_DEFAULTS = [(0x18d1, 0x5009)]
@@ -293,8 +269,6 @@ for vid, pid in FRUITPIE_ID_DEFAULTS:
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
-SERVO_ID_DEFAULTS.extend(FRUITPIE_ID_DEFAULTS)
-
 # Plankton
 PLANKTON_ID_DEFAULTS = [(0x18d1, 0x500c)]
 for vid, pid in PLANKTON_ID_DEFAULTS:
@@ -304,8 +278,6 @@ for vid, pid in PLANKTON_ID_DEFAULTS:
      'empty',         # reserved for the above ftdi_gpiouart
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
-
-SERVO_ID_DEFAULTS.extend(PLANKTON_ID_DEFAULTS)
 
 # Fluffy
 FLUFFY_ID_DEFAULTS = [(0x18d1, 0x503b)]
@@ -321,8 +293,6 @@ for vid, pid in FLUFFY_ID_DEFAULTS:
     [
      {'name': 'stm32_uart', 'interface': 0}, # 61 - Fluffy console
     ]
-
-SERVO_ID_DEFAULTS.extend(FLUFFY_ID_DEFAULTS)
 
 # Allow Board overrides of interfaces as we've started to overload some servo V2
 # pinout functionality.  To-date just swapping EC SPI and JTAG interfaces for
