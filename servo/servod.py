@@ -29,7 +29,7 @@ import usb
 
 from servo import interface
 from servo import recovery
-from servo import servo_interfaces
+from servo import servo_dev_templates
 from servo import servo_logging
 from servo import servo_parsing
 from servo import servo_postinit
@@ -189,12 +189,15 @@ class ServodStarter(object):
     if not servo_device:
       sys.exit(-1)
 
-    lot_id = self.get_lot_id(servo_device)
-    board_version = self.get_board_version(lot_id, servo_device.idProduct)
+    vid, pid = servo_device.idVendor, servo_device.idProduct
+    serial = usb_get_iserial(servo_device)
+    dev_tmpl = servo_dev_templates.GetTemplateClass(vid=vid, pid=pid,
+                                                    serial=serial)
+    board_version = dev_tmpl.TYPE
     self._logger.debug('board_version = %s', board_version)
     all_configs = []
     if not devopts.noautoconfig:
-      all_configs += self.get_auto_configs(board_version)
+      all_configs.append(dev_tmpl.DEFAULT_CONFIG)
 
     if devopts.config:
       for config in devopts.config:
@@ -434,7 +437,7 @@ class ServodStarter(object):
     vendor, product, serialname = (options.vendor, options.product,
                                    options.serialname)
     all_servos = []
-    for (vid, pid) in servo_interfaces.SERVO_ID_DEFAULTS:
+    for (vid, pid) in servo_dev_templates.SERVO_ID_DEFAULTS:
       if (vendor and vendor != vid) or \
             (product and product != pid):
         continue
@@ -448,13 +451,9 @@ class ServodStarter(object):
       return all_servos[0]
 
     # See if only one primary servo. Filter secondary servos.
-    secondary_servos = (
-        servo_interfaces.SERVO_MICRO_DEFAULTS +
-        servo_interfaces.CCD_DEFAULTS +
-        servo_interfaces.C2D2_DEFAULTS)
     all_primary_servos = [
         servo for servo in all_servos
-        if (servo.idVendor, servo.idProduct) not in secondary_servos
+        if (servo.idVendor, servo.idProduct) not in servo_dev_templates.SECONDARY_SERVOS
     ]
     if len(all_primary_servos) == 1:
       return all_primary_servos[0]
@@ -469,79 +468,6 @@ class ServodStarter(object):
                        'and use the --name switch')
 
     return None
-
-  def get_board_version(self, lot_id, product_id):
-    """Get board version string.
-
-    Typically this will be a string of format <boardname>_<version>.
-    For example, servo_v2.
-
-    Args:
-      lot_id: string, identifying which lot device was fabbed from or None
-      product_id: integer, USB product id
-
-    Returns:
-      board_version: string, board & version or None if not found
-    """
-    if lot_id:
-      for (board_version, lot_ids) in \
-            interface.ftdi_common.SERVO_LOT_ID_DEFAULTS.items():
-        if lot_id in lot_ids:
-          return board_version
-
-    for (board_version, vids) in \
-          interface.ftdi_common.SERVO_PID_DEFAULTS.items():
-      if product_id in vids:
-        return board_version
-
-    return None
-
-  def get_lot_id(self, servo):
-    """Get lot_id for a given servo.
-
-    This is a legacy method, It used to be that the serials were formatted
-    a certain way and from there you can extract a lot id and this was helpful
-    because a bunch of v2 are laying around that have the wrong vid/pid.
-
-    The lot_id is useful in that case.
-
-    This code should be removed when V2 support is finally removed.
-
-    Args:
-      servo: usb.Device object
-
-    Returns:
-      lot_id of the servo device.
-    """
-    lot_id = None
-    iserial = usb_get_iserial(servo)
-    self._logger.debug('iserial = %s', iserial)
-    if not iserial:
-      self._logger.debug('Servo device has no iserial value')
-    else:
-      try:
-        (lot_id, _) = iserial.split('-')
-      except ValueError:
-        self._logger.debug((
-          "Servo device's iserial does not support lot_id format."
-          "This is expected unless you are running servo v2 [%s]", iserial
-          ))
-    return lot_id
-
-  def get_auto_configs(self, board_version):
-    """Get xml configs that should be loaded.
-
-    Args:
-      board_version: string, board & version
-
-    Returns:
-      configs: list of XML config files that should be loaded
-    """
-    if board_version not in interface.ftdi_common.SERVO_CONFIG_DEFAULTS:
-      self._logger.warning('Unable to determine configs to load for board '
-                           'version = %s', board_version)
-      return []
-    return interface.ftdi_common.SERVO_CONFIG_DEFAULTS[board_version]
 
   def cleanup(self):
     """Perform any cleanup related work after servod server shut down."""
