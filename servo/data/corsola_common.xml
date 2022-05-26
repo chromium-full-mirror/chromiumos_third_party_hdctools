@@ -23,9 +23,12 @@
     warm_reset_can_hold_ap="yes"/>
   </control>
   <control>
+    <!-- Do not use PP1800 (SPI2_VREF) to control WP, because SPI2_VREF is
+    used as AP SPI programming, and the on state will cause leakage when AP off.
+    Use CCD to control WP instead. -->
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" fw_wp_vref="pp1800"/>
+    <params clobber_ok="" interface="9" drv="fw_wp_ccd"/>
   </control>
   <control>
     <name>cpu_fw_spi</name>
