@@ -63,9 +63,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     exact affect on the hardware varies depending on the board type.
 
     """
-    self._interface.set('cold_reset', 'on')
+    self._interface_set('cold_reset', 'on')
     time.sleep(self._reset_hold_time)
-    self._interface.set('cold_reset', 'off')
+    self._interface_set('cold_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -77,9 +77,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     exact affect on the hardware varies depending on the board type.
 
     """
-    self._interface.set('warm_reset', 'on')
+    self._interface_set('warm_reset', 'on')
     time.sleep(self._reset_hold_time)
-    self._interface.set('warm_reset', 'off')
+    self._interface_set('warm_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -134,7 +134,7 @@ class PowerStateDriver(hw_driver.HwDriver):
 
     Reboot cr50 and reset ccd to recover from the usb reset.
     """
-    self._interface.set('cr50_reboot', 'on')
+    self._interface_set('cr50_reboot', 'on')
     # Wait long enough for cr50 to reboot and for usb to have dropped out,
     # and ServoWatchdog to have reinitialized cr50 interfaces.
     time.sleep(0.3)

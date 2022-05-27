@@ -44,13 +44,13 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
     in that the extra 'usbpd_reset' signal must be asserted to reset
     the PD MCU.
     """
-    self._interface.set('cold_reset', 'on')
-    self._interface.set('usbpd_reset', 'on')
+    self._interface_set('cold_reset', 'on')
+    self._interface_set('usbpd_reset', 'on')
 
     time.sleep(self._reset_hold_time)
 
-    self._interface.set('usbpd_reset', 'off')
-    self._interface.set('cold_reset', 'off')
+    self._interface_set('usbpd_reset', 'off')
+    self._interface_set('cold_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -69,11 +69,11 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
       self._reboot_to_ro_with_ap_off()
       # Request recovery boot.
       try:
-        self._interface.set('ec_uart_regexp', "['Events:']")
-        self._interface.set('ec_uart_cmd',
+        self._interface_set('ec_uart_regexp', "['Events:']")
+        self._interface_set('ec_uart_cmd',
                             self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type])
       finally:
-        self._interface.set('ec_uart_regexp', 'None')
+        self._interface_set('ec_uart_regexp', 'None')
 
     self._power_on_ap()
     if rec_mode == self.REC_ON:
@@ -82,16 +82,16 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
   def _reboot_to_ro_with_ap_off(self):
     """Reboot the EC and PD MCU to RO and leave the AP off."""
-    self._interface.set('usbpd_reset', 'on')
+    self._interface_set('usbpd_reset', 'on')
     try:
       # Pexpect is minimally greedy, so we can't match the exact reset cause
       # string.  But checking for 'Reset cause' will be enough proof that the EC
       # rebooted.
-      self._interface.set('ec_uart_regexp', "['Reset cause:']")
-      self._interface.set('ec_uart_cmd', 'reboot ap-off')
+      self._interface_set('ec_uart_regexp', "['Reset cause:']")
+      self._interface_set('ec_uart_cmd', 'reboot ap-off')
     finally:
-      self._interface.set('ec_uart_regexp', 'None')
+      self._interface_set('ec_uart_regexp', 'None')
 
     # Allow enough time for the EC to come up
     time.sleep(self._reset_recovery_time)
-    self._interface.set('usbpd_reset', 'off')
+    self._interface_set('usbpd_reset', 'off')

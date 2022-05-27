@@ -60,7 +60,7 @@ class macro(hw_driver.HwDriver):
                      control, state)
         continue
       # TODO(hungte) Support more commands like sleep(ms).
-      self._interface.set(control, state)
+      self._interface_set(control, state)
 
   def _get(self):
     """Checks and returns current state."""

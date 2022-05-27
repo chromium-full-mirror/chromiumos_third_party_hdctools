@@ -104,13 +104,13 @@ class usbImageManager(hw_driver.HwDriver):
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
     if self._interface.get(self._IMAGE_USB_MUX) != mux_direction:
-      self._interface.set(self._IMAGE_USB_PWR, 'off')
+      self._interface_set(self._IMAGE_USB_PWR, 'off')
       time.sleep(self._poweroff_delay)
-      self._interface.set(self._IMAGE_USB_MUX, mux_direction)
+      self._interface_set(self._IMAGE_USB_MUX, mux_direction)
       time.sleep(self._poweroff_delay)
     if self._interface.get(self._IMAGE_USB_PWR) != 'on':
       # Enforce that power is supplied.
-      self._interface.set(self._IMAGE_USB_PWR, 'on')
+      self._interface_set(self._IMAGE_USB_PWR, 'on')
 
   def _PathIsHub(self, usb_sysfs_path):
     """Return whether |usb_sysfs_path| is a usb hub."""

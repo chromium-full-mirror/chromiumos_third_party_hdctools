@@ -150,7 +150,7 @@ class basePWRADC(hw_driver.HwDriver):
       raise BasePWRADCError('Register %s for control %s unknown' %
                             (reg, self._base_name))
     ctrl_name = self._reg_control_name(reg)
-    self._interface.set(ctrl_name, value)
+    self._interface_set(ctrl_name, value)
 
   def _set_ctrl(self, suffix, value):
     """Set the control |suffix| for |self._base_name| to |value|.
@@ -166,7 +166,7 @@ class basePWRADC(hw_driver.HwDriver):
     # pylint: disable=protected-access
     if not self._interface._has_control(ctrl_name):
       raise BasePWRADCError('Control %r unknown.' % ctrl_name)
-    self._interface.set(ctrl_name, value)
+    self._interface_set(ctrl_name, value)
 
   @property
   def millivolts_per_lsb(self):
