@@ -134,7 +134,7 @@ class basePWRADC(hw_driver.HwDriver):
       raise BasePWRADCError('Register %s for control %s unknown' %
                             (reg, self._base_name))
     ctrl_name = self._reg_control_name(reg)
-    return int(self._interface.get(ctrl_name), 16)
+    return int(self._interface_get(ctrl_name), 16)
 
   def _write_reg(self, reg, value):
     """Write |value| to |reg|.

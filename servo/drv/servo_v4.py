@@ -90,7 +90,7 @@ class servoV4(hw_driver.HwDriver):
 
     Returns: int - 0 for off, 1 for on
     """
-    name = self._interface.get('dut_usb3_en')
+    name = self._interface_get('dut_usb3_en')
     if name == 'off':
       return 0
     if name == 'on':
@@ -118,16 +118,16 @@ class servoV4(hw_driver.HwDriver):
     elif value == 1:
       new = 'on'
     elif value == 2:  # automatic
-      serialnum = self._interface.get('serialname')
+      serialnum = self._interface_get('serialname')
       new = self._dut_usb3_servos.get(serialnum, self._dut_usb3_default)
     else:
       raise ValueError('invalid reinit_dut_usb3_en map value: %r' % (value,))
 
-    if new == self._interface.get('dut_usb3_en'):
+    if new == self._interface_get('dut_usb3_en'):
       # No change to dut_usb3_en.
       return
 
-    dut_hub_usb_reset = self._interface.get('dut_hub_usb_reset')
+    dut_hub_usb_reset = self._interface_get('dut_hub_usb_reset')
     if dut_hub_usb_reset == 'on':
       # DUT USB hub is already in reset, just change dut_usb3_en.
       self._interface_set('dut_usb3_en', new)

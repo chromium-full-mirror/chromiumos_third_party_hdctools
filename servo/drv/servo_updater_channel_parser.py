@@ -35,7 +35,7 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
     Returns:
         the channel the current firmware is from or 'unknown'
     """
-    current = self._interface.get(self._current_fw_cmd)
+    current = self._interface_get(self._current_fw_cmd)
     try:
       channel = servo_updater.get_firmware_channel(self._board, current)
       return channel if channel is not None else 'unknown'

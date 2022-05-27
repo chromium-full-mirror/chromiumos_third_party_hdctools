@@ -48,7 +48,7 @@ class selectControl(hw_driver.HwDriver):
 
     # Return the value from the selected control
     selected_control = self._get_selected_control(control_key)
-    return self._interface.get(selected_control)
+    return self._interface_get(selected_control)
 
   def _get_control_key_info(self, control_name):
     """Get the base control information
