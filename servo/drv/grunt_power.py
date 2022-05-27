@@ -23,7 +23,7 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
     # |_power_on_bytype| is used inside power_state:rec to turn off the AP
     # before turning it on again to come back in recovery mode. To ensure a safe
     # turn off sequence, turn off the c0_ppc_pp1 before the function.
-    self._interface.set(self.CTRL, 'off')
+    self._interface_set(self.CTRL, 'off')
     # Now we can safely call the super class's |_power_on_bytype|
     super(gruntPower, self)._power_on_bytype(*args, **kwargs)
 
@@ -48,7 +48,7 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
       # ccd enabled/recoverable which is preferred over a disabled ccd signal.
       for i in range(self.I2C_RETRY_COUNT):
         try:
-          self._interface.set(self.CTRL, 'off')
+          self._interface_set(self.CTRL, 'off')
           break
         except Exception as e:
           # This cannot fail. Once we're here, we need to either get the ppc
@@ -58,7 +58,7 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
         # If we made it to here, this means that we turned off the DUT, needed
         # to turn off the ppc, but failed. Reset the system.
         self._logger.error('Turning off ppc failed. Resetting system over cr50')
-        self._interface.set('power_state', 'cr50_reset')
+        self._interface_set('power_state', 'cr50_reset')
     # Manage the delay ourselves here sleep the remaining time here.
     time.sleep(max(0, g3_entry_time - time.time()))
 
@@ -76,12 +76,12 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
     super(gruntPower, self)._power_on(rec_mode)
     if self._needs_c0_pp1() and rec_mode == self.REC_OFF:
       # This is the vanilla 'power_state:on'
-      self._interface.set(self.CTRL, 'on')
+      self._interface_set(self.CTRL, 'on')
 
   def _reset_cycle(self):
     """Reset on grunt runs through cr50, so disable c0 ppc pp1."""
     # Turn off the c0_ppc_pp1 before resetting the EC.
-    self._interface.set(self.CTRL, 'off')
+    self._interface_set(self.CTRL, 'off')
     super(gruntPower, self)._reset_cycle()
     # Note that there is no need to restore the value here manually as the EC
     # will set the appropiate value (depending on the port's needs) upon

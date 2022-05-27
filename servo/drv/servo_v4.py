@@ -130,16 +130,16 @@ class servoV4(hw_driver.HwDriver):
     dut_hub_usb_reset = self._interface.get('dut_hub_usb_reset')
     if dut_hub_usb_reset == 'on':
       # DUT USB hub is already in reset, just change dut_usb3_en.
-      self._interface.set('dut_usb3_en', new)
+      self._interface_set('dut_usb3_en', new)
     elif dut_hub_usb_reset == 'off':
       # DUT USB hub is active, hold it in reset briefly while changing
       # dut_usb3_en to force re-enumeration.
-      self._interface.set('dut_hub_usb_reset', 'on')
+      self._interface_set('dut_hub_usb_reset', 'on')
       try:
-        self._interface.set('dut_usb3_en', new)
+        self._interface_set('dut_usb3_en', new)
         time.sleep(self._usb_reset_seconds)
       finally:
-        self._interface.set('dut_hub_usb_reset', 'off')
+        self._interface_set('dut_hub_usb_reset', 'off')
     else:
       raise ValueError('unexpected dut_hub_usb_reset value: %r' %
                        (dut_hub_usb_reset,))

@@ -98,19 +98,19 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       return False
 
     self._logger.debug('Reset %s to %s', self._USB3_PWR_EN, self._off)
-    self._interface.set(self._USB3_PWR_EN, self._off)
+    self._interface_set(self._USB3_PWR_EN, self._off)
     return True
 
   def _usb3_pwr_restore(self):
     """Returns (turns on) USB3 power."""
     self._logger.debug('Set %s to %s', self._USB3_PWR_EN, self._on)
-    self._interface.set(self._USB3_PWR_EN, self._on)
+    self._interface_set(self._USB3_PWR_EN, self._on)
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
     need_to_restore = self._usb3_pwr_disable()
 
-    self._interface.set('power_key', self._power_key)
+    self._interface_set('power_key', self._power_key)
 
     if need_to_restore:
       self._usb3_pwr_restore()
@@ -124,7 +124,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         if self._warm_reset_can_hold_ap:
           # Hold warm reset so the AP doesn't boot when EC reboots.
           # Note that this only seems to work reliably for ARM devices.
-          self._interface.set('warm_reset', 'on')
+          self._interface_set('warm_reset', 'on')
         try:
           efs2 = bool(int(self._interface.get('ec_feat'), 16) &
                       crosEcSoftrecPower._EC_FEATURE_EFS2)
@@ -176,7 +176,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
         if self._warm_reset_can_hold_ap:
           # Release warm reset after a potential cold reset settles.
-          self._interface.set('warm_reset', 'off')
+          self._interface_set('warm_reset', 'off')
       else:
         # Need to clear the flag in secondary (B) copy of the host events if
         # we're in non-recovery mode.
@@ -213,7 +213,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # this will be a no-op.
         try:
           if self._interface.get('root.dut_connection_type') == 'type-c':
-              self._interface.set('dut_pd_data_role', 'DFP')
+              self._interface_set('dut_pd_data_role', 'DFP')
         except NameError as e:
           self._logger.debug('Servo is not Type-C')
           pass
@@ -239,13 +239,13 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   def _reset_cycle(self):
     if self._pb_init_idle:
       try:
-        self._interface.set('ec_uart_regexp', '["power state 3 = S0"]')
-        self._interface.set('ec_uart_cmd', 'powerinfo')
+        self._interface_set('ec_uart_regexp', '["power state 3 = S0"]')
+        self._interface_set('ec_uart_cmd', 'powerinfo')
         dut_was_off = False
       except Exception:
         dut_was_off = True
       finally:
-        self._interface.set('ec_uart_regexp', 'None')
+        self._interface_set('ec_uart_regexp', 'None')
 
       if dut_was_off:
         # Boot the AP so the EC will boot the AP again after it reboots.

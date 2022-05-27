@@ -87,4 +87,4 @@ class selectControl(hw_driver.HwDriver):
       return
     # Set the value of the selected control
     selected_control = self._get_selected_control(control_key)
-    self._interface.set(selected_control, logical_value)
+    self._interface_set(selected_control, logical_value)
