@@ -26,14 +26,6 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
     assert control_name.endswith('fw_wp_state'), 'Should be fw_wp_state control'
     self._prefix = control_name.replace('fw_wp_state', '')
 
-  def _interface_get(self, control):
-    """Get the value of the given control with proper prefix."""
-    return self._interface.get(self._prefix + control)
-
-  def _interface_set(self, control, value):
-    """Set the value of the given control with proper prefix."""
-    return self._interface.set(self._prefix + control, value)
-
   def _force_on(self):
     """Force the firmware to write-protected."""
     if self._is_open_drain:
