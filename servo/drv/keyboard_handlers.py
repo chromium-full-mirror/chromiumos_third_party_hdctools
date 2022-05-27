@@ -132,9 +132,9 @@ class _BaseHandler(_HandlerTemplate):
     # its current value. Use pwr_button control by default.
     # Otherwise, use pwr_button_hold which calls a single EC
     # console command to toggle power button, for the CCD case.
-    servo_type = self._servo.get('servo_type')
-    is_ccd = 'ccd' in servo_type and 'servo_micro' not in servo_type
+    is_ccd =  self._servo.get('servo_class') == 'ccd'
 
+    self._logger.debug('power_key is_ccd: %r', is_ccd)
     if is_ccd:
       use_hold_command = True
     else:
@@ -144,6 +144,9 @@ class _BaseHandler(_HandlerTemplate):
         use_hold_command = False
       except hw_driver.HwDriverError:
         use_hold_command = True
+
+    self._logger.info('Using power_key %s',
+                      'hold' if use_hold_command else 'press/release')
 
     if use_hold_command:
       self.power_key_hold(press_secs)
