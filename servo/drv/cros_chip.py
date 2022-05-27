@@ -31,7 +31,7 @@ class crosChip(hw_driver.HwDriver):
   def _Get_chip(self):
     """Get the EC chip name."""
     if self._check_active_device:
-        device = self._interface.get('active_dut_controller')
+        device = self._interface_get('active_dut_controller')
         return self._chips[device]
     else:
         return self._chip

@@ -92,7 +92,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     # Some FAFT tests (e.g, platform_ServoPowerStateController*) will set
     # usb3_pwr_en to off to test booting system into recovery mode (without
     # booting from USB) so we want to reset only when usb3_pwr_en is turned on.
-    state = self._interface.get(self._USB3_PWR_EN)
+    state = self._interface_get(self._USB3_PWR_EN)
     self._logger.debug('%s state: %s', self._USB3_PWR_EN, state);
     if state != self._on:
       return False
@@ -126,7 +126,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
           # Note that this only seems to work reliably for ARM devices.
           self._interface_set('warm_reset', 'on')
         try:
-          efs2 = bool(int(self._interface.get('ec_feat'), 16) &
+          efs2 = bool(int(self._interface_get('ec_feat'), 16) &
                       crosEcSoftrecPower._EC_FEATURE_EFS2)
         except ec.ecError:
           # Assume EFS2 is unsupported if the EC doesn't support the feat
@@ -212,7 +212,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
         # this will be a no-op.
         try:
-          if self._interface.get('root.dut_connection_type') == 'type-c':
+          if self._interface_get('root.dut_connection_type') == 'type-c':
               self._interface_set('dut_pd_data_role', 'DFP')
         except NameError as e:
           self._logger.debug('Servo is not Type-C')

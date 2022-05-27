@@ -71,7 +71,7 @@ class macro(hw_driver.HwDriver):
     def get_value(ctrl):
       if ctrl in cached:
         return cached[ctrl]
-      value = self._interface.get(ctrl)
+      value = self._interface_get(ctrl)
       cached[ctrl] = value
       return value
 
