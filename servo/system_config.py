@@ -330,6 +330,10 @@ class SystemConfig(object):
         else:
           raise SystemConfigError('%s %s has illegal number of params %d\n%s' %
                                   (tag, name, len(params_list), element_str))
+        # If name_prefix was given, use it as the interface prefix. Use '' if
+        # it wasn't.'
+        set_dict['interface_prefix'] = name_prefix or ''
+        get_dict['interface_prefix'] = name_prefix or ''
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.
