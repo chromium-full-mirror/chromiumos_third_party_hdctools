@@ -187,4 +187,9 @@
     <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
     </params>
   </control>
+  <control>
+    <name>servo_class</name>
+    <doc>servo type (flex or ccd)</doc>
+    <params drv="echo" value="ccd" interface="servo" clobber_ok=""/>
+  </control>
 </root>
