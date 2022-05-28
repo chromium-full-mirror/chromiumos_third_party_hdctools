@@ -10,10 +10,14 @@ certifi==2021.10.8
     # via requests
 charset-normalizer==2.0.12
     # via requests
+execnet==1.9.0
+    # via pytest-xdist
 idna==3.3
     # via requests
 iniconfig==1.1.1
     # via pytest
+mock==4.0.3
+    # via -r requirements.in
 numpy==1.21.4
     # via -r requirements.in
 packaging==21.3
@@ -25,12 +29,24 @@ pluggy==1.0.0
 ptyprocess==0.7.0
     # via pexpect
 py==1.11.0
-    # via pytest
+    # via
+    #   pytest
+    #   pytest-forked
 pyparsing==2.4.7
     # via packaging
 pyserial==3.5
     # via -r requirements.in
 pytest==7.1.1
+    # via
+    #   -r requirements.in
+    #   pytest-forked
+    #   pytest-mock
+    #   pytest-xdist
+pytest-forked==1.4.0
+    # via pytest-xdist
+pytest-mock==3.7.0
+    # via -r requirements.in
+pytest-xdist==2.5.0
     # via -r requirements.in
 pyusb==1.2.1
     # via -r requirements.in

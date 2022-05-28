@@ -1,11 +1,26 @@
 
-
 steps:
 - name: 'gcr.io/kaniko-project/executor:latest'
+  id: 'build'
   args:
-  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod
+  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - --cache=true
   - --cache-ttl=96h
   - -f=/workspace/servo/dockerfiles/Dockerfile
 
-timeout: 780s
+- name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
+  id: 'test'
+  entrypoint: pytest
+  args:
+    - -n
+    - auto
+    - -vv
+    - /hdctools/servo/tests/
+  waitFor: ['build']
+
+
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  machineType: 'N1_HIGHCPU_32'
+
+timeout: 1800s
