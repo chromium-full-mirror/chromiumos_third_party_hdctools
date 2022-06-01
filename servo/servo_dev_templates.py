@@ -45,7 +45,7 @@ def GetTemplateClass(vid, pid, serial=None):
   Raises:
     DeviceTemplateError if template class not found, or not uniquely identified
   """
-  dev_class_candidates = SERVO_VID_PID_TEMPLATE_MAP[vid][pid]
+  dev_class_candidates = SERVO_VID_PID_TEMPLATE_MAP[vid][pid].copy()
   if len(dev_class_candidates) > 1:
     # Might need the lotid to distinguish what device is used.
     if serial:
@@ -164,7 +164,7 @@ class ServoV4(_ServoDevTemplate):
   PID = 0x501b
   DEFAULT_CONFIG = 'servo_v4.xml'
 
-class ServoV4P1(_ServoDevTemplate):
+class ServoV4p1(_ServoDevTemplate):
   """Servo v4p1 template class."""
   VID = 0x18d1
   PID = 0x520d
@@ -194,7 +194,7 @@ class Sweetberry(_ServoDevTemplate):
   PID = 0x5020
   DEFAULT_CONFIG = 'sweetberry.xml'
 
-class C2D2(_ServoDevTemplate):
+class C2d2(_ServoDevTemplate):
   """C2D2 template class."""
   VID = 0x18d1
   PID = 0x5041
@@ -259,4 +259,4 @@ def _InitMaps(servo_dev_module):
 _InitMaps(sys.modules[__name__])
 # Collection of secondary servos that usually require a support device (v4 or v4p1) to
 # offer full servo functionality.
-SECONDARY_SERVOS = set([ServoMicro.ID, CcdCr50.ID, CcdTi50.ID, C2D2.ID])
+SECONDARY_SERVOS = set([ServoMicro.ID, CcdCr50.ID, CcdTi50.ID, C2d2.ID])

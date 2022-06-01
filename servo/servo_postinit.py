@@ -135,6 +135,12 @@ class ServoV4PostInit(BasePostInit):
     for cfg_file in cfg_files:
       new_syscfg.add_cfg_file(*cfg_file)
     self.servod._syscfg = new_syscfg
+    # TODO(konmari): _syscfg's reference is changed in postinit, thus we need to
+    #                update all devices' syscfg to be the new reference.
+    #                This will be refactored after each device has individual
+    #                syscfg and servo_postinit is removed
+    for device in self.servod._devices.values():
+      device._syscfg = new_syscfg
 
   def add_servo_serial(self, servo_usb, servo_serial_key):
     """Add the servo serial number.
