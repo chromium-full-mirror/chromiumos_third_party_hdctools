@@ -1,5 +1,10 @@
 
 steps:
+
+- name: gcr.io/cloud-builders/git
+  id: setup
+  args: ['fetch', '--unshallow']
+
 - name: 'gcr.io/kaniko-project/executor:latest'
   id: 'build'
   args:
@@ -7,6 +12,7 @@ steps:
   - --cache=true
   - --cache-ttl=96h
   - -f=/workspace/servo/dockerfiles/Dockerfile
+  waitFor: ['setup']
 
 - name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
   id: 'test'
