@@ -45,7 +45,7 @@ def GetTemplateClass(vid, pid, serial=None):
   Raises:
     DeviceTemplateError if template class not found, or not uniquely identified
   """
-  dev_class_candidates = SERVO_VID_PID_TEMPLATE_MAP[vid][pid]
+  dev_class_candidates = SERVO_VID_PID_TEMPLATE_MAP[vid][pid].copy()
   if len(dev_class_candidates) > 1:
     # Might need the lotid to distinguish what device is used.
     if serial:
