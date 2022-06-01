@@ -164,7 +164,7 @@ class ServoV4(_ServoDevTemplate):
   PID = 0x501b
   DEFAULT_CONFIG = 'servo_v4.xml'
 
-class ServoV4P1(_ServoDevTemplate):
+class ServoV4p1(_ServoDevTemplate):
   """Servo v4p1 template class."""
   VID = 0x18d1
   PID = 0x520d
