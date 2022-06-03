@@ -113,7 +113,7 @@ class basePWRADC(hw_driver.HwDriver):
       a register control for |reg|, False otherwise
     """
     # pylint: disable=protected-access
-    return self._interface._has_control(self._reg_control_name(reg))
+    return self._interface.has_control(self._reg_control_name(reg))
 
   def _read_reg(self, reg):
     """Retrieve output for |reg|.
@@ -164,7 +164,7 @@ class basePWRADC(hw_driver.HwDriver):
     """
     ctrl_name = '%s_%s' % (self._base_name, suffix)
     # pylint: disable=protected-access
-    if not self._interface._has_control(ctrl_name):
+    if not self._interface.has_control(ctrl_name):
       raise BasePWRADCError('Control %r unknown.' % ctrl_name)
     self._interface.set(ctrl_name, value)
 

@@ -138,7 +138,7 @@ class usbImageManager(hw_driver.HwDriver):
     # Look for own servod usb device
     # pylint: disable=protected-access
     # Need servod information to find own servod instance.
-    usb_id = (servod._vendor, servod._product, servod._serialnames['main'])
+    usb_id = servod.get_main_device_id()
     self_usb = usb_hierarchy.Hierarchy.GetUsbDeviceSysfsPath(*usb_id)
     hub_on_servo = usb_hierarchy.Hierarchy.GetSysfsParentHubStub(self_usb)
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|

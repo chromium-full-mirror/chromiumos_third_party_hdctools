@@ -57,7 +57,7 @@ class kbHandlerInit(hw_driver.HwDriver):
       self._logger.debug('No device path specified for usbkm232 handler. Use '
                          'the servo atmega chip to handle.')
       # Use servo onboard keyboard emulator.
-      if not self._servo._syscfg.is_control('atmega_rst'):
+      if not self._interface.has_control('atmega_rst'):
         msg = 'No atmega in servo board. So no keyboard support.'
         self._logger.warning(msg)
         raise kbHandlerInitError(msg)
@@ -89,7 +89,7 @@ class kbHandlerInit(hw_driver.HwDriver):
       if self._handler_type == 'usb':
         # Call through servo instead of calling method directly, because the
         # |_params| for default keyboard is not the same as for usb keyboard.
-        if self._servo._syscfg.is_control('init_usb_keyboard'):
+        if self._servo.has_control('init_usb_keyboard'):
           self._servo.set('init_usb_keyboard', value)
           self._servo._keyboard = self._servo._usb_keyboard
         else:

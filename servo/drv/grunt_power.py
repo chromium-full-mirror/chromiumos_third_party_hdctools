@@ -64,7 +64,7 @@ class gruntPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
   def _needs_c0_pp1(self):
     """Whether grunt needs to manage the c0 ppc pp1 enable manually."""
-    if self._interface._has_control('servo_v4_role'):
+    if self._interface.has_control('servo_v4_role'):
       if self._interface.get('servo_v4_role') == 'snk':
         self._logger.debug('Determined grunt needs to turn manage c0 ppc pp1')
         return True

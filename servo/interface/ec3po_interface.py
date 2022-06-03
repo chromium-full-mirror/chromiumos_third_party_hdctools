@@ -239,13 +239,13 @@ class EC3PO(uart.Uart):
 
 
   @staticmethod
-  def Build(index, vid, pid, sid, interface_data, servod):
+  def Build(index, vid, pid, sid, interface_data, servo_device):
     """Factory method to implement the interface."""
     device_info = DeviceInfo(vid, pid, sid)
     raw_uart_name = interface_data['raw_pty']
     raw_uart_source = interface_data['source']
-    if servod._syscfg.is_control(raw_uart_name):
-      raw_ec_uart = servod.get(raw_uart_name)
+    if servo_device._syscfg.is_control(raw_uart_name):
+      raw_ec_uart = servo_device.get(raw_uart_name)
       return EC3PO(raw_ec_uart, raw_uart_source, device_info)
     else:
       # The overlay doesn't have the raw PTY defined, therefore we can skip

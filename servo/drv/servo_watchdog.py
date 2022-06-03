@@ -4,6 +4,7 @@
 """Driver for controlling the watchdog."""
 
 from servo.drv import hw_driver
+from servo import servo_dev_templates
 
 
 class servoWatchdogError(hw_driver.HwDriverError):

@@ -24,11 +24,13 @@ import socket
 import sys
 import threading
 import time
+import weakref
 
 import usb
 
 from servo import interface
 from servo import recovery
+from servo import servo_dev
 from servo import servo_dev_templates
 from servo import servo_logging
 from servo import servo_parsing
@@ -248,11 +250,14 @@ class ServodStarter(object):
                        servo_device.idVendor, servo_device.idProduct,
                        usb_get_iserial(servo_device))
 
-    self._servod = servo_server.Servod(
-        scfg, vendor=servo_device.idVendor, product=servo_device.idProduct,
-        serialname=usb_get_iserial(servo_device),
-        interfaces=devopts.interfaces.split(), board=devopts.board,
-        model=devopts.model, version=board_version, usbkm232=devopts.usbkm232)
+    self._servod = servo_server.Servod(usbkm232=devopts.usbkm232)
+    serialname = usb_get_iserial(servo_device)
+    template = servo_dev_templates.GetTemplateClass(vid=servo_device.idVendor,
+     pid=servo_device.idProduct, serial=serialname)
+    main_servo_dev = servo_dev.ServoDevice(template=template, config=scfg,
+      name=servo_dev_templates.MAIN_DEV_PREFIX, serialname=serialname,
+      interfaces=devopts.interfaces.split(), board=devopts.board, model=devopts.model,
+      version=board_version, servod=weakref.proxy(self._servod))
 
     # Small timeout to allow interface threads to initialize.
     time.sleep(0.5)

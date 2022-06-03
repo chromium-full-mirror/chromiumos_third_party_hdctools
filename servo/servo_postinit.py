@@ -75,8 +75,9 @@ class ServoPostInitError(Exception):
 class BasePostInit(object):
   """Base Class for Post Init classes."""
 
-  def __init__(self, servod):
-    self.servod = servod
+  def __init__(self, servo):
+    self.servo = servo
+    self.servod = servo._servod
     self._logger = logging.getLogger(self.__class__.__name__)
 
   def post_init(self):
@@ -128,30 +129,26 @@ class ServoV4PostInit(BasePostInit):
     """
     cfg_files = [(new_cfg_file, name_prefix, interface_increment)]
     first_index = 1 if remove_head else 0
-    cfg_files.extend(self.servod._syscfg._loaded_xml_files[first_index:])
+    cfg_files.extend(self.servo._syscfg._loaded_xml_files[first_index:])
 
     self._logger.debug('Resetting system config files')
     new_syscfg = system_config.SystemConfig()
     for cfg_file in cfg_files:
       new_syscfg.add_cfg_file(*cfg_file)
-    self.servod._syscfg = new_syscfg
-    # TODO(konmari): _syscfg's reference is changed in postinit, thus we need to
-    #                update all devices' syscfg to be the new reference.
-    #                This will be refactored after each device has individual
-    #                syscfg and servo_postinit is removed
-    for device in self.servod._devices.values():
-      device._syscfg = new_syscfg
+    self.servo._syscfg = new_syscfg
 
-  def add_servo_serial(self, servo_usb, servo_serial_key):
-    """Add the servo serial number.
+  def add_device(self, servo_usb, servo_serial_key):
+    """Add the device to Servod device list.
 
     Args:
       servo_usb: usb.core.Device object that represents the new detected
           servo we should be checking against.
       servo_serial_key: Key to the servo serial dict.
     """
+    vendor = servo_usb.idVendor
+    product = servo_usb.idProduct
     serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
-    self.servod.add_serial_number(servo_serial_key, serial)
+    self.servod.add_device(vendor, product, serial, servo_serial_key)
 
   def init_servo_interfaces(self, servo_usb, servo_interface=None):
     """Initialize the new servo interfaces.
@@ -167,8 +164,7 @@ class ServoV4PostInit(BasePostInit):
     serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
     if not servo_interface:
       servo_interface = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
-
-    self.servod.init_servo_interfaces(vendor, product, serial, servo_interface)
+    self.servo.init_servo_interfaces(vendor, product, serial, servo_interface)
 
   def probe_ec_board(self):
     """Probe the ec board behind the servo, and check if it needs relocation.
@@ -213,7 +209,7 @@ class ServoV4PostInit(BasePostInit):
     # this servo v4 and if so, initialize it and add it to the servod instance.
     servo_v4 = self.get_servo_v4_usb_device()
     # Save the board config in case we need to readd it with a prefix.
-    board_config = self.servod._syscfg.get_board_cfg()
+    board_config = self.servo._syscfg.get_board_cfg()
 
     # Find debug header servos, e.g. Servo Micro, C2D2.
     for servo_type in DEBUG_HEADER_SERVO_TYPES:
@@ -225,7 +221,7 @@ class ServoV4PostInit(BasePostInit):
         if hierarchy.DevOnDevHub(servo_v4, servo_usb_device):
           default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
           slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
-          backup_interfaces = self.servod.get_servo_interfaces(
+          backup_interfaces = self.servo.get_servo_interfaces(
               default_slot, slot_size)
 
           self.prepend_config(servo_type.cfg_file_name)
@@ -258,22 +254,22 @@ class ServoV4PostInit(BasePostInit):
                                 '%s_' % board, new_slot - 1)
 
             # Add its serial for record.
-            self.add_servo_serial(
+            self.add_device(
                 servo_usb_device, servo_type.serial_key + '_for_' + board)
           else:
             # Append "_with_servo_micro" or "_with_c2d2" to the version string.
             # Don't do it on a base, as the base is optional.
-            self.servod._version += '_with_' + servo_type.control_prefix
+            self.servo._version += '_with_' + servo_type.control_prefix
             # This is the main servo_micro/c2d2.
-            self.add_servo_serial(servo_usb_device, servo_type.serial_key)
+            self.add_device(servo_usb_device, servo_type.serial_key)
             # Add aliases for the servo_micro/c2d2 as well.  This is useful if
             # there are multiple debug header servos.
-            if self.servod._board:
-              self.add_servo_serial(
+            if self.servo._board:
+              self.add_device(
                   servo_usb_device,
                   servo_type.serial_key + '_for_' + self.servod._board)
-              if self.servod._model:
-                self.add_servo_serial(
+              if self.servo._model:
+                self.add_device(
                     servo_usb_device,
                     servo_type.serial_key + '_for_' + self.servod._model)
             found_debug_header_servo = True
@@ -293,7 +289,7 @@ class ServoV4PostInit(BasePostInit):
         if hierarchy.DevOnDevHub(servo_v4, ccd_usb_device):
           if not found_debug_header_servo:
             self.prepend_config(servo_type.cfg_file_name)
-            self.servod._version += '_with_' + servo_type.control_prefix
+            self.servo._version += '_with_' + servo_type.control_prefix
             self.init_servo_interfaces(ccd_usb_device)
             found_dut_controller = True
           else:
@@ -302,18 +298,18 @@ class ServoV4PostInit(BasePostInit):
             ccd_shift = ccd_pos - 1
             # Cache the previous hwinit, ccd controls should not be hwinit.
             cached_hwinit = copy.copy(self.servod._syscfg.hwinit)
-            self.servod._syscfg.add_cfg_file(servo_type.cfg_file_name,
+            self.servo._syscfg.add_cfg_file(servo_type.cfg_file_name,
                                              interface_increment=ccd_shift,
                                              name_prefix=ccd_prefix)
             if board_config:
-              self.servod._syscfg.add_cfg_file(board_config,
+              self.servo._syscfg.add_cfg_file(board_config,
                                                interface_increment=ccd_shift,
                                                name_prefix=ccd_prefix)
 
-            self.servod._syscfg.hwinit = cached_hwinit
+            self.servo._syscfg.hwinit = cached_hwinit
             # Lastly, add a special 'dual_controller_config.xml overlay
             # to adjust specific controls in the dual controller scenario.
-            self.servod._syscfg.add_cfg_file('dual_controller_config.xml')
+            self.servo._syscfg.add_cfg_file('dual_controller_config.xml')
             vid, pid = (ccd_usb_device.idVendor, ccd_usb_device.idProduct)
             interfaces = servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
             for interface in interfaces:
@@ -322,17 +318,17 @@ class ServoV4PostInit(BasePostInit):
                 interface['raw_pty'] = ccd_prefix + interface['raw_pty']
             # Need to shift the interfaces properly.
             interfaces = ['empty'] * ccd_shift + interfaces
-            self.servod._version += '_and_' + servo_type.control_prefix
+            self.servo._version += '_and_' + servo_type.control_prefix
             self.init_servo_interfaces(ccd_usb_device, interfaces)
-          self.add_servo_serial(ccd_usb_device, servo_type.serial_key)
+          self.add_device(ccd_usb_device, servo_type.serial_key)
 
     if found_dut_controller:
       return
 
     # Fail if we requested board control but don't have an interface for this.
-    if self.servod._board:
+    if self.servod.get_board():
       if self.servod.get('root.dut_connection_type') == 'type-c':
-        faults = diagnose.diagnose_ccd(self.servod)
+        faults = diagnose.diagnose_ccd(self.servo)
         if diagnose.SBU_VOLTAGE_FLOAT in faults:
           self.servod.set('dut_sbu_voltage_float_fault', 'on')
       # No need to check for the LOW voltage signal here as the fault
@@ -340,7 +336,7 @@ class ServoV4PostInit(BasePostInit):
       self.servod.set('dut_controller_missing_fault', 'on')
 
       self._logger.error('No Servo Micro, C2D2, or CCD detected for board %s',
-          self.servod._board)
+          self.servod.get_board())
       # TODO(guocb): remove below tip when DUTs directionality is stable.
       self._logger.error('Try flipping the USB type C cable if you were using '
                          'servo v4 type C.')
@@ -361,12 +357,12 @@ for vid, pid in servo_interfaces.SERVO_V4_DEFAULTS:
   POST_INIT[vid][pid] = ServoV4PostInit
 
 
-def post_init(servod):
+def post_init(servo):
   """Entry point to call post init for a given vid/pid and servod.
 
   Args:
     servod: servo_server.Servod object.
   """
-  post_init_class = POST_INIT.get(servod._vendor, {}).get(servod._product)
+  post_init_class = POST_INIT.get(servo._template.VID, {}).get(servo._template.PID)
   if post_init_class:
-    post_init_class(servod).post_init()
+    post_init_class(servo).post_init()

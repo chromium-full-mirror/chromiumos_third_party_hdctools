@@ -28,7 +28,7 @@ class servoMetadata(hw_driver.HwDriver):
 
   def _Get_type(self):
     """Gets the current servo type."""
-    return self._interface._version
+    return self._interface.get_version()
 
   def _Get_pid(self):
     """Return servod instance pid"""
@@ -36,19 +36,17 @@ class servoMetadata(hw_driver.HwDriver):
 
   def _Get_serial(self):
     """Gets the current servo serial."""
-    return self._interface.get_serial_number(self._interface.MAIN_SERIAL)
+    return self._interface.get_main_serial()
 
   def _Get_config_files(self):
     """Gets the configuration files used for this servo server invocation"""
-    xml_files = self._interface._syscfg._loaded_xml_files
-    # See system_config.py for schema, but entry[0] is the file name
-    return [entry[0] for entry in xml_files]
+    return self._interface.get_config_files()
 
   def _Get_tagged_controls(self):
     """Retrieve all controls under a certain tag."""
     if 'tag' not in self._params:
       raise metadataError('tag needs to be specified in params.')
-    return self._interface._syscfg.get_controls_for_tag(self._params['tag'])
+    return self._interface.get_controls_for_tag(self._params['tag'])
 
   def _Set_rotate_logs(self, _):
     """Force a servo log rotation."""

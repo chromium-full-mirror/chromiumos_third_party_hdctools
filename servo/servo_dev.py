@@ -11,6 +11,7 @@ import threading
 from servo import interface as _interface
 from servo import drv as servo_drv
 from servo import servo_dev_templates
+from servo import servo_interfaces
 from servo import servo_logging
 from servo import servo_postinit
 from servo.utils import string_utils
@@ -45,22 +46,24 @@ class ServoDevice(object):
   # waiting for the device during an intentional disconnect.
   INTERFACE_AVAILABILITY_TIMEOUT = 5
 
-  def __init__(self, template, config, serialname=None, interfaces=None, version=None,
-               servod=None, board=''):
+  def __init__(self, template, config, name, serialname=None, interfaces=None, board='',
+               model='', version=None, servod=None):
     """ServoDevice constructor.
 
     Args:
       template: ServoDevTemplate class for this servo device
       config: instance of SystemConfig containing all controls for
           particular Servod invocation
+      name: prefix/name of the ServoDevice recognized by Servod
       serialname: string of device serialname/number as defined in FTDI eeprom.
       interfaces: list of strings of interface types the server will instantiate
       version: String. Servo board version. Examples: servo_v1, servo_v2,
                servo_v2_r0, servo_v3, servo_v4_with_servo_micro_interface
-      servod: TODO(konmari) - a temporary hack to access servod to invoke controls with
-                              interface 'servo' and access all other devices. Need to 
-                              reevaluate if this is the proper approach later.
       board: board name. e.g. octopus, coral, or scarlet.
+      model: model name of a given board. e.g. fleex, ampton, or apel.
+      servod: TODO(konmari) - a temporary hack to access servod to invoke controls with
+                              interface 'servo' and access all other devices. Need to
+                              reevaluate if this is the proper approach later.
     Raises:
       ServoDeviceError: if unable to locate init method for particular interface
       ServoDeviceError: the usb device path isn't found.
@@ -68,14 +71,28 @@ class ServoDevice(object):
     self._logger = logging.getLogger('ServoDevice %s - %s' % (template.TYPE, serialname))
     self._logger.debug('')
     self._template = template
+    vendor = self._template.VID
+    product = self._template.PID
     self._serial = serialname
+    self._base_version = version
+    self._version = version
+    self._base_board = ''
+    self._board = board
+    if model:
+      self._board += '_' + model
+    self._model = model
     self._ifaces_available = threading.Event()
     self.connect()
-    self._reinit_capable = (self._template.VID, self._template.PID) in self.REINIT_CAPABLE
+    self._reinit_capable = (vendor, product) in self.REINIT_CAPABLE
     self._disconnect_ok = False
     sysfs_path = usb_hierarchy.Hierarchy.GetUsbDeviceSysfsPath(
-                 self._template.VID, self._template.PID, serialname)
-    self._name = ''
+                 vendor, product, serialname)
+    self._name = name
+    # TODO(konmari): a temporary hack to access servod to invoke controls with
+    #                interface 'servo' and access all other devices.
+    self._servod = servod
+    self._servod.add_device(vendor, product, serialname, name, device=self)
+
     if not sysfs_path:
       raise ServoDeviceError('No sysfs path found for device.')
     self._sysfs_path = sysfs_path
@@ -86,10 +103,20 @@ class ServoDevice(object):
     # list of objects (Fi2c, Fgpio) to physical interfaces (gpio, i2c) that ftdi
     # interfaces are mapped to
     self._interface_list = []
-    self._version = version
-    # TODO(konmari): a temporary hack to access servod to invoke controls with
-    #                interface 'servo' and access all other devices.
-    self._servod = servod
+
+    # TODO(konmari): temporarily use the main device to execute all interface
+    #                operations and make it no-op for other devices
+    if name != servo_dev_templates.MAIN_DEV_PREFIX:
+      return
+    if not interfaces:
+      try:
+        interfaces = servo_interfaces.INTERFACE_BOARDS[board][vendor][product]
+      except KeyError:
+        interfaces = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
+    self._interfaces = interfaces
+    self.init_servo_interfaces(vendor, product, serialname, interfaces)
+    servo_postinit.post_init(self)
+    self._syscfg.finalize()
 
   def __repr__(self):
     return str(self)
@@ -173,7 +200,7 @@ class ServoDevice(object):
     """Return interface_list."""
     return self._interface_list
 
-  # TODO(konmari): to be cleaned up after removing init_servo_interfaces in Servod.
+  # TODO(konmari): to be cleaned up after interfaces are refactored properly.
   def init_servo_interfaces(self, vendor, product, serialname, interfaces):
     """Init the servo interfaces with the given interfaces.
 
@@ -221,7 +248,7 @@ class ServoDevice(object):
       self._logger.info('Initializing interface %d to %s', i, name)
       result = _interface.Build(name=name, index=i, vid=vendor, pid=product,
                                 sid=serialname, interface_data=interface_data,
-                                servod=self)
+                                servo_device=self)
       if isinstance(result, tuple):
         result_len = len(result)
         self._interface_list[i:(i + result_len)] = result
@@ -289,11 +316,35 @@ class ServoDevice(object):
 
       drv.set(wr_val)
 
+  def get_all(self, verbose):
+    """Get all controls values.
+
+    Args:
+      verbose: Boolean on whether to return doc info as well
+
+    Returns:
+      string creating from trying to get all values of all controls.  In case of
+      error attempting access to control, response is 'ERR'.
+    """
+    rsp = []
+    for name in self._syscfg.syscfg_dict['control']:
+      self._logger.debug('name = %s' % name)
+      try:
+        value = self.get(name)
+      except Exception:
+        value = 'ERR'
+        pass
+      if verbose:
+        rsp.append('GET %s = %s :: %s' % (name, value, self.doc(name)))
+      else:
+        rsp.append('%s:%s' % (name, value))
+    return '\n'.join(sorted(rsp))
+
     # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
     # xmlrpc server & client I still have to return something to appease the
     # marshall/unmarshall
     return True
-
+  
   # TODO(konmari) - to be cleaned up after interfaces are separated to each servo device
   def _get_param_drv(self, control_name, is_get=True):
     """Get access to driver for a given control.
@@ -397,9 +448,9 @@ class ServoDevice(object):
       The best suited param value for param_key given the servo type or
       None if even the default is not defined.
     """
-    candidates = [self._servod._version]
-    if '_with_' in self._servod._version:
-      v4, raw_dut_device = self._servod._version.split('_with_')
+    candidates = [self._version]
+    if '_with_' in self._version:
+      v4, raw_dut_device = self._version.split('_with_')
       dut_devices = raw_dut_device.split('_and_')
       # NOTE(coconutruben): all of this nonsense is going away with the new
       # servod and is to bridge the time until then. Please forgive the below
@@ -425,6 +476,37 @@ class ServoDevice(object):
     self._logger.error('Unable to determine %s for %s', param_key, control_name)
     self._logger.error('params: %r', params)
     return None
+
+  def doc_all(self):
+    """Return all documenation for controls.
+
+    Returns:
+      string of <doc> text in config file (xml) and the params dictionary for
+      all controls.
+
+      For example:
+      warm_reset             :: Reset the device warmly
+      ------------------------> {'interface': '1', 'map': 'onoff_i', ... }
+    """
+    return self._syscfg.display_config()
+
+  def doc(self, name):
+    """Retreive doc string in system config file for given control name.
+
+    Args:
+      name: name string of control to get doc string
+
+    Returns:
+      doc string of name
+
+    Raises:
+      NameError: if fails to locate control
+    """
+    self._logger.debug('name(%s)' % (name))
+    if self._syscfg.is_control(name):
+      return self._syscfg.get_control_docstring(name)
+    else:
+      raise NameError('No control %s' % name)
 
   def hwinit(self, verbose=False):
     """Initialize all controls.

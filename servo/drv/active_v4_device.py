@@ -69,7 +69,7 @@ class activeV4Device(hw_driver.HwDriver):
     self._interface.v4_device_info['default'] = devices[0]
     self._interface.v4_device_info['usable_devices'] = list(usable_devices)
     self._interface._can_control_cr50 = (
-        self._interface._syscfg.is_control('cr50_servo'))
+        self._interface.has_control('cr50_servo'))
     self._interface._can_control_servo = \
       ('servo_micro' in devices) or ('c2d2' in devices)
 

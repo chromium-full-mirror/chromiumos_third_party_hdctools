@@ -45,7 +45,7 @@ class macro(hw_driver.HwDriver):
 
   def _has_control(self, control):
     """Returns True if control is available in current interface."""
-    return self._interface._syscfg.is_control(control)
+    return self._interface.has_control(control)
 
   def _set(self, new_state):
     """Transit to a new state."""

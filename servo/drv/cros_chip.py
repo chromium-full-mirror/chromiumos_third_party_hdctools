@@ -17,7 +17,7 @@ class crosChip(hw_driver.HwDriver):
     """
     super(crosChip, self).__init__(interface, params)
     default_chip = self._params.get('chip', 'unknown')
-    servo_type = interface._version
+    servo_type = interface.get_version()
     devices = servo_type.split('with_')[-1].lower().split('_and_')
     default_device = devices[0]
     self._chips = {}

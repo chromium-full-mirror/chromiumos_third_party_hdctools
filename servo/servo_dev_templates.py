@@ -9,6 +9,15 @@ import logging
 import re
 import sys
 
+# Main devices have an empty prefix. This constant here is to make those checks
+# uniform.
+MAIN_DEV_PREFIX = 'main'
+
+# This alias is used for the main device on servo_server (the device without a
+# prefix) to allow for precise routing and server controls that need to indicate
+# which device they want things to happen on.
+MAIN_DEV_PREFIX_ALIAS = ''
+
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP and SERVO_ID_DEFAULTS gets
 # populated on module import to keep a single source of truth about the device
 # information - their template classes.

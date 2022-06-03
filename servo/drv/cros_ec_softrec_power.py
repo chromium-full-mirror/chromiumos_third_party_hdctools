@@ -74,7 +74,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._power_key = self._params.get('power_key', 'short_press')
     self._usb_power_restore = (
         ('yes' == self._params.get('usb_power_restore', 'no'))
-        and interface._syscfg.is_control(self._USB3_PWR_EN))
+        and interface.has_control(self._USB3_PWR_EN))
     self._ec_reboot_wait_ext_delay = float(self._params.get(
         'ec_reboot_wait_ext_delay', 0.1))
     self._on = 'on'
