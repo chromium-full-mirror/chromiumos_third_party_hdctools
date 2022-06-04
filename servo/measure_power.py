@@ -364,6 +364,7 @@ class ECPowerTracker(ServodPowerTracker):
     """Init EC power measurement by setting up ec 'vbat' servod control."""
     self._ec_cmd = 'ppvar_vbat_mw'
     self._avg_ec_cmd = 'avg_ppvar_vbat_mw'
+    self._cfilter = cfilter
     super(ECPowerTracker, self).__init__(host=host, port=port,
                                          stop_signal=stop_signal,
                                          ctrls=[self._ec_cmd],
@@ -377,7 +378,7 @@ class ECPowerTracker(ServodPowerTracker):
     super(ECPowerTracker, self).verify()
     # Then get ambitious and check if the newer avg_ppvar_vbat_mw is also
     # available.
-    self._ctrls = cfilter([self._avg_ec_cmd])
+    self._ctrls = self._cfilter([self._avg_ec_cmd])
     try:
       super(ECPowerTracker, self).verify()
       # This means that avg_ppvar_vbat_mw worked fine.
@@ -387,7 +388,7 @@ class ECPowerTracker(ServodPowerTracker):
       self._logger.info(str(e))
       self._logger.info('%s not supported, using %r instead.', self._avg_ec_cmd,
                         self._ec_cmd)
-      self._ctrls = cfilter([self._ec_cmd])
+      self._ctrls = self._cfilter([self._ec_cmd])
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """Reduce the time needed to enter deep-sleep after console interaction."""
@@ -685,7 +686,7 @@ class PowerMeasurement(object):
     """Signal to stop collection to Trackers before joining their threads."""
     self._stop_signal.set()
     for tracker in self._power_trackers:
-      if tracker.isAlive():
+      if tracker.is_alive():
         tracker.join()
 
   def ProcessMeasurement(self, tstart=None, tend=None):
