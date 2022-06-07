@@ -110,13 +110,9 @@ class _ServoDevTemplate(object):
   # The ServoDev class used for the servo device
   DEV_CONSTRUCTOR = None
 
-  @classmethod
-  def GenerateType(cls):
-    """Convert class name into type name, and store at cls.TYPE attribute."""
-    cls.TYPE = _CamelToSnakeCase(cls.__name__)
-
 class MiniservoV1(_ServoDevTemplate):
   """Mini-servo template class."""
+  TYPE = 'miniservo_v1'
   VID = 0x18d1
   PID = 0x5000
   LOTIDS = ['001', '540052']
@@ -124,6 +120,7 @@ class MiniservoV1(_ServoDevTemplate):
 
 class ServoV1(_ServoDevTemplate):
   """Servo v1 template class."""
+  TYPE = 'servo_v1'
   VID = 0x18d1
   PID = 0x5001
   LOTIDS = ['483881', '498432']
@@ -131,6 +128,7 @@ class ServoV1(_ServoDevTemplate):
 
 class ServoV2R0(_ServoDevTemplate):
   """Servo v2 r0 template class."""
+  TYPE = 'servo_v2_r0'
   VID = 0x18d1
   PID = 0x5002
   LOTIDS = ['609600', '629871']
@@ -138,12 +136,14 @@ class ServoV2R0(_ServoDevTemplate):
 
 class ServoV2(ServoV2R0):
   """Servo v2 template class."""
+  TYPE = 'servo_v2'
   LOTIDS = ['641200', '686203', '730422', '780735', '868534', '875286',
             FORCE_V2_LOTID]
   DEFAULT_CONFIG = 'servo_v2_r1.xml'
 
 class ServoV3(_ServoDevTemplate):
   """Servo v3 template class."""
+  TYPE = 'servo_v3'
   VID = 0x18d1
   PID = 0x5004
   DEFAULT_CONFIG = 'servo_v3_r0.xml'
@@ -160,72 +160,84 @@ class ServoV3_(ServoV3):
 
 class ServoV4(_ServoDevTemplate):
   """Servo v4 template class."""
+  TYPE = 'servo_v4'
   VID = 0x18d1
   PID = 0x501b
   DEFAULT_CONFIG = 'servo_v4.xml'
 
 class ServoV4p1(_ServoDevTemplate):
   """Servo v4p1 template class."""
+  TYPE = 'servo_v4p1'
   VID = 0x18d1
   PID = 0x520d
   DEFAULT_CONFIG = 'servo_v4p1.xml'
 
 class ServoMicro(_ServoDevTemplate):
   """Servo micro template class."""
+  TYPE = 'servo_micro'
   VID = 0x18d1
   PID = 0x501a
   DEFAULT_CONFIG = 'servo_micro.xml'
 
 class CcdCr50(_ServoDevTemplate):
   """Servo ccd cr50 template class."""
+  TYPE = 'ccd_cr50'
   VID = 0x18d1
   PID = 0x5014
   DEFAULT_CONFIG = 'ccd_cr50.xml'
 
 class CcdTi50(_ServoDevTemplate):
   """Servo ccd cr50 template class."""
+  TYPE = 'ccd_ti50'
   VID = 0x18d1
   PID = 0x504a
   DEFAULT_CONFIG = 'ccd_ti50.xml'
 
 class Sweetberry(_ServoDevTemplate):
   """Sweetberry template class."""
+  TYPE = 'sweetberry'
   VID = 0x18d1
   PID = 0x5020
   DEFAULT_CONFIG = 'sweetberry.xml'
 
 class C2d2(_ServoDevTemplate):
   """C2D2 template class."""
+  TYPE = 'c2d2'
   VID = 0x18d1
   PID = 0x5041
   DEFAULT_CONFIG = 'c2d2.xml'
 
 class ToadV1(_ServoDevTemplate):
   """Toad template class."""
+  TYPE = 'toad_v1'
   VID = 0x0403  # Vendor ID is 0x0403 : FTDI
   PID = 0x6015
   DEFAULT_CONFIG = 'toad.xml'
 
 class Reston(_ServoDevTemplate):
   """Reston template class."""
+  TYPE = 'reston'
   VID = 0x18d1
   PID = 0x5007
   DEFAULT_CONFIG = 'reston.xml'
 
 class Fruitpie(_ServoDevTemplate):
   """Fruitpie template class."""
+  TYPE = 'fruitpie'
   VID = 0x18d1
   PID = 0x5009
   DEFAULT_CONFIG = 'fruitpie.xml'
 
 class Plankton(_ServoDevTemplate):
   """Plankton template class."""
+  TYPE = 'plankton'
   VID = 0x18d1
   PID = 0x500c
   DEFAULT_CONFIG = 'plankton.xml'
 
 class Fluffy(_ServoDevTemplate):
   """Fluffy template class."""
+  TYPE = 'fluffy'
   VID = 0x18d1
   PID = 0x503b
   DEFAULT_CONFIG = 'fluffy.xml'
@@ -243,7 +255,6 @@ def _InitMaps(servo_dev_module):
   for cname, c in classes:
     if cname.endswith('Error'):
       continue
-    c.GenerateType()
     if c.VID and c.PID:
       # This means the class refers to a physical servo device class.
       # Generate the servo device ID - (vid, pid)
