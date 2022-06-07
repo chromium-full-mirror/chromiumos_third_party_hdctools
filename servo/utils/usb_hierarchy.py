@@ -60,6 +60,7 @@ class Hierarchy(object):
     cls.SYSFS_PATH = cls.DEFAULT_SYSFS_PATH
 
   def __init__(self):
+    """Initialize UsbHierarchy by refreshing the hierarchy once."""
     # Get the current USB sysfs hierarchy.
     self.RefreshHierarchy()
 

@@ -270,7 +270,7 @@ class TestUsbHierarchy(unittest.TestCase):
                                      pid=self._pid,
                                      serial=self._serial)
     vid, pid, sid = self._vid, self._pid, self._serial
-    with self.assertRaisesRegexp(HierarchyError, 'Found 2 devices with'):
+    with self.assertRaisesRegex(HierarchyError, 'Found 2 devices with'):
       _ = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
 
   def test_GetDevPortPath(self):
@@ -396,9 +396,9 @@ class TestUsbHierarchy(unittest.TestCase):
                                             serial=self._serial,
                                             vid=self._vid,
                                             pid=self._pid)
-    with self.assertRaisesRegexp(HierarchyError, 'Requested sysfs attribute '
-                                 '.* cannot be read because the file cannot '
-                                 'be found.'):
+    with self.assertRaisesRegex(HierarchyError, 'Requested sysfs attribute '
+                                '.* cannot be read because the file cannot '
+                                'be found.'):
       Hierarchy.DevNumFromSysfs(devd)
 
   def test_DevNumFromSysfs(self):
@@ -434,8 +434,8 @@ class TestUsbHierarchy(unittest.TestCase):
     content = 'not-int-castable'
     with open(devnum_f, 'w') as f:
       f.write(content)
-    with self.assertRaisesRegexp(HierarchyError, 'Unexpected content %r at '
-                                 'sysfs file %r' % (content, devnum_f)):
+    with self.assertRaisesRegex(HierarchyError, 'Unexpected content %r at '
+                                'sysfs file %r' % (content, devnum_f)):
       _ = Hierarchy.DevNumFromSysfs(devd)
 
   def test_VendorIDFromSysfs(self):
@@ -477,6 +477,9 @@ class TestUsbHierarchy(unittest.TestCase):
     vid_f = os.path.join(devd, Hierarchy.VID_FILE)
     with open(vid_f, 'w') as f:
       f.write(bad_vid)
-    with self.assertRaisesRegexp(HierarchyError, 'Unexpected content %r at '
+    with self.assertRaisesRegex(HierarchyError, 'Unexpected content %r at '
                                  'sysfs file %r' % (bad_vid, vid_f)):
       _ = Hierarchy.VendorIDFromSysfs(devd)
+
+if __name__ == '__main__':
+  unittest.main()

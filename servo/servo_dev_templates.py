@@ -83,18 +83,6 @@ def GetTemplateClass(vid, pid, serial=None):
     return None
   return dev_class_candidates.pop()
 
-def _CamelToSnakeCase(iput):
-  """Convert CamelCase to snake_case, and remove trailing underscores.
-  Substitute each upper-case letter preceded by a lower-case one (or number)
-  with a _ and its lower case equivalent.
-  Args:
-    iput: input string to convert
-  Returns:
-    iput string converted to camel-case
-  """
-  s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', iput)
-  return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).rstrip('_').lower()
-
 class _ServoDevTemplate(object):
   """Base servo device template class.
   Servo device template classes are classes to centrally collect information
@@ -118,6 +106,10 @@ class _ServoDevTemplate(object):
   TYPE = 'unknown'
   # The ServoDev class used for the servo device
   DEV_CONSTRUCTOR = None
+  # Whether a ServoDevice has a built-in USB hub for connectting other ServoDevices and DUT
+  IS_HUB_SERVO = False
+  # Whether a ServoDevice can access DUTs consoles (EC, AP, etc)
+  DUT_CONTROLLER = False
 
 class MiniservoV1(_ServoDevTemplate):
   """Mini-servo template class."""
@@ -142,6 +134,8 @@ class ServoV2R0(_ServoDevTemplate):
   PID = 0x5002
   LOTIDS = ['609600', '629871']
   DEFAULT_CONFIG = 'servo_v2_r0.xml'
+  IS_HUB_SERVO = True
+  DUT_CONTROLLER = True
 
 class ServoV2(ServoV2R0):
   """Servo v2 template class."""
@@ -156,6 +150,8 @@ class ServoV3(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x5004
   DEFAULT_CONFIG = 'servo_v3_r0.xml'
+  IS_HUB_SERVO = True
+  DUT_CONTROLLER = True
 
 class ServoV3_(ServoV3):
   """Servo v2 template class for misprogrammed v3s.
@@ -173,6 +169,7 @@ class ServoV4(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x501b
   DEFAULT_CONFIG = 'servo_v4.xml'
+  IS_HUB_SERVO = True
 
 class ServoV4p1(_ServoDevTemplate):
   """Servo v4p1 template class."""
@@ -180,6 +177,7 @@ class ServoV4p1(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x520d
   DEFAULT_CONFIG = 'servo_v4p1.xml'
+  IS_HUB_SERVO = True
 
 class ServoMicro(_ServoDevTemplate):
   """Servo micro template class."""
@@ -187,6 +185,7 @@ class ServoMicro(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x501a
   DEFAULT_CONFIG = 'servo_micro.xml'
+  DUT_CONTROLLER = True
 
 class CcdCr50(_ServoDevTemplate):
   """Servo ccd cr50 template class."""
@@ -194,6 +193,7 @@ class CcdCr50(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x5014
   DEFAULT_CONFIG = 'ccd_cr50.xml'
+  DUT_CONTROLLER = True
 
 class CcdTi50(_ServoDevTemplate):
   """Servo ccd cr50 template class."""
@@ -201,6 +201,7 @@ class CcdTi50(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x504a
   DEFAULT_CONFIG = 'ccd_ti50.xml'
+  DUT_CONTROLLER = True
 
 class Sweetberry(_ServoDevTemplate):
   """Sweetberry template class."""
@@ -215,6 +216,7 @@ class C2d2(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x5041
   DEFAULT_CONFIG = 'c2d2.xml'
+  DUT_CONTROLLER = True
 
 class ToadV1(_ServoDevTemplate):
   """Toad template class."""
@@ -250,6 +252,8 @@ class Fluffy(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x503b
   DEFAULT_CONFIG = 'fluffy.xml'
+  # Fluffy USB mux is simply designed for power testing and thus
+  # not considered as a HUB_SERVO
 
 def _InitMaps(servo_dev_module):
   """Helper to initialize the vid/pid/lotid maps for easy retrieval.
