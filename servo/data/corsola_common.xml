@@ -4,6 +4,9 @@
     <name>cr50.xml</name>
   </include>
   <include>
+    <name>ec_efs2.xml</name>
+  </include>
+  <include>
     <name>servoflex_v2_r0_p50.xml</name>
   </include>
   <include>
