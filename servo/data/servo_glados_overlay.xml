@@ -56,7 +56,7 @@
     <alias>usbpd_uart_pty</alias>
     <doc>USBPD UART console provided via EC-3PO console
     interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    <params cmd="get" subtype="pty" interface="9" drv="uart" clobber_ok="">
     </params>
   </control>
   <control>
