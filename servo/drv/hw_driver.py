@@ -244,7 +244,7 @@ class HwDriver(object):
       fn_name = '_Set_%s' % self._params['subtype']
       if hasattr(self, fn_name):
         return getattr(self, fn_name)(logical_value)
-      self._logger.warn('Cannot find set subtype function %s. \
+      self._logger.warning('Cannot find set subtype function %s. \
         Fall back to general set function.'  % (fn_name,))
     return self._set(logical_value)
 
@@ -284,7 +284,7 @@ class HwDriver(object):
       fn_name = '_Get_%s' % self._params['subtype']
       if hasattr(self, fn_name):
         return getattr(self, fn_name)()
-      self._logger.warn('Cannot find get subtype function %s. \
+      self._logger.warning('Cannot find get subtype function %s. \
         Fall back to general get function.' % fn_name)
     return self._get()
 
