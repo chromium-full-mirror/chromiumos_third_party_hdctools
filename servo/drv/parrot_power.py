@@ -42,9 +42,9 @@ class parrotPower(power_state.PowerStateDriver):
   def _cold_reset(self):
     # The sequence here leaves the DUT powered on, similar to
     # Chrome EC devices.
-    self._interface.set('pwr_button', 'press')
+    self._servod.set('pwr_button', 'press')
     super(parrotPower, self)._cold_reset()
-    self._interface.set('pwr_button', 'release')
+    self._servod.set('pwr_button', 'release')
 
   def _warm_reset(self):
     # Parrot warm reset is broken. Use a cold reset instead.
@@ -53,10 +53,10 @@ class parrotPower(power_state.PowerStateDriver):
   def _power_off(self):
     self._cold_reset()
     time.sleep(self._PWR_BUTTON_READY_TIME)
-    self._interface.set('power_key', 'short_press')
+    self._servod.set('power_key', 'short_press')
 
   def _power_on(self, rec_mode):
-    self._interface.set('power_key', 'short_press')
+    self._servod.set('power_key', 'short_press')
     time.sleep(self._REC_MODE_READY_TIME)
-    self._interface.set('rec_mode', rec_mode)
+    self._servod.set('rec_mode', rec_mode)
     self._cold_reset()

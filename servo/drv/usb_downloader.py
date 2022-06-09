@@ -105,7 +105,7 @@ class usbDownloader(hw_driver.HwDriver):
     # Ensure that any issue gets caught & reported as UsbImageError
     self._logger.debug('image_path(%s)', image_path)
     self._logger.debug('Detecting USB stick device...')
-    usb_dev = self._interface.get(self._IMAGE_DEV)
+    usb_dev = self._servod.get(self._IMAGE_DEV)
     self._logger.debug('USB Device is at %s', usb_dev)
     # |errormsg| is usd later to indicate the error
     errormsg = ''
@@ -153,7 +153,7 @@ class usbDownloader(hw_driver.HwDriver):
         # copyfile does not raise an error stick is removed mid-writing for
         # instance.
         self._logger.debug('Checking stable after copy')
-        if not self._interface.get('image_usbkey_dev'):
+        if not self._servod.get('image_usbkey_dev'):
           raise usbDownloaderError('Device file %s not found again after '
                                    'copy completed.' % usb_dev)
       except ContentTooShortError:
@@ -178,7 +178,7 @@ class usbDownloader(hw_driver.HwDriver):
         # Pass or fail, we mustn't go without telling the kernel about
         # the change, or it will punish us with sporadic, hard-to-debug
         # failures.
-        usb_dev = self._interface.get(self._IMAGE_DEV)
+        usb_dev = self._servod.get(self._IMAGE_DEV)
         self._logger.debug('USB Device is at %s', usb_dev)
         if usb_dev:
           self._logger.debug('Calling Sync')

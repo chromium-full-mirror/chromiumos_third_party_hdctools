@@ -17,18 +17,19 @@ class metadataError(hw_driver.HwDriverError):
 class servoMetadata(hw_driver.HwDriver):
   """Class to access loglevel controls."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Initializes the ServoType driver.
 
     Args:
-      interface: A driver interface object.  This is the servod interface.
+      interface: hardware interface for low-level communication; ignored here
       params: A dictionary of parameters, but is ignored.
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(servoMetadata, self).__init__(interface, params)
+    super(servoMetadata, self).__init__(interface, params, servod)
 
   def _Get_type(self):
     """Gets the current servo type."""
-    return self._interface.get_version()
+    return self._servod.get_version()
 
   def _Get_pid(self):
     """Return servod instance pid"""
@@ -36,17 +37,17 @@ class servoMetadata(hw_driver.HwDriver):
 
   def _Get_serial(self):
     """Gets the current servo serial."""
-    return self._interface.get_main_serial()
+    return self._servod.get_main_serial()
 
   def _Get_config_files(self):
     """Gets the configuration files used for this servo server invocation"""
-    return self._interface.get_config_files()
+    return self._servod.get_config_files()
 
   def _Get_tagged_controls(self):
     """Retrieve all controls under a certain tag."""
     if 'tag' not in self._params:
       raise metadataError('tag needs to be specified in params.')
-    return self._interface.get_controls_for_tag(self._params['tag'])
+    return self._servod.get_controls_for_tag(self._params['tag'])
 
   def _Set_rotate_logs(self, _):
     """Force a servo log rotation."""

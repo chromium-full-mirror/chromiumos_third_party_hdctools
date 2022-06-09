@@ -56,6 +56,10 @@ class HwDriver(object):
   REQUIRED_SET_PARAMS = []
 
   def __init__(self, interface, params):
+    """Driver constructor."""
+    self.__init__(interface, params)
+
+  def __init__(self, interface, params, servod=None):
     """Driver constructor.
 
     Args:
@@ -73,6 +77,7 @@ class HwDriver(object):
             fmt: function name string to call to format the result.
 
          Additional param keys will be described in sub-class drivers.
+      servod: Servod object to handle cross-servo-device communication
 
     Attributes:
       _logger: logger object.  May be accessed via sub-class
@@ -86,6 +91,7 @@ class HwDriver(object):
     self._logger.debug('')
     self._complement = None
     self._interface = interface
+    self._servod = servod
     self._params = params
     # Check whether all required params are provided. if 'cmd' is in params,
     # use a type-specific |REQUIRED_PARAMS| e.g. set or get. If not, use the

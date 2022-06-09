@@ -401,18 +401,24 @@ class ServoDevice(object):
         raise ServoDeviceError('No drv/interface for control %r found' %
                           control_name)
 
+      # this control only needs cross-servo-device communication and does not
+      # need hardware interface for low-level communication
       if interface_id == 'servo':
-        interface = self._servod
+        interface = None
+        servod = self._servod
+      # this control only needs hardware interface for low-level communication
+      # and does not need cross-servo-device communication
       else:
         index = int(interface_id)
         interface = self._interface_list[index]
+        servod = None
 
       device_info = None
       if hasattr(interface, 'get_device_info'):
         device_info = interface.get_device_info()
       drv_module = getattr(servo_drv, drv_name)
       drv_class = getattr(drv_module, string_utils.snake_to_camel(drv_name))
-      drv = drv_class(interface, params)
+      drv = drv_class(interface, params, servod) if servod else drv_class(interface, params)
       if control_name not in self._drv_dict:
         self._drv_dict[control_name] = {}
       # Store the information in the right mode.

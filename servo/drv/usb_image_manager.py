@@ -49,9 +49,9 @@ class usbImageManager(hw_driver.HwDriver):
 
   _DEFAULT_ERROR_MSG = 'No USB storage device found for image transfer.'
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Initialize driver by initializing HwDriver."""
-    super(usbImageManager, self).__init__(interface, params)
+    super(usbImageManager, self).__init__(interface, params, servod)
     # This delay is required to safely switch the usb image mux direction
     self._poweroff_delay = params.get('usb_power_off_delay', 0)
     if self._poweroff_delay:
@@ -75,7 +75,7 @@ class usbImageManager(hw_driver.HwDriver):
 
   def _Get_image_usbkey_direction(self):
     """Return direction of image usbkey mux."""
-    return self._interface.get(self._IMAGE_USB_MUX)
+    return self._servod.get(self._IMAGE_USB_MUX)
 
   def _Set_image_usbkey_direction(self, mux_direction):
     """Connect USB flash stick to either servo or DUT.
@@ -87,11 +87,11 @@ class usbImageManager(hw_driver.HwDriver):
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
     self._SafelySwitchMux(mux_direction)
-    if self._interface.get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
+    if self._servod.get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
       # This will ensure that we make a best-effort attempt to only
       # return when the block device of the attached usb stick fully
       # enumerates.
-      self._interface.get(self._IMAGE_DEV)
+      self._servod.get(self._IMAGE_DEV)
 
   def _SafelySwitchMux(self, mux_direction):
     """Helper to switch the usb mux.
@@ -103,14 +103,14 @@ class usbImageManager(hw_driver.HwDriver):
     Args:
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
-    if self._interface.get(self._IMAGE_USB_MUX) != mux_direction:
-      self._interface.set(self._IMAGE_USB_PWR, 'off')
+    if self._servod.get(self._IMAGE_USB_MUX) != mux_direction:
+      self._servod.set(self._IMAGE_USB_PWR, 'off')
       time.sleep(self._poweroff_delay)
-      self._interface.set(self._IMAGE_USB_MUX, mux_direction)
+      self._servod.set(self._IMAGE_USB_MUX, mux_direction)
       time.sleep(self._poweroff_delay)
-    if self._interface.get(self._IMAGE_USB_PWR) != 'on':
+    if self._servod.get(self._IMAGE_USB_PWR) != 'on':
       # Enforce that power is supplied.
-      self._interface.set(self._IMAGE_USB_PWR, 'on')
+      self._servod.set(self._IMAGE_USB_PWR, 'on')
 
   def _PathIsHub(self, usb_sysfs_path):
     """Return whether |usb_sysfs_path| is a usb hub."""
@@ -131,7 +131,7 @@ class usbImageManager(hw_driver.HwDriver):
     """
     if self._image_usbkey_hub_ports is None:
       raise UsbImageManagerError('hub_ports need to be defined in params.')
-    servod = self._interface
+    servod = self._servod
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
     self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)

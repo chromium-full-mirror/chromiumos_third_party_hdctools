@@ -15,15 +15,16 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
 
   REQUIRED_GET_PARAMS = ['board']
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: servod instance
+      interface: hardware interface for low-level communication; ignored here
       params: control params, of which we actively care about:
         - board: the servo board name
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(servoUpdaterChannelParser, self).__init__(interface, params)
+    super(servoUpdaterChannelParser, self).__init__(interface, params, servod)
 
     self._board = self._params['board']
     self._logger.debug('')
@@ -35,7 +36,7 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
     Returns:
         the channel the current firmware is from or 'unknown'
     """
-    current = self._interface.get(self._current_fw_cmd)
+    current = self._servod.get(self._current_fw_cmd)
     try:
       channel = servo_updater.get_firmware_channel(self._board, current)
       return channel if channel is not None else 'unknown'

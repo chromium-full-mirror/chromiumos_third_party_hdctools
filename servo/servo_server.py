@@ -273,7 +273,7 @@ class Servod(object):
   #                Need to refactor syscfg to each servo device first.
   def has_control(self, control):
     """Returns True if control is available in servod."""
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device._syscfg.is_control(control)
@@ -291,7 +291,7 @@ class Servod(object):
       warm_reset             :: Reset the device warmly
       ------------------------> {'interface': '1', 'map': 'onoff_i', ... }
     """
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device.doc_all()
@@ -310,7 +310,7 @@ class Servod(object):
     Raises:
       NameError: if fails to locate control
     """
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device.doc(name)
@@ -347,7 +347,7 @@ class Servod(object):
       string creating from trying to get all values of all controls.  In case of
       error attempting access to control, response is 'ERR'.
     """
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device.get_all(verbose)
@@ -363,7 +363,7 @@ class Servod(object):
 
   def get_board(self):
     """Return the board specified at startup, if any."""
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device._board
@@ -374,7 +374,7 @@ class Servod(object):
     Returns:
       A string of the board name, or '' if not present.
     """
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     # The value is set in servo_postinit.
@@ -382,7 +382,7 @@ class Servod(object):
 
   def get_version(self):
     """Get servo board version."""
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device._version
@@ -442,19 +442,31 @@ class Servod(object):
       list of controls with that tag, or an empty list if no such tag, or
       controls under that tag
     """
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     return main_device._syscfg.get_controls_for_tag(tag)
 
   def get_config_files(self):
     """Gets the configuration files used for this servo server invocation"""
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs. 
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
     #                Will be cleaned up after ServoDevice interface is properly implemented.
     main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
     xml_files = main_device._syscfg._loaded_xml_files
     # See system_config.py for schema, but entry[0] is the file name
     return [entry[0] for entry in xml_files]
+
+  def get_interfaces(self):
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
+    #                Will be cleaned up after ServoDevice interface is properly implemented.
+    main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
+    return main_device._interfaces
+
+  def get_interface_list(self):
+    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
+    #                Will be cleaned up after ServoDevice interface is properly implemented.
+    main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
+    return main_device._interface_list
 
 def test():
   """Integration testing.

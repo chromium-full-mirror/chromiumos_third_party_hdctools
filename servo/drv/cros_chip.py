@@ -8,16 +8,17 @@ from servo.drv import hw_driver
 class crosChip(hw_driver.HwDriver):
   """Driver for getting chip name of EC or PD."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(crosChip, self).__init__(interface, params)
+    super(crosChip, self).__init__(interface, params, servod)
     default_chip = self._params.get('chip', 'unknown')
-    servo_type = interface.get_version()
+    servo_type = servod.get_version()
     devices = servo_type.split('with_')[-1].lower().split('_and_')
     default_device = devices[0]
     self._chips = {}
@@ -31,7 +32,7 @@ class crosChip(hw_driver.HwDriver):
   def _Get_chip(self):
     """Get the EC chip name."""
     if self._check_active_device:
-        device = self._interface.get('active_dut_controller')
+        device = self.servod.get('active_dut_controller')
         return self._chips[device]
     else:
         return self._chip

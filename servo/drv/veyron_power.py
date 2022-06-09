@@ -20,5 +20,5 @@ class veyronPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
-    self._interface.set('ec_uart_regexp', 'None')
-    self._interface.set('ec_uart_cmd', 'power on')
+    self._servod.set('ec_uart_regexp', 'None')
+    self._servod.set('ec_uart_cmd', 'power on')

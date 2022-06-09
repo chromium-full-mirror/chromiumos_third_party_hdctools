@@ -8,14 +8,15 @@ from servo.drv import fw_wp_state
 class fwWpServoflex(fw_wp_state.FwWpStateDriver):
   """Driver for fw_wp_state for boards connecting servoflex's."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(fwWpServoflex, self).__init__(interface, params)
+    super(fwWpServoflex, self).__init__(interface, params, servod)
     self._fw_wp_vref = self._params.get('fw_wp_vref', 'pp1800')
     self._is_open_drain = self._params.get('open_drain', 'no') == 'yes'
     if self._is_open_drain:
@@ -28,11 +29,11 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
 
   def _interface_get(self, control):
     """Get the value of the given control with proper prefix."""
-    return self._interface.get(self._prefix + control)
+    return self._servod.get(self._prefix + control)
 
   def _interface_set(self, control, value):
     """Set the value of the given control with proper prefix."""
-    return self._interface.set(self._prefix + control, value)
+    return self._servod.set(self._prefix + control, value)
 
   def _force_on(self):
     """Force the firmware to write-protected."""

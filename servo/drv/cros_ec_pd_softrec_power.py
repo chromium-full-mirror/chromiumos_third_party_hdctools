@@ -25,14 +25,15 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
   _REC_TYPE_REC_ON = cros_ec_softrec_power.crosEcSoftrecPower._REC_TYPE_REC_ON
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(crosEcPdSoftrecPower, self).__init__(interface, params)
+    super(crosEcPdSoftrecPower, self).__init__(interface, params, servod)
     self._boot_to_rec_screen_delay = float(
         self._params.get('boot_to_rec_screen_delay', 5.0))
 
@@ -44,13 +45,13 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
     in that the extra 'usbpd_reset' signal must be asserted to reset
     the PD MCU.
     """
-    self._interface.set('cold_reset', 'on')
-    self._interface.set('usbpd_reset', 'on')
+    self._servod.set('cold_reset', 'on')
+    self._servod.set('usbpd_reset', 'on')
 
     time.sleep(self._reset_hold_time)
 
-    self._interface.set('usbpd_reset', 'off')
-    self._interface.set('cold_reset', 'off')
+    self._servod.set('usbpd_reset', 'off')
+    self._servod.set('cold_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -69,11 +70,11 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
       self._reboot_to_ro_with_ap_off()
       # Request recovery boot.
       try:
-        self._interface.set('ec_uart_regexp', "['Events:']")
-        self._interface.set('ec_uart_cmd',
+        self._servod.set('ec_uart_regexp', "['Events:']")
+        self._servod.set('ec_uart_cmd',
                             self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type])
       finally:
-        self._interface.set('ec_uart_regexp', 'None')
+        self._servod.set('ec_uart_regexp', 'None')
 
     self._power_on_ap()
     if rec_mode == self.REC_ON:
@@ -82,16 +83,16 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
   def _reboot_to_ro_with_ap_off(self):
     """Reboot the EC and PD MCU to RO and leave the AP off."""
-    self._interface.set('usbpd_reset', 'on')
+    self._servod.set('usbpd_reset', 'on')
     try:
       # Pexpect is minimally greedy, so we can't match the exact reset cause
       # string.  But checking for 'Reset cause' will be enough proof that the EC
       # rebooted.
-      self._interface.set('ec_uart_regexp', "['Reset cause:']")
-      self._interface.set('ec_uart_cmd', 'reboot ap-off')
+      self._servod.set('ec_uart_regexp', "['Reset cause:']")
+      self._servod.set('ec_uart_cmd', 'reboot ap-off')
     finally:
-      self._interface.set('ec_uart_regexp', 'None')
+      self._servod.set('ec_uart_regexp', 'None')
 
     # Allow enough time for the EC to come up
     time.sleep(self._reset_recovery_time)
-    self._interface.set('usbpd_reset', 'off')
+    self._servod.set('usbpd_reset', 'off')

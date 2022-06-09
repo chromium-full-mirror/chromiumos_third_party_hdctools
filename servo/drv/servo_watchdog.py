@@ -28,13 +28,13 @@ class servoWatchdog(hw_driver.HwDriver):
     Raises:
       servoWatchdogError: if the device isn't found.
     """
-    serialnames = self._interface.get_servo_serials()
+    serialnames = self._servod.get_servo_serials()
     # If the name isn't a key, then it might be the serialname
     serial = serialnames.get(name, name)
     if serial not in serialnames.values():
       raise servoWatchdogError('Invalid device %s' % name)
 
-    for device in self._interface.get_devices():
+    for device in self._servod.get_devices():
       if serial in device.get_id():
         device.set_disconnect_ok(disconnect_ok)
         return
@@ -53,7 +53,7 @@ class servoWatchdog(hw_driver.HwDriver):
 
   def _set_device_name(self, device):
     """Set the device name to one of the serial keys."""
-    for name, serial in self._interface.get_servo_serials().items():
+    for name, serial in self._servod.get_servo_serials().items():
       if serial in device.get_id():
         device.set_name(name)
         return
@@ -63,7 +63,7 @@ class servoWatchdog(hw_driver.HwDriver):
     """Get the connected state of all devices."""
     # add blank line at start, so formatting looks a bit better
     states = ['']
-    for device in self._interface.get_devices():
+    for device in self._servod.get_devices():
       states.append(self._get_device_state(device))
     return '\n'.join(states)
 

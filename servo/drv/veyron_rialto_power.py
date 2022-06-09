@@ -25,20 +25,20 @@ class veyronRialtoPower(power_state.PowerStateDriver):
     will leave cold_reset on indefinitely in order to simulate power off.
 
     """
-    self._interface.set('cold_reset', 'on')
+    self._servod.set('cold_reset', 'on')
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
-    self._interface.set('rec_mode', self.REC_ON)
+    self._servod.set('rec_mode', self.REC_ON)
     self._reset_cycle()
     time.sleep(self._RECOVERY_DETECTION_DELAY)
-    self._interface.set('rec_mode', self.REC_OFF)
+    self._servod.set('rec_mode', self.REC_OFF)
 
   def _power_on_normal(self):
     """Power on in normal mode, i.e., no recovery."""
-    self._interface.set('rec_mode', self.REC_OFF)
+    self._servod.set('rec_mode', self.REC_OFF)
     # Disable cold_reset if it had been enabled by power_off.
-    self._interface.set('cold_reset', 'off')
+    self._servod.set('cold_reset', 'off')
 
   def _power_on(self, rec_mode):
     """Power on the DUT.

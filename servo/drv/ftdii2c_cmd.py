@@ -23,22 +23,23 @@ class ftdii2cCmd(hw_driver.HwDriver):
 
   """
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: servod instance to get a hold of the ftdii2c object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params needed to perform operations on
         devices.
+      servod: Servod that is used for cross-servo-device communication
     """
     # pylint: disable=protected-access
-    super(ftdii2cCmd, self).__init__(interface, params)
+    super(ftdii2cCmd, self).__init__(interface, params, servod)
     self._logger.debug('')
     try:
-      index = interface._interfaces.index('ftdi_i2c')
+      index = servod.get_interfaces().index('ftdi_i2c')
     except ValueError:
       raise ftdii2cCmdError('No ftdi_i2c object found.')
-    self._ftdii2c = interface._interface_list[index]
+    self._ftdii2c = servod.get_interface_list[index]
 
   def _set(self, cmd):
     """Execute |cmd| on |self._ftdii2c| object.
