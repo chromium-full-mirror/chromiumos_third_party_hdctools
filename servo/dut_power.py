@@ -7,15 +7,19 @@
 
 from __future__ import print_function
 import argparse
+import http.server
 import logging
 import os
 import shutil
 import signal
+import socket
+import socketserver
 import sys
 import tempfile
 import threading
 
 from servo import client
+from servo import http_server
 # This module is just a wrapper around measure_power functionality
 from servo import measure_power
 from servo import servo_parsing
@@ -144,6 +148,14 @@ def main(cmdline=sys.argv[1:]):
   parser.add_argument('--save-all', default=False, action='store_true',
                       help='Equivalent to --save-summary --save-logs '
                       '--save-raw-data. Overwrites any of those if specified.')
+  # Start the visualization server
+  parser.add_argument('--visualization', default=False, action='store_true',
+                      help='Visualization the power measurement resultson a local server.')
+  # Specify the http server port for passing the information to html
+  parser.add_argument('--visualization-port', default=9998,
+                      type=int,
+                      help='A port number between 0 and 9998 which is used for the server to serve the visualized power measurement results. Choose 0 to get a random port number.')
+
   args = parser.parse_args(cmdline)
   # Save all logic
   if args.save_all:
@@ -173,6 +185,30 @@ def main(cmdline=sys.argv[1:]):
     pm_logger.info('Disabling ADC accumulator queries because the '
                    'measurement time is too short.')
     args.adc_accum_rate = 0
+
+  if args.visualization:
+    server_port = args.visualization_port
+    # Verified for the http server port number
+    if server_port > 9998 or server_port < 0:
+      pm_logger.error("The port %d you specified is out of range, try the port number 0~9998", server_port)
+      sys.exit(1)
+
+    http_server_handler = http_server.HttpRequestHandler
+
+    if http_server_handler.check_port(server_port) == True:
+      pm_logger.error("port: %d is already in use. USE --visualization-port argument to change another port.", server_port)
+      sys.exit(1)
+
+    pm_logger.info("Try to use port: %d for visualization", server_port)
+    try:
+      visualization_server = http_server.ThreadedTCPServer(("localhost", server_port), http_server_handler)
+      if server_port == 0:
+        _, server_port = visualization_server.server_address
+    except:
+      pm_logger.error("port: %d is already in use. USE --visualization-port argument to change another port.", server_port)
+      sys.exit(1)
+    visualization_server_thread = threading.Thread(target=visualization_server.serve_forever)
+    visualization_server_thread.daemon_threads = True
   try:
     pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
                                         adc_rate=args.adc_rate,
@@ -185,6 +221,9 @@ def main(cmdline=sys.argv[1:]):
   except measure_power.NoSourceError as e:
     pm_logger.info(e)
     sys.exit(1)
+  if args.visualization:
+    pm_logger.info("Real-time visualization is available on: http://localhost:%d", server_port)
+    visualization_server_thread.start()
   # pylint: disable=undefined-variable
   # Event.wait() is used as a preemptible way to sleep and control the
   # ProgressPrinters while handling the SIGTERM/SIGINT signals
@@ -195,6 +234,9 @@ def main(cmdline=sys.argv[1:]):
   # pylint: disable=g-backslash-continuation
   handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
                   (sw.set(), ss.set(), pm.FinishMeasurement())
+  if args.visualization:
+    handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
+                  (sw.set(), ss.set(), pm.FinishMeasurement(), visualization_server.server_close(), visualization_server.shutdown())
   # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
   signal.signal(signal.SIGINT, handler)
   signal.signal(signal.SIGTERM, handler)
