@@ -5,6 +5,7 @@
 """Servo device hierarchy based on the USB hierarchy."""
 
 import collections
+import logging
 
 from servo import servo_dev_templates
 from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
@@ -63,7 +64,8 @@ class ServoDeviceEntry(object):
     return str(self)
 
   def __str__(self):
-    return '%s (%04x:%04x) %s' % (self.dev_template.TYPE, self.vid, self.pid, self.serial)
+    return '%s (%04x:%04x) %s USB path: %s' % (self.dev_template.TYPE, self.vid, self.pid,
+      self.serial, self.dev_path)
 
   def set_cluster_root(self, root_servo):
     """Set root_servo to be this device's cluster's root servo.
@@ -111,6 +113,13 @@ class ServoDeviceEntry(object):
       self.cluster_root.validate_entry_uniqueness(root_servo)
       if self.cluster_root == root_servo:
         return
+      elif self.cluster_root == self:
+        raise ServoDeviceHierarchyError('Currently servod does not support chaining '
+                                        '3 or more levels of servo devices (e.g. '
+                                        'servo v4 -> servo v4 -> ccd). Failed to set '
+                                        '%r as the root servo of %r because the latter '
+                                        'is already a root servo.' % (
+                                        root_servo.dev_path, self.dev_path))
       else:
         raise ServoDeviceHierarchyError('A servo device entry cannot have more than '
                                         'one root servo. Device sysfs dev path: %r.'
@@ -145,8 +154,11 @@ class ServoDeviceEntry(object):
       ServoDeviceHierarchyError: if root_servo cannot be a root servo
     """
     if root_servo.cluster_root and root_servo.cluster_root != root_servo:
-      raise ServoDeviceHierarchyError('Failed to set %r as the root servo of %r'
-                                      'because the former is a child of another root servo.' % (
+      raise ServoDeviceHierarchyError('Currently servod does not support chaining '
+                                      '3 or more levels of servo devices (e.g. '
+                                      'servo v4 -> servo v4 -> ccd). Failed to set'
+                                      ' %r as the root servo of %r because the former'
+                                      'is already on the 2nd level.' % (
                                       root_servo.dev_path, self.dev_path))
 
   def validate_entry_uniqueness(self, other_entry):
@@ -156,7 +168,7 @@ class ServoDeviceEntry(object):
       other_entry: Another ServoDeviceEntry
 
     Raises:
-      ServoDeviceHierarchyError: if this entry corresponds to the same entry 
+      ServoDeviceHierarchyError: if this entry corresponds to the same entry
         as the other entry but are 2 different entries
     """
     if other_entry is None:
@@ -169,7 +181,7 @@ class ServoDeviceEntry(object):
                                        % (self.vid, self.pid, self.serial))
 
 
-class ServoDeviceHierarchy(UsbHierarchy):
+class ServoDeviceHierarchy(object):
   """A usb hierarchy of servo devices.
 
   Keeps an index of servo devices and whether or not they are in clusters
@@ -184,8 +196,8 @@ class ServoDeviceHierarchy(UsbHierarchy):
     device relationships e.g. what device is in a cluster with what
     other device (v4 + micro) etc.
     """
-    # Creates a |usb_hierarchy| dictionary.
-    super(ServoDeviceHierarchy, self).__init__()
+    self._logger = logging.getLogger('ServoDeviceHierarchy')
+    self._logger.debug('')
     # Collect all servod devices on the system.
     self._servo_dev_index = collections.defaultdict(lambda: None)
     self._cluster_root_servos = {}
@@ -195,7 +207,7 @@ class ServoDeviceHierarchy(UsbHierarchy):
     all_servo_devs = []
     # Filter the dev paths by servo id defaults (vid/pid pairs)
     ids = servo_dev_templates.SERVO_ID_DEFAULTS
-    for dev_path in self.GetAllUsbDeviceSysfsPaths(ids):
+    for dev_path in UsbHierarchy.GetAllUsbDeviceSysfsPaths(ids):
       dev_vid = UsbHierarchy.VendorIDFromSysfs(dev_path)
       dev_pid = UsbHierarchy.ProductIDFromSysfs(dev_path)
       dev_serial = UsbHierarchy.SerialFromSysfs(dev_path)

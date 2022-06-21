@@ -68,7 +68,7 @@ class ServoDevice(object):
       ServoDeviceError: if unable to locate init method for particular interface
       ServoDeviceError: the usb device path isn't found.
     """
-    self._logger = logging.getLogger('ServoDevice %s - %s' % (template.TYPE, serialname))
+    self._logger = logging.getLogger('ServoDevice %s - %s' % (template.TYPE, name))
     self._logger.debug('')
     self._template = template
     vendor = self._template.VID

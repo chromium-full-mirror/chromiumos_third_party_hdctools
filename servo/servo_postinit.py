@@ -221,7 +221,7 @@ class ServoV4PostInit(BasePostInit):
         if hierarchy.DevOnDevHub(servo_v4, servo_usb_device):
           default_slot = servo_interfaces.SERVO_V4_SLOT_POSITIONS['default']
           slot_size = servo_interfaces.SERVO_V4_SLOT_SIZE
-          backup_interfaces = self.servo.get_servo_interfaces(
+          backup_interfaces = self.servod.get_servo_interfaces(
               default_slot, slot_size)
 
           self.prepend_config(servo_type.cfg_file_name)
@@ -267,11 +267,11 @@ class ServoV4PostInit(BasePostInit):
             if self.servo._board:
               self.add_device(
                   servo_usb_device,
-                  servo_type.serial_key + '_for_' + self.servod._board)
+                  servo_type.serial_key + '_for_' + self.servo._board)
               if self.servo._model:
                 self.add_device(
                     servo_usb_device,
-                    servo_type.serial_key + '_for_' + self.servod._model)
+                    servo_type.serial_key + '_for_' + self.servo._model)
             found_debug_header_servo = True
 
     if found_debug_header_servo and not DUAL_V4_VAR in os.environ:

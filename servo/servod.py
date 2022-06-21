@@ -40,6 +40,7 @@ from servo import system_config
 from servo import terminal_freezer
 from servo import watchdog
 from servo.utils import scratch
+from servo.utils import servo_dev_hierarchy
 from servo.utils import usb_hierarchy
 
 
@@ -438,6 +439,13 @@ class ServodStarter(object):
     Returns:
       servo object for the matching (or single) device, otherwise None
     """
+    # TODO(konmari): check if servo device hierarchy is working as intented
+    # hub servo's hub needs to be initiated to connect to servo_sees_usbkey for servod
+    # to find other devices plugged into the hub servo
+    dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
+    self._logger.debug('cluster root devices: %s', dev_hierarchy.get_cluster_root_servos())
+    self._logger.debug('cluster non root devices: %s', dev_hierarchy.get_cluster_non_root_servos())
+    self._logger.debug('cluster solo devices: %s', dev_hierarchy.get_solo_devices())
 
     vendor, product, serialname = (options.vendor, options.product,
                                    options.serialname)

@@ -48,7 +48,12 @@ class Servod(object):
     self._keyboard = None
     self._usb_keyboard = None
     self._serialnames = {}
+    # A map of ServoDevices keyed by their name/prefix.
+    # A ServoDevice can have multiple name/prefix (e.g. 'main', '')
     self._devices = {}
+    # A map of ServoDevices keyed by their id (vid, pid, serial)
+    # Each ServoDevice has a unique id
+    self._unique_devices = {}
 
   def add_servodevice(self, device, name):
     """ Add a ServoDevice to Servod.
@@ -65,6 +70,7 @@ class Servod(object):
       else:
         self._logger.debug('ServoDevice prefix %s is already added as %s.', name, self._devices[name])
         return
+    self._unique_devices[device.get_id()] = device
     self._devices[name] = device
     self.add_serial_number(name, device._serial)
     if name == servo_dev_templates.MAIN_DEV_PREFIX:
@@ -90,8 +96,8 @@ class Servod(object):
     Raises:
       ServodError if unable to locate init method for particular interface.
     """
-    # If it is a new device add it to the list
     self._logger.debug('Adding device %s with serial %s to instance.', name, serialname)
+    # Check why a device is added under the same name for multiple times
     if name in self._devices:
       if (vendor, product, serialname) != self._devices[name].get_id():
         raise ServodError('ServoDevice prefix %s alredy represents device %s and cannot be added as %s %s %s.',
@@ -99,9 +105,15 @@ class Servod(object):
       else:
         self._logger.debug('ServoDevice prefix %s is already added as %s.', name, self._devices[name])
         return
+    # Check if we are adding alias for a device
+    if (vendor, product, serialname) in self._unique_devices:
+      self._logger.debug('Add prefix %s as an alias for device %s %s %s.', name, vendor, product, serialname)
+      self.add_servodevice(self._unique_devices[(vendor, product, serialname)], name)
+      return
+    # If it is a new device add it to the list
     if not device:
       template = servo_dev_templates.GetTemplateClass(vid=vendor, pid=product, serial=serialname)
-      device = servo_dev.ServoDevice(template=template, config=None, name=name, 
+      device = servo_dev.ServoDevice(template=template, config=None, name=name,
         serialname=serialname, version=template.TYPE, servod=weakref.proxy(self))
     self.add_servodevice(device, name)
 

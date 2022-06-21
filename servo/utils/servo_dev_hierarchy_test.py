@@ -289,10 +289,18 @@ class TestServoDeviceEntry(unittest.TestCase):
     test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                     pid=dev_templates.ServoV4.PID,
                                     serial='z', dev_path='i-o-p')
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='h', dev_path='x-y-z')
     test_entry2.set_cluster_root(test_entry3)
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
-                                'because the former is a child of another root servo'):
+                                'Currently servod does not support chaining '
+                                '3 or more levels of servo devices'):
       test_entry.set_cluster_root(test_entry2)
+    with self.assertRaisesRegex(ServoDeviceHierarchyError,
+                                'Currently servod does not support chaining '
+                                '3 or more levels of servo devices'):
+      test_entry3.set_cluster_root(test_entry4)
 
   def test_validate_entry_uniqueness(self):
     """Each physical device only corresponds to a device entry."""
