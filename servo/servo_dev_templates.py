@@ -12,11 +12,11 @@ import sys
 # Main devices have an empty prefix. This constant here is to make those checks
 # uniform.
 MAIN_DEV_PREFIX = 'main'
-
 # This alias is used for the main device on servo_server (the device without a
 # prefix) to allow for precise routing and server controls that need to indicate
 # which device they want things to happen on.
 MAIN_DEV_PREFIX_ALIAS = ''
+MAIN_DEV_PREFIXES = [MAIN_DEV_PREFIX, MAIN_DEV_PREFIX_ALIAS]
 
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP and SERVO_ID_DEFAULTS gets
 # populated on module import to keep a single source of truth about the device
@@ -284,3 +284,6 @@ _InitMaps(sys.modules[__name__])
 # Collection of secondary servos that usually require a support device (v4 or v4p1) to
 # offer full servo functionality.
 SECONDARY_SERVOS = set([ServoMicro.ID, CcdCr50.ID, CcdTi50.ID, C2d2.ID])
+# Servo types used to categorize servo devices
+DEBUG_HEADER_SERVO_TYPES = set([ServoMicro.TYPE, C2d2.TYPE, ServoV2.TYPE])
+CCD_SERVO_TYPES = set([CcdCr50.TYPE, CcdTi50.TYPE])

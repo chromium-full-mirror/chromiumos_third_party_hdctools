@@ -8,7 +8,19 @@ import collections
 import logging
 
 from servo import servo_dev_templates
+from servo import servo_parsing
 from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
+
+# Priorities of different kinds of servo devices.
+# The priorities should be consecutive integers starting from 0, because
+# they are used as index of the prioritized devices list. Smaller integer
+# indicates a device is more prioritized and more likely to be the targeted
+# device for a servod control command.
+PRIORITY_MAIN_DEV = 0
+PRIORITY_DEBUG_HEADER_SERVO = 1
+PRIORITY_CCD_SERVO = 2
+PRIORITY_DEFAULT = 3
+PRIORITY_CLUSTER_ROOT_DEV = 4
 
 class ServoDeviceHierarchyError(Exception):
   """ServoDeviceHierarchy error class."""
@@ -59,12 +71,13 @@ class ServoDeviceEntry(object):
     if self.dev_template.IS_HUB_SERVO:
       self.cluster_members = None
       self.hub_stub = UsbHierarchy.GetSysfsParentHubStub(dev_path)
+    self.devopts = servo_parsing.empty_devopts()
 
   def __repr__(self):
     return str(self)
 
   def __str__(self):
-    return '%s (%04x:%04x) %s USB path: %s' % (self.dev_template.TYPE, self.vid, self.pid,
+    return '[%s (%04x:%04x) %s on %s]' % (self.dev_template.TYPE, self.vid, self.pid,
       self.serial, self.dev_path)
 
   def set_cluster_root(self, root_servo):
@@ -90,12 +103,22 @@ class ServoDeviceEntry(object):
     self._validate_two_level_cluster(root_servo)
 
     # ensure the root servo recognizes itself as a root
-    if not root_servo.cluster_members:
+    if not root_servo.is_cluster_root():
       root_servo.cluster_root = root_servo
-      root_servo.cluster_members = {root_servo.id: root_servo}
+      root_servo.cluster_members = [root_servo]
       root_servo.end_device = False
     self.cluster_root = root_servo
-    self.cluster_root.cluster_members[self.id] = self
+    self.cluster_root.cluster_members.append(self)
+
+  def is_cluster_root(self):
+    """Check if this device is a root_servo.
+    """
+    return self.cluster_root == self
+
+  def is_in_cluster(self):
+    """Check if this device is in a cluster and is not a solo device.
+    """
+    return self.cluster_root is not None
 
   def _validate_no_duplicate_root(self, root_servo):
     """Validate the current servo device has not been configured with a different
@@ -113,20 +136,18 @@ class ServoDeviceEntry(object):
       self.cluster_root.validate_entry_uniqueness(root_servo)
       if self.cluster_root == root_servo:
         return
-      elif self.cluster_root == self:
+      elif self.is_cluster_root():
         raise ServoDeviceHierarchyError('Currently servod does not support chaining '
                                         '3 or more levels of servo devices (e.g. '
                                         'servo v4 -> servo v4 -> ccd). Failed to set '
-                                        '%r as the root servo of %r because the latter '
-                                        'is already a root servo.' % (
-                                        root_servo.dev_path, self.dev_path))
+                                        '%s as the root servo of %r because the latter '
+                                        'is already a root servo.' % (root_servo, self))
       else:
         raise ServoDeviceHierarchyError('A servo device entry cannot have more than '
-                                        'one root servo. Device sysfs dev path: %r.'
-                                        'Current root servo sysfs dev path: %r.'
+                                        'one root servo. Current device: %r.'
+                                        'Current device root servo: %r.'
                                         'Trying to also set %r as root servo.' % (
-                                        self.dev_path, self.cluster_root.dev_path,
-                                        root_servo.dev_path))
+                                        self, self.cluster_root, root_servo))
 
   def _validate_root_is_hub(self, root_servo):
     """Validate root_servo has a USB hub and other servo devices can connect to it
@@ -141,7 +162,7 @@ class ServoDeviceEntry(object):
     if not root_servo.dev_template.IS_HUB_SERVO:
       raise ServoDeviceHierarchyError('Failed to set %r as the root servo of %r'
                                       'because the former is not a hub servo.' % (
-                                      root_servo.dev_path, self.dev_path))
+                                      root_servo, self))
 
   def _validate_two_level_cluster(self, root_servo):
     """Validate the cluster only has two levels.
@@ -153,13 +174,13 @@ class ServoDeviceEntry(object):
       ServoDeviceHierarchyError: if this entry already has a different root servo.
       ServoDeviceHierarchyError: if root_servo cannot be a root servo
     """
-    if root_servo.cluster_root and root_servo.cluster_root != root_servo:
+    if root_servo.cluster_root and (not root_servo.is_cluster_root()):
       raise ServoDeviceHierarchyError('Currently servod does not support chaining '
                                       '3 or more levels of servo devices (e.g. '
                                       'servo v4 -> servo v4 -> ccd). Failed to set'
                                       ' %r as the root servo of %r because the former'
                                       'is already on the 2nd level.' % (
-                                      root_servo.dev_path, self.dev_path))
+                                      root_servo, self))
 
   def validate_entry_uniqueness(self, other_entry):
     """Validate each physical device only corresponds to a device entry.
@@ -180,6 +201,87 @@ class ServoDeviceEntry(object):
       raise ServoDeviceHierarchyError('Device (%04x:%04x) %s corresponds to 2 ServoDeviceEntry.'
                                        % (self.vid, self.pid, self.serial))
 
+  @staticmethod
+  def generate_device_priority(devices):
+    """Generate the priority for each device to be the targeting device.
+
+    Each device gets an integer as the priority to be the targeting device.
+    A higher priority indicates that the device is
+    (1) more likely to be the main device that by default handles all requests to servod
+    (2) more likely to be the device targeted by the user when they only provide partial
+        information for selecting a device
+
+    Currently priority is decided in the following way:
+    0: the device chosen to be the main device in the commandline. If the main device
+       chosen by the user is a cluster root, then we substitute with the device with
+      the highest priority in the cluster.
+    1: Debug header servos, e.g. Servo Micro, C2D2, Servo V2
+    2: CCD DUT controllers, e.g. CCD CR50, CCD TI50
+    3: non-dut-controller non-cluster-root devices, e.g. Sweetberry
+    4: cluster-root devices, e.g. a cluster-root Servo V4
+
+    Args:
+      devices: A list of ServoDeviceEntry.
+
+    Returns:
+      A list of lists representing the priority of each given device. The list index
+      indicates the priority for a device to be the main device.
+      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], [],
+                ["sweetberry"], ["servo v4"]]
+              - list[0] is empty as the user does not specify a main device in the
+              command line.
+              - list[1] has 2 entries "servo micro 1" and "servo micro 2", so they
+              share the highest priority to be the main device. We will let the user
+              decide which one is the main device through an interactive menu.
+              - list[2] only contains "sweetberry". Its priority to be the main device
+              is lower than ccd_cr50 and higher than servo v4.
+              - list[3] only contains "servo v4". Its priority to be the main device
+              is the lowest.
+    """
+    prioritized_devs = [[], [], [], [], []]
+    user_chosen_main_roots = []
+    for device in devices:
+      if hasattr(device.devopts, 'prefix') and \
+        device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+        if device.is_cluster_root():
+          user_chosen_main_roots.append(device)
+        else:
+          prioritized_devs[PRIORITY_MAIN_DEV].append(device)
+      elif device.dev_template.TYPE in servo_dev_templates.DEBUG_HEADER_SERVO_TYPES:
+        prioritized_devs[PRIORITY_DEBUG_HEADER_SERVO].append(device)
+      elif device.dev_template.TYPE in servo_dev_templates.CCD_SERVO_TYPES:
+        prioritized_devs[PRIORITY_CCD_SERVO].append(device)
+      elif device.is_cluster_root():
+        prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(device)
+      else:
+        prioritized_devs[PRIORITY_DEFAULT].append(device)
+
+    # Do substitution if the main device chosen by the user is a cluster root
+    for root in user_chosen_main_roots:
+      for idx in range(1, len(prioritized_devs)):
+        root_children = [dev for dev in prioritized_devs[idx] if dev in root.cluster_members]
+        if root_children:
+          prioritized_devs[PRIORITY_MAIN_DEV].extend(root_children)
+          prioritized_devs[idx] = [dev for dev in prioritized_devs[idx] if dev not in root_children]
+          prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(root)
+          break
+    return prioritized_devs
+
+  @staticmethod
+  def most_prirotized_devices(prioritized_devs):
+    """Choose the devices with the highest priority from generate_device_priority.
+
+    Args:
+      prioritized_devs: A list of lists representing the priority of devices. The list index
+        indicates the priority for a device to be the main device.
+
+    Returns:
+      A list representing the devices with the highest priority.
+    """
+    for level in prioritized_devs:
+      if level:
+        return level
+    return []
 
 class ServoDeviceHierarchy(object):
   """A usb hierarchy of servo devices.
@@ -199,7 +301,10 @@ class ServoDeviceHierarchy(object):
     self._logger = logging.getLogger('ServoDeviceHierarchy')
     self._logger.debug('')
     # Collect all servod devices on the system.
-    self._servo_dev_index = collections.defaultdict(lambda: None)
+    self._dev_by_id = collections.defaultdict(lambda: None)
+    self._dev_by_vid = collections.defaultdict(lambda: set())
+    self._dev_by_pid = collections.defaultdict(lambda: set())
+    self._dev_by_serial = collections.defaultdict(lambda: set())
     self._cluster_root_servos = {}
     self._cluster_non_root_servos = {}
     self._solo_devices = {}
@@ -213,8 +318,7 @@ class ServoDeviceHierarchy(object):
       dev_serial = UsbHierarchy.SerialFromSysfs(dev_path)
       entry = ServoDeviceEntry(vid=dev_vid, pid=dev_pid, serial=dev_serial,
                                dev_path=dev_path)
-      entry.validate_entry_uniqueness(self._servo_dev_index[entry.id])
-      self._servo_dev_index[entry.id] = entry
+      self.add_entry(entry)
       all_servo_devs.append(entry)
       if entry.dev_template.IS_HUB_SERVO:
         hub_servos.append(entry)
@@ -226,14 +330,29 @@ class ServoDeviceHierarchy(object):
       for hub_servo in hub_servos:
         if a_servo == hub_servo:
           continue
-        if UsbHierarchy.DevOnHubPortFromSysfs(hub_servo.hub_stub,
-                                              a_servo.dev_path):
+        # if a servo has an internal hub, then we want to test if the
+        # internal hub hangs directly on some other hub
+        if a_servo.dev_template.IS_HUB_SERVO:
+          a_servo_dev_path = a_servo.hub_stub
+        else:
+          a_servo_dev_path = a_servo.dev_path
+        if UsbHierarchy.DevDirectOnHubPortFromSysfs(hub_servo.hub_stub,
+                                                    a_servo_dev_path):
           a_servo.set_cluster_root(hub_servo)
           self._cluster_root_servos[hub_servo.id] = hub_servo
           self._cluster_non_root_servos[a_servo.id] = a_servo
           self._solo_devices.pop(hub_servo.id, None)
           self._solo_devices.pop(a_servo.id, None)
           break
+
+  def add_entry(self, entry):
+    """Add a ServoDeviceEntry to hierarchy.
+    """
+    entry.validate_entry_uniqueness(self._dev_by_id[entry.id])
+    self._dev_by_id[entry.id] = entry
+    self._dev_by_vid[entry.vid].add(entry)
+    self._dev_by_pid[entry.pid].add(entry)
+    self._dev_by_serial[entry.serial].add(entry)
 
   def get_entry(self, vid, pid, serial):
     """Return ServoDeviceEntry for specific identifier.
@@ -246,7 +365,38 @@ class ServoDeviceHierarchy(object):
     Returns:
       ServoDeviceEntry for the device if known, None otherwise.
     """
-    return self._servo_dev_index[(vid, pid, serial)]
+    return self._dev_by_id[(vid, pid, serial)]
+
+  def get_entries(self, vid, pid, serial):
+    """Return a set of ServoDeviceEntry for the specific identifiers.
+
+    Args:
+      vid: device vendor ID. If none, we will match to all vids.
+      pid: device product ID. If none, we will match to all pids.
+      serial: device serial name. If none, we will match to all serialnames.
+
+    Returns:
+      A set of ServoDeviceEntry for the device identifier.
+    """
+    if vid and pid and serial:
+      dev = self.get_entry(vid, pid, serial)
+      return {dev} if dev else {}
+    setlist = []
+    if vid:
+      setlist.append(self._dev_by_vid[vid])
+    if pid:
+      setlist.append(self._dev_by_pid[pid])
+    if serial:
+      setlist.append(self._dev_by_serial[serial])
+    return set.intersection(*setlist) if setlist else {}
+
+  def get_all_entries(self):
+    """Return all the ServoDeviceEntry in this hierarchy.
+
+    Returns:
+      A map of ServoDeviceEntry keyed by (vid, pid, serial).
+    """
+    return self._dev_by_id
 
   def get_cluster(self, vid, pid, serial):
     """Get all devices in the same cluster as device at vid/pid/serial.
@@ -268,7 +418,7 @@ class ServoDeviceHierarchy(object):
         return [dev]
       # Find the root servo of the cluster and return all members
       else:
-        return list(dev.cluster_root.cluster_members.values())
+        return dev.cluster_root.cluster_members
     else:
       return []
 
@@ -278,7 +428,6 @@ class ServoDeviceHierarchy(object):
   # s = set(get_solo_devices()
   # s & c & d == empty set
   # s | c | d == all servo devices on the system
-
   def get_cluster_root_servos(self):
     """Return all root servo devices on the system in a cluster."""
     return self._cluster_root_servos.values()

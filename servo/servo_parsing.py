@@ -490,3 +490,33 @@ class ServodClientParser(ServodRCParser):
       # mutual exclusion.
       opts = self._MapSNToPort(opts)
     return (opts, xtra)
+
+def empty_devopts():
+  """Generate new devopts formatted the same as from servod parser.
+
+  This is a temporary solution to be used to dev_namespace_for_device_cluster().
+  Vendor and product are not initiated as they are provided by servo device hierarchy.
+  TODO(konmari): clean this up once multi-device parsing is in.
+  """
+  new_opts = argparse.Namespace()
+  for opt in ['board', 'model']:
+    setattr(new_opts, opt, '')
+  for opt in ['usbkm232', 'noautoconfig', 'prefix']:
+    setattr(new_opts, opt, None)
+  for opt in ['config', 'interfaces']:
+    setattr(new_opts, opt, [])
+  return new_opts
+
+def inherit_opts(new_opts, existing_opts, args):
+  """Inherit each arg in |args| from |existing_opts| to |new_opts|.
+
+  Args:
+    new_opts: new opts
+    existing_opts: existing opts
+    args: list of attributes to inherit
+
+  Raises:
+    AttributeError if |existing_opts| is lack any of the args in |args|
+  """
+  for arg in args:
+    setattr(new_opts, arg, getattr(existing_opts, arg))

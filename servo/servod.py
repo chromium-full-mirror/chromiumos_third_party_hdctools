@@ -31,6 +31,7 @@ import usb
 from servo import interface
 from servo import recovery
 from servo import servo_dev
+from servo import servo_dev_finder
 from servo import servo_dev_templates
 from servo import servo_logging
 from servo import servo_parsing
@@ -442,10 +443,19 @@ class ServodStarter(object):
     # TODO(konmari): check if servo device hierarchy is working as intented
     # hub servo's hub needs to be initiated to connect to servo_sees_usbkey for servod
     # to find other devices plugged into the hub servo
+    options.prefix = ''
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
     self._logger.debug('cluster root devices: %s', dev_hierarchy.get_cluster_root_servos())
     self._logger.debug('cluster non root devices: %s', dev_hierarchy.get_cluster_non_root_servos())
     self._logger.debug('cluster solo devices: %s', dev_hierarchy.get_solo_devices())
+    self._logger.debug('complete servod device list without complete cluster: %s',
+      servo_dev_finder.complete_servod_device_list([options], dev_hierarchy, False))
+    complete_dev_list = servo_dev_finder.complete_servod_device_list([options], dev_hierarchy)
+    self._logger.debug('complete servod device list')
+    for dev in complete_dev_list:
+      self._logger.debug('%s: %s', dev, dev.devopts)
+    self._logger.debug('main device priority: %s',
+      servo_dev_hierarchy.ServoDeviceEntry.generate_device_priority(complete_dev_list))
 
     vendor, product, serialname = (options.vendor, options.product,
                                    options.serialname)

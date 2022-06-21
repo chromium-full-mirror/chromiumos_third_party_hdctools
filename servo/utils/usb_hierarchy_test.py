@@ -385,6 +385,27 @@ class TestUsbHierarchy(unittest.TestCase):
     dev_port_path = '3-1.2.3'
     assert not Hierarchy.DevOnHubPortFromSysfs(hub_port_stub, dev_port_path)
 
+  def test_DevDirectOnHubPort(self):
+    """DevDirectOnHubPort is True when the device is a direct child of the hub stub."""
+    hub_port_stub = '2-1.2'
+    dev_port_path = '2-1.2.3'
+    assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+
+  def test_DevDirectOnRootHubPort(self):
+    """DevDirectOnHubPort is True when the device is a direct child of the root hub stub."""
+    hub_port_stub = '2'
+    dev_port_path = '2-1'
+    assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+
+  def test_DevNotDirectOnHubPort(self):
+    """DevDirectOnHubPort is False when the root hub is different."""
+    # To test the hub-port logic as above you really only need the port path
+    # string. This test is to make sure that while that is true, the entire
+    # path i.e. the root-hub is also taken into consideration
+    hub_port_stub = '2-1'
+    dev_port_path = '2-1.2.3'
+    assert not Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+
   def test_DevNumFromSysfsNoFile(self):
     """HierarchyError is raised on missing devnum file."""
     # Note: as all the *FromSysfs methods use the same underlying method,
