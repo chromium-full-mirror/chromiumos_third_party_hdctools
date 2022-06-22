@@ -428,6 +428,23 @@ class SystemConfig(object):
       return []
     return list(self.control_tags[tag])
 
+  def lookup_map_params(self, name):
+    """Lookup & return map parameter dictionary.
+
+    Args:
+      name: string of map name to lookup
+
+    Returns:
+      params: dictionary of map params
+
+    Raises:
+      NameError: if map name not found
+    """
+    if name not in self.syscfg_dict[MAP_TAG]:
+      raise NameError('No map named %s. All maps:\n%s' %
+                      (name, ','.join(sorted(self.syscfg_dict[MAP_TAG]))))
+    return self.syscfg_dict[MAP_TAG][name]['map_params']
+
   def lookup_control_params(self, name):
     """Lookup & return control parameter dictionary.
 
@@ -461,6 +478,17 @@ class SystemConfig(object):
       boolean, True if name is control, False otherwise
     """
     return name in self.syscfg_dict[CONTROL_TAG]
+
+  def is_map(self, name):
+    """Determine if name is a map or not.
+
+    Args:
+      name: string of map name to lookup
+
+    Returns:
+      boolean, True if name is map, False otherwise
+    """
+    return name in self.syscfg_dict[MAP_TAG]
 
   def get_control_docstring(self, name):
     """Get controls doc string.

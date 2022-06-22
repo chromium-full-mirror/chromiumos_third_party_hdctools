@@ -9,15 +9,18 @@ import logging
 import re
 import sys
 
-# SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP and SERVO_ID_DEFAULTS gets
-# populated on module import to keep a single source of truth about the device
-# information - their template classes.
+# SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP, SERVO_ID_DEFAULTS,
+# and SERVO_NAME_TEMPLATE_MAP, get populated on module import to keep a single
+# source of truth about the device information - their template classes.
+#
 # A 2d map to fetch a servo device template given a vendor id and a product id.
 SERVO_VID_PID_TEMPLATE_MAP = collections.defaultdict(lambda: collections.defaultdict(set))
 # A dict to fetch a servo device template given a lot id.
 SERVO_LOTID_TEMPLATE_MAP = collections.defaultdict(set)
 # A set of tuples of the vid/pid pairs of all known servo devices.
 SERVO_ID_DEFAULTS = set()
+# A map from name to template.
+SERVO_NAME_TEMPLATE_MAP = dict()
 
 # Lot IDs are used to distinguish between servo v2 and servo v2 r0. If a device
 # has a lot-id that is not known, it gets assigned a fake lot id to ensure that
@@ -27,6 +30,22 @@ FORCE_V2_LOTID = 'force-v2-lotid'
 class DeviceTemplateError(Exception):
   """Error class for device templates."""
   pass
+
+def GetTemplateClassByName(name):
+  """Get the ServoDevTemplate class associated with |name|.
+
+  Args:
+    name: str, should match a TYPE field of the classes below
+
+  Returns:
+    servo dev template class associated with |name|
+
+  Raises:
+    DeviceTemplateError if template class not found
+  """
+  if name not in SERVO_NAME_TEMPLATE_MAP:
+    raise DeviceTemplateError('Unknown servo device %r type' % name)
+  return SERVO_NAME_TEMPLATE_MAP[name]
 
 def GetTemplateClass(vid, pid, serial=None):
   """Get the ServoDevTemplate class associated with (vid, pid, serial).
@@ -255,6 +274,8 @@ def _InitMaps(servo_dev_module):
   for cname, c in classes:
     if cname.endswith('Error'):
       continue
+    # Link to the name
+    SERVO_NAME_TEMPLATE_MAP[c.TYPE] = c
     if c.VID and c.PID:
       # This means the class refers to a physical servo device class.
       # Generate the servo device ID - (vid, pid)
