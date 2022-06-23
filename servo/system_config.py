@@ -604,7 +604,8 @@ class SystemConfig(object):
     if 'map' in params:
       map_dict = self._lookup(MAP_TAG, params['map'])
       if map_dict:
-        for keyname, val in map_dict['map_params'].items():
+        map_params = map_dict['map_params']
+        for keyname, val in map_params.items():
           # try treating val as a regex expression
           if params['map'].endswith('_re'):
             if re.search(val, reformat_value):
@@ -615,6 +616,13 @@ class SystemConfig(object):
             if val == reformat_value:
               reformat_value = keyname
               break
+        else:
+          if reformat_value and reformat_value != 'not_applicable':
+            control = params['control_name']
+            logging.warning('%s: %r not found in the param values',
+                            control, reformat_value)
+            logging.warning('%s: update drv to get and set values from the '
+                            'param map %r', control, map_params)
     return reformat_value
 
   def display_config(self, tag=None, prefix=None):
