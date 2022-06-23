@@ -157,13 +157,6 @@ class cr50(pty_driver.ptyDriver):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd('reboot')
 
-  def _Set_ccd_noop(self, value):
-    """Used to ignore servo controls"""
-
-  def _Get_ccd_noop(self):
-    """Used to ignore servo controls"""
-    return 'ERR'
-
   def _get_ccd_cap_state(self, cap):
     """Get the current state of the ccd capability"""
     result = self._issue_cmd_get_results('ccdstate', [r'%s:([^\n]*)\n' % cap])
