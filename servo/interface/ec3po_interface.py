@@ -164,7 +164,7 @@ class EC3PO(uart.Uart):
     itpr_process.start()
     self.itpr_process = itpr_process
     # The interpreter starts up in the connected state.
-    self._interp_connected = 'on'
+    self._interp_connected = 1
 
     # The original console loglevel will match the logger level.
     self._console_loglevel = self._logger.getEffectiveLevel()
@@ -291,12 +291,11 @@ class EC3PO(uart.Uart):
         not.
     """
     self._logger.debug('EC3PO Interpreter connection request: \'%r\'', state)
+    self._interp_connected = state
     if state == 1:
       self._cmd_pipe_int.send(b'reconnect')
-      self._interp_connected = 'on'
     else:
       self._cmd_pipe_int.send(b'disconnect')
-      self._interp_connected = 'off'
     return
 
   def get_interp_connect(self):
@@ -333,8 +332,9 @@ class EC3PO(uart.Uart):
     self._console.oobm_queue.put(b'timestamp ' + mode)
 
   def get_timestamp(self):
-    """Returns the current timestamp setting."""
-    return 'on' if self._console.timestamp_enabled else 'off'
+    """Returns 1 if timestamps are enabled. 0 if they're disabled."""
+    # Use an int, so the onoff map can handle it.
+    return int(self._console.timestamp_enabled)
 
   def close(self):
     """Turn down the ec3po interface by terminating interpreter & console."""
