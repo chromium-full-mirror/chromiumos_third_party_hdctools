@@ -82,14 +82,11 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     """Gets the current H1 reset state for DUT.
 
     Returns:
-      'on' if H1 is being held in reset.
-      'off' if H1 can run normally.
+      1 if H1 is being held in reset. 0 if H1 can run normally.
     """
     result = self._issue_cmd_get_results('h1_reset',
       ['H1 reset held: (\w+)'])[0][1]
-    if result == 'yes':
-        return 'on'
-    return 'off'
+    return int(result == 'yes')
 
   def _Set_h1_reset(self, value):
     """Sets the current H1 reset state for DUT.
@@ -97,7 +94,8 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     Args:
       value: 1 to hold H1 in reset, 0 to release H1 from reset.
     """
-    self._issue_cmd('h1_reset %s' % value)
+    # The signal is active low, so value has to be inverted.
+    self._issue_cmd('h1_reset %s' % int(value == 0))
 
   def _Get_pwr_button(self):
     """Gets the current power button state for DUT.
