@@ -65,15 +65,15 @@ class ec3poServoMicro(ec3po_servo.ec3poServo):
     """Gets the current UUT (UART) boot mode for the EC.
 
     Returns:
-      'on' if EC_TX is being held low. The UART on stm32 is disabled
-      'off' if EC_TX and EC_RX are in normal UART mode
+      1 if EC_TX is being held low. The UART on stm32 is disabled
+      0 if EC_TX and EC_RX are in normal UART mode
     """
     # EC UART is connected to USART2
     result = self._issue_cmd_get_results('hold_usart usart2',
       ['status: (\w+)'])[0][1]
     if result == 'normal':
-        return 'off'
-    return 'on'
+        return 0
+    return 1
 
   def _Set_uut_boot_mode(self, value):
     """Sets the current UUT (UART) boot mode for the EC
