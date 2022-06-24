@@ -444,7 +444,9 @@ class ServodStarter(object):
       all_servos.extend(usb_find(vid, pid, serialname))
 
     if not all_servos:
-      self._logger.error('No servos found')
+      self._logger.error('No servos found.')
+      self._logger.info('If Suzy Qable is plugged in but CCD is not found,'
+        ' try flipping Suzy Qable type C end.')
       return None
 
     if len(all_servos) == 1:
