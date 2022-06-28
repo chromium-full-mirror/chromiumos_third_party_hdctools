@@ -177,7 +177,7 @@ class ServoConfigFileGenerator(object):
     self._text = output
 
   def WriteToFile(self, destination):
-    """Helper to write to file. Runs tidy after file is written.
+    """Helper to write to file.
 
     Args:
       destination: dest where to save the file.
