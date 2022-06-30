@@ -143,6 +143,7 @@ def main(cmdline=sys.argv[1:]):
                       help='message to append to each summary file stored')
   _AddMutuallyExclusiveAction('raw-data', parser, default=False)
   _AddMutuallyExclusiveAction('summary', parser)
+  _AddMutuallyExclusiveAction('json', parser, default=False)
   # NOTE: if logging gets too verbose, turn default off
   _AddMutuallyExclusiveAction('logs', parser)
   parser.add_argument('--save-all', default=False, action='store_true',
@@ -159,7 +160,7 @@ def main(cmdline=sys.argv[1:]):
   args = parser.parse_args(cmdline)
   # Save all logic
   if args.save_all:
-    args.save_logs = args.save_raw_data = args.save_summary = True
+    args.save_logs = args.save_raw_data = args.save_summary = args.save_json = True
   pm_logger = logging.getLogger('')
   pm_logger.setLevel(logging.INFO)
   pm_logger.handlers.clear()
@@ -268,6 +269,8 @@ def main(cmdline=sys.argv[1:]):
     pm.SaveSummary(args.outdir, args.message)
   if args.save_raw_data:
     pm.SaveRawData(args.outdir)
+  if args.save_json:
+    pm.SaveSummaryJSON(args.outdir)
   if args.save_logs:
     # pylint: disable=protected-access
     outdir = pm._outdir
