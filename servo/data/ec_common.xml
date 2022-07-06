@@ -115,6 +115,12 @@
     group="1" formatting="int,bool" interface="10" drv="simple_ec"></params>
   </control>
   <control>
+    <name>battery_voltage_design_mv</name>
+    <doc>Battery design voltage in mV</doc>
+    <params cmd="get" uart_cmd="battery" regex="V-design:[\s0-9a-fx]*= (\d+) mV"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
     <name>pwr_button_hold</name>
     <doc>milliseconds to hold the power button</doc>
     <params cmd="get" interface="10" drv="na" />
