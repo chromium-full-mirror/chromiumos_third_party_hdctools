@@ -68,7 +68,7 @@ class ServoDeviceEntry(object):
                                       % (vid, pid, serial, dev_path))
     self.cluster_root = None
     self.end_device = True
-    if self.dev_template.IS_HUB_SERVO:
+    if self.dev_template.HUB_SERVO:
       self.cluster_members = None
       self.hub_stub = UsbHierarchy.GetSysfsParentHubStub(dev_path)
     self.devopts = servo_parsing.empty_devopts()
@@ -159,7 +159,7 @@ class ServoDeviceEntry(object):
       ServoDeviceHierarchyError: if this entry already has a different root servo.
       ServoDeviceHierarchyError: if root_servo cannot be a root servo
     """
-    if not root_servo.dev_template.IS_HUB_SERVO:
+    if not root_servo.dev_template.HUB_SERVO:
       raise ServoDeviceHierarchyError('Failed to set %r as the root servo of %r'
                                       'because the former is not a hub servo.' % (
                                       root_servo, self))
@@ -238,7 +238,7 @@ class ServoDeviceHierarchy(object):
                                dev_path=dev_path)
       self.add_entry(entry)
       all_servo_devs.append(entry)
-      if entry.dev_template.IS_HUB_SERVO:
+      if entry.dev_template.HUB_SERVO:
         hub_servos.append(entry)
       self._solo_devices[entry.id] = entry
     # Go over the devices that are not hub servos, and see if they belong
@@ -250,7 +250,7 @@ class ServoDeviceHierarchy(object):
           continue
         # if a servo has an internal hub, then we want to test if the
         # internal hub hangs directly on some other hub
-        if a_servo.dev_template.IS_HUB_SERVO:
+        if a_servo.dev_template.HUB_SERVO:
           a_servo_dev_path = a_servo.hub_stub
         else:
           a_servo_dev_path = a_servo.dev_path
@@ -398,8 +398,7 @@ class ServoDeviceHierarchy(object):
     prioritized_devs = [[], [], [], [], []]
     user_chosen_main_roots = []
     for device in devices:
-      if hasattr(device.devopts, 'prefix') and \
-        device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+      if device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
         if device.is_cluster_root():
           user_chosen_main_roots.append(device)
         else:
@@ -415,8 +414,12 @@ class ServoDeviceHierarchy(object):
 
     # Do substitution if the main device chosen by the user is a cluster root
     for root in user_chosen_main_roots:
-      for idx in range(1, len(prioritized_devs)):
+      for idx in range(len(prioritized_devs)):
+        # Only do substitution for children of the main root devices not yet chosen as main devices
+        if idx == PRIORITY_MAIN_DEV or idx == PRIORITY_CLUSTER_ROOT_DEV:
+          continue
         root_children = [dev for dev in prioritized_devs[idx] if dev in root.cluster_members]
+        # Substitution is done when some children are chosen to substitute the main root devices
         if root_children:
           prioritized_devs[PRIORITY_MAIN_DEV].extend(root_children)
           prioritized_devs[idx] = [dev for dev in prioritized_devs[idx] if dev not in root_children]

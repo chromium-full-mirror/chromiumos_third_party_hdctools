@@ -9,10 +9,10 @@
 from __future__ import print_function
 import collections
 import errno
+import itertools
 import logging
 import os
 import pkg_resources
-import select
 import signal
 try:
   from SimpleXMLRPCServer import SimpleXMLRPCServer
@@ -25,8 +25,6 @@ import sys
 import threading
 import time
 import weakref
-
-import usb
 
 from servo import interface
 from servo import recovery
@@ -53,64 +51,6 @@ DEFAULT_LOG_DIR = '/var/log'
 # (the first checked default port is 9999, the range is such that all possible
 # port numbers are 4 digits).
 DEFAULT_PORT_RANGE = (9200, 9999)
-
-
-def usb_get_iserial(device):
-  """Get USB device's iSerial string.
-
-  Args:
-    device: usb.Device object
-
-  Returns:
-    iserial: USB devices iSerial string or empty string if the device has
-             no serial number.
-  """
-  try:
-    # The get_string API always returns a unicode string, in py2 or py3
-    iserial = usb.util.get_string(device, device.iSerialNumber)
-  except usb.USBError:
-    # TODO(tbroch) other non-FTDI devices on my host cause following msg
-    #   usb.USBError: error sending control message: Broken pipe
-    # Need to investigate further
-    pass
-  # pylint: disable=broad-except
-  except:
-    # This was causing servod to fail to start in the presence of
-    # a broken usb interface.
-    logging.exception('usb_get_iserial failed in an unknown way')
-  else:
-    # No issues
-    if iserial is not None:
-      return iserial
-  # Return an empty string if an issue occured.
-  return ''
-
-def usb_find(vendor, product, serialname):
-  """Find USB devices based on vendor, product and serial identifiers.
-
-  Locates all USB devices that match the criteria of the arguments.  In the
-  case where input arguments are 'None' that argument is a don't care
-
-  Args:
-    vendor: USB vendor id (integer)
-    product: USB product id (integer)
-    serialname: USB serial id (string)
-
-  Returns:
-    matched_devices : list of pyusb devices matching input args
-  """
-  # If these are not specified, they default to None. The search function below
-  # treats None as a wildcard, and will search all vid/pid
-  vid_pid_list = [(vendor, product)]
-  candidates = usb_hierarchy.Hierarchy.GetAllUsbDevices(vid_pid_list)
-  if serialname:
-    # We allow a suffix matching for serialnames, so the serialname cannot be
-    # used to directly look for a device, as the user might have multiple
-    # matching candidates
-    candidates = [c for c in candidates if
-                  usb_get_iserial(c).endswith(serialname)]
-  return candidates
-
 
 # pylint: disable=g-bad-exception-name
 class ServodError(Exception):
@@ -145,7 +85,7 @@ class ServodStarter(object):
     loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
     logging.basicConfig(level=loglevel, format=fmt)
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
-    sopts, devopts = self._parse_args(cmdline)
+    sopts, devopts_list = self._parse_args(cmdline)
     self._host = sopts.host
 
     # Turn on recovery mode if requested.
@@ -189,12 +129,28 @@ class ServodStarter(object):
 
     self._logger.info('Start')
 
-    servo_device = self.discover_servo(devopts)
+    dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
+    finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
+                                                dev_hierarchy=dev_hierarchy,
+                                                scratch=self._scratchutil)
+    try:
+      servo_devs = finder.discover_servos()
+      main_dev = finder.choose_main_device(servo_devs)
+    except servo_dev_finder.ServoDeviceFinderError as e:
+      self._logger.fatal("Failure during discovering servo devices: %s", e)
+      sys.exit(-1)
+
+    # TODO(konmari): refactor the below section to support multi devices
+    #                below is a temporary hack that works for current servo_postinit
+    if main_dev.cluster_root and main_dev.dev_template.DUT_CONTROLLER:
+      servo_device = main_dev.cluster_root
+    else:
+      servo_device = main_dev
+    devopts = devopts_list[0]
     if not servo_device:
       sys.exit(-1)
 
-    vid, pid = servo_device.idVendor, servo_device.idProduct
-    serial = usb_get_iserial(servo_device)
+    vid, pid, serial = servo_device.vid, servo_device.pid, servo_device.serial
     dev_tmpl = servo_dev_templates.GetTemplateClass(vid=vid, pid=pid,
                                                     serial=serial)
     board_version = dev_tmpl.TYPE
@@ -248,16 +204,12 @@ class ServodStarter(object):
 
     self._logger.debug('\n%s', scfg.display_config())
 
-    self._logger.debug('Servo is vid:0x%04x pid:0x%04x sid:%s',
-                       servo_device.idVendor, servo_device.idProduct,
-                       usb_get_iserial(servo_device))
+    self._logger.debug('Servo is vid:0x%04x pid:0x%04x sid:%s', vid, pid, serial)
 
     self._servod = servo_server.Servod(usbkm232=devopts.usbkm232)
-    serialname = usb_get_iserial(servo_device)
-    template = servo_dev_templates.GetTemplateClass(vid=servo_device.idVendor,
-     pid=servo_device.idProduct, serial=serialname)
+    template = servo_dev_templates.GetTemplateClass(vid=vid, pid=pid, serial=serial)
     main_servo_dev = servo_dev.ServoDevice(template=template, config=scfg,
-      name=servo_dev_templates.MAIN_DEV_PREFIX, serialname=serialname,
+      name=servo_dev_templates.MAIN_DEV_PREFIX, serialname=serial,
       interfaces=devopts.interfaces.split(), board=devopts.board, model=devopts.model,
       version=board_version, servod=weakref.proxy(self._servod))
 
@@ -359,6 +311,8 @@ class ServodStarter(object):
                                'sending keyboard commands to DUTs that do not '
                                'have built in keyboards. Used in FAFT tests. '
                                '(Optional), e.g. /dev/ttyUSB0')
+    # TODO(konmari): finish the doc of prefix
+    dev_pars.add_argument('--prefix', type=str, default='', action='store')
     # Create a unified parser with both server & device arguments to display
     # meaningful help messages to the user.
     # pylint: disable=protected-access
@@ -379,119 +333,21 @@ class ServodStarter(object):
     # Adjust log-dir to be None if no_log_dir is requested.
     if server_args.no_log_dir:
       server_args.log_dir = None
-    dev_args = dev_pars.parse_args(dev_cmdline)
-    return (server_args, dev_args)
 
-  def choose_servo(self, all_servos):
-    """Let user choose a servo from available list of unique devices.
-
-    Args:
-      all_servos: a list of servod objects corresponding to discovered servo
-                  devices
-
-    Returns:
-      servo object for the matching (or single) device, otherwise None
-    """
-    self._logger.info('')
-    for i, servo in enumerate(all_servos):
-      self._logger.info("Press '%d' for servo, vid: 0x%04x pid: 0x%04x sid: %s",
-                        i, servo.idVendor, servo.idProduct,
-                        usb_get_iserial(servo))
-
-    (rlist, _, _) = select.select([sys.stdin], [], [], 10)
-    if not rlist:
-      self._logger.warning('Timed out waiting for your choice\n')
-      return None
-
-    rsp = rlist[0].readline().strip()
-    try:
-      rsp = int(rsp)
-    except ValueError:
-      self._logger.warning('%s not a valid choice ... ignoring', rsp)
-      return None
-
-    if rsp < 0 or rsp >= len(all_servos):
-      self._logger.warning('%s outside of choice range ... ignoring', rsp)
-      return None
-
-    logging.info('')
-    servo = all_servos[rsp]
-    logging.info('Chose %d ... starting servod on servo '
-                 'vid: 0x%04x pid: 0x%04x sid: %s', rsp, servo.idVendor,
-                 servo.idProduct, usb_get_iserial(servo))
-    logging.info('')
-    return servo
-
-  def discover_servo(self, options):
-    """Find a servo USB device to use.
-
-    First, find all servo devices matching command line options, this may result
-    in discovering none, one or more devices.
-
-    If there is a match - return the matching device.
-
-    If there is only one servo connected - return it.
-    If there is no match found and multiple servos are connected - report an
-    error and return None.
-
-    Args:
-      options: the options object returned by arg_parse
-
-    Returns:
-      servo object for the matching (or single) device, otherwise None
-    """
-    # TODO(konmari): check if servo device hierarchy is working as intented
-    # hub servo's hub needs to be initiated to connect to servo_sees_usbkey for servod
-    # to find other devices plugged into the hub servo
-    options.prefix = ''
-    dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
-    finder = servo_dev_finder.ServoDeviceFinder([options], dev_hierarchy, self._scratchutil)
-    self._logger.debug('cluster root devices: %s', dev_hierarchy.get_cluster_root_servos())
-    self._logger.debug('cluster non root devices: %s', dev_hierarchy.get_cluster_non_root_servos())
-    self._logger.debug('cluster solo devices: %s', dev_hierarchy.get_solo_devices())
-    self._logger.debug('complete servod device list without complete cluster: %s',
-      finder.discover_servos(False))
-    complete_dev_list = finder.discover_servos()
-    self._logger.debug('complete servod device list')
-    for dev in complete_dev_list:
-      self._logger.debug('%s: %s', dev, dev.devopts)
-    self._logger.debug('main device priority: %s',
-      dev_hierarchy.generate_device_priority(complete_dev_list))
-
-    vendor, product, serialname = (options.vendor, options.product,
-                                   options.serialname)
-    all_servos = []
-    for (vid, pid) in servo_dev_templates.SERVO_ID_DEFAULTS:
-      if (vendor and vendor != vid) or \
-            (product and product != pid):
-        continue
-      all_servos.extend(usb_find(vid, pid, serialname))
-
-    if not all_servos:
-      self._logger.error('No servos found')
-      return None
-
-    if len(all_servos) == 1:
-      return all_servos[0]
-
-    # See if only one primary servo. Filter secondary servos.
-    all_primary_servos = [
-        servo for servo in all_servos
-        if (servo.idVendor, servo.idProduct) not in servo_dev_templates.SECONDARY_SERVOS
-    ]
-    if len(all_primary_servos) == 1:
-      return all_primary_servos[0]
-
-    # Let user choose a servo
-    matching_servo = self.choose_servo(all_servos)
-    if matching_servo:
-      return matching_servo
-
-    self._logger.error('Use --vendor, --product or --serialname switches to '
-                       'identify servo uniquely, or create a servodrc file '
-                       'and use the --name switch')
-
-    return None
+    # The dev cmdline uses ' --- ' to indicate that a new device is being
+    # configured. Thus, parse each segment individually.
+    dev_cmdline_chunks = [list(group) for is_delimiter, group in
+                          itertools.groupby(dev_cmdline,
+                          lambda delimiter: delimiter == '---')
+                          if not is_delimiter]
+    # There will be no chunks if the user did not specify a single device
+    # argument in the commandline. That's fine however, as servod can assume
+    # they intended to invoke at least one device. This ensures that at least
+    # one device will be initialized.
+    dev_cmdline_chunks = dev_cmdline_chunks if dev_cmdline_chunks else [[]]
+    dev_args_list = [dev_pars.parse_args(dev_cmdline) for dev_cmdline in
+                     dev_cmdline_chunks]
+    return (server_args, dev_args_list)
 
   def cleanup(self):
     """Perform any cleanup related work after servod server shut down."""

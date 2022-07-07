@@ -107,7 +107,7 @@ class _ServoDevTemplate(object):
   # The ServoDev class used for the servo device
   DEV_CONSTRUCTOR = None
   # Whether a ServoDevice has a built-in USB hub for connectting other ServoDevices and DUT
-  IS_HUB_SERVO = False
+  HUB_SERVO = False
   # Whether a ServoDevice can access DUTs consoles (EC, AP, etc)
   DUT_CONTROLLER = False
 
@@ -134,7 +134,7 @@ class ServoV2R0(_ServoDevTemplate):
   PID = 0x5002
   LOTIDS = ['609600', '629871']
   DEFAULT_CONFIG = 'servo_v2_r0.xml'
-  IS_HUB_SERVO = True
+  HUB_SERVO = True
   DUT_CONTROLLER = True
 
 class ServoV2(ServoV2R0):
@@ -150,7 +150,7 @@ class ServoV3(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x5004
   DEFAULT_CONFIG = 'servo_v3_r0.xml'
-  IS_HUB_SERVO = True
+  HUB_SERVO = True
   DUT_CONTROLLER = True
 
 class ServoV3_(ServoV3):
@@ -169,7 +169,7 @@ class ServoV4(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x501b
   DEFAULT_CONFIG = 'servo_v4.xml'
-  IS_HUB_SERVO = True
+  HUB_SERVO = True
 
 class ServoV4p1(_ServoDevTemplate):
   """Servo v4p1 template class."""
@@ -177,7 +177,7 @@ class ServoV4p1(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x520d
   DEFAULT_CONFIG = 'servo_v4p1.xml'
-  IS_HUB_SERVO = True
+  HUB_SERVO = True
 
 class ServoMicro(_ServoDevTemplate):
   """Servo micro template class."""

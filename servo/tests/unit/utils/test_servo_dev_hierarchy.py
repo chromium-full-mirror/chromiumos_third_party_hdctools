@@ -4,6 +4,7 @@
 
 """Servo device hierarchy class tests."""
 
+import os
 import shutil
 import tempfile
 import unittest
@@ -13,8 +14,6 @@ from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
 from servo.utils.servo_dev_hierarchy import ServoDeviceEntry
 from servo.utils.servo_dev_hierarchy import ServoDeviceHierarchy
 from servo.utils.servo_dev_hierarchy import ServoDeviceHierarchyError
-from servo.utils.usb_hierarchy_test import TestUsbHierarchy
-
 
 class TestServoDeviceHierarchy(unittest.TestCase):
   """Tests to ensure that the ServoDeviceHierarchy works."""
@@ -122,7 +121,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
   def test_get_entry(self):
     """Assert that a properly formatted servo device entry is retrived."""
     dev_attrs = self._root_servo_dev_attrs
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     devid = self.get_attrs_id(dev_attrs)
@@ -133,15 +132,15 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_entries(self):
     """Assert that a set of properly formatted servo device entries is retrived."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_2_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     entries = hierarchy.get_entries(None, None, None)
@@ -185,11 +184,11 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_cluster(self):
     """Assert that a well formatted servo device cluster is fully retrieved."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_2_attrs)
     hierarchy = ServoDeviceHierarchy()
     devid = self.get_attrs_id(self._root_servo_dev_attrs)
@@ -211,9 +210,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_cluster_no_clusters(self):
     """get_cluster returns the device only if it's not part of a cluster."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     devid = self.get_attrs_id(self._root_servo_dev_attrs)
@@ -225,9 +224,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_cluster_root_servos(self):
     """get_cluster_root_servos returns all root devices in a cluster."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
     hierarchy = ServoDeviceHierarchy()
     root_servos = hierarchy.get_cluster_root_servos()
@@ -237,7 +236,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_cluster_root_servos_no_root_servos(self):
     """get_cluster_root_servos is [] if no root devices are in a cluster."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     root_servos = hierarchy.get_cluster_root_servos()
@@ -246,11 +245,11 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_cluster_non_root_servos(self):
     """get_cluster_non_root_servos returns all non_root_servos devices in a cluster."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_2_attrs)
     hierarchy = ServoDeviceHierarchy()
     non_root_servos = hierarchy.get_cluster_non_root_servos()
@@ -261,7 +260,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_cluster_non_root_servos_empty(self):
     """get_cluster_non_root_servos is [] if no non_root_servos devices are in a cluster."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     non_root_servos = hierarchy.get_cluster_non_root_servos()
@@ -269,9 +268,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_solo_devices(self):
     """get_solo_devices returns all solo devices."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     solo_devs = hierarchy.get_solo_devices()
@@ -282,9 +281,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_get_solo_devices_empty(self):
     """get_solo_devices is [] if no solo devices are found."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
     hierarchy = ServoDeviceHierarchy()
     solo_devs = hierarchy.get_solo_devices()
@@ -292,9 +291,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_init_2_level_hub_servo(self):
     """__init__ should work fine with a hub servo hanging on another hub servo."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
     hierarchy = ServoDeviceHierarchy()
     devid = self.get_attrs_id(self._root_servo_dev_attrs)
@@ -306,11 +305,11 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_init_too_many_level_cluster(self):
     """__init__ should ban setting up a cluster with more than 2 levels."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_4_attrs)
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
                                 'Currently servod does not support chaining '
@@ -571,6 +570,39 @@ class TestServoDeviceEntry(unittest.TestCase):
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
                                 'corresponds to 2 ServoDeviceEntry'):
       test_entry.validate_entry_uniqueness(test_entry2)
+
+def AddFakeUsbEntry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
+                    busnum=None, serial=None, vid=None, pid=None):
+  """Helper to add a fake sysfs-like device file for a usb device.
+
+  Args:
+    usb_devices_dir: directory mocking /sys/bus/usb/devices
+    hub_port_path: the 'x.x.x' port path of the device on the root hub
+    root_hub: the usb root hub number
+    devnum: content for the dev-num file. File not created if ommited
+    busnum: content for the bus-num file. File not created if ommited
+    serial: content for the serial file. File not created if ommited
+    vid: content for the idVendor file. File not created if ommited
+    pid: content for the idProduct file. File not created if ommited
+
+  Returns:
+    devdir: directory in |usb_devices_dir| that was created
+  """
+  dev_dir_path = '%d-%s' % (root_hub, hub_port_path)
+  dev_dir_path_full = os.path.join(usb_devices_dir, dev_dir_path)
+  # Create the fake device path entry
+  os.mkdir(dev_dir_path_full)
+  # Create a file for each attribute that is present
+  for attr, attr_file, fmt in [(devnum, UsbHierarchy.DEV_FILE, 'd'),
+                               (busnum, UsbHierarchy.BUS_FILE, 'd'),
+                               (vid, UsbHierarchy.VID_FILE, 'x'),
+                               (pid, UsbHierarchy.PID_FILE, 'x'),
+                               (serial, UsbHierarchy.SERIAL_FILE, 's')]:
+    if attr:
+      attr_path = os.path.join(dev_dir_path_full, attr_file)
+      with open(attr_path, 'w') as f:
+        f.write(format(attr, fmt))
+  return dev_dir_path_full
 
 if __name__ == '__main__':
   unittest.main()

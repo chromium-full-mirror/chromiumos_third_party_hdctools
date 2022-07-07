@@ -241,9 +241,7 @@ class ServoV4PostInit(BasePostInit):
             self._logger.info('EC board requiring relocation: %s', board)
             self._logger.info('Move the servo interfaces from %d to %d',
                               default_slot, new_slot)
-            self.servod.set_servo_interfaces(new_slot,
-                                             self.servod.get_servo_interfaces(
-                                                 default_slot, slot_size))
+            self.servod.set_servo_interfaces(new_slot, backup_interfaces)
             # Restore the original interfaces.
             self.servod.set_servo_interfaces(default_slot, backup_interfaces)
             # Interfaces change; clear the cached.
