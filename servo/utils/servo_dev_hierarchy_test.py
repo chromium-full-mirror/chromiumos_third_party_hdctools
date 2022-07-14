@@ -317,6 +317,164 @@ class TestServoDeviceHierarchy(unittest.TestCase):
                                 '3 or more levels of servo devices'):
       hierarchy = ServoDeviceHierarchy()
 
+  def test_generate_device_priority_no_main(self):
+    """Generate device priority for a list of device entries without a user chosen main device."""
+    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
+                                   pid=dev_templates.C2d2.PID,
+                                   serial='s', dev_path='1-2-3')
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
+                                    pid=dev_templates.CcdCr50.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
+                                    pid=dev_templates.CcdTi50.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
+                                    pid=dev_templates.ServoV2.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
+                                    pid=dev_templates.Sweetberry.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry8.cluster_root = test_entry8
+
+    test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
+      test_entry5, test_entry6, test_entry7, test_entry8]
+    prioritized_devs = ServoDeviceHierarchy.generate_device_priority(test_entries)
+    assert 5 == len(prioritized_devs)
+    assert not prioritized_devs[0]
+    assert 3 == len(prioritized_devs[1])
+    assert test_entry in prioritized_devs[1]
+    assert test_entry2 in prioritized_devs[1]
+    assert test_entry5 in prioritized_devs[1]
+    assert 2 == len(prioritized_devs[2])
+    assert test_entry3 in prioritized_devs[2]
+    assert test_entry4 in prioritized_devs[2]
+    assert 2 == len(prioritized_devs[3])
+    assert test_entry6 in prioritized_devs[3]
+    assert test_entry7 in prioritized_devs[3]
+    assert 1 == len(prioritized_devs[4])
+    assert test_entry8 in prioritized_devs[4]
+
+  def test_generate_device_priority_non_root_main(self):
+    """Generate device priority for a list of device entries with a user chosen main device.
+    The user chosen main device is not a cluster root.
+    """
+    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
+                                   pid=dev_templates.C2d2.PID,
+                                   serial='s', dev_path='1-2-3')
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
+                                    pid=dev_templates.CcdCr50.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
+                                    pid=dev_templates.CcdTi50.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
+                                    pid=dev_templates.ServoV2.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
+                                    pid=dev_templates.Sweetberry.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry8.cluster_root = test_entry8
+    test_entry7.devopts.prefix = ''
+
+    test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
+      test_entry5, test_entry6, test_entry7, test_entry8]
+    prioritized_devs = ServoDeviceHierarchy.generate_device_priority(test_entries)
+    assert 5 == len(prioritized_devs)
+    assert 1 == len(prioritized_devs[0])
+    assert test_entry7 in prioritized_devs[0]
+    assert 3 == len(prioritized_devs[1])
+    assert test_entry in prioritized_devs[1]
+    assert test_entry2 in prioritized_devs[1]
+    assert test_entry5 in prioritized_devs[1]
+    assert 2 == len(prioritized_devs[2])
+    assert test_entry3 in prioritized_devs[2]
+    assert test_entry4 in prioritized_devs[2]
+    assert 1 == len(prioritized_devs[3])
+    assert test_entry6 in prioritized_devs[3]
+    assert 1 == len(prioritized_devs[4])
+    assert test_entry8 in prioritized_devs[4]
+
+  def test_generate_device_priority_root_main(self):
+    """Generate device priority for a list of device entries with a user chosen main device.
+    The user chosen main device is a cluster root.
+    """
+    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
+                                   pid=dev_templates.C2d2.PID,
+                                   serial='s', dev_path='1-2-3')
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
+                                    pid=dev_templates.CcdCr50.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
+                                    pid=dev_templates.CcdTi50.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
+                                    pid=dev_templates.ServoV2.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
+                                    pid=dev_templates.Sweetberry.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry7.cluster_root = test_entry7
+    test_entry7.devopts.prefix = 'main'
+    test_entry7.cluster_members = [test_entry7, test_entry6]
+    test_entry8.cluster_root = test_entry8
+    test_entry8.devopts.prefix = ''
+    test_entry8.cluster_members = [test_entry, test_entry2, test_entry3]
+
+    test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
+      test_entry5, test_entry6, test_entry7, test_entry8]
+    prioritized_devs = ServoDeviceHierarchy.generate_device_priority(test_entries)
+    assert 5 == len(prioritized_devs)
+    assert 3 == len(prioritized_devs[0])
+    assert test_entry in prioritized_devs[0]
+    assert test_entry2 in prioritized_devs[0]
+    assert test_entry6 in prioritized_devs[0]
+    assert 1 == len(prioritized_devs[1])
+    assert test_entry5 in prioritized_devs[1]
+    assert 2 == len(prioritized_devs[2])
+    assert test_entry3 in prioritized_devs[2]
+    assert test_entry4 in prioritized_devs[2]
+    assert not prioritized_devs[3]
+    assert 2 == len(prioritized_devs[4])
+    assert test_entry7 in prioritized_devs[4]
+    assert test_entry8 in prioritized_devs[4]
+
+  def test_most_prioritized_devices(self):
+    """Given a list of device entries with priority, return the list of devices with the highest priority."""
+    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    prioritized_devs = [[], [], [], [], [test_entry], []]
+    most_prirotized_devs = ServoDeviceHierarchy.most_prirotized_devices(prioritized_devs)
+    assert 1 == len(most_prirotized_devs)
+    assert test_entry in most_prirotized_devs
+
 class TestServoDeviceEntry(unittest.TestCase):
   """Test ServoDeviceEntry class logic."""
 
@@ -413,164 +571,6 @@ class TestServoDeviceEntry(unittest.TestCase):
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
                                 'corresponds to 2 ServoDeviceEntry'):
       test_entry.validate_entry_uniqueness(test_entry2)
-
-  def test_generate_device_priority_no_main(self):
-    """Generate device priority for a list of device entries without a user chosen main device."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
-                                   serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
-                                   serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                    pid=dev_templates.CcdCr50.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
-                                    pid=dev_templates.CcdTi50.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
-                                    pid=dev_templates.ServoV2.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                    pid=dev_templates.Sweetberry.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry8.cluster_root = test_entry8
-
-    test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
-      test_entry5, test_entry6, test_entry7, test_entry8]
-    prioritized_devs = ServoDeviceEntry.generate_device_priority(test_entries)
-    assert 5 == len(prioritized_devs)
-    assert not prioritized_devs[0]
-    assert 3 == len(prioritized_devs[1])
-    assert test_entry in prioritized_devs[1]
-    assert test_entry2 in prioritized_devs[1]
-    assert test_entry5 in prioritized_devs[1]
-    assert 2 == len(prioritized_devs[2])
-    assert test_entry3 in prioritized_devs[2]
-    assert test_entry4 in prioritized_devs[2]
-    assert 2 == len(prioritized_devs[3])
-    assert test_entry6 in prioritized_devs[3]
-    assert test_entry7 in prioritized_devs[3]
-    assert 1 == len(prioritized_devs[4])
-    assert test_entry8 in prioritized_devs[4]
-
-  def test_generate_device_priority_non_root_main(self):
-    """Generate device priority for a list of device entries with a user chosen main device.
-    The user chosen main device is not a cluster root.
-    """
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
-                                   serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
-                                   serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                    pid=dev_templates.CcdCr50.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
-                                    pid=dev_templates.CcdTi50.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
-                                    pid=dev_templates.ServoV2.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                    pid=dev_templates.Sweetberry.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry8.cluster_root = test_entry8
-    test_entry7.devopts.prefix = ''
-
-    test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
-      test_entry5, test_entry6, test_entry7, test_entry8]
-    prioritized_devs = ServoDeviceEntry.generate_device_priority(test_entries)
-    assert 5 == len(prioritized_devs)
-    assert 1 == len(prioritized_devs[0])
-    assert test_entry7 in prioritized_devs[0]
-    assert 3 == len(prioritized_devs[1])
-    assert test_entry in prioritized_devs[1]
-    assert test_entry2 in prioritized_devs[1]
-    assert test_entry5 in prioritized_devs[1]
-    assert 2 == len(prioritized_devs[2])
-    assert test_entry3 in prioritized_devs[2]
-    assert test_entry4 in prioritized_devs[2]
-    assert 1 == len(prioritized_devs[3])
-    assert test_entry6 in prioritized_devs[3]
-    assert 1 == len(prioritized_devs[4])
-    assert test_entry8 in prioritized_devs[4]
-
-  def test_generate_device_priority_root_main(self):
-    """Generate device priority for a list of device entries with a user chosen main device.
-    The user chosen main device is a cluster root.
-    """
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
-                                   serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
-                                   serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                    pid=dev_templates.CcdCr50.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
-                                    pid=dev_templates.CcdTi50.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
-                                    pid=dev_templates.ServoV2.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                    pid=dev_templates.Sweetberry.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry7.cluster_root = test_entry7
-    test_entry7.devopts.prefix = 'main'
-    test_entry7.cluster_members = [test_entry7, test_entry6]
-    test_entry8.cluster_root = test_entry8
-    test_entry8.devopts.prefix = ''
-    test_entry8.cluster_members = [test_entry, test_entry2, test_entry3]
-
-    test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
-      test_entry5, test_entry6, test_entry7, test_entry8]
-    prioritized_devs = ServoDeviceEntry.generate_device_priority(test_entries)
-    assert 5 == len(prioritized_devs)
-    assert 3 == len(prioritized_devs[0])
-    assert test_entry in prioritized_devs[0]
-    assert test_entry2 in prioritized_devs[0]
-    assert test_entry6 in prioritized_devs[0]
-    assert 1 == len(prioritized_devs[1])
-    assert test_entry5 in prioritized_devs[1]
-    assert 2 == len(prioritized_devs[2])
-    assert test_entry3 in prioritized_devs[2]
-    assert test_entry4 in prioritized_devs[2]
-    assert not prioritized_devs[3]
-    assert 2 == len(prioritized_devs[4])
-    assert test_entry7 in prioritized_devs[4]
-    assert test_entry8 in prioritized_devs[4]
-
-  def test_most_prioritized_devices(self):
-    """Given a list of device entries with priority, return the list of devices with the highest priority."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
-                                   serial='s', dev_path='a-b-c')
-    prioritized_devs = [[], [], [], [], [test_entry], []]
-    most_prirotized_devs = ServoDeviceEntry.most_prirotized_devices(prioritized_devs)
-    assert 1 == len(most_prirotized_devs)
-    assert test_entry in most_prirotized_devs
 
 if __name__ == '__main__':
   unittest.main()

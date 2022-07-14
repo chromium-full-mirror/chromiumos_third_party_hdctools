@@ -445,17 +445,18 @@ class ServodStarter(object):
     # to find other devices plugged into the hub servo
     options.prefix = ''
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
+    finder = servo_dev_finder.ServoDeviceFinder([options], dev_hierarchy, self._scratchutil)
     self._logger.debug('cluster root devices: %s', dev_hierarchy.get_cluster_root_servos())
     self._logger.debug('cluster non root devices: %s', dev_hierarchy.get_cluster_non_root_servos())
     self._logger.debug('cluster solo devices: %s', dev_hierarchy.get_solo_devices())
     self._logger.debug('complete servod device list without complete cluster: %s',
-      servo_dev_finder.complete_servod_device_list([options], dev_hierarchy, False))
-    complete_dev_list = servo_dev_finder.complete_servod_device_list([options], dev_hierarchy)
+      finder.discover_servos(False))
+    complete_dev_list = finder.discover_servos()
     self._logger.debug('complete servod device list')
     for dev in complete_dev_list:
       self._logger.debug('%s: %s', dev, dev.devopts)
     self._logger.debug('main device priority: %s',
-      servo_dev_hierarchy.ServoDeviceEntry.generate_device_priority(complete_dev_list))
+      dev_hierarchy.generate_device_priority(complete_dev_list))
 
     vendor, product, serialname = (options.vendor, options.product,
                                    options.serialname)

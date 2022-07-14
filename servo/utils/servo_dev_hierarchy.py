@@ -77,8 +77,8 @@ class ServoDeviceEntry(object):
     return str(self)
 
   def __str__(self):
-    return '[%s (%04x:%04x) %s on %s]' % (self.dev_template.TYPE, self.vid, self.pid,
-      self.serial, self.dev_path)
+    return '[%s (%04x:%04x) %s]' % (self.dev_template.TYPE, self.vid, self.pid,
+      self.serial)
 
   def set_cluster_root(self, root_servo):
     """Set root_servo to be this device's cluster's root servo.
@@ -200,88 +200,6 @@ class ServoDeviceEntry(object):
       and self.serial == other_entry.serial:
       raise ServoDeviceHierarchyError('Device (%04x:%04x) %s corresponds to 2 ServoDeviceEntry.'
                                        % (self.vid, self.pid, self.serial))
-
-  @staticmethod
-  def generate_device_priority(devices):
-    """Generate the priority for each device to be the targeting device.
-
-    Each device gets an integer as the priority to be the targeting device.
-    A higher priority indicates that the device is
-    (1) more likely to be the main device that by default handles all requests to servod
-    (2) more likely to be the device targeted by the user when they only provide partial
-        information for selecting a device
-
-    Currently priority is decided in the following way:
-    0: the device chosen to be the main device in the commandline. If the main device
-       chosen by the user is a cluster root, then we substitute with the device with
-      the highest priority in the cluster.
-    1: Debug header servos, e.g. Servo Micro, C2D2, Servo V2
-    2: CCD DUT controllers, e.g. CCD CR50, CCD TI50
-    3: non-dut-controller non-cluster-root devices, e.g. Sweetberry
-    4: cluster-root devices, e.g. a cluster-root Servo V4
-
-    Args:
-      devices: A list of ServoDeviceEntry.
-
-    Returns:
-      A list of lists representing the priority of each given device. The list index
-      indicates the priority for a device to be the main device.
-      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], [],
-                ["sweetberry"], ["servo v4"]]
-              - list[0] is empty as the user does not specify a main device in the
-              command line.
-              - list[1] has 2 entries "servo micro 1" and "servo micro 2", so they
-              share the highest priority to be the main device. We will let the user
-              decide which one is the main device through an interactive menu.
-              - list[2] only contains "sweetberry". Its priority to be the main device
-              is lower than ccd_cr50 and higher than servo v4.
-              - list[3] only contains "servo v4". Its priority to be the main device
-              is the lowest.
-    """
-    prioritized_devs = [[], [], [], [], []]
-    user_chosen_main_roots = []
-    for device in devices:
-      if hasattr(device.devopts, 'prefix') and \
-        device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
-        if device.is_cluster_root():
-          user_chosen_main_roots.append(device)
-        else:
-          prioritized_devs[PRIORITY_MAIN_DEV].append(device)
-      elif device.dev_template.TYPE in servo_dev_templates.DEBUG_HEADER_SERVO_TYPES:
-        prioritized_devs[PRIORITY_DEBUG_HEADER_SERVO].append(device)
-      elif device.dev_template.TYPE in servo_dev_templates.CCD_SERVO_TYPES:
-        prioritized_devs[PRIORITY_CCD_SERVO].append(device)
-      elif device.is_cluster_root():
-        prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(device)
-      else:
-        prioritized_devs[PRIORITY_DEFAULT].append(device)
-
-    # Do substitution if the main device chosen by the user is a cluster root
-    for root in user_chosen_main_roots:
-      for idx in range(1, len(prioritized_devs)):
-        root_children = [dev for dev in prioritized_devs[idx] if dev in root.cluster_members]
-        if root_children:
-          prioritized_devs[PRIORITY_MAIN_DEV].extend(root_children)
-          prioritized_devs[idx] = [dev for dev in prioritized_devs[idx] if dev not in root_children]
-          prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(root)
-          break
-    return prioritized_devs
-
-  @staticmethod
-  def most_prirotized_devices(prioritized_devs):
-    """Choose the devices with the highest priority from generate_device_priority.
-
-    Args:
-      prioritized_devs: A list of lists representing the priority of devices. The list index
-        indicates the priority for a device to be the main device.
-
-    Returns:
-      A list representing the devices with the highest priority.
-    """
-    for level in prioritized_devs:
-      if level:
-        return level
-    return []
 
 class ServoDeviceHierarchy(object):
   """A usb hierarchy of servo devices.
@@ -439,3 +357,85 @@ class ServoDeviceHierarchy(object):
   def get_solo_devices(self):
     """Return all devices on the system that are not part of a cluster."""
     return self._solo_devices.values()
+
+  @staticmethod
+  def generate_device_priority(devices):
+    """Generate the priority for each device to be the targeting device.
+
+    Each device gets an integer as the priority to be the targeting device.
+    A higher priority indicates that the device is
+    (1) more likely to be the main device that by default handles all requests to servod
+    (2) more likely to be the device targeted by the user when they only provide partial
+        information for selecting a device
+
+    Currently priority is decided in the following way:
+    0: the device chosen to be the main device in the commandline. If the main device
+       chosen by the user is a cluster root, then we substitute with the device with
+      the highest priority in the cluster.
+    1: Debug header servos, e.g. Servo Micro, C2D2, Servo V2
+    2: CCD DUT controllers, e.g. CCD CR50, CCD TI50
+    3: non-dut-controller non-cluster-root devices, e.g. Sweetberry
+    4: cluster-root devices, e.g. a cluster-root Servo V4
+
+    Args:
+      devices: A list of ServoDeviceEntry.
+
+    Returns:
+      A list of lists representing the priority of each given device. The list index
+      indicates the priority for a device to be the main device.
+      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], [],
+                ["sweetberry"], ["servo v4"]]
+              - list[0] is empty as the user does not specify a main device in the
+              command line.
+              - list[1] has 2 entries "servo micro 1" and "servo micro 2", so they
+              share the highest priority to be the main device. We will let the user
+              decide which one is the main device through an interactive menu.
+              - list[2] only contains "sweetberry". Its priority to be the main device
+              is lower than ccd_cr50 and higher than servo v4.
+              - list[3] only contains "servo v4". Its priority to be the main device
+              is the lowest.
+    """
+    prioritized_devs = [[], [], [], [], []]
+    user_chosen_main_roots = []
+    for device in devices:
+      if hasattr(device.devopts, 'prefix') and \
+        device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+        if device.is_cluster_root():
+          user_chosen_main_roots.append(device)
+        else:
+          prioritized_devs[PRIORITY_MAIN_DEV].append(device)
+      elif device.dev_template.TYPE in servo_dev_templates.DEBUG_HEADER_SERVO_TYPES:
+        prioritized_devs[PRIORITY_DEBUG_HEADER_SERVO].append(device)
+      elif device.dev_template.TYPE in servo_dev_templates.CCD_SERVO_TYPES:
+        prioritized_devs[PRIORITY_CCD_SERVO].append(device)
+      elif device.is_cluster_root():
+        prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(device)
+      else:
+        prioritized_devs[PRIORITY_DEFAULT].append(device)
+
+    # Do substitution if the main device chosen by the user is a cluster root
+    for root in user_chosen_main_roots:
+      for idx in range(1, len(prioritized_devs)):
+        root_children = [dev for dev in prioritized_devs[idx] if dev in root.cluster_members]
+        if root_children:
+          prioritized_devs[PRIORITY_MAIN_DEV].extend(root_children)
+          prioritized_devs[idx] = [dev for dev in prioritized_devs[idx] if dev not in root_children]
+          prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(root)
+          break
+    return prioritized_devs
+
+  @staticmethod
+  def most_prirotized_devices(prioritized_devs):
+    """Choose the devices with the highest priority from generate_device_priority.
+
+    Args:
+      prioritized_devs: A list of lists representing the priority of devices. The list index
+        indicates the priority for a device to be the main device.
+
+    Returns:
+      A list representing the devices with the highest priority.
+    """
+    for level in prioritized_devs:
+      if level:
+        return level
+    return []

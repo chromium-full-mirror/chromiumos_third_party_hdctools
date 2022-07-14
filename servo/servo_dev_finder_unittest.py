@@ -73,7 +73,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     UsbHierarchy.RestoreDefaultUsbSysfsPathForTest()
     unittest.TestCase.tearDown(self)
 
-  def test_complete_servod_device_list_complete_cluster(self):
+  def test_discover_servos_complete_cluster(self):
     """Test servod device list is completed and the device does not contain partial clusters."""
     TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
@@ -86,13 +86,14 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = None
     devopts.product = None
     devopts.serialname = None
-    entries = dev_finder.complete_servod_device_list([devopts], hierarchy, True)
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None)
+    entries = finder.discover_servos(True)
     assert 3 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_1_attrs,
                   self._non_root_servo_dev_3_attrs]:
       assert TestServoDeviceHierarchy.attrs_in_entries(attrs, entries)
 
-  def test_complete_servod_device_list_incomplete_cluster(self):
+  def test_discover_servos_incomplete_cluster(self):
     """Test servod device list is completed and the device does not contain partial clusters."""
     TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
@@ -107,12 +108,13 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = dev_templates.ServoMicro.VID
     devopts.product = dev_templates.ServoMicro.PID
     devopts.serialname = None
-    entries = dev_finder.complete_servod_device_list([devopts], hierarchy, False)
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None)
+    entries = finder.discover_servos(False)
     assert 2 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_1_attrs]:
       assert TestServoDeviceHierarchy.attrs_in_entries(attrs, entries)
 
-  def test_complete_servod_device_list_solo_device(self):
+  def test_discover_servos_solo_device(self):
     """Test servod device list is completed and the device does not contain partial clusters."""
     TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
@@ -127,11 +129,12 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = dev_templates.ServoV2.VID
     devopts.product = dev_templates.ServoV2.PID
     devopts.serialname = None
-    entries = dev_finder.complete_servod_device_list([devopts], hierarchy, False)
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None)
+    entries = finder.discover_servos(False)
     assert 1 == len(entries)
     assert TestServoDeviceHierarchy.attrs_belong_to_entry(self._solo_dev_attrs, entries[0])
 
-  def test_complete_servod_device_list_multiple_devices(self):
+  def test_discover_servos_multiple_devices(self):
     """Test servod device list is completed and the device does not contain partial clusters."""
     TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
@@ -144,19 +147,21 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = None
     devopts.product = None
     devopts.serialname = None
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None)
     with self.assertRaises(SystemExit) as cm:
-      entries = dev_finder.complete_servod_device_list([devopts], hierarchy, True)
+      entries = finder.discover_servos(True)
     self.assertEqual(cm.exception.code, 1)
 
-  def test_complete_servod_device_list_no_device(self):
+  def test_discover_servos_no_device(self):
     """Test servod device list is completed and the device does not contain partial clusters."""
     hierarchy = ServoDeviceHierarchy()
     devopts = servo_parsing.empty_devopts()
     devopts.vendor = None
     devopts.product = None
     devopts.serialname = None
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None)
     with self.assertRaises(SystemExit) as cm:
-      entries = dev_finder.complete_servod_device_list([devopts], hierarchy, True)
+      entries = finder.discover_servos(True)
     self.assertEqual(cm.exception.code, 1)
 
 if __name__ == '__main__':

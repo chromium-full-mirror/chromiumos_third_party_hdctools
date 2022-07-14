@@ -297,7 +297,7 @@ class ServoV4PostInit(BasePostInit):
             ccd_pos = servo_interfaces.SERVO_V4_SLOT_POSITIONS['secondary_ccd']
             ccd_shift = ccd_pos - 1
             # Cache the previous hwinit, ccd controls should not be hwinit.
-            cached_hwinit = copy.copy(self.servod._syscfg.hwinit)
+            cached_hwinit = copy.copy(self.servo._syscfg.hwinit)
             self.servo._syscfg.add_cfg_file(servo_type.cfg_file_name,
                                              interface_increment=ccd_shift,
                                              name_prefix=ccd_prefix)
