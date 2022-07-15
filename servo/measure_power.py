@@ -19,7 +19,9 @@ SAMPLE_TIME_KEY = 'Sample_msecs'
 DEFAULT_VBAT_RATE = 60
 # Default sample rate to query accumulator ADCs. Since these support
 # accumulation and averaging, they can be queried less frequently.
-DEFAULT_ADC_ACCUM_RATE = 60
+# b/238674542: Make accum rate more aggressive to secure at least one sample
+# for an 1-minute measurement cycle.
+DEFAULT_ADC_ACCUM_RATE = 30
 # Default sample rate to query ADCs for power consumption
 DEFAULT_ADC_RATE = 1
 
