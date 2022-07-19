@@ -19,8 +19,9 @@ from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
 PRIORITY_MAIN_DEV = 0
 PRIORITY_DEBUG_HEADER_SERVO = 1
 PRIORITY_CCD_SERVO = 2
-PRIORITY_DEFAULT = 3
-PRIORITY_CLUSTER_ROOT_DEV = 4
+PRIORITY_DUT_CONTROLLER_DEFAULT = 3
+PRIORITY_DEFAULT = 4
+PRIORITY_CLUSTER_ROOT_DEV = 5
 
 class ServoDeviceHierarchyError(Exception):
   """ServoDeviceHierarchy error class."""
@@ -374,8 +375,9 @@ class ServoDeviceHierarchy(object):
       the highest priority in the cluster.
     1: Debug header servos, e.g. Servo Micro, C2D2, Servo V2
     2: CCD DUT controllers, e.g. CCD CR50, CCD TI50
-    3: non-dut-controller non-cluster-root devices, e.g. Sweetberry
-    4: cluster-root devices, e.g. a cluster-root Servo V4
+    3. Other DUT controllers, e.g. Servo V3
+    4: non-dut-controller non-cluster-root devices, e.g. Sweetberry
+    5: cluster-root devices, e.g. a cluster-root Servo V4
 
     Args:
       devices: A list of ServoDeviceEntry.
@@ -383,19 +385,24 @@ class ServoDeviceHierarchy(object):
     Returns:
       A list of lists representing the priority of each given device. The list index
       indicates the priority for a device to be the main device.
-      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], [],
+      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], ["servo v3"],
                 ["sweetberry"], ["servo v4"]]
               - list[0] is empty as the user does not specify a main device in the
               command line.
               - list[1] has 2 entries "servo micro 1" and "servo micro 2", so they
               share the highest priority to be the main device. We will let the user
               decide which one is the main device through an interactive menu.
-              - list[2] only contains "sweetberry". Its priority to be the main device
-              is lower than ccd_cr50 and higher than servo v4.
-              - list[3] only contains "servo v4". Its priority to be the main device
+              - list[2] only contains "c2d2". Its priority to be the main device is lower
+              than the debug headers but higher than other dut controllers.
+              - list[3] only contains "servo v3". Its priority to be the main device is
+              the lowest among all dut controllers.
+              - list[4] only contains "sweetberry". Its priority to be the main device
+              is lower than all dut controllers and higher than the cluster root hub
+              servo v4.
+              - list[5] only contains "servo v4". Its priority to be the main device
               is the lowest.
     """
-    prioritized_devs = [[], [], [], [], []]
+    prioritized_devs = [[], [], [], [], [], []]
     user_chosen_main_roots = []
     for device in devices:
       if device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
@@ -407,6 +414,8 @@ class ServoDeviceHierarchy(object):
         prioritized_devs[PRIORITY_DEBUG_HEADER_SERVO].append(device)
       elif device.dev_template.TYPE in servo_dev_templates.CCD_SERVO_TYPES:
         prioritized_devs[PRIORITY_CCD_SERVO].append(device)
+      elif device.dev_template.DUT_CONTROLLER:
+        prioritized_devs[PRIORITY_DUT_CONTROLLER_DEFAULT].append(device)
       elif device.is_cluster_root():
         prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(device)
       else:

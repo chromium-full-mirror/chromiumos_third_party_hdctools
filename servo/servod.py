@@ -137,6 +137,7 @@ class ServodStarter(object):
       servo_devs = finder.discover_servos()
       main_dev = finder.choose_main_device(servo_devs)
       finder.generate_prefixes(servo_devs, main_dev)
+      finder.validate_devopts(servo_devs)
     except servo_dev_finder.ServoDeviceFinderError as e:
       self._logger.fatal("Failure during discovering servo devices: %s", e)
       sys.exit(-1)
