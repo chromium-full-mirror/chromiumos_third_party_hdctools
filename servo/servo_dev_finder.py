@@ -249,3 +249,40 @@ class ServoDeviceFinder(object):
     logging.info('Chose %d ... device %s', rsp, dev)
     logging.info('')
     return dev
+
+  def generate_prefixes(self, devs, main_dev):
+    """Generate a prefix for the device if it does not have one.
+
+    Args:
+      devs: a list of ServoDeviceEntry devices
+    """
+    known_prefixes = set()
+    devs_without_prefix = []
+    for dev in devs:
+      if dev == main_dev:
+        dev.devopts.prefix = servo_dev_templates.MAIN_DEV_PREFIX
+        known_prefixes.update(servo_dev_templates.MAIN_DEV_PREFIXES)
+        self._logger.debug('Device %s is the main device and is given prefix %s',
+            dev, servo_dev_templates.MAIN_DEV_PREFIXES)
+      else:
+        if dev.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+          dev.devopts.prefix = None
+        if dev.devopts.prefix:
+          known_prefixes.add(dev.devopts.prefix)
+          self._logger.debug('Device %s is given prefix %s during invocation',
+            dev, dev.devopts.prefix)
+        else:
+          devs_without_prefix.append(dev)
+    # auto generate prefix use device type and the last 4 digit of serial
+    for dev in devs_without_prefix:
+      prefix = '%s-%s' % (dev.dev_template.TYPE, dev.serial[-4:])
+      if prefix not in known_prefixes:
+        dev.devopts.prefix = prefix
+      else:
+        suffix = 2
+        while ('%s-%s' % (prefix, suffix)) in known_prefixes:
+          suffix += 1
+        dev.devopts.prefix = '%s-%s' % (prefix, suffix)
+      known_prefixes.add(dev.devopts.prefix)
+      self._logger.debug('Device %s is given prefix %s which is automatically generated',
+        dev, dev.devopts.prefix)

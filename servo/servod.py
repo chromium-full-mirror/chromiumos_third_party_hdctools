@@ -136,6 +136,7 @@ class ServodStarter(object):
     try:
       servo_devs = finder.discover_servos()
       main_dev = finder.choose_main_device(servo_devs)
+      finder.generate_prefixes(servo_devs, main_dev)
     except servo_dev_finder.ServoDeviceFinderError as e:
       self._logger.fatal("Failure during discovering servo devices: %s", e)
       sys.exit(-1)
@@ -144,6 +145,7 @@ class ServodStarter(object):
     #                below is a temporary hack that works for current servo_postinit
     if main_dev.cluster_root and main_dev.dev_template.DUT_CONTROLLER:
       servo_device = main_dev.cluster_root
+      servo_device.devopts.prefix = servo_dev_templates.MAIN_DEV_PREFIX
     else:
       servo_device = main_dev
     devopts = devopts_list[0]
@@ -209,7 +211,7 @@ class ServodStarter(object):
     self._servod = servo_server.Servod(usbkm232=devopts.usbkm232)
     template = servo_dev_templates.GetTemplateClass(vid=vid, pid=pid, serial=serial)
     main_servo_dev = servo_dev.ServoDevice(template=template, config=scfg,
-      name=servo_dev_templates.MAIN_DEV_PREFIX, serialname=serial,
+      name=servo_device.devopts.prefix, serialname=serial,
       interfaces=devopts.interfaces.split(), board=devopts.board, model=devopts.model,
       version=board_version, servod=weakref.proxy(self._servod))
 

@@ -323,6 +323,61 @@ class TestServoDeviceFinder(unittest.TestCase):
       'No device is picked as the main device'):
       main = finder.choose_main_device(devs)
 
+  def test_generate_prefixes_main_device(self):
+    """Test generate_prefixes generate correct prefixes for the main device and non-main devices."""
+    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                   pid=dev_templates.ServoV4.PID,
+                                   serial='s', dev_path='1-2-3')
+    devs = [test_entry, test_entry2]
+    hierarchy = ServoDeviceHierarchy()
+    devopts = servo_parsing.empty_devopts()
+    devopts.vendor = None
+    devopts.product = None
+    devopts.serialname = None
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None, self._dummy_choose_device)
+    test_entry.devopts.prefix = None
+    test_entry2.devopts.prefix = dev_templates.MAIN_DEV_PREFIX
+
+    finder.generate_prefixes(devs, test_entry)
+    assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
+    assert test_entry2.devopts.prefix == 'servo_v4-s'
+
+  def test_generate_prefixes_auto_generation(self):
+    """Test generate_prefixes auto generate prefixes for devices."""
+    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
+                                   pid=dev_templates.ServoMicro.PID,
+                                   serial='s', dev_path='a-b-c')
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                   pid=dev_templates.ServoV4.PID,
+                                   serial='4321', dev_path='1-2-3')
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                   pid=dev_templates.ServoV4.PID,
+                                   serial='11234', dev_path='1-2-3')
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                   pid=dev_templates.ServoV4.PID,
+                                   serial='21234', dev_path='1-2-3')
+    devs = [test_entry, test_entry2, test_entry3, test_entry4, test_entry5]
+    hierarchy = ServoDeviceHierarchy()
+    devopts = servo_parsing.empty_devopts()
+    devopts.vendor = None
+    devopts.product = None
+    devopts.serialname = None
+    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, None, self._dummy_choose_device)
+    test_entry3.devopts.prefix = 'servo_v4-1234'
+
+    finder.generate_prefixes(devs, test_entry)
+    assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
+    assert test_entry2.devopts.prefix == 'servo_micro-s'
+    assert test_entry3.devopts.prefix == 'servo_v4-1234'
+    assert test_entry4.devopts.prefix == 'servo_v4-1234-2'
+    assert test_entry5.devopts.prefix == 'servo_v4-1234-3'
+
 def AddFakeUsbEntry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
                     busnum=None, serial=None, vid=None, pid=None):
   """Helper to add a fake sysfs-like device file for a usb device.
