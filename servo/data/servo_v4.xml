@@ -123,7 +123,7 @@
   </control>
   <control>
     <name>servo_v4_type</name>
-    <alias>root.dut_connection_type</alias>
+    <alias>dut_connection_type</alias>
     <doc>DONGLE_DET</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
      name="DONGLE_DET" map="servo_v4_type_map"></params>
@@ -292,7 +292,7 @@
   <!-- firmware version introspection controls -->
   <control>
     <name>servo_v4_version</name>
-    <alias>root.servo_fw_version</alias>
+    <alias>servo_fw_version</alias>
     <doc>current fw version</doc>
     <params cmd="get" interface="26" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w\+-]+)[\n\r]" group="1" formatting="strip"
@@ -300,7 +300,7 @@
   </control>
   <control>
     <name>servo_v4_latest_stable_version</name>
-    <alias>servo_v4_latest_version,root.servo_latest_fw_version</alias>
+    <alias>servo_v4_latest_version,servo_latest_fw_version</alias>
     <doc>servo-firmware available fw version</doc>
     <params cmd="get" interface="servo" drv="servo_updater_reader"
       board="servo_v4" channel="stable"/>
@@ -405,7 +405,7 @@
   <!-- Servo V4 Console Automation Controls -->
   <control>
     <name>servo_v4_uart_cmd</name>
-    <alias>root.servo_uart_cmd</alias>
+    <alias>servo_uart_cmd</alias>
     <doc>Set to send command to the servo v4 console. Get to obtain the
     matched results with the regular expression of
     servo_v4_uart_regexp.</doc>

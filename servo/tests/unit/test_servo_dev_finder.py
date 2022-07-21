@@ -373,19 +373,6 @@ class TestServoDeviceFinder(unittest.TestCase):
     assert test_entry4.devopts.prefix == 'servo_v4-1234-2'
     assert test_entry5.devopts.prefix == 'servo_v4-1234-3'
 
-  @unittest.skip("The check of board on dut controller will be enabled after introducing board probing")
-  def test_validate_devopts_dut_controller_no_board(self):
-    """Test validate_devopts error out when a dut controller does not have a board."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
-                                   serial='s', dev_path='a-b-c')
-    hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(), self._dummy_choose_device)
-    with self.assertRaisesRegex(ServoDeviceFinderError,
-      'is a DUT controller but does not have its board specified'):
-      main = finder.validate_devopts([test_entry])
-
   def test_validate_devopts_no_prefix(self):
     """Test validate_devopts error out when a device does not have a prefix"""
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
@@ -395,19 +382,6 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts = servo_parsing.empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(), self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError, 'does not have a prefix'):
-      main = finder.validate_devopts([test_entry])
-
-  def test_validate_devopts_no_main_device(self):
-    """Test validate_devopts error out if there is no main device chosen."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
-                                   serial='s', dev_path='a-b-c')
-    test_entry.devopts.prefix = 'v4'
-    hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(), self._dummy_choose_device)
-    with self.assertRaisesRegex(ServoDeviceFinderError,
-      'No device is chosen as the main device'):
       main = finder.validate_devopts([test_entry])
 
   def test_validate_devopts_multiple_main_devices(self):

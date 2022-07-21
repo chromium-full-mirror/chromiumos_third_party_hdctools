@@ -39,8 +39,6 @@ class ServoDeviceEntry(object):
     dev_template: device template of the servo device
     cluster_root: the root servo of the cluster the device is currently
                   a part of
-    end_device: whether the servo device is a leaf of a cluster, i.e. has
-                no child servo devices plugged onto it
     hub_stub: stub of dev_path that up to and exluding the device's own port
               i.e. if the device is at 1-3.3.4 the stub would be 1-3.3
     cluster_members: the members in the cluster this device is currently a
@@ -68,11 +66,12 @@ class ServoDeviceEntry(object):
                                       'vid %s pid %s serial %s dev_path %s'
                                       % (vid, pid, serial, dev_path))
     self.cluster_root = None
-    self.end_device = True
     if self.dev_template.HUB_SERVO:
       self.cluster_members = None
       self.hub_stub = UsbHierarchy.GetSysfsParentHubStub(dev_path)
     self.devopts = servo_parsing.empty_devopts()
+    # This is used to hold a pointer to its own ServoDevice object
+    self.servo_device = None
 
   def __repr__(self):
     return str(self)
@@ -107,7 +106,6 @@ class ServoDeviceEntry(object):
     if not root_servo.is_cluster_root():
       root_servo.cluster_root = root_servo
       root_servo.cluster_members = [root_servo]
-      root_servo.end_device = False
     self.cluster_root = root_servo
     self.cluster_root.cluster_members.append(self)
 

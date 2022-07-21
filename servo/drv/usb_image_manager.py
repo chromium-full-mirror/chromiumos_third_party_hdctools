@@ -138,9 +138,10 @@ class usbImageManager(hw_driver.HwDriver):
     # Look for own servod usb device
     # pylint: disable=protected-access
     # Need servod information to find own servod instance.
-    usb_id = servod.get_main_device_id()
-    self_usb = usb_hierarchy.Hierarchy.GetUsbDeviceSysfsPath(*usb_id)
-    hub_on_servo = usb_hierarchy.Hierarchy.GetSysfsParentHubStub(self_usb)
+    hub_device = servod.get_root_device()
+    if not hub_device:
+      raise UsbImageManagerError('There is no USB hub device connected.')
+    hub_on_servo = hub_device.dev_entry.hub_stub
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
                                  self._image_usbkey_hub_ports]
@@ -176,7 +177,7 @@ class usbImageManager(hw_driver.HwDriver):
         if self._PathIsHub(active_storage_candidate):
           # Do not check the hub, only devices.
           continue
-        # Use /sys/block/ entries to see which block device is the |self_usb|.
+        # Use /sys/block/ entries to see which block device is the |hub_device|.
         # Use sd* to avoid querying any non-external block devices.
         for candidate in glob.glob('/sys/block/sd*'):
           # |candidate| is a link to a sys hw device file

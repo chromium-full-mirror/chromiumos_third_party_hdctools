@@ -18,6 +18,9 @@ MAIN_DEV_PREFIX = 'main'
 MAIN_DEV_PREFIX_ALIAS = ''
 MAIN_DEV_PREFIXES = [MAIN_DEV_PREFIX, MAIN_DEV_PREFIX_ALIAS]
 
+# The root hub device of the main device gets the prefix 'root'
+ROOT_DEV_PREFIX = 'root'
+
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP and SERVO_ID_DEFAULTS gets
 # populated on module import to keep a single source of truth about the device
 # information - their template classes.
@@ -104,8 +107,6 @@ class _ServoDevTemplate(object):
   DEFAULT_CONFIG = None
   # The type string of a servo device
   TYPE = 'unknown'
-  # The ServoDev class used for the servo device
-  DEV_CONSTRUCTOR = None
   # Whether a ServoDevice has a built-in USB hub for connectting other ServoDevices and DUT
   HUB_SERVO = False
   # Whether a ServoDevice can access DUTs consoles (EC, AP, etc)

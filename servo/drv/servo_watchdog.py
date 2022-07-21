@@ -42,22 +42,10 @@ class servoWatchdog(hw_driver.HwDriver):
 
   def _get_device_state(self, device):
     """String of the current device state."""
-    # The serial names and devices may be initialized in different orders.
-    # The name may not be set. Set it if it isn't set.
-    if not device.get_name():
-      self._set_device_name(device)
     connected_str = '' if device.is_connected() else 'dis'
     disconnect_ok_str = ' (disconnect ok)' if device.disconnect_is_ok() else ''
-    name = device.get_name()
+    name = device.get_prefix()
     return '%s: %sconnected%s' % (name, connected_str, disconnect_ok_str)
-
-  def _set_device_name(self, device):
-    """Set the device name to one of the serial keys."""
-    for name, serial in self._servod.get_servo_serials().items():
-      if serial in device.get_id():
-        device.set_name(name)
-        return
-    raise servoWatchdogError('%s not found in serialnames' % device)
 
   def _Get_watchdog(self):
     """Get the connected state of all devices."""

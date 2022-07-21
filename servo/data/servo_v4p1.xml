@@ -244,7 +244,7 @@
   <!-- firmware version introspection controls -->
   <control>
     <name>servo_v4p1_version</name>
-    <alias>root.servo_fw_version</alias>
+    <alias>servo_fw_version</alias>
     <doc>current fw version</doc>
     <params cmd="get" interface="26" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w\+-]+)[\n\r]" group="1" formatting="strip"
@@ -252,7 +252,7 @@
   </control>
   <control>
     <name>servo_v4p1_latest_stable_version</name>
-    <alias>servo_v4p1_latest_version,root.servo_latest_fw_version</alias>
+    <alias>servo_v4p1_latest_version,servo_latest_fw_version</alias>
     <doc>servo-firmware available fw version</doc>
     <params cmd="get" interface="servo" drv="servo_updater_reader"
       board="servo_v4p1" channel="stable"/>
@@ -356,7 +356,7 @@
   <!-- Servo V4P1 Console Automation Controls -->
   <control>
     <name>servo_v4p1_uart_cmd</name>
-    <alias>root.servo_uart_cmd</alias>
+    <alias>servo_uart_cmd</alias>
     <doc>Set to send command to the servo v4p1 console. Get to obtain the
     matched results with the regular expression of
     servo_v4p1_uart_regexp.</doc>
@@ -451,7 +451,7 @@
   </control>
   <control>
     <name>servo_v4p1_type</name>
-    <alias>root.dut_connection_type</alias>
+    <alias>dut_connection_type</alias>
     <!-- This is a hard-coded return string to be compatible with v4
       code. v4p1 is always type-c-->
     <params interface="servo" drv="echo" value="type-c"></params>

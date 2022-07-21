@@ -173,7 +173,7 @@ class ServoDeviceFinder(object):
     """
     # TODO(konmari): find out what args based on device type
     servo_parsing.inherit_opts(new_dev.devopts, old_dev.devopts,
-      ['board', 'model', 'config', 'noautoconfig', 'usbkm232'])
+      ['board', 'model', 'config', 'noautoconfig'])
 
   def choose_main_device(self, devs):
     """Choose the main device of the servod instance.
@@ -260,20 +260,42 @@ class ServoDeviceFinder(object):
     known_prefixes = set()
     devs_without_prefix = []
     for dev in devs:
+      # handle main device's prefix
       if dev == main_dev:
-        dev.devopts.prefix = servo_dev_templates.MAIN_DEV_PREFIX
+        if dev.devopts.prefix is None:
+          dev.devopts.prefix = servo_dev_templates.MAIN_DEV_PREFIX
+        else:
+          known_prefixes.update(dev.devopts.prefix)
         known_prefixes.update(servo_dev_templates.MAIN_DEV_PREFIXES)
         self._logger.debug('Device %s is the main device and is given prefix %s',
             dev, servo_dev_templates.MAIN_DEV_PREFIXES)
-      else:
-        if dev.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
-          dev.devopts.prefix = None
-        if dev.devopts.prefix:
-          known_prefixes.add(dev.devopts.prefix)
-          self._logger.debug('Device %s is given prefix %s during invocation',
-            dev, dev.devopts.prefix)
+        continue
+      # prevent non-main device to have main device's prefix
+      if dev.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+        dev.devopts.prefix = None
+      
+      # handle root device's prefix
+      if dev == main_dev.cluster_root:
+        if dev.devopts.prefix is None:
+          dev.devopts.prefix = servo_dev_templates.ROOT_DEV_PREFIX
         else:
-          devs_without_prefix.append(dev)
+          known_prefixes.update(dev.devopts.prefix)
+        known_prefixes.update(servo_dev_templates.ROOT_DEV_PREFIX)
+        self._logger.debug('Device %s is the root device and is given prefix %s',
+          dev, servo_dev_templates.ROOT_DEV_PREFIX)
+        continue
+      # prevent non-root device to have root device's prefix
+      if dev.devopts.prefix == servo_dev_templates.ROOT_DEV_PREFIX:
+        dev.devopts.prefix = None
+
+      # handle all other device's prefix
+      if dev.devopts.prefix:
+        known_prefixes.add(dev.devopts.prefix)
+        self._logger.debug('Device %s is given prefix %s during invocation',
+          dev, dev.devopts.prefix)
+      else:
+        devs_without_prefix.append(dev)
+
     # auto generate prefix use device type and the last 4 digit of serial
     for dev in devs_without_prefix:
       prefix = '%s-%s' % (dev.dev_template.TYPE, dev.serial[-4:])
@@ -305,31 +327,24 @@ class ServoDeviceFinder(object):
           self._logger.error("Device %s is already served by another servod instance"
             "on port %s", dev, servod_instance[scratch.PORT_KEY])
     if has_error:
-      raise ServoDeviceFinderError("Not all devices requested are available right now.") 
+      raise ServoDeviceFinderError("Not all devices requested are available right now.")
 
 
   def validate_devopts(self, devs):
-    """Validate all devices have valid devopts.
+    """Validate devices have valid devopts.
 
     Args:
       devs: a list of ServoDeviceEntry devices
 
     Raises:
-      ServoDeviceFinderError: dut controller does not have 'board' attribute
       ServoDeviceFinderError: some device does not have 'prefix' attribute
-      ServoDeviceFinderError: 0 or multiple devices have "main" or "" as 'prefix'
+      ServoDeviceFinderError: multiple devices have "main" or "" as 'prefix'
     """
     main_prefix_count = 0
     for dev in devs:
-      # TODO(konmari): enable the following check after add board probing
-      # if dev.dev_template.DUT_CONTROLLER and not dev.devopts.board:
-      #   raise ServoDeviceFinderError("Device %s is a DUT controller but does not "
-      #     "have its board specified." % dev)
       if dev.devopts.prefix is None:
         raise ServoDeviceFinderError("Device %s does not have a prefix." % dev)
       if dev.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
         main_prefix_count += 1
-    if main_prefix_count == 0:
-      raise ServoDeviceFinderError("No device is chosen as the main device.")
     if main_prefix_count > 1:
       raise ServoDeviceFinderError("Multiple devices are chosen as the main device.")

@@ -33,13 +33,13 @@ from servo import servo_dev_finder
 from servo import servo_dev_templates
 from servo import servo_logging
 from servo import servo_parsing
-from servo import servo_postinit
 from servo import servo_server
 from servo import system_config
 from servo import terminal_freezer
 from servo import watchdog
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
+from servo.utils import servo_dev_prober
 from servo.utils import usb_hierarchy
 
 
@@ -122,11 +122,6 @@ class ServodStarter(object):
                         debug_stdout=sopts.debug,
                         backup_count=sopts.log_dir_backup_count)
 
-    if sopts.dual_v4:
-      # Leave the right breadcrumbs for servo_postinit to know whether to setup
-      # a dual instance or not.
-      os.environ[servo_postinit.DUAL_V4_VAR] = servo_postinit.DUAL_V4_VAR_EMPTY
-
     self._logger.info('Start')
 
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
@@ -134,99 +129,91 @@ class ServodStarter(object):
                                                 dev_hierarchy=dev_hierarchy,
                                                 scratch=self._scratchutil)
     try:
-      servo_devs = finder.discover_servos()
-      main_dev = finder.choose_main_device(servo_devs)
-      finder.generate_prefixes(servo_devs, main_dev)
-      finder.validate_devopts(servo_devs)
+      dev_entries = finder.discover_servos()
+      main_dev_entry = finder.choose_main_device(dev_entries)
+      finder.generate_prefixes(dev_entries, main_dev_entry)
+      finder.validate_devopts(dev_entries)
     except servo_dev_finder.ServoDeviceFinderError as e:
       self._logger.fatal("Failure during discovering servo devices: %s", e)
       sys.exit(-1)
 
-    # TODO(konmari): refactor the below section to support multi devices
-    #                below is a temporary hack that works for current servo_postinit
-    if main_dev.cluster_root and main_dev.dev_template.DUT_CONTROLLER:
-      servo_device = main_dev.cluster_root
-      servo_device.devopts.prefix = servo_dev_templates.MAIN_DEV_PREFIX
-    else:
-      servo_device = main_dev
-    devopts = devopts_list[0]
-    if not servo_device:
-      sys.exit(-1)
+    self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
+    prober = servo_dev_prober.DeviceProber()
+    for dev_entry in dev_entries:
+      self._logger.debug('Start initializing servo device %s', dev_entry)
+      devopts, dev_tmpl = dev_entry.devopts, dev_entry.dev_template
 
-    vid, pid, serial = servo_device.vid, servo_device.pid, servo_device.serial
-    dev_tmpl = servo_dev_templates.GetTemplateClass(vid=vid, pid=pid,
-                                                    serial=serial)
-    board_version = dev_tmpl.TYPE
-    self._logger.debug('board_version = %s', board_version)
-    all_configs = []
-    if not devopts.noautoconfig:
-      all_configs.append(dev_tmpl.DEFAULT_CONFIG)
-
-    if devopts.config:
-      for config in devopts.config:
-        # quietly ignore duplicate configs for backwards compatibility
-        if config not in all_configs:
-          all_configs.append(config)
-
-    if not all_configs:
-      raise ServodError('No automatic config found,'
+      all_configs = []
+      if not devopts.noautoconfig:
+        all_configs.append(dev_tmpl.DEFAULT_CONFIG)
+      if devopts.config:
+        for config in devopts.config:
+          # quietly ignore duplicate configs for backwards compatibility
+          if config not in all_configs:
+            all_configs.append(config)
+      if not all_configs:
+        raise ServodError('No automatic config found,'
                         ' and no config specified with -c <file>')
 
-    scfg = system_config.SystemConfig()
+      scfg = system_config.SystemConfig()
+      for cfg_file in all_configs:
+        scfg.add_cfg_file(cfg_file)
+      
+      self._logger.debug('System configs for device %s\n%s', dev_entry,
+        scfg.display_config())
 
-    if devopts.board:
-      # Handle differentiated model case.
-      board_config = None
-      if devopts.model:
-        board_config = 'servo_%s_%s_overlay.xml' % (
-            devopts.board, devopts.model)
+      servo_device = servo_dev.ServoDevice(dev_entry=dev_entry, config=scfg,
+        interfaces=devopts.interfaces, servod=weakref.proxy(self._servod))
 
-        if not scfg.find_cfg_file(board_config):
-          self._logger.info('No XML overlay for model '
-                            '%s, falling back to board %s default',
-                            devopts.model, devopts.board)
-          board_config = None
-        else:
-          self._logger.info('Found XML overlay for model %s:%s',
-                            devopts.board, devopts.model)
-
-      # Handle generic board config.
-      if not board_config:
-        board_config = 'servo_' + devopts.board + '_overlay.xml'
-        if not scfg.find_cfg_file(board_config):
-          self._logger.error('No XML overlay for board %s', devopts.board)
+      if servo_device.template.DUT_CONTROLLER and not devopts.board:
+        # Initialize all interfaces already possible to see if the board
+        # can be probed
+        servo_device.init_servo_interfaces(fault_tolerant=True)
+        ec_board = prober.get_board_from_ec(servo_device)
+        if not ec_board:
+          self._logger.fatal('Cannot probe board for DUT controller %s', servo_device)
           sys.exit(-1)
+        devopts.board = ec_board
+        devopts.model = prober.get_model_from_ec(servo_device)
+        servo_device.set_base_board(devopts.board)
+      # Set the board and the model for a DUT
+      if not servo_device.set_board_and_model(devopts.board, devopts.model):
+        if devopts.board:
+          self._logger.fatal('Cannot set up board %s for device %s',
+            devopts.board, servo_device)
+          sys.exit(-1)
+      servo_device.syscfg.finalize()
+      self._servod.add_device(servo_device, dev_entry.devopts.prefix)
 
-        self._logger.info('Found XML overlay for board %s', devopts.board)
+    # ensure main device is given prefix '' and 'main'
+    main_device = main_dev_entry.servo_device
+    self._servod.add_device(main_device, servo_dev_templates.MAIN_DEV_PREFIX)
+    # ensure root hub device is given prefix 'root'
+    root_device = main_device.get_root_hub_device()
+    if root_device:
+      self._servod.add_device(root_device, servo_dev_templates.ROOT_DEV_PREFIX)
 
-      all_configs.append(board_config)
-      scfg.set_board_cfg(board_config)
-
-    for cfg_file in all_configs:
-      scfg.add_cfg_file(cfg_file)
-
-    self._logger.debug('\n%s', scfg.display_config())
-
-    self._logger.debug('Servo is vid:0x%04x pid:0x%04x sid:%s', vid, pid, serial)
-
-    self._servod = servo_server.Servod(usbkm232=devopts.usbkm232)
-    template = servo_dev_templates.GetTemplateClass(vid=vid, pid=pid, serial=serial)
-    main_servo_dev = servo_dev.ServoDevice(template=template, config=scfg,
-      name=servo_device.devopts.prefix, serialname=serial,
-      interfaces=devopts.interfaces.split(), board=devopts.board, model=devopts.model,
-      version=board_version, servod=weakref.proxy(self._servod))
-
+    self._servod.update_known_ctrls()
+    for servo_device in self._servod.get_devices():      
+      # Real init this time i.e. initialization will fail if there are issues
+      # with creating the servo interfaces
+      servo_device.init_servo_interfaces()
     # Small timeout to allow interface threads to initialize.
+    self._servod.update_known_ctrls()
     time.sleep(0.5)
 
-    self._servod.hwinit(verbose=True)
+    self._servod.validate_dut_controller()
+    for servo_device in self._servod.get_devices():
+      skip_controls = set()
+      for dev in servo_device.get_child_devices():
+        skip_controls.update(set(control_name for control_name, _ in dev.syscfg.hwinit))
+      servo_device.hwinit(verbose=True, skip_controls=skip_controls)
     self._server.register_introspection_functions()
     self._server.register_multicall_functions()
     self._server.register_instance(self._servod)
     self._server_thread = threading.Thread(target=self._serve)
     self._server_thread.daemon = True
     self._turndown_initiated = False
-    # pylint: disable=protected-access
     # Needs access to the servod instance.
     self._watchdog_thread = watchdog.DeviceWatchdog(self._servod)
     self._exit_status = 0
@@ -281,13 +268,19 @@ class ServodStarter(object):
                              'files get rotated on new instance, by user '
                              'request or when they grow past %d bytes.' %
                              servo_logging.MAX_LOG_BYTES)
-    server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
-                             action='store_true',
-                             help='Allow dual micro and ccd on servo v4.')
+    server_pars.add_argument('--allow-dual-v4',
+                             help='Deprecated flag. '
+                            'Double DUT controllor is always allowed now.')
     server_pars.add_argument('--recovery_mode', default=False,
                              action='store_true',
                              help='Start servod through issues to allow for '
                              'inspection and recovery mechanisms.')
+    # This is included in server_pars because it is shared across all devices
+    server_pars.add_argument('-u', '--usbkm232', type=str,
+                          help='path to USB-KM232 device which allow for '
+                               'sending keyboard commands to DUTs that do not '
+                               'have built in keyboards. Used in FAFT tests. '
+                               '(Optional), e.g. /dev/ttyUSB0')
     # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
     dev_pars = servo_parsing.ServodRCParser(add_help=False)
     dev_pars.add_argument('--vendor', default=None, type=lambda x: int(x, 0),
@@ -306,16 +299,11 @@ class ServodStarter(object):
     dev_pars.add_argument('--noautoconfig', action='store_true', default=False,
                           help='Disable automatic determination of config '
                                'files')
-    dev_pars.add_argument('-i', '--interfaces', type=str, default='',
+    dev_pars.add_argument('-i', '--interfaces', type=str, nargs='+', default='',
                           help='ordered space-delimited list of interfaces. '
                                'Valid choices are gpio|i2c|uart|gpiouart|empty')
-    dev_pars.add_argument('-u', '--usbkm232', type=str,
-                          help='path to USB-KM232 device which allow for '
-                               'sending keyboard commands to DUTs that do not '
-                               'have built in keyboards. Used in FAFT tests. '
-                               '(Optional), e.g. /dev/ttyUSB0')
-    # TODO(konmari): finish the doc of prefix
-    dev_pars.add_argument('--prefix', type=str, default='', action='store')
+    dev_pars.add_argument('--prefix', type=str, default=None, action='store',
+                          help='prefix used to route controls to this device')
     # Create a unified parser with both server & device arguments to display
     # meaningful help messages to the user.
     # pylint: disable=protected-access
