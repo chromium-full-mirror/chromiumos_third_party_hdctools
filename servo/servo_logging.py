@@ -115,15 +115,20 @@ def _buildLogdirName(logdir, port):
   return os.path.join(logdir, '%s_%s' % (LOG_DIR_PREFIX, str(port)))
 
 
-def _generateTs():
+def _generateTs(time=None):
   """Helper to generate a timestamp to tag per-instance logs.
+
+  Args:
+    time: a datetime to generate the timestamp
 
   Returns:
     formatted timestamp of time when called
   """
   # servo logging uses milliseconds, and %f returns microseconds. Remove the
   # last three digits.
-  return datetime.datetime.now().strftime(TS_FORMAT)[:-3]
+  if time is None:
+    time = datetime.datetime.now()
+  return time.strftime(TS_FORMAT)[:-3]
 
 
 def _loglevelFromF(f):
