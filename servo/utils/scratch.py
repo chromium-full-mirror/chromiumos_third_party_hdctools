@@ -73,8 +73,9 @@ class Scratch(object):
                'serials': list(serials),
                'pid': int(pid),
                ACTIVE_ENTRY_KEY: False}
-    except (ValueError, TypeError):
-      raise ScratchError('Entry arguments malformed.')
+    except (ValueError, TypeError) as e:
+      raise ScratchError('Entry arguments malformed. %s: %s'
+        % (type(e).__name__, str(e)))
     entryf = self._EntryF(entry)
     if os.path.exists(entryf):
       msg = 'Adding entry for port already in use. Port: %d.' % int(port)
@@ -223,7 +224,9 @@ class Scratch(object):
         self._logger.warning('Port %r still registered but not bound to a '
                           'servod instance. Removing entry.', str(port))
         self.RemoveEntry(port)
-        testsock.close()
       except socket.error:
         # Expected to fail when binding to a valid servod instance socket.
         pass
+      finally:
+        testsock.close()
+
