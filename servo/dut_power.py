@@ -153,7 +153,7 @@ def main(cmdline=sys.argv[1:]):
                       '--save-raw-data. Overwrites any of those if specified.')
   # Start the visualization server
   parser.add_argument('--visualization', default=False, action='store_true',
-                      help='Visualization the power measurement' 
+                      help='Visualization the power measurement'
                            'resultson a local server.')
   # Specify the http server port for passing the information to html
   parser.add_argument('--visualization-port', default=9998,
@@ -219,7 +219,20 @@ def main(cmdline=sys.argv[1:]):
                        argument to change another port.", server_port)
       sys.exit(1)
 
-    pm_logger.info("Try to use port: %d for visualization", server_port)
+    file_path = http_server_handler.get_visualization_html_exist()
+
+    # If the path does not exist, we would tell
+    # the user how to build the visualization html
+    if not file_path:
+      pm_logger.error("The html file does not exist")
+      pm_logger.error("If the path above does not exist, "
+                      "please follow these steps to build the visualization html")
+      pm_logger.error("cd ~/chromiumos/src/platform2/parallax/\n"
+                       "run: sudo emerge net-libs/nodejs\n"
+                       "run: npm install\n"
+                       "run: npm run build -- release\n")
+      sys.exit(1)
+
     try:
       visualization_server = http_server.ThreadedTCPServer(
                                          ("localhost", server_port), http_server_handler)
@@ -230,9 +243,13 @@ def main(cmdline=sys.argv[1:]):
       pm_logger.error("Failed to start http server. You may try to switch to"
                                               "another port by Use --visualization-port")
       sys.exit(1)
+    pm_logger.info("Try to use port: %d for visualization", server_port)
+    pm_logger.info("Real-time visualization is available on: %s", file_path)
+    pm_logger.info("In the html page, switch the localhost number to %d "
+                   "and press toggle stream to start", server_port)
 
-    pm_logger.info("Real-time visualization is available on:"
-                    " http://localhost:%d", server_port)
+    pm_logger.info("press ctrl-c to stop the visualization server.")
+
     visualization_server_thread = threading.Thread(
                                   target=visualization_server.serve_forever, daemon=True)
     visualization_server_thread.start()
@@ -299,6 +316,7 @@ def main(cmdline=sys.argv[1:]):
     logfile = os.path.join(outdir, 'logs.txt')
     pm_logger.info('Storing logs at:\n%s', logfile)
     shutil.move(tmplogfile.name, logfile)
-
+  if args.visualization:
+    http_server_handler.save_visualization_html(pm._outdir)
 if __name__ == '__main__':
   main(sys.argv[1:])

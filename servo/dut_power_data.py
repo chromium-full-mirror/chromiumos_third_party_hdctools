@@ -14,8 +14,8 @@ import time
 SAMPLING_DELTA_PERIOD = 10
 
 FETCHING_DATA_SLEEP_TIME = 0.01
-SAMPLE_CANTAINER_OUTPUT_TYPE = "streaming_chart"
-
+STREAMING_CHART_OUTPUT_TYPE = "streaming_chart"
+LINE_CHART_OUTPUT_TYPE = "linechart"
 # The list here can help to store the data name
 # that we are not going to pass to the visualization UI
 FILTER_DATA_NAME_LIST = ['Sample_msecs']
@@ -45,9 +45,12 @@ class DataSampler():
     def get_data_sample(self):
         """Convert data into JSON format and return the json data to visualization UI"""
         if self._data_sample is None:
-            return '""'.encode('utf_8')
+            return '""'
+        output_type = STREAMING_CHART_OUTPUT_TYPE
+        if self._pm.GetPMStatus():
+            output_type = LINE_CHART_OUTPUT_TYPE
         return self._data_sample.toJSON(
-        SAMPLE_CANTAINER_OUTPUT_TYPE, time.time()-SAMPLING_DELTA_PERIOD).encode('utf_8')
+        output_type, time.time()-SAMPLING_DELTA_PERIOD)
 
     def compare_data_sample_format(self, latest_sample_format):
         """Compare the data foramt
@@ -217,14 +220,16 @@ class DataSample():
         try:
             for sample_pos, sample_element in enumerate(samples):
                 self._samples[sample_pos].append(sample_element)
-
         except Exception as e:
-            if len(self._samples) == len(samples):
+            if len(self._samples) != len(samples):
                 self._logger.error('The number of new samples'
                                    'does not match with the existing samples')
             else:
-                self._logger.error(e)
-            sys.exit(1)
+                self._logger.error("Error happen while inserting the data")
+
+            self._logger.error("The power measurement is still working, "
+                                   "press ctrl-c to show the summary table "
+                                   "and close the visualization server")
 
     def toJSON(self, out_type, start_time=0):
         """Convert the data into json format
