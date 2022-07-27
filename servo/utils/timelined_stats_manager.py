@@ -75,7 +75,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     raise stats_manager.StatsManagerError('TimelinedStatsManager does not '
                                           'support AddSample. Use AddSamples.')
 
-  def AddSamples(self, samples):
+  def AddSamples(self, samples, timestamp=None):
     """Record a list of domains and samples.
 
     Record each (domain, sample) pair and the timestamp when the
@@ -87,8 +87,11 @@ class TimelinedStatsManager(stats_manager.StatsManager):
 
     Args:
       samples: a list of (domain, sample) tuples
+      timestamp: timestamp the sample is taken
     """
-    samples.append((self._tkey, time.time()))
+    if timestamp is None:
+      timestamp = time.time()
+    samples.append((self._tkey, timestamp))
     domains_so_far = set(self._data.keys())
     domains_incoming = set([entry[0] for entry in samples])
     if len(domains_incoming) != len(samples):
