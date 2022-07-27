@@ -1,7 +1,7 @@
 <root>
   <!-- ******** Includes ******** -->
   <include>
-    <name>cr50.xml</name>
+    <name>ti50.xml</name>
   </include>
   <include>
     <name>ec_efs2.xml</name>
