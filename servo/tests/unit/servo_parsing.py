@@ -220,7 +220,7 @@ class TestServodClientParser(unittest.TestCase):
 
   def SetupParser(self):
     """Helper to add parser."""
-    self._parser = servo_parsing.ServodClientParser(scratch=self._scratchdir)
+    self._parser = servo_parsing.ServodClientParser(scratchdir=self._scratchdir)
 
   def tearDown(self):
     """Remove fake scratch entry, and close fake socket."""
