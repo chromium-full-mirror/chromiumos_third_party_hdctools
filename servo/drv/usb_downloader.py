@@ -7,12 +7,8 @@
 import shutil
 import subprocess
 
-try:
-  from urllib import ContentTooShortError, urlopen
-except ImportError:
-  # TODO(b:177480273): remove this once python2 is turned off.
-  from urllib.request import urlopen
-  from urllib.error import ContentTooShortError
+from urllib.request import urlopen
+from urllib.error import ContentTooShortError
 
 import contextlib
 import os
