@@ -502,4 +502,4 @@ Or pretending it's a 6P4C receptacle (for easier reference if crimping a 6P4C pl
 
 ## References
 
-[ServoV4 Overview](https://docs.google.com/document/d/1HLikzKYKy9oZxFiH_Q5Vdk1tEQMPXh8AKG8T8OhBuqg/edit): Good resource for reviewing previous bringup
+[ServoV4 Overview](servo_v4.md): Good resource for reviewing previous bringup
