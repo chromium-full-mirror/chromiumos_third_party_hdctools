@@ -243,6 +243,7 @@ class TestScratch(unittest.TestCase):
     """Verify Sanitize does not remove active scratch entry."""
     self._manually_add_entry()
     testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    testsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     testsock.bind(('localhost', self._dport))
     prevfiles = os.listdir(self._scratchdir)
     self._scratch._Sanitize()

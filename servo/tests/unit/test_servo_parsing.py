@@ -216,6 +216,7 @@ class TestServodClientParser(unittest.TestCase):
     self._original_rc = servo_parsing.DEFAULT_RC_FILE
     servo_parsing.DEFAULT_RC_FILE = self._rc_file
     self._fakesock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    self._fakesock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     self._fakesock.bind(('localhost', self._scratchport))
 
   def SetupParser(self):
