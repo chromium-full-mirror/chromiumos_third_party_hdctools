@@ -49,7 +49,7 @@ class selectControl(hw_driver.HwDriver):
 
     # Return the value from the selected control
     selected_control = self._get_selected_control(control_key)
-    return self._servod.get(selected_control)
+    return self._servod_get(selected_control)
 
   def _get_control_key_info(self, control_name):
     """Get the base control information
@@ -88,4 +88,4 @@ class selectControl(hw_driver.HwDriver):
       return
     # Set the value of the selected control
     selected_control = self._get_selected_control(control_key)
-    self._servod.set(selected_control, logical_value)
+    self._servod_set(selected_control, logical_value)

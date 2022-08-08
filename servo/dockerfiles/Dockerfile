@@ -108,11 +108,6 @@ WORKDIR /
 ######################################################################
 FROM libftdi as ec-builder
 
-# This is setup for the most normal case, developers and cloud builds
-# to pull the code from the checked in ec repo.
-# If you wish to build/test changes to the ec repo as a developer
-# uncomment the copy line and comment out the git clone line.
-# COPY /ec /ec
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 
 WORKDIR /
@@ -163,7 +158,7 @@ RUN pip3 install pytest
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
-RUN make -d
+RUN make
 RUN make install
 
 # Setuptools skips nested entry point. Adding custom setup.py to overcome.
@@ -174,7 +169,6 @@ RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
 
 #####################################################################
 FROM clang-builder as uhubctl-builder
-
 
 RUN git clone https://github.com/mvp/uhubctl
 WORKDIR /uhubctl
@@ -236,6 +230,7 @@ RUN apt-get update --no-install-recommends \
         bzip2 \
         curl \
         dnsutils \
+        fdisk \
         iptables \
         iputils-ping \
         kmod \

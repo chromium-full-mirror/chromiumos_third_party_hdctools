@@ -158,13 +158,6 @@ class cr50(pty_driver.ptyDriver):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd('reboot')
 
-  def _Set_ccd_noop(self, value):
-    """Used to ignore servo controls"""
-
-  def _Get_ccd_noop(self):
-    """Used to ignore servo controls"""
-    return 'ERR'
-
   def _get_ccd_cap_state(self, cap):
     """Get the current state of the ccd capability"""
     result = self._issue_cmd_get_results('ccdstate', [r'%s:([^\n]*)\n' % cap])
@@ -256,33 +249,30 @@ class cr50(pty_driver.ptyDriver):
     self._interface._ec_uart_bitbang_props['baudrate'] = value
 
   def _Get_ec_boot_mode(self):
-    boot_mode = 'off'
+    """Return 1 if EC_FLASH_SELECT is asserted. 0 if it's deasserted"""
     result = self._issue_cmd_get_results('gpioget EC_FLASH_SELECT',
                                          [r'\s+([01])\*?\s+EC_FLASH_SELECT'])[0]
-    if result:
-      if result[1] == '1':
-        boot_mode = 'on'
-
-    return boot_mode
+    return int(result[1])
 
   def _Set_ec_boot_mode(self, value):
+    """Set EC_FLASH_SELECT"""
     self._issue_cmd('gpioset EC_FLASH_SELECT %s' % value)
 
   def _Get_uut_boot_mode(self):
+    """Returns 0 if the boot_mode output is enabled. 1 if it isn't"""
     result = self._issue_cmd_get_results('gpiocfg', ['gpiocfg(.*)>'])[0][0]
-    if re.search(r'GPIO0_GPIO15:\s+read 0 drive 0', result):
-        return 'on'
-    return 'off'
+    # GSC may read 0 or 1 on GPIO0_GPIO15. It just matters that GSC tries to
+    # drive it to 0.
+    # When uut_boot_mode is set, 0 turns uut_boot_mode on. 1 turns if off.
+    if re.search(r'GPIO0_GPIO15:\s+read . drive 0', result):
+        return 0
+    return 1
 
   def _Get_ap_flash_select(self):
-    flash_select = 'off'
+    """Returns 1 if AP_FLASH_SELECT is on. 0 if it's off"""
     result = self._issue_cmd_get_results('gpioget AP_FLASH_SELECT',
                                          [r'\s+([01])\*?\s+AP_FLASH_SELECT'])[0]
-    if result:
-      if result[1] == '1':
-        flash_select = 'on'
-
-    return flash_select
+    return int(result[1])
 
   def _Set_ap_flash_select(self, value):
     self._issue_cmd('gpioset AP_FLASH_SELECT %s' % value)
@@ -311,12 +301,13 @@ class cr50(pty_driver.ptyDriver):
     if result is None:
       raise cr50Error('Cannot retrieve the recbtnforce on cr50 console.')
     if 'not pressed' in result:
-      return 'off'
+      return 0
     if 'forced pressed' in result:
-      return 'on'
+      return 1
     raise cr50Error('Invalid value for recbtnforce')
 
   def _Set_rec_btn_force(self, value):
+    """1 use recbtn command to press the recovery button. 0 release recbtn."""
     try:
       result = None
       if value:
@@ -331,17 +322,32 @@ class cr50(pty_driver.ptyDriver):
       raise cr50Error('Unable to change recbtnforce status!')
 
   def _Get_rec_mode(self):
-    result = 'off'
-    gpio = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
+    """Return 1 if rec_mode is asserted. 0 if it's deasserted"""
+    result = self._issue_cmd_get_results('gpioget CCD_REC_LID_SWITCH',
                                        [r'\s+([01])\*?\s+CCD_REC_LID_SWITCH'])
-    if gpio[0]:
-      if gpio[0][1] == '0':
-        result = 'on'
-
-    if result != self._Get_rec_btn_force():
-      raise cr50Error('recbtnforce and CCD_REC_LID_SWITCH don\'t match!')
-    return result
+    gpio_state = int(result[0][1])
+    recbtnforce = self._Get_rec_btn_force()
+    # CCD_REC_LID_SWITCH is active low, so it should be the inverse of
+    # recbtnforce.
+    if gpio_state == recbtnforce:
+      raise cr50Error('recbtnforce (%s) and CCD_REC_LID_SWITCH (%sasserted) '
+                      'don\'t match!' %
+                      ('pressed' if recbtnforce else 'released',
+                       'de' if gpio_state else ''))
+    return gpio_state
 
   def _Set_rec_mode(self, value):
     self._issue_cmd('gpioset CCD_REC_LID_SWITCH %d' % value)
     self._Set_rec_btn_force(value == 0)
+
+  def _Get_en_i2c_dbg_pwr(self):
+    result = 'off'
+    gpio = self._issue_cmd_get_results('gpioget EN_I2C_DBG_PWR_L',
+                                       [r'\s+([01])\*?\s+EN_I2C_DBG_PWR_L'])
+    if gpio[0]:
+      if gpio[0][1] == '0':
+        result = 'on'
+    return result
+
+  def _Set_en_i2c_dbg_pwr(self, value):
+    self._issue_cmd('gpioset EN_I2C_DBG_PWR_L %d' % (1 if value == 0 else 0))

@@ -103,7 +103,7 @@ class ec3poDriver(hw_driver.HwDriver):
     """Get whether timestamps are enabled on the console.
 
     Returns:
-      A string, either 'on' or 'off', indicating if timestamps are enabled.
+      1 if timestamps are on. 0 if timestamps are off.
     """
     if self._interface is not None:
       return self._interface.get_timestamp()

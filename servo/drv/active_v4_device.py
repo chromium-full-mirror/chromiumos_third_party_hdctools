@@ -61,7 +61,7 @@ class activeV4Device(hw_driver.HwDriver):
      - servo_v4_with_ccd_cr50
      - servo_v4_with_servo_micro_and_ccd_cr50
     """
-    servo_type = self._servod.get('servo_type')
+    servo_type = self._servod_get('servo_type')
     devices = servo_type.split('_with_')[-1].split('_and_')
     usable_devices = set(devices).intersection(self.V4_DEVICES.keys())
 
@@ -105,21 +105,21 @@ class activeV4Device(hw_driver.HwDriver):
     # whether servo micro is supposed to be active.
     uart_en = 'on' if use_servo else 'off'
     if self._servod._can_control_servo:
-      self._servod.set('ec_uart_en', uart_en)
-      self._servod.set('cpu_uart_en', uart_en)
+      self._servod_set('ec_uart_en', uart_en)
+      self._servod_set('cpu_uart_en', uart_en)
 
     if self._servod._can_control_cr50:
       # Cr50 can't detect servo if CCD EC uart is enabled. Enable cr50 servo
       # detection just in case ccd is blocking it.
-      if self._servod.get('cr50_servo') == 'undetectable' and use_servo:
-        self._servod.set('cr50_force_servo_detect', 'on')
+      if self._servod_get('cr50_servo') == 'undetectable' and use_servo:
+        self._servod_set('cr50_force_servo_detect', 'on')
 
       # Give Cr50 enough time to detect the new state.
       time.sleep(2)
 
       # Once Cr50 detects servo it should always be able to detect it. We don't
       # need force_servo_detect anymore.
-      self._servod.set('cr50_force_servo_detect', 'off')
+      self._servod_set('cr50_force_servo_detect', 'off')
 
     actual_device = self._Get_device()
     if device != actual_device:
@@ -131,14 +131,14 @@ class activeV4Device(hw_driver.HwDriver):
   def _using_servo(self):
     """Return True if servo uart is enabled."""
     return (self._servod._can_control_servo and
-            self._servod.get('ec_uart_en') == 'on')
+            self._servod_get('ec_uart_en') == 'on')
 
   def _using_ccd(self):
     """Return True if ccd uart TX is enabled."""
     if not self._servod._can_control_cr50:
       return False
-    flags = self._servod.get('cr50_ccd_state_flags')
-    brdprop = int(self._servod.get('cr50_brdprop'), base=16)
+    flags = self._servod_get('cr50_ccd_state_flags')
+    brdprop = int(self._servod_get('cr50_brdprop'), base=16)
     ccd_enabled_flags = {'SPI', 'UARTAP+TX', 'UARTFPMCU+TX'}
 
     # If BOARD_EC_CR50_COMM_SUPPORT flag is set in board property,

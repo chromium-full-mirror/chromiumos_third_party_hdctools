@@ -18,6 +18,12 @@ SERVO_MICRO_NAME_PREV = "servo_micro_v2.4.35-f1113c92b"  # servo-firmware-R81-12
 SERVO_V4_NAME_PREV = "servo_v4_v2.4.57-ce329f64f"        # servo-firmware-R81-12768.71.0
 SERVO_V4P1_NAME_PREV = "servo_v4p1_v2.0.5159-529612865"  # Local builds are temporary b/153464312
 
+# Dev channel firmware
+SERVO_V4P1_NAME_DEV = "servo_v4p1_v2.0.8588-3eac32bd44"  # USB3 Patch from CL/3586439
+
+# Alpha channel firmware
+SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.13477-1c6bb5adb" # R103-14703.0.0 build
+
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
 
 C2D2_FILE = '{}.tar.gz'.format(C2D2_NAME)
@@ -27,10 +33,13 @@ SERVO_V4_FILE = '{}.tar.xz'.format(SERVO_V4_NAME)
 SERVO_V4_FILE_PREV = '{}.tar.xz'.format(SERVO_V4_NAME_PREV)
 SERVO_V4P1_FILE = '{}.tar.xz'.format(SERVO_V4P1_NAME)
 SERVO_V4P1_FILE_PREV = '{}.tar.xz'.format(SERVO_V4P1_NAME_PREV)
+SERVO_V4P1_FILE_DEV = '{}.tar.xz'.format(SERVO_V4P1_NAME_DEV)
+SERVO_V4P1_FILE_ALPHA = '{}.tar.xz'.format(SERVO_V4P1_NAME_ALPHA)
 SWEETBERRY_FILE = '{}.tar.gz'.format(SWEETBERRY_NAME)
 
 
 def create_sym_link(src, dst):
+    """ Creates the symbolic link. """
     os.symlink(src, dst)
 
 
@@ -48,44 +57,49 @@ def download_unpack(path, filename):
 
 
 def main():
-	download_unpack(MIRROR_PATH, C2D2_FILE)
-	os.chmod(C2D2_NAME + '.bin', 420)
-	create_sym_link(C2D2_NAME + '.bin', 'c2d2.alpha.bin')
-	create_sym_link(C2D2_NAME + '.bin', 'c2d2.stable.bin')
-	create_sym_link(C2D2_NAME + '.bin', 'c2d2.dev.bin')
-	create_sym_link(C2D2_NAME + '.bin', 'c2d2.prev.bin')
+    """ Downloads the images and creates the required links. """
+    download_unpack(MIRROR_PATH, C2D2_FILE)
+    os.chmod(C2D2_NAME + '.bin', 420)
+    create_sym_link(C2D2_NAME + '.bin', 'c2d2.alpha.bin')
+    create_sym_link(C2D2_NAME + '.bin', 'c2d2.stable.bin')
+    create_sym_link(C2D2_NAME + '.bin', 'c2d2.dev.bin')
+    create_sym_link(C2D2_NAME + '.bin', 'c2d2.prev.bin')
 
-	download_unpack(MIRROR_PATH, SERVO_MICRO_FILE)
-	download_unpack(MIRROR_PATH, SERVO_MICRO_FILE_PREV)
-	os.chmod(SERVO_MICRO_NAME + '.bin', 420)
-	os.chmod(SERVO_MICRO_NAME_PREV + '.bin', 420)
-	create_sym_link(SERVO_MICRO_NAME + '.bin', 'servo_micro.alpha.bin')
-	create_sym_link(SERVO_MICRO_NAME + '.bin', 'servo_micro.stable.bin')
-	create_sym_link(SERVO_MICRO_NAME + '.bin', 'servo_micro.dev.bin')
-	create_sym_link(SERVO_MICRO_NAME_PREV + '.bin', 'servo_micro.prev.bin')
+    download_unpack(MIRROR_PATH, SERVO_MICRO_FILE)
+    download_unpack(MIRROR_PATH, SERVO_MICRO_FILE_PREV)
+    os.chmod(SERVO_MICRO_NAME + '.bin', 420)
+    os.chmod(SERVO_MICRO_NAME_PREV + '.bin', 420)
+    create_sym_link(SERVO_MICRO_NAME + '.bin', 'servo_micro.alpha.bin')
+    create_sym_link(SERVO_MICRO_NAME + '.bin', 'servo_micro.stable.bin')
+    create_sym_link(SERVO_MICRO_NAME + '.bin', 'servo_micro.dev.bin')
+    create_sym_link(SERVO_MICRO_NAME_PREV + '.bin', 'servo_micro.prev.bin')
 
-	download_unpack(MIRROR_PATH, SERVO_V4_FILE)
-	download_unpack(MIRROR_PATH, SERVO_V4_FILE_PREV)
-	os.chmod(SERVO_V4_NAME + '.bin', 420)
-	os.chmod(SERVO_V4_NAME_PREV + '.bin', 420)
-	create_sym_link(SERVO_V4_NAME + '.bin', 'servo_v4.alpha.bin')
-	create_sym_link(SERVO_V4_NAME + '.bin', 'servo_v4.stable.bin')
-	create_sym_link(SERVO_V4_NAME + '.bin', 'servo_v4.dev.bin')
-	create_sym_link(SERVO_V4_NAME_PREV + '.bin', 'servo_v4.prev.bin')
+    download_unpack(MIRROR_PATH, SERVO_V4_FILE)
+    download_unpack(MIRROR_PATH, SERVO_V4_FILE_PREV)
+    os.chmod(SERVO_V4_NAME + '.bin', 420)
+    os.chmod(SERVO_V4_NAME_PREV + '.bin', 420)
+    create_sym_link(SERVO_V4_NAME + '.bin', 'servo_v4.alpha.bin')
+    create_sym_link(SERVO_V4_NAME + '.bin', 'servo_v4.stable.bin')
+    create_sym_link(SERVO_V4_NAME + '.bin', 'servo_v4.dev.bin')
+    create_sym_link(SERVO_V4_NAME_PREV + '.bin', 'servo_v4.prev.bin')
 
-	download_unpack(MIRROR_PATH, SERVO_V4P1_FILE)
-	download_unpack(MIRROR_PATH, SERVO_V4P1_FILE_PREV)
-	os.chmod(SERVO_V4P1_NAME + '.bin', 420)
-	os.chmod(SERVO_V4P1_NAME_PREV + '.bin', 420)
-	create_sym_link(SERVO_V4P1_NAME + '.bin', 'servo_v4p1.alpha.bin')
-	create_sym_link(SERVO_V4P1_NAME + '.bin', 'servo_v4p1.stable.bin')
-	create_sym_link(SERVO_V4P1_NAME + '.bin', 'servo_v4p1.dev.bin')
-	create_sym_link(SERVO_V4P1_NAME_PREV + '.bin', 'servo_v4p1.prev.bin')
+    download_unpack(MIRROR_PATH, SERVO_V4P1_FILE)
+    download_unpack(MIRROR_PATH, SERVO_V4P1_FILE_PREV)
+    download_unpack(MIRROR_PATH, SERVO_V4P1_FILE_DEV)
+    download_unpack(MIRROR_PATH, SERVO_V4P1_FILE_ALPHA)
+    os.chmod(SERVO_V4P1_NAME + '.bin', 420)
+    os.chmod(SERVO_V4P1_NAME_PREV + '.bin', 420)
+    os.chmod(SERVO_V4P1_NAME_DEV + '.bin', 420)
+    os.chmod(SERVO_V4P1_NAME_ALPHA + '.bin', 420)
+    create_sym_link(SERVO_V4P1_NAME_ALPHA + '.bin', 'servo_v4p1.alpha.bin')
+    create_sym_link(SERVO_V4P1_NAME + '.bin', 'servo_v4p1.stable.bin')
+    create_sym_link(SERVO_V4P1_NAME_DEV + '.bin', 'servo_v4p1.dev.bin')
+    create_sym_link(SERVO_V4P1_NAME_PREV + '.bin', 'servo_v4p1.prev.bin')
 
-	download_unpack(MIRROR_PATH, SWEETBERRY_FILE)
-	os.chmod(SWEETBERRY_NAME + '.bin', 420)
-	create_sym_link(SWEETBERRY_NAME + '.bin', 'sweetberry.alpha.bin')
-	create_sym_link(SWEETBERRY_NAME + '.bin', 'sweetberry.stable.bin')
-	create_sym_link(SWEETBERRY_NAME + '.bin', 'sweetberry.dev.bin')
+    download_unpack(MIRROR_PATH, SWEETBERRY_FILE)
+    os.chmod(SWEETBERRY_NAME + '.bin', 420)
+    create_sym_link(SWEETBERRY_NAME + '.bin', 'sweetberry.alpha.bin')
+    create_sym_link(SWEETBERRY_NAME + '.bin', 'sweetberry.stable.bin')
+    create_sym_link(SWEETBERRY_NAME + '.bin', 'sweetberry.dev.bin')
 
 main()

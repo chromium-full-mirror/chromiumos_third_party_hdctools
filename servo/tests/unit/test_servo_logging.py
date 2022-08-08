@@ -4,6 +4,7 @@
 """Unit-tests to ensure that servod's logging handler works as intended."""
 
 import copy
+import datetime
 import hashlib
 import logging
 import os
@@ -36,14 +37,11 @@ class TestServodRotatingFileHandler(unittest.TestCase):
   # in case the tests wish to modify them.
   MODULE_ATTRS = ['MAX_LOG_BYTES',  # Max bytes a log file can grow to.
                   'LOG_BACKUP_COUNT',  # Number of rotated logfiles to keep.
-                  'UNCOMPRESSED_BACKUP_COUNT',  #  Uncompressed logfiles kept.
                   'COMPRESSION_SUFFIX',  # Filetype suffix for compressed logs.
                   'LOG_DIR_PREFIX',  # Servo port log directory prefix.
                   'LOG_FILE_PREFIX',  # Log file name.
                   'TS_FILE',  # File name to cache the instance's timestamp.
-                  'TS_FORMAT',  # Format string to for timestamps.
-                  'TS_MS_FORMAT']  # Format string for timestamp millisecond
-                                   # component.
+                  'TS_FORMAT']  # Format string to for timestamps.
 
   def setUp(self):
     """Set up data, create logging directory, cache module data."""
@@ -59,14 +57,13 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     # Cache the module wide attributs to restore them after each test again.
     for attr in self.MODULE_ATTRS:
       self.module_defaults[attr] = getattr(servo_logging, attr)
-    # Expand the sub-second component to generate different file names in this
-    # test as the two handlers might be generated in the same millisecond.
-    setattr(servo_logging, 'TS_MS_FORMAT', '%.7f')
 
   def tearDown(self):
     """Delete logging directory, remove handlers,restore module data."""
     shutil.rmtree(self.logdir)
     unittest.TestCase.tearDown(self)
+    for handler in self.test_logger.handlers:
+      handler.close()
     self.test_logger.handlers = []
     # Restore cached module attributes.
     for attr, val in self.module_defaults.items():
@@ -84,10 +81,6 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     loglevel_str = logging.getLevelName(self.loglevel)
     # Range crossing 10, as just sorting by string would place 10 above 9
     ints = [str(i) for i in range(7, 13)]
-    for i in range(0, len(ints), 2):
-      # For every other file add a compression suffix. This is to ensure
-      # that the suffix is ignored when sorting the logs.
-      ints[i] = '%s.%s' % (ints[i], servo_logging.COMPRESSION_SUFFIX)
     files = []
     for tag in tags:
       tag_files = ['%s.%s.%s' % (tag, loglevel_str, i) for i in ints]
@@ -163,7 +156,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
   def test_DeleteMultiplePastBackupCount(self):
     """No more than backup count logs are kept."""
     # Set the backup count to only be 3 compressed for this test.
-    new_count = servo_logging.UNCOMPRESSED_BACKUP_COUNT + 3
+    new_count = servo_logging.LOG_BACKUP_COUNT + 3
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
                                                       backup_count=new_count,
                                                       ts=self.ts,
@@ -174,13 +167,14 @@ class TestServodRotatingFileHandler(unittest.TestCase):
       # The assertion checks that there are at most new_count files.
       assert len(os.listdir(handler.logdir)) <= (new_count +
                                                  BACKUP_COUNT_EXEMPT_FILES)
+    handler.close()
 
   def test_DeleteMultipleInstancesPastBackupCount(self):
     """No more than backup count logs are kept across intances.
 
     Additionally, this test validates that the oldest get deleted.
     """
-    new_count = servo_logging.UNCOMPRESSED_BACKUP_COUNT + 20
+    new_count = servo_logging.LOG_BACKUP_COUNT + 20
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
                                                       backup_count=new_count,
                                                       ts=self.ts,
@@ -195,7 +189,8 @@ class TestServodRotatingFileHandler(unittest.TestCase):
                                                BACKUP_COUNT_EXEMPT_FILES)
     # Change the timestamp and create a new instance. Rotate out all old files.
     new_ts = servo_logging._generateTs()
-    servo_logging._compressOldFiles(logdir=self.logdir)
+    handler.close()
+
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
                                                       backup_count=new_count,
                                                       ts=new_ts,
@@ -211,6 +206,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     # After two new_count rotations, the first timestamp should no longer
     # be around as it has been rotated out. Verify that.
     assert not any(self.ts in f for f in os.listdir(handler.logdir))
+    handler.close()
 
   def test_SortLogsOneInstance(self):
     """Verify log-sorting is per instance in order of newest first."""
@@ -241,7 +237,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     stale_tag = '%s.%s' % (servo_logging.LOG_FILE_PREFIX,
                            servo_logging._generateTs())
     fresh_tag = '%s.%s' % (servo_logging.LOG_FILE_PREFIX,
-                           servo_logging._generateTs())
+      servo_logging._generateTs(datetime.datetime.now() + datetime.timedelta(seconds=1)))
     # This mimicks the active, open logfiles.
     logfiles = ['%s.%s' % (fresh_tag, loglevel)]
     logfiles.append('%s.%s' % (stale_tag, loglevel))
@@ -262,74 +258,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     # The expectation here is that at first all fresh_tags show up, followed
     # by all state_tags, and within those, there is ordering.
     allegedly_sorted_logfiles = servo_logging._sortLogs(logfiles, loglevel)
-    assert allegedly_sorted_logfiles == sorted_logfiles
-
-  def test_CompressOldFiles(self):
-    """At most |UNCOMPRESSED_BACKUP_COUNT| around after old file compression."""
-    self.ts = servo_logging._generateTs()
-    handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      ts=self.ts,
-                                                      fmt=self.fmt,
-                                                      level=self.loglevel)
-    self.test_logger.addHandler(handler)
-    self.test_logger.info('Test content.')
-    for _ in range(servo_logging.UNCOMPRESSED_BACKUP_COUNT):
-      handler.doRollover()
-    # At this point the maximum number of uncompressed files should exist.
-    new_ts = servo_logging._generateTs()
-    handler2 = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                       ts=new_ts,
-                                                       fmt=self.fmt,
-                                                       level=self.loglevel)
-    for _ in range(servo_logging.UNCOMPRESSED_BACKUP_COUNT):
-      handler2.doRollover()
-    # At this point both handlers have created the maximum number of
-    # uncompressed logs. Since they both use the same suffix, compression
-    # should compress all the ones from the first handler.
-    pre_purge_filecount = len([f for f in os.listdir(self.logdir) if
-                               servo_logging.COMPRESSION_SUFFIX not in f])
-    servo_logging._compressOldFiles(logdir=self.logdir)
-    post_purge_filecount = len([f for f in os.listdir(self.logdir) if
-                                servo_logging.COMPRESSION_SUFFIX not in f])
-    assert pre_purge_filecount == post_purge_filecount
-    assert not os.path.exists(handler.baseFilename)
-    cls = servo_logging.ServodRotatingFileHandler
-    handler_compressed_fn = cls.getCompressedPathname(handler.baseFilename)
-    assert os.path.exists(handler_compressed_fn)
-
-  def test_CompressOldFilesTwoLoglevels(self):
-    """At most |UNCOMPRESSED_BACKUP_COUNT| are kept per loglevel."""
-    self.ts = servo_logging._generateTs()
-    handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                      ts=self.ts,
-                                                      fmt=self.fmt,
-                                                      level=self.loglevel)
-    self.test_logger.addHandler(handler)
-    self.test_logger.info('Test content.')
-    for _ in range(servo_logging.UNCOMPRESSED_BACKUP_COUNT):
-      handler.doRollover()
-    # At this point the maximum number of uncompressed files should exist.
-    new_ts = servo_logging._generateTs()
-    handler2 = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
-                                                       ts=new_ts,
-                                                       fmt=self.fmt,
-                                                       level=logging.INFO)
-    for _ in range(servo_logging.UNCOMPRESSED_BACKUP_COUNT):
-      handler2.doRollover()
-    # At this point both handlers have created the maximum number of
-    # uncompressed logs. Since they both use different loglevels
-    # no files should be purged or compressed.
-    pre_purge_filecount = len([f for f in os.listdir(self.logdir) if
-                               servo_logging.COMPRESSION_SUFFIX not in f])
-    servo_logging._compressOldFiles(logdir=self.logdir)
-    post_purge_filecount = len([f for f in os.listdir(self.logdir) if
-                                servo_logging.COMPRESSION_SUFFIX not in f])
-    assert pre_purge_filecount == post_purge_filecount
-    # Ensure the file hasn't been compressed.
-    assert os.path.exists(handler.baseFilename)
-    cls = servo_logging.ServodRotatingFileHandler
-    handler_compressed_fn = cls.getCompressedPathname(handler.baseFilename)
-    assert not os.path.exists(handler_compressed_fn)
+    self.assertEqual(allegedly_sorted_logfiles, sorted_logfiles)
 
   def test_RotationMovesFilesAlong(self):
     """Rotation moves the same logfile's sequence number forward."""
@@ -357,16 +286,18 @@ class TestServodRotatingFileHandler(unittest.TestCase):
       # Ensure that the file is the same that started the rotation by validating
       # the checksum.
       assert md5sum == get_file_md5sum(rolled_fn)
+    handler.close()
 
   def test_HandleExistingLogDir(self):
     """The output directory for a specific port already existing is fine."""
     output_dir = servo_logging._buildLogdirName(self.logdir, 9998)
     os.makedirs(output_dir)
-    _ = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
+    handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
                                                 ts=self.ts,
                                                 fmt=self.fmt,
                                                 level=self.loglevel)
     assert os.path.isdir(output_dir)
+    handler.close()
 
 if __name__ == '__main__':
   unittest.main()

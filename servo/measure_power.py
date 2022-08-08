@@ -19,7 +19,9 @@ SAMPLE_TIME_KEY = 'Sample_msecs'
 DEFAULT_VBAT_RATE = 60
 # Default sample rate to query accumulator ADCs. Since these support
 # accumulation and averaging, they can be queried less frequently.
-DEFAULT_ADC_ACCUM_RATE = 60
+# b/238674542: Make accum rate more aggressive to secure at least one sample
+# for an 1-minute measurement cycle.
+DEFAULT_ADC_ACCUM_RATE = 30
 # Default sample rate to query ADCs for power consumption
 DEFAULT_ADC_RATE = 1
 
@@ -91,7 +93,8 @@ class ServodPowerTracker(threading.Thread):
     # the counters.
     self._skip_first = False
     self.daemon = True
-
+    self._sample_data = []
+    self._previous_sample_data = []
 
   @property
   def empty(self):
@@ -151,14 +154,42 @@ class ServodPowerTracker(threading.Thread):
     skip = self._skip_first
     while not self._stop_signal.is_set():
       if not skip:
+        temp_sample_data = []
         sample_tuples, duration_ms = self._sample_ctrls(self._ctrls)
+        for domain, sample in sample_tuples:
+          # temp_stats.AddSample(domain, sample)
+          temp_sample_data.append((domain, sample))
         self._stats.AddSamples(sample_tuples)
+        self.set_sample_data(temp_sample_data)
       else:
         duration_ms = 0
         self._logger.debug('ready bit not set, skipping sample round')
       self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
       # We only skip the first reading if requested, and no others.
       skip = False
+
+  def set_sample_data(self, sample_data):
+    """Set the value to _sample_data"""
+    self._sample_data = sample_data
+
+  def get_sample_data(self):
+    """Passed the collected data which will use for the visualization
+
+       If the _sample_data is empty, it means that we have not got the new data yet,
+       reuse the previous sample data,
+       otherwise, pass the new sample data and update previous sample data
+
+       Returns:
+         The return object contains the power information
+    """
+    if not self._sample_data:
+      return self._previous_sample_data
+    self._previous_sample_data = self._sample_data
+    return self._sample_data
+
+  def clean_sample_data(self):
+    """Clean the _sample_data containers when the data has been passed"""
+    self._sample_data = []
 
   def _sample_ctrls(self, ctrls):
     """Helper to query all servod ctrls, and create (name, value) tuples.
@@ -228,8 +259,13 @@ class HighResServodPowerTracker(ServodPowerTracker):
       # time and the start time are being used.
       sample_tuples, _ = self._sample_ctrls(self._ctrls)
       temp_stats = stats_manager.StatsManager()
+      temp_sample_data = []
+
       for domain, sample in sample_tuples:
         temp_stats.AddSample(domain, sample)
+        temp_sample_data.append((domain, sample))
+      self.set_sample_data(temp_sample_data)
+
       # If the last timestamp would have been in a new row on the table
       # log the current set of measurements as the next row.
       current_row = int((time.time() - start_time) / self._rate)
@@ -364,6 +400,7 @@ class ECPowerTracker(ServodPowerTracker):
     """Init EC power measurement by setting up ec 'vbat' servod control."""
     self._ec_cmd = 'ppvar_vbat_mw'
     self._avg_ec_cmd = 'avg_ppvar_vbat_mw'
+    self._cfilter = cfilter
     super(ECPowerTracker, self).__init__(host=host, port=port,
                                          stop_signal=stop_signal,
                                          ctrls=[self._ec_cmd],
@@ -377,7 +414,7 @@ class ECPowerTracker(ServodPowerTracker):
     super(ECPowerTracker, self).verify()
     # Then get ambitious and check if the newer avg_ppvar_vbat_mw is also
     # available.
-    self._ctrls = cfilter([self._avg_ec_cmd])
+    self._ctrls = self._cfilter([self._avg_ec_cmd])
     try:
       super(ECPowerTracker, self).verify()
       # This means that avg_ppvar_vbat_mw worked fine.
@@ -387,7 +424,7 @@ class ECPowerTracker(ServodPowerTracker):
       self._logger.info(str(e))
       self._logger.info('%s not supported, using %r instead.', self._avg_ec_cmd,
                         self._ec_cmd)
-      self._ctrls = cfilter([self._ec_cmd])
+      self._ctrls = self._cfilter([self._ec_cmd])
 
   def prepare(self, fast=False, powerstate=UNKNOWN_POWERSTATE):
     """Reduce the time needed to enter deep-sleep after console interaction."""
@@ -403,10 +440,13 @@ class ECPowerTracker(ServodPowerTracker):
     # regular. This is required so that the output is not split into two
     # domains that are really the same: regular & avg.
     adjusted_sample_tuples = []
+    temp_sample_data = []
     for name, sample in sample_tuples:
       if name == self._ec_cmd:
         name = self._ctrls[0]
       adjusted_sample_tuples.append((name, sample))
+      temp_sample_data.append((name, sample))
+    self.set_sample_data(temp_sample_data)
     self._stats.AddSamples(adjusted_sample_tuples)
     self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
     super(ECPowerTracker, self).run()
@@ -532,6 +572,7 @@ class PowerMeasurement(object):
     self._stop_signal = threading.Event()
     self._power_trackers = []
     self._stats = {}
+    self._sample_data = []
     power_trackers = []
     # build out the filter
     cfilter = RegexFilter(rgx_to_keep, rgx_to_remove)
@@ -685,8 +726,15 @@ class PowerMeasurement(object):
     """Signal to stop collection to Trackers before joining their threads."""
     self._stop_signal.set()
     for tracker in self._power_trackers:
-      if tracker.isAlive():
+      if tracker.is_alive():
         tracker.join()
+  def GetPMStatus(self):
+    """Pass the information if the power measurement is finished or not
+       Returns:
+         True:  power measurement is finished
+         False: power measurement is still working
+    """
+    return self._stop_signal.is_set()
 
   def ProcessMeasurement(self, tstart=None, tend=None):
     """Trim data to [tstart, tend] before calculating stats.
@@ -873,6 +921,60 @@ class PowerMeasurement(object):
     """Print summary retrieved from GetFormattedSummary() call."""
     print('\n%s' % self.GetFormattedSummary())
 
+  def SaveSummaryJSON(self, outdir=None):
+    """Save summary of the PowerMeasurement run as JSON.
+
+    Args:
+      outdir: output directory to use instead of autogenerated one
+
+    Returns:
+      List of pathnames, where summaries for this run are stored
+
+    Raises:
+      PowerMeasurementError: if called before measurement processing is done
+    """
+    if not self._processing_done:
+      raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
+    return self._SaveSummaryJSON(stats_managers=self._stats.values(), outdir=outdir)
+
+  def _SaveSummaryJSON(self, stats_managers=[], outdir=None):
+    """Save summary of the PowerMeasurement run as JSON.
+
+    Args:
+      stats_managers: a list of stats managers from which to save the summaries
+      outdir: output directory to use instead of autogenerated one
+
+    Returns:
+      List of pathnames, where summaries for this run are stored
+
+    Raises:
+      PowerMeasurementError: if called before measurement processing is done
+    """
+    outdir = outdir if outdir else self._outdir
+    json_outfiles = [stat.SaveSummaryJSON(outdir) for stat in stats_managers]
+    self._logger.info('Storing .md summaries at:\n%s', '\n'.join(json_outfiles))
+    return json_outfiles
+
   # TODO(coconutruben): make it possible to export graphs here
   # graphs should be output in SVG & some interactive HTML format,
   # since that'll make for nice scaling. Also nice to attach to bugs
+
+  def GetSampleData(self):
+    """This function can pass the latest power information
+
+       Collect the data in each tracker and append the data into an array
+
+       Returns:
+         return the latest power information
+    """
+    sampleData = []
+
+    for power_data in self._power_trackers:
+        if power_data.get_sample_data():
+            sampleData += power_data.get_sample_data()
+    return sampleData
+
+  def CleanSampleData(self):
+    """This function will clean the current data structure which saves the power data"""
+    for trackers in self._power_trackers:
+      trackers.clean_sample_data()

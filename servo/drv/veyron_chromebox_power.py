@@ -28,7 +28,7 @@ class veyronChromeboxPower(power_state.PowerStateDriver):
     indefinitely in order to simulate power off.
 
     """
-    self._servod.set('cold_reset', 'on')
+    self._servod_set('cold_reset', 'on')
 
     # Holding to make sure the device can actually done, think about this:
     #   dut-control power_state:off power_state:on
@@ -37,19 +37,19 @@ class veyronChromeboxPower(power_state.PowerStateDriver):
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
-    self._servod.set('rec_mode', self.REC_ON)
+    self._servod_set('rec_mode', self.REC_ON)
     self._reset_cycle()
     time.sleep(self._RECOVERY_DETECTION_DELAY)
-    self._servod.set('rec_mode', self.REC_OFF)
+    self._servod_set('rec_mode', self.REC_OFF)
 
   def _power_on_normal(self):
     """Power on in normal mode"""
-    self._servod.set('rec_mode', self.REC_OFF)
+    self._servod_set('rec_mode', self.REC_OFF)
     # Disable cold_reset in case it had been enabled by power_off.
-    self._servod.set('cold_reset', 'off')
+    self._servod_set('cold_reset', 'off')
     # If DUT off by _power_off(), then we don't need a power_key event,
     # otherwise, it's need a power_key pressed.
-    self._servod.set('power_key', '0.7')
+    self._servod_set('power_key', '0.7')
 
   def _power_on(self, rec_mode):
     """Power on the DUT.

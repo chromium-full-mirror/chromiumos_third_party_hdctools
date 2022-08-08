@@ -1,0 +1,18 @@
+<root>
+  <include>
+    <name>servo_brya_overlay.xml</name>
+  </include>
+  <!-- Controls -->
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="" port_count="2" />
+  </control>
+  <!-- Osiris has a unique keyboard matrix -->
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeECOsiris" clobber_ok="">
+    </params>
+  </control>
+</root>

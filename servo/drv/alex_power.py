@@ -18,11 +18,11 @@ class alexPower(power_state.PowerStateDriver):
     self._cold_reset()
 
   def _power_on(self, rec_mode):
-    self._servod.set('rec_mode', rec_mode)
-    self._servod.set('power_key', 'short_press')
+    self._servod_set('rec_mode', rec_mode)
+    self._servod_set('power_key', 'short_press')
     if rec_mode == self.REC_ON:
       time.sleep(self._RECOVERY_INSERT_DELAY)
-      self._servod.set('rec_mode', self.REC_OFF)
+      self._servod_set('rec_mode', self.REC_OFF)
 
   def _reset_cycle(self):
     # Use _power_off() rather than _cold_reset() directly

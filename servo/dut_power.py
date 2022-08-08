@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright 2018 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -7,15 +7,21 @@
 
 from __future__ import print_function
 import argparse
+import http.server
 import logging
 import os
+import queue
 import shutil
 import signal
+import socket
+import socketserver
 import sys
 import tempfile
 import threading
 
 from servo import client
+from servo import dut_power_data
+from servo import http_server
 # This module is just a wrapper around measure_power functionality
 from servo import measure_power
 from servo import servo_parsing
@@ -139,15 +145,27 @@ def main(cmdline=sys.argv[1:]):
                       help='message to append to each summary file stored')
   _AddMutuallyExclusiveAction('raw-data', parser, default=False)
   _AddMutuallyExclusiveAction('summary', parser)
+  _AddMutuallyExclusiveAction('json', parser, default=False)
   # NOTE: if logging gets too verbose, turn default off
   _AddMutuallyExclusiveAction('logs', parser)
   parser.add_argument('--save-all', default=False, action='store_true',
                       help='Equivalent to --save-summary --save-logs '
                       '--save-raw-data. Overwrites any of those if specified.')
+  # Start the visualization server
+  parser.add_argument('--visualization', default=False, action='store_true',
+                      help='Visualization the power measurement'
+                           'resultson a local server.')
+  # Specify the http server port for passing the information to html
+  parser.add_argument('--visualization-port', default=9998,
+                      type=int,
+                      help='A port number between 0 and 9998 which is used for'
+                      'the server to serve the visualized power measurement results.'
+                      'Choose 0 to get a random port number.')
+
   args = parser.parse_args(cmdline)
   # Save all logic
   if args.save_all:
-    args.save_logs = args.save_raw_data = args.save_summary = True
+    args.save_logs = args.save_raw_data = args.save_summary = args.save_json = True
   pm_logger = logging.getLogger('')
   pm_logger.setLevel(logging.INFO)
   pm_logger.handlers.clear()
@@ -167,12 +185,17 @@ def main(cmdline=sys.argv[1:]):
     logfilehandler = logging.StreamHandler(tmplogfile)
     logfilehandler.setLevel(logging.DEBUG)
     pm_logger.addHandler(logfilehandler)
-  if args.time < args.adc_accum_rate:
-    # ADC accumulator tracker is meaningless when total measurement time is
-    # less than the tracker rate.
+  if args.time < args.adc_accum_rate*2:
+    # We ask the measurement time to be at least 2x of the tracker rate because:
+    # - ADC accumulator tracker is meaningless when the total measurement time
+    #   is less than the tracker rate.
+    # - If the tracker rate and measurement time are just too close, the
+    #   measurement may end too early and leave no time for the tracker to
+    #   collect and process any samples.
     pm_logger.info('Disabling ADC accumulator queries because the '
                    'measurement time is too short.')
     args.adc_accum_rate = 0
+
   try:
     pm = measure_power.PowerMeasurement(host=args.host, port=args.port,
                                         adc_rate=args.adc_rate,
@@ -185,6 +208,51 @@ def main(cmdline=sys.argv[1:]):
   except measure_power.NoSourceError as e:
     pm_logger.info(e)
     sys.exit(1)
+
+  if args.visualization:
+    server_port = args.visualization_port
+
+    power_data = dut_power_data.DataSampler(pm)
+    http_server_handler = http_server.HttpRequestHandler(power_data)
+    if http_server_handler.is_port_used(server_port):
+      pm_logger.error("port: %d is already in use. USE --visualization-port \
+                       argument to change another port.", server_port)
+      sys.exit(1)
+
+    file_path = http_server_handler.get_visualization_html_exist()
+
+    # If the path does not exist, we would tell
+    # the user how to build the visualization html
+    if not file_path:
+      pm_logger.error("The html file does not exist")
+      pm_logger.error("If the path above does not exist, "
+                      "please follow these steps to build the visualization html")
+      pm_logger.error("cd ~/chromiumos/src/platform2/parallax/\n"
+                       "run: sudo emerge net-libs/nodejs\n"
+                       "run: npm install\n"
+                       "run: npm run build -- release\n")
+      sys.exit(1)
+
+    try:
+      visualization_server = http_server.ThreadedTCPServer(
+                                         ("localhost", server_port), http_server_handler)
+      if server_port == 0:
+        _, server_port = visualization_server.server_address
+
+    except:
+      pm_logger.error("Failed to start http server. You may try to switch to"
+                                              "another port by Use --visualization-port")
+      sys.exit(1)
+    pm_logger.info("Try to use port: %d for visualization", server_port)
+    pm_logger.info("Real-time visualization is available on: %s", file_path)
+    pm_logger.info("In the html page, switch the localhost number to %d "
+                   "and press toggle stream to start", server_port)
+
+    pm_logger.info("press ctrl-c to stop the visualization server.")
+
+    visualization_server_thread = threading.Thread(
+                                  target=visualization_server.serve_forever, daemon=True)
+    visualization_server_thread.start()
   # pylint: disable=undefined-variable
   # Event.wait() is used as a preemptible way to sleep and control the
   # ProgressPrinters while handling the SIGTERM/SIGINT signals
@@ -195,10 +263,19 @@ def main(cmdline=sys.argv[1:]):
   # pylint: disable=g-backslash-continuation
   handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
                   (sw.set(), ss.set(), pm.FinishMeasurement())
+  if args.visualization:
+    handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: \
+                  (sw.set(), ss.set(), pm.FinishMeasurement(),
+                   visualization_server.server_close(), visualization_server.shutdown())
   # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
   signal.signal(signal.SIGINT, handler)
   signal.signal(signal.SIGTERM, handler)
-  # Wait until measurement is is setup
+
+  if args.visualization:
+    # Start to prepare the data which will pass to the visualization UI
+    sample_generator_thread = threading.Thread(
+                                target=power_data.sample_generator, daemon=True).start()
+  # Wait until measurement is setup
   setup_done.wait()
   if not args.no_output:
     waiting_printer = ProgressPrinter(marker=ProgressPrinter.WAIT_MARKER,
@@ -215,7 +292,10 @@ def main(cmdline=sys.argv[1:]):
     # Start printing progress once power collection has started
     sampling_printer.start()
   # Sleep for measurement time and wait time. Will wake on SIGINT & SIGTERM
-  sleep_sampling.wait(args.time)
+  if args.visualization:
+    sleep_sampling.wait()
+  else:
+    sleep_sampling.wait(args.time)
   # To ensure the ProgressPrinter also stops printing.
   sleep_sampling.set()
   # Indicate that measurement should stop, as ProcessMeasurement sets
@@ -226,6 +306,8 @@ def main(cmdline=sys.argv[1:]):
     pm.SaveSummary(args.outdir, args.message)
   if args.save_raw_data:
     pm.SaveRawData(args.outdir)
+  if args.save_json:
+    pm.SaveSummaryJSON(args.outdir)
   if args.save_logs:
     # pylint: disable=protected-access
     outdir = pm._outdir
@@ -234,6 +316,7 @@ def main(cmdline=sys.argv[1:]):
     logfile = os.path.join(outdir, 'logs.txt')
     pm_logger.info('Storing logs at:\n%s', logfile)
     shutil.move(tmplogfile.name, logfile)
-
+  if args.visualization:
+    http_server_handler.save_visualization_html(pm._outdir)
 if __name__ == '__main__':
   main(sys.argv[1:])

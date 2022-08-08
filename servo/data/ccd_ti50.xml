@@ -6,4 +6,11 @@
   <include>
     <name>ccd_cr50.xml</name>
   </include>
+
+  <control>
+    <name>servo_adcs_enabled</name>
+    <doc>Configure the servod device to read ADCs.</doc>
+    <params subtype="en_i2c_dbg_pwr" interface="9" drv="cr50"
+      map="onoff" input_type="int" clobber_ok=""></params>
+  </control>
 </root>

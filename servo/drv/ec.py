@@ -19,6 +19,7 @@ import typing
 
 from servo.drv import pty_driver
 
+
 KEY_STATE = [0, 1, 1, 1, 1]
 
 # Key matrix row and column mapped from kbd_m*_a*
@@ -355,17 +356,20 @@ class ec(pty_driver.ptyDriver):
       # "-1" is treated as max fan RPM in EC, so we don't need to handle that
       self._issue_cmd('fanset %d' % value)
 
-  def _Get_feat(self):
+  def _Get_feat(self):  # pylint: disable=invalid-name
     """Retrieves the EC feature flags encoded as a hexadecimal."""
     self._limit_channel()
     try:
       result = self._issue_cmd_get_results(
-          'feat', ['0-31: (0x[0-9a-f]{8})', '32-63: (0x[0-9a-f]{8})'])
+          'feat', [r"Command 'feat' not found or ambiguous\.|"
+                   r"0-31: (0x[0-9a-f]{8})\s*32-63: (0x[0-9a-f]{8})"])
     except pty_driver.ptyError:
       raise ecError('Cannot retrieve the feature flags on EC console.')
     finally:
       self._restore_channel()
-    return hex((int(result[1][1], 16) << 32) | int(result[0][1], 16))
+    if result[0] == "Command 'feat' not found or ambiguous.":
+      return "0x0"
+    return hex((int(result[0][2], 16) << 32) | int(result[0][1], 16))
 
   def _read_port_role(self, p: int) -> typing.Tuple[str, int]:
     """Reads the PD state.

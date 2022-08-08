@@ -15,4 +15,4 @@ class daisyPower(cros_ec_softrec_power.crosEcSoftrecPower):
     off with cold reset and long press on power button.
     """
     self._cold_reset()
-    self._servod.set('power_key', 'long_press')
+    self._servod_set('power_key', 'long_press')

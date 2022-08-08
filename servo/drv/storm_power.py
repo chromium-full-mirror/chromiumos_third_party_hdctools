@@ -25,14 +25,14 @@ class stormPower(power_state.PowerStateDriver):
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
-    self._servod.set('rec_mode', self.REC_ON)
+    self._servod_set('rec_mode', self.REC_ON)
     self._reset_cycle()
     time.sleep(self._recovery_detection_time)
-    self._servod.set('rec_mode', self.REC_OFF)
+    self._servod_set('rec_mode', self.REC_OFF)
 
   def _power_on_normal(self):
     """Power on in normal mode, i.e., no recovery."""
-    self._servod.set('rec_mode', self.REC_OFF)
+    self._servod_set('rec_mode', self.REC_OFF)
     time.sleep(self._recovery_detection_time)
     self._reset_cycle()
 
@@ -45,4 +45,4 @@ class stormPower(power_state.PowerStateDriver):
   def _power_off(self):
     # There is no way turn off power on storm, so we hold cold_reset to on
     # so the host acts as if it's off.
-    self._servod.set('cold_reset', 'on')
+    self._servod_set('cold_reset', 'on')

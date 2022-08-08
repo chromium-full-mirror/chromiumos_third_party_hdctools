@@ -145,14 +145,11 @@ class TestTimelinedStatsManager(unittest.TestCase):
   def test_TrimSamplesWithPadding(self):
     """Ensure that trimming with offset works as expected."""
     tstart = time.time()
-    time.sleep(0.01)
-    self.data.AddSamples([('A', 10)])
-    time.sleep(0.02)
-    self.data.AddSamples([('A', 23)])
-    time.sleep(0.01)
-    tend = time.time()
-    time.sleep(0.01)
-    self.data.AddSamples([('A', 20)])
+    self.data.AddSamples([('A', 10)], tstart)
+    tinter = tstart + 0.02
+    self.data.AddSamples([('A', 23)], tinter)
+    tend = tinter + 0.01
+    self.data.AddSamples([('A', 20)], tend)
     self.data.TrimSamples(tstart=tstart, tend=tend, offset=0.02)
     self.data.CalculateStats()
     # Verify that only the samples between the timestamps are left

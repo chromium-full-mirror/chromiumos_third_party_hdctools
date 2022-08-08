@@ -17,4 +17,4 @@ class kittyPower(cros_ec_hardrec_power.crosEcHardrecPower):
   _PWR_BUTTON_SHUTDOWN_TIME = '10'
 
   def _power_off(self):
-    self._servod.set('power_key', self._PWR_BUTTON_SHUTDOWN_TIME)
+    self._servod_set('power_key', self._PWR_BUTTON_SHUTDOWN_TIME)

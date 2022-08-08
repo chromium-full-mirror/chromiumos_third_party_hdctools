@@ -22,22 +22,22 @@ class veyronMickeyPower(power_state.PowerStateDriver):
     """Force a power cycle using cold reset."""
     self._cold_reset()
     # AP isn't powered on after cold reset, so power it on.
-    self._servod.set('power_key', '0.7')
+    self._servod_set('power_key', '0.7')
 
   def _power_off(self):
     self._cold_reset()
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
-    self._servod.set('rec_mode', self.REC_ON)
+    self._servod_set('rec_mode', self.REC_ON)
     self._reset_cycle()
     time.sleep(self._RECOVERY_DETECTION_DELAY)
-    self._servod.set('rec_mode', self.REC_OFF)
+    self._servod_set('rec_mode', self.REC_OFF)
 
   def _power_on_normal(self):
     """Power on in normal mode, i.e., no recovery."""
-    self._servod.set('rec_mode', self.REC_OFF)
-    self._servod.set('power_key', '0.7')
+    self._servod_set('rec_mode', self.REC_OFF)
+    self._servod_set('power_key', '0.7')
 
   def _power_on(self, rec_mode):
     if rec_mode == self.REC_ON:

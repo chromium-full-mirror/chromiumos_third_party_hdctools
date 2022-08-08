@@ -73,19 +73,19 @@ class TestScratch(unittest.TestCase):
   def test_AddEntryNonNumericalPort(self):
     """Verify AddEntry raises ScratchError when port can't be cast to int."""
     port = 'hello'
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError, 'Entry arguments malformed. ValueError'):
       self._scratch.AddEntry(port, self._dserials, self._dpid)
 
   def test_AddEntryNonNumericalPID(self):
     """Verify AddEntry raises ScratchError when pid can't be cast to int."""
     pid = 'hello'
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError, 'Entry arguments malformed. ValueError'):
       self._scratch.AddEntry(self._dport, self._dserials, pid)
 
   def test_AddEntryNonListlikeSerials(self):
     """Verify AddEntry raises ScratchError when serials is not iterable."""
     serials = 17
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError, 'Entry arguments malformed. TypeError'):
       self._scratch.AddEntry(self._dport, serials, self._dpid)
 
   def test_AddEntryTwice(self):
@@ -93,9 +93,11 @@ class TestScratch(unittest.TestCase):
     self._scratch.AddEntry(port=self._dport, serials=self._dserials,
                            pid=self._dpid)
     # Ensure error when adding the same entry twice
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError, 'Adding entry for port already in use'), \
+    self.assertLogs(level='ERROR') as log:
       self._scratch.AddEntry(port=self._dport, serials=self._dserials,
                              pid=self._dpid)
+      self.assertIn('Adding entry for port already in use', log.output[0])
 
   # TODO(coconutruben): flesh out more to test equal port, equal serial,
   # and potentially equal pid individually.
@@ -165,7 +167,6 @@ class TestScratch(unittest.TestCase):
     entry_from_file = self._scratch.FindById(self._dport)
     assert entry_from_file['active'] == True
 
-
   def test_MarkActiveAlreadyActive(self):
     """Marking already active entry active is a noop."""
     entry = {'pid': self._dpid,
@@ -180,7 +181,8 @@ class TestScratch(unittest.TestCase):
   def test_MarkActiveEntryUnvailable(self):
     """Marking active an unknown entry fails."""
     self._manually_add_entry()
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError,
+      'No servod scratch entry found under id'):
       # Adjust the default port to ensure that no entry can be found.
       self._scratch.MarkActive(self._dport + 10)
 
@@ -204,7 +206,8 @@ class TestScratch(unittest.TestCase):
     with open(entryfn, 'w') as entryf:
       entryf.write('This is not JSON')
     assert os.path.exists(entryfn)
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError,
+      'had invalid json formatting. Removed.'):
       self._scratch.FindById(identifier)
     # FindById removes invalid json files
     assert not os.path.exists(entryfn)
@@ -212,7 +215,8 @@ class TestScratch(unittest.TestCase):
   def test_FindByIdBadId(self):
     """Verify FindById raises ScratchError when using an unknown id."""
     self._manually_add_entry()
-    with self.assertRaises(scratch.ScratchError):
+    with self.assertRaisesRegex(scratch.ScratchError,
+      'No servod scratch entry found under id'):
       self._scratch.FindById('badid')
 
   def test_GetAllEntriesEmpty(self):
@@ -239,6 +243,7 @@ class TestScratch(unittest.TestCase):
     """Verify Sanitize does not remove active scratch entry."""
     self._manually_add_entry()
     testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    testsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     testsock.bind(('localhost', self._dport))
     prevfiles = os.listdir(self._scratchdir)
     self._scratch._Sanitize()
@@ -250,7 +255,10 @@ class TestScratch(unittest.TestCase):
   def test_SanitizeStaleEntry(self):
     """Verify that stale entries in servoscratch are removed."""
     self._manually_add_entry()
-    self._scratch._Sanitize()
+    with self.assertLogs(level='WARNING') as log:
+      self._scratch._Sanitize()
+      self.assertIn('still registered but not bound to a '
+                    'servod instance. Removing entry.', log.output[0])
     # The port is likely not connected to anything so Sanitize should consider
     # this a stale entry and remove it.
     assert not os.listdir(self._scratchdir)
@@ -260,10 +268,15 @@ class TestScratch(unittest.TestCase):
     self._manually_add_entry()
     entry2 = {'pid': 12345,
               'serials': ['this-is-not-a-serial'],
-              'port': 9888,
+              'port': 23456,
               'active': False}
     self._manually_add_entry(entry2)
-    self._scratch._Sanitize()
+    with self.assertLogs(level='WARNING') as log:
+      self._scratch._Sanitize()
+      self.assertIn('Port \'23456\' still registered but not bound to a '
+                    'servod instance. Removing entry.', log.output[0])
+      self.assertIn('Port \'31234\' still registered but not bound to a '
+                    'servod instance. Removing entry.', log.output[1])
     # The ports are  likely not connected to anything so Sanitize should
     # consider these stale entries and remove them.
     assert not os.listdir(self._scratchdir)

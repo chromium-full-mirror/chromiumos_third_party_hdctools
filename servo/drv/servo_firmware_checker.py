@@ -52,18 +52,18 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         True if |{self._board}_version| == |{self._board}_latest_version|
         False otherwise
     """
-    current = self._servod.get(self._current_fw_cmd)
-    latest = self._servod.get(self._latest_fw_cmd)
+    current = self._servod_get(self._current_fw_cmd)
+    latest = self._servod_get(self._latest_fw_cmd)
     return int(latest == current)
 
   def _set(self, _):
     """Print what the current firmware is, what the latest available is."""
-    current = self._servod.get(self._current_fw_cmd)
-    latest = self._servod.get(self._latest_fw_cmd)
+    current = self._servod_get(self._current_fw_cmd)
+    latest = self._servod_get(self._latest_fw_cmd)
     if self.get():
       self._logger.info('%s firmware up to date.', self._board)
     else:
-      channel = self._servod.get(self._fw_channel_cmd)
+      channel = self._servod_get(self._fw_channel_cmd)
       # Let the user know what channel they are currently running
       self._logger.info('current %r firmware: %s', self._board, current)
       self._logger.info('current firmware is from channel %r', channel)

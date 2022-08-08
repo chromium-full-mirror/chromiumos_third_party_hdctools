@@ -33,16 +33,16 @@ class CrosECPower(power_state.PowerStateDriver):
       # Fallback to the default sequence, which is defined in the superclass
       super(CrosECPower, self)._warm_reset()
     else:
-      self._servod.set('ec_uart_regexp', 'None')
-      self._servod.set('ec_uart_cmd', self._apreset_ec_command)
+      self._servod_set('ec_uart_regexp', 'None')
+      self._servod_set('ec_uart_cmd', self._apreset_ec_command)
       # After the reset, give the EC the time it needs to
       # re-initialize.
       time.sleep(self._reset_recovery_time)
 
   def _power_off(self, manage_delay=True):
     """Power off the DUT."""
-    self._servod.set('ec_uart_regexp', 'None')
-    self._servod.set('ec_uart_cmd', self._shutdown_ec_command)
+    self._servod_set('ec_uart_regexp', 'None')
+    self._servod_set('ec_uart_cmd', self._shutdown_ec_command)
 
     if manage_delay:
       if not polling_control.PollingControl().poll(

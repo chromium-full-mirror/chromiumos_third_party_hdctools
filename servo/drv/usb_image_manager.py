@@ -75,7 +75,7 @@ class usbImageManager(hw_driver.HwDriver):
 
   def _Get_image_usbkey_direction(self):
     """Return direction of image usbkey mux."""
-    return self._servod.get(self._IMAGE_USB_MUX)
+    return self._servod_get(self._IMAGE_USB_MUX)
 
   def _Set_image_usbkey_direction(self, mux_direction):
     """Connect USB flash stick to either servo or DUT.
@@ -87,11 +87,11 @@ class usbImageManager(hw_driver.HwDriver):
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
     self._SafelySwitchMux(mux_direction)
-    if self._servod.get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
+    if self._servod_get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
       # This will ensure that we make a best-effort attempt to only
       # return when the block device of the attached usb stick fully
       # enumerates.
-      self._servod.get(self._IMAGE_DEV)
+      self._servod_get(self._IMAGE_DEV)
 
   def _SafelySwitchMux(self, mux_direction):
     """Helper to switch the usb mux.
@@ -103,14 +103,14 @@ class usbImageManager(hw_driver.HwDriver):
     Args:
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
-    if self._servod.get(self._IMAGE_USB_MUX) != mux_direction:
-      self._servod.set(self._IMAGE_USB_PWR, 'off')
+    if self._servod_get(self._IMAGE_USB_MUX) != mux_direction:
+      self._servod_set(self._IMAGE_USB_PWR, 'off')
       time.sleep(self._poweroff_delay)
-      self._servod.set(self._IMAGE_USB_MUX, mux_direction)
+      self._servod_set(self._IMAGE_USB_MUX, mux_direction)
       time.sleep(self._poweroff_delay)
-    if self._servod.get(self._IMAGE_USB_PWR) != 'on':
+    if self._servod_get(self._IMAGE_USB_PWR) != 'on':
       # Enforce that power is supplied.
-      self._servod.set(self._IMAGE_USB_PWR, 'on')
+      self._servod_set(self._IMAGE_USB_PWR, 'on')
 
   def _PathIsHub(self, usb_sysfs_path):
     """Return whether |usb_sysfs_path| is a usb hub."""

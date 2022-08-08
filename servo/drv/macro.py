@@ -61,7 +61,7 @@ class macro(hw_driver.HwDriver):
                      control, state)
         continue
       # TODO(hungte) Support more commands like sleep(ms).
-      self._servod.set(control, state)
+      self._servod_set(control, state)
 
   def _get(self):
     """Checks and returns current state."""
@@ -72,7 +72,7 @@ class macro(hw_driver.HwDriver):
     def get_value(ctrl):
       if ctrl in cached:
         return cached[ctrl]
-      value = self._servod.get(ctrl)
+      value = self._servod_get(ctrl)
       cached[ctrl] = value
       return value
 

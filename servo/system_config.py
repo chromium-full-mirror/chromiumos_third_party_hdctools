@@ -330,6 +330,10 @@ class SystemConfig(object):
         else:
           raise SystemConfigError('%s %s has illegal number of params %d\n%s' %
                                   (tag, name, len(params_list), element_str))
+        # If name_prefix was given, use it as the interface prefix. Use '' if
+        # it wasn't.'
+        set_dict['interface_prefix'] = name_prefix or ''
+        get_dict['interface_prefix'] = name_prefix or ''
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.
@@ -424,6 +428,23 @@ class SystemConfig(object):
       return []
     return list(self.control_tags[tag])
 
+  def lookup_map_params(self, name):
+    """Lookup & return map parameter dictionary.
+
+    Args:
+      name: string of map name to lookup
+
+    Returns:
+      params: dictionary of map params
+
+    Raises:
+      NameError: if map name not found
+    """
+    if name not in self.syscfg_dict[MAP_TAG]:
+      raise NameError('No map named %s. All maps:\n%s' %
+                      (name, ','.join(sorted(self.syscfg_dict[MAP_TAG]))))
+    return self.syscfg_dict[MAP_TAG][name]['map_params']
+
   def lookup_control_params(self, name):
     """Lookup & return control parameter dictionary.
 
@@ -483,6 +504,17 @@ class SystemConfig(object):
     get = '%s GET: %s' % (dashes, str(ctrl_dict[name]['get_params']))
     set = '%s SET: %s' % (dashes, str(ctrl_dict[name]['set_params']))
     return '%s\n%s\n%s' % (doc, get, set)
+
+  def is_map(self, name):
+    """Determine if name is a map or not.
+
+    Args:
+      name: string of map name to lookup
+
+    Returns:
+      boolean, True if name is map, False otherwise
+    """
+    return name in self.syscfg_dict[MAP_TAG]
 
   def get_control_docstring(self, name):
     """Get controls doc string.
@@ -626,7 +658,8 @@ class SystemConfig(object):
     if 'map' in params:
       map_dict = self._lookup(MAP_TAG, params['map'])
       if map_dict:
-        for keyname, val in map_dict['map_params'].items():
+        map_params = map_dict['map_params']
+        for keyname, val in map_params.items():
           # try treating val as a regex expression
           if params['map'].endswith('_re'):
             if re.search(val, reformat_value):
@@ -637,6 +670,13 @@ class SystemConfig(object):
             if val == reformat_value:
               reformat_value = keyname
               break
+        else:
+          if reformat_value and reformat_value != 'not_applicable':
+            control = params['control_name']
+            logging.warning('%s: %r not found in the param values',
+                            control, reformat_value)
+            logging.warning('%s: update drv to get and set values from the '
+                            'param map %r', control, map_params)
     return reformat_value
 
   def display_config(self, tag=None, prefix=None):

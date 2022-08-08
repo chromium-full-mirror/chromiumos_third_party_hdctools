@@ -199,4 +199,9 @@
     <doc>whether the DUT has a CrOS EC that can talk through servo UART</doc>
     <params drv="echo" value="yes" interface="servo"/>
   </control>
+  <control>
+    <name>servo_class</name>
+    <doc>servo type (flex or ccd)</doc>
+    <params drv="echo" value="flex" interface="servo" clobber_ok=""/>
+  </control>
 </root>

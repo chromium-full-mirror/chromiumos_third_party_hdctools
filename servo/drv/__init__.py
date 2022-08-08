@@ -39,7 +39,6 @@ from servo.drv import fw_wp_ccd
 from servo.drv import fw_wp_servoflex
 from servo.drv import fw_wp_state
 from servo.drv import gpio
-from servo.drv import grunt_power
 from servo.drv import hw_driver
 from servo.drv import i2c_pseudo
 from servo.drv import i2c_reg

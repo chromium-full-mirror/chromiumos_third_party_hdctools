@@ -85,7 +85,7 @@ class ADCTemplate(object):
     self._channel = channel
     if self.FUNCTIONS is None:
       raise ADCTemplateError('Please overwrite FUNCTIONS for your template.')
-    if self.FUNCTIONS.keys() != self.FUNC_DOCSTRING_TEMPLATES.keys():
+    if set(self.FUNCTIONS.keys()) != set(self.FUNC_DOCSTRING_TEMPLATES.keys()):
       raise ADCTemplateError('FUNCTIONS and FUNC_DOCSTRING_TEMPLATES not '
                              'matching in keys for %r' % self.ADC_TYPE)
 

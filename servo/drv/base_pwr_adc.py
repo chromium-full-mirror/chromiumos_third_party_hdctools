@@ -135,7 +135,7 @@ class basePWRADC(hw_driver.HwDriver):
       raise BasePWRADCError('Register %s for control %s unknown' %
                             (reg, self._base_name))
     ctrl_name = self._reg_control_name(reg)
-    return int(self._servod.get(ctrl_name), 16)
+    return int(self._servod_get( ctrl_name), 16)
 
   def _write_reg(self, reg, value):
     """Write |value| to |reg|.
@@ -151,7 +151,7 @@ class basePWRADC(hw_driver.HwDriver):
       raise BasePWRADCError('Register %s for control %s unknown' %
                             (reg, self._base_name))
     ctrl_name = self._reg_control_name(reg)
-    self._servod.set(ctrl_name, value)
+    self._servod_set(ctrl_name, value)
 
   def _set_ctrl(self, suffix, value):
     """Set the control |suffix| for |self._base_name| to |value|.
@@ -167,7 +167,7 @@ class basePWRADC(hw_driver.HwDriver):
     # pylint: disable=protected-access
     if not self._servod.has_control(ctrl_name):
       raise BasePWRADCError('Control %r unknown.' % ctrl_name)
-    self._servod.set(ctrl_name, value)
+    self._servod_set(ctrl_name, value)
 
   @property
   def millivolts_per_lsb(self):
