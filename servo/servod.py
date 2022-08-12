@@ -511,11 +511,11 @@ class ServodStarter(object):
     self._watchdog_thread.deactivate()
     # Collect servo and watchdog threads
     self._server_thread.join(self.EXIT_TIMEOUT_S)
-    if self._server_thread.isAlive():
+    if self._server_thread.is_alive():
       self._logger.error('Server thread not turned down after %s s.',
                          self.EXIT_TIMEOUT_S)
     self._watchdog_thread.join(self.EXIT_TIMEOUT_S)
-    if self._watchdog_thread.isAlive():
+    if self._watchdog_thread.is_alive():
       self._logger.error('Watchdog thread not turned down after %s s.',
                          self.EXIT_TIMEOUT_S)
     self.cleanup()
