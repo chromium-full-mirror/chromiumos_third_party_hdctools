@@ -304,7 +304,7 @@ RUN chmod 755 /usr/local/sbin/flashrom
 # Install futility
 COPY --from=futility-builder /usr/bin/futility /usr/bin/
 RUN chmod 755 /usr/bin/futility
-COPY --from=futility-builder /usr/local/lib/x86_64-linux-gnu/libflashrom.so.1.0.0 /usr/lib
+COPY --from=futility-builder /usr/local/lib/*/libflashrom.so.1.0.0 /usr/lib
 RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
     ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
 
