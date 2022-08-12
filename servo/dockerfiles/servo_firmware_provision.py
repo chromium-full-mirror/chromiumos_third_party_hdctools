@@ -52,7 +52,7 @@ def download_unpack(path, filename):
         dst (str): local folder to download and extract.
     """
     subprocess.check_call(['gsutil', 'cp', path + filename, filename])
-    subprocess.check_call(['tar', 'xf',filename])
+    subprocess.check_call(['tar', '--no-same-owner', '-xf',filename])
     os.remove(filename)
 
 
