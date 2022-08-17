@@ -160,23 +160,6 @@ class ServoV2(ServoV2R0):
             FORCE_V2_LOTID]
   DEFAULT_CONFIG = 'servo_v2_r1.xml'
 
-class ServoV3(_ServoDevTemplate):
-  """Servo v3 template class."""
-  TYPE = 'servo_v3'
-  VID = 0x18d1
-  PID = 0x5004
-  DEFAULT_CONFIG = 'servo_v3_r0.xml'
-
-class ServoV3_(ServoV3):
-  """Servo v2 template class for misprogrammed v3s.
-  The background here is that some servo v3's did not properly have their
-  vid/pid set to Google/Servo V3, but rather are still FTDI/ft232h
-  """
-  # pylint: disable=invalid-name
-  # See docstring
-  VID = 0x0403
-  PID = 0x6014
-
 class ServoV4(_ServoDevTemplate):
   """Servo v4 template class."""
   TYPE = 'servo_v4'

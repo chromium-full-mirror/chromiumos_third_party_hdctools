@@ -1243,7 +1243,7 @@ class ServoUSBkm232Handler(USBkm232Handler):
     """
     Args:
       servo: Servo device used to execute controls
-      legacy: bool, true for servo v2, v3 as they require more setup.
+      legacy: bool, true for servo v2 as they require more setup.
     """
     servo.set('atmega_rst', 'on')
     servo.set('at_hwb', 'off')

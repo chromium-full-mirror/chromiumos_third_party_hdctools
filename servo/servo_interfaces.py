@@ -19,8 +19,7 @@ INTERFACE_DEFAULTS[0x18d1][0x5001] = \
 # servo V2
 # Empty interface 1 == JTAG via openocd
 # Empty interface 5,6 == SPI via flashrom
-# ec3po_uart interface 9,10 == usbpd console, ec console. Applicable to servo v3
-# as well.
+# ec3po_uart interface 9,10 == usbpd console, ec console.
 SERVO_V2_DEFAULTS = [(0x18d1, 0x5002)]
 for vid, pid in SERVO_V2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
@@ -41,29 +40,6 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-# servo v3
-SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
-for vid, pid in SERVO_V3_DEFAULTS:
-  INTERFACE_DEFAULTS[vid][pid] = \
-    ['empty',
-     'bb_gpio',                          # 1
-     {'name': 'dev_i2c', 'bus_num': 1},  # 2
-     {'name': 'bb_uart', 'uart_num': 5,  # 3: uart3/legacy
-      'txd': ['lcd_data8', 0x4],
-      'rxd': ['lcd_data9', 0x4]},
-     {'name': 'bb_uart', 'uart_num': 4}, # 4: ATMEGA
-     'bb_adc',                           # 5
-     {'name': 'dev_i2c', 'bus_num': 2},  # 6
-     {'name': 'bb_uart', 'uart_num': 1}, # 7: EC
-     {'name': 'bb_uart', 'uart_num': 2}, # 8: AP
-     'empty',                            # 9
-     {'name': 'ec3po_uart',              #10: EC3PO(EC)
-      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     {'name': 'ec3po_uart',              #11: EC3PO(AP)
-      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
-    ]
-
-INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
 
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
@@ -296,8 +272,7 @@ for vid, pid in FLUFFY_ID_DEFAULTS:
 
 # Allow Board overrides of interfaces as we've started to overload some servo V2
 # pinout functionality.  To-date just swapping EC SPI and JTAG interfaces for
-# USB PD MCU UART.  Note this can NOT be done on servo V3.  See crbug.com/567842
-# for details.
+# USB PD MCU UART.
 INTERFACE_BOARDS = collections.defaultdict(
     lambda: collections.defaultdict(dict))
 

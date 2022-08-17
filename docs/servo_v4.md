@@ -149,7 +149,7 @@ around three hundred of these total.
 
 ## Software
 
-Servo v4 runs more or less equivalently to Servo v2 and v3, through [`servod`].
+Servo v4 runs more or less equivalently to Servo v2, through [`servod`].
 It's intended to be mostly transparent, but there are some differences.
 
 Most functionality is exported through `dut-control`.

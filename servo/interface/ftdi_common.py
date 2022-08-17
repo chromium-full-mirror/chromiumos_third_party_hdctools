@@ -9,8 +9,8 @@ from servo import servo_dev_templates
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4
 
-DEFAULT_VID = servo_dev_templates.ServoV3_.VID
-DEFAULT_PID = servo_dev_templates.ServoV3_.PID
+DEFAULT_VID = servo_dev_templates.ServoV4.VID
+DEFAULT_PID = servo_dev_templates.ServoV4.PID
 
 (INTERFACE_TYPE_ANY, INTERFACE_TYPE_GPIO, INTERFACE_TYPE_I2C,
  INTERFACE_TYPE_JTAG, INTERFACE_TYPE_SPI, INTERFACE_TYPE_UART) = \

@@ -1,7 +1,7 @@
 # Servo 
 
 Servo Micro (aka "uServo") is a self contained replacement for Yoshi Servo Flex.
-It is meant to be compatible with Servo v2/v3 via [`servod`]. The design uses
+It is meant to be compatible with Servo v2 via [`servod`]. The design uses
 [Case Closed Debug][CCD] software on an STM32 microcontroller to provide a [CCD]
 interface into systems with a Yoshi debug port.
 

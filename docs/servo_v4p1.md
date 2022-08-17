@@ -168,7 +168,7 @@ This sequence has better coverage.  The other peripherals (USBA ports, RJ22, RJ4
 
 ## Software
 
-Servo v4.1 runs more or less equivalently to Servo v2 and v3, through [`servod`].
+Servo v4.1 runs more or less equivalently to Servo v2, through [`servod`].
 It's intended to be mostly transparent, but there are some differences.
 
 Most functionality is exported through `dut-control`.
@@ -390,7 +390,7 @@ follows:
 (chroot) $ make BOARD=servo_v4p1 -j8
 ```
 
-To raw flash a Servo v4.1, slide the DFU switch by the RJ45 so the blue LED is lit.  For ordinary 
+To raw flash a Servo v4.1, slide the DFU switch by the RJ45 so the blue LED is lit.  For ordinary
 Servo use, the blue LED should be off.
 
 ```bash

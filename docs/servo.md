@@ -31,7 +31,7 @@ See the detailed documentation in [Servo v2].
 ### Servo Micro
 
 Servo Micro is a self-contained replacement for Yoshi Servo flex. It is meant to
-be compatible with Servo v2/v3 via `servod`. The design uses case closed debug
+be compatible with Servo v2 via `servod`. The design uses case closed debug
 software on an STM32 MCU to provide a [CCD] interface into systems with a Yoshi
 debug port.
 
@@ -42,7 +42,7 @@ See the detailed documentation in [Servo Micro].
 
 ### Servo v4
 
-While Servo v4 is still supported in software, the hardware has been discontinued 
+While Servo v4 is still supported in software, the hardware has been discontinued
 and replaced by Servo v4.1.
 
 See the detailed documentation in [Servo v4].
