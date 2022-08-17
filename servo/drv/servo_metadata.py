@@ -40,6 +40,12 @@ class servoMetadata(hw_driver.HwDriver):
           type += '_and_' + dev.template.TYPE
     return type
 
+  def _Get_devices(self):
+    """Gets detailed information about the devices set up for the servod instance."""
+    devices_json = []
+    for device in self._servod.get_devices():
+      devices_json.append(json.loads(device.to_json()))
+    return json.dumps(devices_json, indent=4)
 
   def _Get_pid(self):
     """Return servod instance pid"""

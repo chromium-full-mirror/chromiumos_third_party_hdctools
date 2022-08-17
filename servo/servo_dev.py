@@ -4,6 +4,7 @@
 
 """Servod device used by the server and watchdog."""
 
+import json
 import logging
 import os
 import threading
@@ -591,3 +592,15 @@ class ServoDevice(object):
       if member != self.dev_entry:
         child_devices.append(member.servo_device)
     return child_devices
+
+  def to_json(self):
+    """Serialize this device to a json string."""
+    data = {"prefix" : self.prefix, 
+            "type" : self.template.TYPE, 
+            "vendor_id" : self.template.VID,
+            "product_id": self.template.PID,
+            "serial" : self._serial,
+            "sysfs_path" : self._sysfs_path,
+            "root_hub_device" : self.get_root_hub_device().prefix,
+            "child_devices": [dev.prefix for dev in self.get_child_devices()]}
+    return json.dumps(data, indent=4)

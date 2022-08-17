@@ -141,6 +141,11 @@
     <params drv="servo_metadata" subtype="type" interface="servo" />
   </control>
   <control>
+    <name>devices</name>
+    <doc>Detailed information of servo devices set up for the servod instance.</doc>
+    <params drv="servo_metadata" subtype="devices" interface="servo" />
+  </control>
+  <control>
     <name>watchdog</name>
     <doc>The connection state of all devices.</doc>
     <params drv="servo_watchdog" subtype="watchdog" interface="servo"

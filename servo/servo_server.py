@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Servo Server."""
+
+import collections
 import logging
 import sys
 try:
@@ -45,13 +47,13 @@ class Servod(object):
     self._usbkm232 = usbkm232
     self._keyboard = None
     self._usb_keyboard = None
-    self._serialnames = {}
+    self._serialnames = collections.defaultdict(lambda: None)
     # A map of ServoDevices keyed by their name/prefix.
     # A ServoDevice can have multiple name/prefix (e.g. 'main', '')
-    self._devices = {}
+    self._devices = collections.defaultdict(lambda: None)
     # A map of ServoDevices keyed by their id (vid, pid, serial)
     # Each ServoDevice has a unique id
-    self._unique_devices = {}
+    self._unique_devices = collections.defaultdict(lambda: None)
     # All known controls of this servod instance
     self._controls = set()
 
@@ -90,6 +92,7 @@ class Servod(object):
       dev.close()
 
   def get_devices(self):
+    """Get all devices connected to this servod instance."""
     return set(self._devices.values())
 
   @staticmethod
