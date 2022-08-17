@@ -2,9 +2,5 @@ black
 docker
 flake8
 flake8-docstrings
-mock
 pip-tools
 pylint
-usb
-retry
-paramiko
