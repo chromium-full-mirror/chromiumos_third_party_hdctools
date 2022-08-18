@@ -1,6 +1,7 @@
 mock
 numpy
 pexpect
+protobuf
 pyserial
 pytest
 pytest-mock

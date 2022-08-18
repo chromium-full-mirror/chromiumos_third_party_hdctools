@@ -19,9 +19,9 @@ import time
 import servo_dev_templates
 
 # Servo V2 PID
-V2_PID = servo_dev_templates.ServoV2.PID
+V2_PID = servo_dev_templates.GetPID("servo_v2")
 # Servo V3 PID
-V3_PID = servo_dev_templates.ServoV3.PID
+V3_PID = servo_dev_templates.GetPID("servo_v3")
 
 def do_cmd(cmd, timeout, plist=None, flist=None):
   """Executes a shell command

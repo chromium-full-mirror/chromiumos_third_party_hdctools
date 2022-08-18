@@ -146,13 +146,29 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
-FROM libftdi as hdctools-builder
+FROM clang-builder as protoc-builder
 
+WORKDIR /
+RUN wget  https://github.com/protocolbuffers/protobuf/releases/download/v3.19.3/protobuf-python-3.19.3.tar.gz && tar xf protobuf-python-3.19.3.tar.gz && rm protobuf-python-3.19.3.tar.gz
+# Version is set to match version of protoc in the chroot
+# When updating package versions, also update protoc to x.y.z in:
+# chromium/src/third_party/portage-stable/dev-libs/protobuf/protobuf-x.y.z.ebuild
+RUN cd /protobuf-3.19.3/ && ./configure && make && make check && make install && ldconfig
+
+######################################################################
+FROM libftdi as hdctools-builder
 # For cloud build and for developers copying the local source is correct, if
 # you need to build from checked in code vs you local source comment out the
 # copy command and uncomment the clone command.
 COPY / hdctools/
 #RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
+
+# Install protoc
+# Put  protoc in /usr/bin to match chroot's protoc location so that proto/Makefile
+# runs without issue
+COPY --from=protoc-builder /usr/local/bin/protoc /usr/bin
+COPY --from=protoc-builder /usr/local/lib/libproto* /usr/local/lib/
+RUN ldconfig
 
 RUN pip3 install pytest
 
