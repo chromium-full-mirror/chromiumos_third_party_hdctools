@@ -325,7 +325,6 @@ for board in [
     'eve',
     'fizz',
     'flapjack',
-    'glados',
     'goroh',
     'grunt',
     'hatch',
