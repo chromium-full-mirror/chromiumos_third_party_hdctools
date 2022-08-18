@@ -347,7 +347,12 @@ class ServoDevice(object):
       wr_val = self.syscfg.resolve_val(params, wr_val_str)
 
       drv.set(wr_val)
-  
+
+    # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
+    # xmlrpc server & client I still have to return something to appease the
+    # marshall/unmarshall
+    return True
+
   def _get_param_drv(self, control_name, is_get=True):
     """Get access to driver for a given control.
 
