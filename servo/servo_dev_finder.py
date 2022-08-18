@@ -4,6 +4,7 @@
 
 """Discover devices for a servod instance."""
 
+import collections
 import logging
 import os
 import select
@@ -258,7 +259,8 @@ class ServoDeviceFinder(object):
       devs: a list of ServoDeviceEntry devices
     """
     known_prefixes = set()
-    devs_without_prefix = []
+    # a dictionary of devices without prefix, keyed by device type
+    devs_without_prefix = collections.defaultdict(lambda: [])
     for dev in devs:
       # handle main device's prefix
       if dev == main_dev:
@@ -294,21 +296,27 @@ class ServoDeviceFinder(object):
         self._logger.debug('Device %s is given prefix %s during invocation',
           dev, dev.devopts.prefix)
       else:
-        devs_without_prefix.append(dev)
+        devs_without_prefix[dev.dev_template.TYPE].append(dev)
 
-    # auto generate prefix use device type and the last 4 digit of serial
-    for dev in devs_without_prefix:
-      prefix = '%s-%s' % (dev.dev_template.TYPE, dev.serial[-4:])
-      if prefix not in known_prefixes:
-        dev.devopts.prefix = prefix
-      else:
-        suffix = 2
-        while ('%s-%s' % (prefix, suffix)) in known_prefixes:
-          suffix += 1
-        dev.devopts.prefix = '%s-%s' % (prefix, suffix)
-      known_prefixes.add(dev.devopts.prefix)
-      self._logger.debug('Device %s is given prefix %s which is automatically generated',
-        dev, dev.devopts.prefix)
+    # auto generate prefix based on device type
+    for dev_type, devs in devs_without_prefix.items():
+      for dev in devs:
+        # use the device type as the prefix if it is the only 1 device of the kind
+        if len(devs) == 1 and dev_type not in known_prefixes:
+          prefix = dev_type
+        # otherwise, use device type and the last 4 digit of serial
+        else:
+          prefix = '%s-%s' % (dev_type, dev.serial[-4:])
+        if prefix not in known_prefixes:
+          dev.devopts.prefix = prefix
+        else:
+          suffix = 2
+          while ('%s-%s' % (prefix, suffix)) in known_prefixes:
+            suffix += 1
+          dev.devopts.prefix = '%s-%s' % (prefix, suffix)
+        known_prefixes.add(dev.devopts.prefix)
+        self._logger.debug('Device %s is given prefix %s which is automatically generated',
+          dev, dev.devopts.prefix)
 
   def validate_device_availability(self, devs):
     """Check against ServoScratch that all devices are not served by another servod instance.

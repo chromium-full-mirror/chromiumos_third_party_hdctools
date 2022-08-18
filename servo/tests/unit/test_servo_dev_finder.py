@@ -341,7 +341,7 @@ class TestServoDeviceFinder(unittest.TestCase):
 
     finder.generate_prefixes(devs, test_entry)
     assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
-    assert test_entry2.devopts.prefix == 'servo_v4-s'
+    assert test_entry2.devopts.prefix == 'servo_v4'
 
   def test_generate_prefixes_auto_generation(self):
     """Test generate_prefixes auto generate prefixes for devices."""
@@ -368,7 +368,7 @@ class TestServoDeviceFinder(unittest.TestCase):
 
     finder.generate_prefixes(devs, test_entry)
     assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
-    assert test_entry2.devopts.prefix == 'servo_micro-s'
+    assert test_entry2.devopts.prefix == 'servo_micro'
     assert test_entry3.devopts.prefix == 'servo_v4-1234'
     assert test_entry4.devopts.prefix == 'servo_v4-1234-2'
     assert test_entry5.devopts.prefix == 'servo_v4-1234-3'
