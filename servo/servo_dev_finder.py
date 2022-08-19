@@ -4,6 +4,7 @@
 
 """Discover devices for a servod instance."""
 
+from enum import Enum
 import collections
 import logging
 import os
@@ -22,16 +23,45 @@ INTERATIVE_MENU_TIMEOUT_SECONDS = 30
 class ServoDeviceFinderError(Exception):
   """ServoDeviceFinderError error class."""
 
+class ServoDeviceDiscoveryMode(Enum):
+  """Indicates how much auto discovery can be performed by ServoDeviceFinder."""
+
+  # Enable full auto discovery
+  # 1. Pull in complete clusters of the devices provided through cmdline and rc file
+  # 2. When user does not provide enough information for a device on cmdline
+  #    and rc file (e.g. when vid/pid/serial is None), try selecting a device based
+  #    on each device's priority.
+  FULL_AUTO = 0
+
+  # Enable minimum auto discovery
+  # 1. Pull in bare minimum devices that relate to the devices provided through
+  #    cmdline and rc file. For any root hub device (e.g. ServoV4), all its cluster
+  #    member are pulled in. For any non-root-hub device, only its
+  #    cluster root gets pulled in.
+  # 2. When user does not provide enough information for a device on cmdline
+  #    and rc file (e.g. when vid/pid/serial is None), try selecting a device based
+  #    on each device's priority.
+  MIN_AUTO = 1
+
+  # No auto discovery
+  # 1. Only pull in the devices provided through cmdline and rc file.
+  # 2. When user does not provide enough information for a device on cmdline
+  #    and rc file (e.g. when vid/pid/serial is None), let user choose through
+  #    an interactive cmdline menu.
+  NO_AUTO = 2
+
 class ServoDeviceFinder(object):
   """ Discover devices to be served by a servod instance."""
 
-  def __init__(self, devopts, dev_hierarchy, scratch, choose_device=None):
+  def __init__(self, devopts, dev_hierarchy, scratch, discover_mode, choose_device=None):
     """Set up the servo device finder.
 
     Args:
       devopts: a list of device opts parsed from the servod starting commandline
       dev_hierarchy: a ServoDeviceHierarchy generated when the servod starts
       scratch: ServoSratch that manages information across different servod instances.
+      discover_mode: ServoDeviceDiscoveryMode that indicates how much auto discovery
+        can be performed by the finder when discovering devices.
       choose_device: a param used to mock behavior for user interactively choose
         device on the cmd line. It should only be not None in tests.
     """
@@ -39,30 +69,29 @@ class ServoDeviceFinder(object):
     self._devopts = devopts
     self._dev_hierarchy = dev_hierarchy
     self._scratch = scratch
+    self.discover_mode = discover_mode
     self.choose_device = choose_device if choose_device is not None else self._choose_device
 
-  def discover_servos(self, complete_cluster=True):
+  def discover_servos(self):
     """Complete the device list of servod from servod commandline device opts
     and servo device hierarchy.
 
-    The complete device list is derived from the dev_ids (parsed from the servod
+    The complete device list is derived from the invocation_devs (parsed from the servod
     starting commandline) and the servo device hierarchy in the following ways:
-    (1) If dev_ids is empty or all-inclusive, return all the devices in the hierarchy.
-    (2) If complete_cluster is True, all member devices in a cluster will be served
+    (1) If invocation_devs is empty or all-inclusive, return all the devices in the hierarchy.
+    (2) If discover_mode is FULL_AUTO, all member devices in a cluster will be served
         with this servod instance.
-        For any device (e.g. ServoV4) in dev_ids, all its cluster member (i.e. servo
+        For any device (e.g. ServoV4) in invocation_devs, all its cluster member (i.e. servo
         devices attached to it and its root hub) get pulled into the device list.
-    (3) If complete_cluster is False, only the bare minimum devices are pulled into
+    (3) If discover_mode is MIN_AUTO, only the bare minimum devices are pulled into
         this servod instance.
-        For any cluster root device (e.g. ServoV4) in dev_ids, all its cluster member
-        get pulled into the device list. For any non-root device in dev_ids, only its
+        For any cluster root device (e.g. ServoV4) in invocation_devs, all its cluster member
+        get pulled into the device list. For any non-root device in invocation_devs, only its
         cluster root gets pulled in. Other devices in the same cluster are not pulled
-        in, uless they are already specified in dev_ids.
-    (4) If any device cannot be pulled in because it is already used in another servod
+        in, uless they are already specified in invocation_devs.
+    (4) If discover_mode is NO_AUTO, only pull in the devices in invocation_devs.
+    (5) If any device cannot be pulled in because it is already used in another servod
         instance, we throw an error and exit servod.
-
-    Args:
-      complete_cluster: whether to complete device clusters in the device list
 
     Returns:
       A list representing the complete device list of servo. Each entry is a
@@ -73,9 +102,6 @@ class ServoDeviceFinder(object):
       by another servod instance
     """
     self._logger.info('Start discovering all devices for this servod instance.')
-    if not self._devopts:
-      return list(self._dev_hierarchy.get_all_entries().values())
-
     # First pull in all the devices included in the command line invocation
     invocation_devs = set()
     for one_dev_opts in self._devopts:
@@ -89,35 +115,36 @@ class ServoDeviceFinder(object):
     # Then pull in all the devices connecting to the devices included in command
     # line invocation
     dev_list = invocation_devs.copy()
-    for dev_entry in invocation_devs:
-      # for a root hub device, include all its cluster member
-      if dev_entry.is_cluster_root():
-        for member in dev_entry.cluster_members:
-          if member not in dev_list:
-            self._logger.info('Pull in device %s as it is a child of device %s.', member, dev_entry)
-            self._complete_devopts(member, dev_entry)
-            dev_list.add(member)
-      # for a non-root device in a cluster, include its root hub
-      elif dev_entry.is_in_cluster():
-        if dev_entry.cluster_root not in dev_list:
-          self._logger.info('Pull in device %s as it is the parent hub of device %s.',
-          dev_entry.cluster_root, dev_entry)
-          self._complete_devopts(dev_entry.cluster_root, dev_entry)
-          dev_list.add(dev_entry.cluster_root)
-        # also include the other cluster members if we would like complete clusters served
-        # by one servod instance
-        if complete_cluster:
-          for member in dev_entry.cluster_root.cluster_members:
+    if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
+      for dev_entry in invocation_devs:
+        # for a root hub device, include all its cluster member
+        if dev_entry.is_cluster_root():
+          for member in dev_entry.cluster_members:
             if member not in dev_list:
-              self._logger.info('Pull in device %s as it is a sibling of device %s.', member, dev_entry)
+              self._logger.info('Pull in device %s as it is a child of device %s.', member, dev_entry)
               self._complete_devopts(member, dev_entry)
               dev_list.add(member)
+        # for a non-root device in a cluster, include its root hub
+        elif dev_entry.is_in_cluster():
+          if dev_entry.cluster_root not in dev_list:
+            self._logger.info('Pull in device %s as it is the parent hub of device %s.',
+            dev_entry.cluster_root, dev_entry)
+            self._complete_devopts(dev_entry.cluster_root, dev_entry)
+            dev_list.add(dev_entry.cluster_root)
+          # also include the other cluster members if we would like complete clusters served
+          # by one servod instance
+          if  self.discover_mode == ServoDeviceDiscoveryMode.FULL_AUTO:
+            for member in dev_entry.cluster_root.cluster_members:
+              if member not in dev_list:
+                self._logger.info('Pull in device %s as it is a sibling of device %s.', member, dev_entry)
+                self._complete_devopts(member, dev_entry)
+                dev_list.add(member)
 
     dev_list = list(dev_list)
     self.validate_device_availability(dev_list)
     return dev_list
 
-  def _find_one_device(self, vid, pid, serial, smart_selection=True):
+  def _find_one_device(self, vid, pid, serial):
     """Find 1 device given a dev_id (vid, pid, serial) from the device hierarchy.
 
     Any of the vid, pid, serial can be None.
@@ -126,9 +153,6 @@ class ServoDeviceFinder(object):
       vid: vendor id of a device
       pid: product id of a device
       serial: serial name of a device
-      smart_selection: when user does not provide enough information for picking a
-          device (e.g. when vid/pid/serial is None), try selecting a device based
-          on each device's priority.
 
     Returns:
       A device matching the given dev_id in the device hierarchy.
@@ -150,7 +174,7 @@ class ServoDeviceFinder(object):
       self._logger.info('Found > 1 servo devices with %s', input_str)
       # when user does not provide enough information for picking a device (e.g. when
       # vid/pid/serial is None), try selecting a device based on each device's priority.
-      if smart_selection:
+      if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
         self._logger.info('Try to smartly select a device among device candidates: %s', candidates)
         prioritized_devs = servo_dev_hierarchy.ServoDeviceHierarchy.generate_device_priority(candidates)
         candidates = servo_dev_hierarchy.ServoDeviceHierarchy.most_prirotized_devices(prioritized_devs)

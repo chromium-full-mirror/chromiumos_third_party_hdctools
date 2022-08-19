@@ -125,9 +125,16 @@ class ServodStarter(object):
     self._logger.info('Start')
 
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
+    if sopts.no_device_discovery:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
+    elif sopts.min_device_discovery:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO
+    else:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
     finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
                                                 dev_hierarchy=dev_hierarchy,
-                                                scratch=self._scratchutil)
+                                                scratch=self._scratchutil,
+                                                discover_mode=discover_mode)
     try:
       dev_entries = finder.discover_servos()
       main_dev_entry = finder.choose_main_device(dev_entries)
@@ -275,6 +282,17 @@ class ServodStarter(object):
                              action='store_true',
                              help='Start servod through issues to allow for '
                              'inspection and recovery mechanisms.')
+    server_pars.add_argument('--no-device-discovery', default=False,
+                             action='store_true',
+                             help='Only use devices included in the command '
+                             'line and rc file to start servod. Disallow auto-'
+                             'discovering any other devices.')
+    server_pars.add_argument('--min-device-discovery', default=False,
+                             action='store_true',
+                             help='Only perform minimum auto-discovering of '
+                             'devices based on the deviced provided through'
+                             'command line and rc file. i.e. pull in the necessary'
+                             'root hub and child devices.')
     # This is included in server_pars because it is shared across all devices
     server_pars.add_argument('-u', '--usbkm232', type=str,
                           help='path to USB-KM232 device which allow for '

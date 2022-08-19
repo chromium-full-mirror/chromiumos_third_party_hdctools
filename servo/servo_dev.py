@@ -577,7 +577,7 @@ class ServoDevice(object):
 
   def is_root_hub_device(self):
     """Check whether this device is a root hub device.
-    
+
     Returns:
       True if this device is a root hub device, false otherwise.
     """
@@ -585,7 +585,7 @@ class ServoDevice(object):
 
   def get_child_devices(self):
     """Get the devices hanging on this device (directly or indirectly).
-    
+
     Returns:
       A list of ServoDevice that hangs on this device directly or indirectly.
       If this device is not a root hub device, return an empty list.
@@ -594,7 +594,7 @@ class ServoDevice(object):
     if not self.is_root_hub_device():
       return child_devices
     for member in self.dev_entry.cluster_members:
-      if member != self.dev_entry:
+      if member != self.dev_entry and member.servo_device is not None:
         child_devices.append(member.servo_device)
     return child_devices
 
