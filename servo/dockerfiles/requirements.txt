@@ -48,8 +48,6 @@ pytest-mock==3.7.0
     # via -r requirements.in
 pytest-xdist==2.5.0
     # via -r requirements.in
-pyusb==1.2.1
-    # via -r requirements.in
 requests==2.27.1
     # via -r requirements.in
 six==1.16.0

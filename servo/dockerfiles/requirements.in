@@ -5,6 +5,5 @@ pyserial
 pytest
 pytest-mock
 pytest-xdist
-pyusb
 requests
 six

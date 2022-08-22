@@ -225,6 +225,28 @@ RUN make && make install
 RUN strip /usr/bin/futility
 
 ######################################################################
+FROM python:3.10-slim-bullseye as pyusb-builder
+
+RUN apt-get update \
+    && apt-get install -y \
+       python3 \
+       wget \
+       python3-distutils \
+       git
+
+RUN wget https://bootstrap.pypa.io/get-pip.py && python3 ./get-pip.py
+RUN pip3 install --upgrade pip && pip3 install setuptools 
+
+RUN git clone https://github.com/pyusb/pyusb.git
+
+WORKDIR /pyusb/usb
+COPY /servo/dockerfiles/containerid.patch .
+RUN git apply containerid.patch 
+ 
+WORKDIR /pyusb
+RUN  python3 setup.py sdist bdist_wheel
+
+######################################################################
 FROM python:3.10-slim-bullseye
 
 # Install libusb.
@@ -265,6 +287,7 @@ COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --from=hdctools-builder /hdctools/dist/* ./
 COPY --from=ec-builder /ec/dist/*.whl ./
+COPY --from=pyusb-builder /pyusb/dist/*.whl ./
 RUN pip install *.whl
 WORKDIR /
 RUN rm -rf wheels
