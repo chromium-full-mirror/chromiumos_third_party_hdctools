@@ -216,9 +216,6 @@ class ptyDriver(hw_driver.HwDriver):
         # groups.
         output.append(member)
       else:
-        # for python2 compatibility we want to always convert |member| into a
-        # utf-8 string
-        member = member.decode(encoding='utf-8', errors='replace')
         # Now, we want to make sure that each character can go through XMLRPC.
         # To do this we 1. exempt \t, \r, and \n per spec, and 2. check
         # the rest for having a numerical value between 31 and and 127.
