@@ -178,17 +178,18 @@ class ServodStarter(object):
         servo_device.init_servo_interfaces(fault_tolerant=True)
         ec_board = prober.get_board_from_ec(servo_device)
         if not ec_board:
-          self._logger.fatal('Cannot probe board for DUT controller %s', servo_device)
-          sys.exit(-1)
-        devopts.board = ec_board
+          self._logger.warn('Cannot probe board for DUT controller %s.'
+            'Start device without board specific config.', servo_device)
+        else:
+          devopts.board = ec_board
         devopts.model = prober.get_model_from_ec(servo_device)
         servo_device.set_base_board(devopts.board)
       # Set the board and the model for a DUT
-      if not servo_device.set_board_and_model(devopts.board, devopts.model):
-        if devopts.board:
-          self._logger.fatal('Cannot set up board %s for device %s',
+      if devopts.board:
+        if not servo_device.set_board_and_model(devopts.board, devopts.model):
+          self._logger.warn('Cannot set up board %s for device %s. '
+            'Start device without board specific config.',
             devopts.board, servo_device)
-          sys.exit(-1)
       servo_device.syscfg.finalize()
       self._servod.add_device(servo_device, dev_entry.devopts.prefix)
 
