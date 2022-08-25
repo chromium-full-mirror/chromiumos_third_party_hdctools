@@ -418,12 +418,11 @@ class Servod(object):
       self._logger.error('If flipping the cable allows CCD, please file a bug '
                          'against the DUT platform with reproducing details.')
 
-    # TODO(konmari): figure out if we should tolerate no dut controller
-    dut_controller_tolerant = recovery.is_recovery_active()
-    if dut_controller_tolerant:
-      self._logger.info('Will continue startup as recovery mode has '
+      dut_controller_tolerant = recovery.is_recovery_active()
+      if dut_controller_tolerant:
+        self._logger.info('Will continue startup as recovery mode has '
                         'been requested')
-    else:
-      self._logger.fatal('No device interface '
+      else:
+        self._logger.fatal('No device interface '
                         '(Servo Micro, C2D2, or CCD) connected.')
-      sys.exit(-1)
+        sys.exit(-1)
