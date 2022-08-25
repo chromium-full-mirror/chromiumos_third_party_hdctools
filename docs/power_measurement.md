@@ -69,7 +69,7 @@ To verify that you have generated configuration files successfully, look into
 this directory:
 
 ```bash
-(chroot) $ cd $(python -c 'import site; print(site.getsitepackages()[-1])')/servo/data/
+(chroot) $ /usr/lib64/python2.7/site-packages/servo/data/
 ```
 
 File format: `.xml` for servod, `.board` and `.scenario` for powerlog.
