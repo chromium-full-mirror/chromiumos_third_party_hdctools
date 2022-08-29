@@ -2,11 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
+import logging
 import os
 import time
+import pytest
+
 from enum import Enum
 from itertools import count
-
 
 class DeviceType(Enum):
     SERVOV4P1 = 1
@@ -48,111 +51,46 @@ def get_servo_serial(device_type):
     )
 
 
-def get_board_model_pairs(exclude_list=None):
+def get_board_model_pairs(board_exclude_list=[]):
     """Get a list of board, model tuples that can have tests scheduled.
 
     If a test can not run for a specific board
 
     Args:
-        exclude_list (list, optional): List of boards to exclude from the returned list. Defaults to None.
+        board_exclude_list (list, optional): List of boards to exclude from the returned list. Defaults to None.
 
     Returns:
         list if string tuples: board model pairs.
     """
-    # TODO(haddowk) generate this list dynamically from the files in /data/*
-    return [
-        ("asuka", "default"),
-        ("asurada", "default"),
-        ("atlas", "default"),
-        ("bloonchipper", "default"),
-        ("bob", "default"),
-        ("brask", "default"),
-        ("brya", "banshee"),
-        ("brya", "default"),
-        ("brya", "volmar"),
-        ("chell", "default"),
-        ("cherry", "default"),
-        ("cheza", "default"),
-        ("chocodile", "default"),
-        ("coral", "default"),
-        ("d2db", "default"),
-        ("dartmonkey", "default"),
-        ("dedede", "bugzzy"),
-        ("dedede", "magolor"),
-        ("dedede", "metaknight"),
-        ("dedede", "default"),
-        ("dedede", "sasuke"),
-        ("draco", "default"),
-        ("dragonclaw", "default"),
-        ("dragontalon", "default"),
-        ("drallion", "default"),
-        ("electro", "default"),
-        ("endeavour", "default"),
-        ("eve", "default"),
-        ("excelsior", "default"),
-        ("fizz", "labstation"),
-        ("fizz", "default"),
-        ("flapjack", "default"),
-        ("ghost", "default"),
-        ("goroh", "default"),
-        ("grunt", "default"),
-        ("guybrush", "default"),
-        ("hammer", "default"),
-        ("hatch", "default"),
-        ("hayato", "default"),
-        ("herobrine", "default"),
-        ("icetower", "default"),
-        ("jacuzzi", "default"),
-        ("kahlee", "default"),
-        ("kalista", "default"),
-        ("keeby", "habokay"),
-        ("keeby", "haboki"),
-        ("keeby", "lalala"),
-        ("keeby", "default"),
-        ("kingler", "default"),
-        ("krabby", "default"),
-        ("krane", "default"),
-        ("kukui", "common"),
-        ("kukui", "icarus"),
-        ("kukui", "jacuzzi"),
-        ("kukui", "default"),
-        ("mancomb", "default"),
-        ("mistral", "default"),
-        ("nami", "default"),
-        ("nasher", "default"),
-        ("nautilus", "default"),
-        ("nightfury", "default"),
-        ("nissa", "craask"),
-        ("nissa", "ite"),
-        ("nissa", "nereid"),
-        ("nissa", "nivviks"),
-        ("nissa", "npcx"),
-        ("nocturne", "default"),
-        ("octopus", "ampton"),
-        ("octopus", "apel"),
-        ("octopus", "casta"),
-        ("octopus", "ite"),
-        ("octopus", "npcx"),
-        ("octopus", "default"),
-        ("poppy", "default"),
-        ("puff", "default"),
-        ("rammus", "default"),
-        ("sand", "default"),
-        ("sarien", "default"),
-        ("scarlet", "default"),
-        ("skyrim", "default"),
-        ("snappy", "default"),
-        ("soraka", "default"),
-        ("spherion", "default"),
-        ("trogdor", "default"),
-        ("volteer", "default"),
-        ("volteer", "usbdb"),
-        ("waddledee", "default"),
-        ("waddledoo", "default"),
-        ("zerblebarn", "default"),
-        ("zoombini", "default"),
-        ("zork", "default"),
+    exclude_list = [
+        "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
+        "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
+        "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
+        "servo_hana_overlay.xml",   # Not working
+        "servo_elm_overlay.xml",   # Not working
+        "servo_oak_overlay.xml",   # Not working
     ]
+    filenames = glob.glob("/usr/local/lib/*/site-packages/servo/data/servo_*_overlay.xml")
+    board_model_list = []
+    for filename in filenames:
+        basename = os.path.basename(filename)
+
+        if basename in exclude_list:
+            continue
+
+        parts = basename[:-4].split('_')
+
+        if parts[1] in board_exclude_list:
+            continue
+
+        if len(parts) == 3:
+            board_model_list.append((parts[1], "default"))
+        elif len(parts) == 4:
+            board_model_list.append((parts[1], parts[2]))
+        else:
+            raise Exception("Data file %s not in correct format - untested" % os.path.basename(filename))
+
+    return board_model_list
 
 
 def compare_results(expected, results):
