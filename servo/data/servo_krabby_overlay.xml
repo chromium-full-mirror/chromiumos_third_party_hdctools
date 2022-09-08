@@ -6,6 +6,6 @@
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="ite_spi_ccd_i2c"/>
+    drv="cros_chip" chip="it8xxx2"/>
   </control>
 </root>
