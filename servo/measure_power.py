@@ -728,6 +728,7 @@ class PowerMeasurement(object):
     for tracker in self._power_trackers:
       if tracker.is_alive():
         tracker.join()
+
   def GetPMStatus(self):
     """Pass the information if the power measurement is finished or not
        Returns:
@@ -955,23 +956,20 @@ class PowerMeasurement(object):
     self._logger.info('Storing .md summaries at:\n%s', '\n'.join(json_outfiles))
     return json_outfiles
 
-  # TODO(coconutruben): make it possible to export graphs here
-  # graphs should be output in SVG & some interactive HTML format,
-  # since that'll make for nice scaling. Also nice to attach to bugs
-
   def GetSampleData(self):
     """This function can pass the latest power information
 
-       Collect the data in each tracker and append the data into an array
+    Collect the data in each tracker and append the data into an array
 
-       Returns:
-         return the latest power information
+    Returns:
+      return the latest power information
     """
     sampleData = []
 
     for power_data in self._power_trackers:
-        if power_data.get_sample_data():
-            sampleData += power_data.get_sample_data()
+      data = power_data.get_sample_data()
+      if data:
+        sampleData += data
     return sampleData
 
   def CleanSampleData(self):

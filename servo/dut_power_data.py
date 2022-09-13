@@ -95,7 +95,6 @@ class DataSampler():
     """
     self._current_data_format = data_sample_format
     data_sample_format = ['time'] + data_sample_format
-    self._logger.info('data sample format: %s', data_sample_format)
     self._data_sample = DataSample(data_sample_format)
 
   def sample_generator(self):
