@@ -215,16 +215,6 @@ for vid, pid in MINISERVO_ID_DEFAULTS:
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
-# Toad
-TOAD_ID_DEFAULTS = [(0x403, 0x6015)]
-for vid, pid in TOAD_ID_DEFAULTS:
-  INTERFACE_DEFAULTS[vid][pid] = \
-    ['empty',
-     'ftdi_gpiouart', # occupies 2 slots
-     'empty',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-    ]
-
 # Reston
 RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
 for vid, pid in RESTON_ID_DEFAULTS:

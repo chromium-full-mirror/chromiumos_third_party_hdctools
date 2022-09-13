@@ -209,13 +209,6 @@ class C2d2(_ServoDevTemplate):
   PID = 0x5041
   DEFAULT_CONFIG = 'c2d2.xml'
 
-class ToadV1(_ServoDevTemplate):
-  """Toad template class."""
-  TYPE = 'toad_v1'
-  VID = 0x0403  # Vendor ID is 0x0403 : FTDI
-  PID = 0x6015
-  DEFAULT_CONFIG = 'toad.xml'
-
 class Reston(_ServoDevTemplate):
   """Reston template class."""
   TYPE = 'reston'
