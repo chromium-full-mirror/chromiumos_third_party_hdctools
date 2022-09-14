@@ -9,6 +9,7 @@ import logging
 import re
 import sys
 
+
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP, SERVO_ID_DEFAULTS,
 # and SERVO_NAME_TEMPLATE_MAP, get populated on module import to keep a single
 # source of truth about the device information - their template classes.
@@ -180,6 +181,13 @@ class ServoMicro(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x501a
   DEFAULT_CONFIG = 'servo_micro.xml'
+
+class Pacman(_ServoDevTemplate):
+  """pacman template class."""
+  TYPE = 'pacman'
+  VID = 0x18d1
+  PID = 0x5211
+  DEFAULT_CONFIG = 'pacman_v1.xml'
 
 class CcdCr50(_ServoDevTemplate):
   """Servo ccd cr50 template class."""

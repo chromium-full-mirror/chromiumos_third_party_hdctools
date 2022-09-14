@@ -5,6 +5,7 @@
 
 import collections
 
+
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
 # servo v1
@@ -40,6 +41,14 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
+
+# pacman servod configs
+PACMAN_DEFAULTS = [(0x18d1, 0x5211)]
+for vid, pid in PACMAN_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    ['empty',
+     'ftdi_i2c',                           # 1
+    ]
 
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]

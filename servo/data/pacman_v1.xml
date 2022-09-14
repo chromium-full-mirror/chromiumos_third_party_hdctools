@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<root>
+  <!-- ********** Maps ********** -->
+  <include>
+    <name>ftdii2c_cmd.xml</name>
+  </include>
+  <include>
+    <name>power_tools.xml</name>
+  </include>
+  <control>
+    <name>read_this_thing</name>
+    <params cmd="get" interface="servo" drv="pac1954" subtype="signed" base_name="ppvar_vddcr"/>
+  </control>
+</root>
