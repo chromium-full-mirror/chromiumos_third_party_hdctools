@@ -246,6 +246,9 @@ def mock_pyusb(mocker):
         Returns:
             string: serial number of the device passed in.
         """
+        # Simulate bad USB device
+        if isinstance(dev.iSerial, Exception):
+            raise dev.iSerial
         return dev.iSerial
 
     def mock_find_descriptor(desc, find_all=False, custom_match=None, **args):
