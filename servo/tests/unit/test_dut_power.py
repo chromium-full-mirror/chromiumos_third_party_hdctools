@@ -5,7 +5,6 @@
 
 import argparse
 import logging
-from multiprocessing.connection import wait
 import os
 import shutil
 import signal
@@ -151,8 +150,8 @@ class TestDutPower(unittest.TestCase):
     args.time = 5
     args.adc_accum_rate = 3
     tmplogfile = tempfile.NamedTemporaryFile(mode='w+')
-    tempfile.NamedTemporaryFile = unittest.mock.MagicMock(return_value=tmplogfile)
-    dp._setup_logging(args)
+    with unittest.mock.patch('tempfile.NamedTemporaryFile', unittest.mock.MagicMock(return_value=tmplogfile)):
+      dp._setup_logging(args)
 
     self.assertEqual(dp.pm_logger.getEffectiveLevel(), logging.INFO)
     self.assertEqual(len(dp.pm_logger.handlers), 2)
@@ -294,9 +293,6 @@ class TestDutPower(unittest.TestCase):
     args.save_summary = args.save_raw_data = args.save_json = args.save_logs = args.visualization = True
     args.outdir = 'dir'
     args.message = 'msg'
-    os.path.isdir = unittest.mock.MagicMock(return_value=True)
-    os.path.join = unittest.mock.MagicMock(return_value='logfile')
-    shutil.move = unittest.mock.MagicMock()
     pm = measure_power.PowerMeasurement()
     pm._outdir = None
     pm.SaveSummary = unittest.mock.MagicMock()
@@ -304,13 +300,16 @@ class TestDutPower(unittest.TestCase):
     pm.SaveSummaryJSON = unittest.mock.MagicMock()
     dp.http_server_handler.save_visualization_html = unittest.mock.MagicMock()
 
-    dp._save_results(args, pm)
+    with unittest.mock.patch('os.path.isdir', unittest.mock.MagicMock(return_value=True)):
+      with unittest.mock.patch('os.path.join', unittest.mock.MagicMock(return_value='logfile')):
+        with unittest.mock.patch('shutil.move', unittest.mock.MagicMock()):
+          dp._save_results(args, pm)
 
-    pm.SaveSummary.assert_called_once_with('dir', 'msg')
-    pm.SaveRawData.assert_called_once_with('dir')
-    pm.SaveSummaryJSON.assert_called_once_with('dir')
-    shutil.move.assert_called_once_with(dp.tmplogfile.name, 'logfile')
-    dp.http_server_handler.save_visualization_html.assert_called_once_with(None)
+          pm.SaveSummary.assert_called_once_with('dir', 'msg')
+          pm.SaveRawData.assert_called_once_with('dir')
+          pm.SaveSummaryJSON.assert_called_once_with('dir')
+          shutil.move.assert_called_once_with(dp.tmplogfile.name, 'logfile')
+          dp.http_server_handler.save_visualization_html.assert_called_once_with(None)
 
   @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
   @unittest.mock.patch('servo.measure_power.PowerMeasurement.ProcessMeasurement', unittest.mock.MagicMock())

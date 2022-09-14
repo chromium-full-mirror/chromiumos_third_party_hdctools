@@ -555,7 +555,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     with unittest.mock.patch('time.sleep', unittest.mock.MagicMock()):
       pm.MeasureTimedPower()
-      time.sleep.assert_called_once_with(60+0)
+      time.sleep.assert_any_call(60+0)
 
     pm.MeasurePower.assert_called_once_with(wait=0, powerstate=measure_power.UNKNOWN_POWERSTATE)
     setup_done.wait.assert_called_once()

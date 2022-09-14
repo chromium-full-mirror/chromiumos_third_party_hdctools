@@ -45,12 +45,14 @@ class TestStatsManager(unittest.TestCase):
 
   def setUp(self):
     """Set up StatsManager and create a temporary directory for test."""
+    unittest.TestCase.setUp(self)
     self.tempdir = tempfile.mkdtemp()
     self.data = stats_manager.StatsManager()
 
   def tearDown(self):
     """Delete the temporary directory and its content."""
     shutil.rmtree(self.tempdir)
+    unittest.TestCase.tearDown(self)
 
   def test_AddSample(self):
     """Adding a sample successfully adds a sample."""
