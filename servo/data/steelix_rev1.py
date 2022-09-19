@@ -1,13 +1,14 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Steelix/Rusty proto on-board adc map"""
+"""Steelix/Rusty rev1 on-board adc map"""
 
-# Generates steelix_rev0
-revs = [0]
+# Generates steelix_rev1.xml
+revs = [1]
 
 # INA231 (1-channel/i2c address) are used
-# https://docs.google.com/spreadsheets/d/12jP2OrtG9InT-lfAz-sZYkFrAKbcfgEDOXJXcahQle0/edit#gid=703842762 for details
+# https://docs.google.com/spreadsheets/d/12jP2OrtG9InT-lfAz-sZYkFrAKbcfgEDOXJXcahQle0/edit#gid=703842762
+# for details
 inas = [
 #   drvname,   slv,     name,               nom,   sense, mux,   is_calib
    ('ina231',  '0x40',  'ppvar_batt_chg',   13.2,  0.01,  'rem', True),  # RS15
