@@ -161,20 +161,20 @@ class TestDutPower(unittest.TestCase):
     self.assertEqual(args.adc_accum_rate, 0)
     self.assertEqual(dp.tmplogfile, tmplogfile)
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.http_server.ThreadedTCPServer.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.is_port_used', unittest.mock.MagicMock(return_value=False))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.get_visualization_html_exist', unittest.mock.MagicMock(return_value='path'))
+  @unittest.mock.patch('threading.Thread.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('threading.Thread.start', unittest.mock.MagicMock())
   def test_setup_visualization(self):
     """Test _setup_visualization()."""
     dp = dut_power.DutPower()
     dp.pm_logger = logging.getLogger('')
     args = argparse.Namespace()
     args.visualization_port = 0
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
     pm = measure_power.PowerMeasurement()
-    http_server.HttpRequestHandler.is_port_used = unittest.mock.MagicMock(return_value=False)
-    http_server.HttpRequestHandler.get_visualization_html_exist = unittest.mock.MagicMock(return_value='path')
-    http_server.ThreadedTCPServer.__init__ = unittest.mock.MagicMock(return_value=None)
     http_server.ThreadedTCPServer.server_address = ('localhost' ,9998)
-    threading.Thread.__init__ = unittest.mock.MagicMock(return_value=None)
-    threading.Thread.start = unittest.mock.MagicMock()
 
     dp._setup_visualization(args, pm)
 
@@ -187,46 +187,46 @@ class TestDutPower(unittest.TestCase):
     threading.Thread.__init__.assert_called_once_with(target=dp.visualization_server.serve_forever, daemon=True)
     threading.Thread.start.assert_called_once()
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.is_port_used', unittest.mock.MagicMock(return_value=True))
   def test_setup_visualization_port_used(self):
     """Test _setup_visualization() fails if the http server port is already used."""
     dp = dut_power.DutPower()
     dp.pm_logger = logging.getLogger('')
     args = argparse.Namespace()
     args.visualization_port = 0
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
     pm = measure_power.PowerMeasurement()
-    http_server.HttpRequestHandler.is_port_used = unittest.mock.MagicMock(return_value=True)
 
     with self.assertRaises(SystemExit) as exc:
       dp._setup_visualization(args, pm)
     self.assertEqual(exc.exception.code, 1)
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.is_port_used', unittest.mock.MagicMock(return_value=False))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.get_visualization_html_exist', unittest.mock.MagicMock(return_value=None))
   def test_setup_visualization_no_visualization_file(self):
     """Test _setup_visualization() if there is no visualization file."""
     dp = dut_power.DutPower()
     dp.pm_logger = logging.getLogger('')
     args = argparse.Namespace()
     args.visualization_port = 0
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
     pm = measure_power.PowerMeasurement()
-    http_server.HttpRequestHandler.is_port_used = unittest.mock.MagicMock(return_value=True)
-    http_server.HttpRequestHandler.get_visualization_html_exist = unittest.mock.MagicMock(return_value=None)
 
     with self.assertRaises(SystemExit) as exc:
       dp._setup_visualization(args, pm)
     self.assertEqual(exc.exception.code, 1)
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.http_server.ThreadedTCPServer.__init__', unittest.mock.MagicMock(side_effect=NotImplementedError()))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.is_port_used', unittest.mock.MagicMock(return_value=False))
+  @unittest.mock.patch('servo.http_server.HttpRequestHandler.get_visualization_html_exist', unittest.mock.MagicMock(return_value='path'))
   def test_setup_visualization_server_failure(self):
     """Test _setup_visualization() if http server fails setup."""
     dp = dut_power.DutPower()
     dp.pm_logger = logging.getLogger('')
     args = argparse.Namespace()
     args.visualization_port = 0
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
     pm = measure_power.PowerMeasurement()
-    http_server.HttpRequestHandler.is_port_used = unittest.mock.MagicMock(return_value=True)
-    http_server.HttpRequestHandler.get_visualization_html_exist = unittest.mock.MagicMock(return_value='path')
-    http_server.ThreadedTCPServer.__init__ = unittest.mock.MagicMock(side_effect=NotImplementedError())
 
     with self.assertRaises(SystemExit) as exc:
       dp._setup_visualization(args, pm)
@@ -234,6 +234,13 @@ class TestDutPower(unittest.TestCase):
 
   @unittest.mock.patch('servo.dut_power.ProgressPrinter.__init__', unittest.mock.MagicMock(return_value=None))
   @unittest.mock.patch('servo.dut_power.ProgressPrinter.start', unittest.mock.MagicMock())
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('threading.Thread.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('threading.Thread.start', unittest.mock.MagicMock())
+  @unittest.mock.patch('threading.Event.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('threading.Event.set', unittest.mock.MagicMock())
+  @unittest.mock.patch('threading.Event.wait', unittest.mock.MagicMock())
+  @unittest.mock.patch('signal.signal', unittest.mock.MagicMock())
   def test_measure_power_visualization(self):
     """Test _measure_power()."""
     dp = dut_power.DutPower()
@@ -246,18 +253,11 @@ class TestDutPower(unittest.TestCase):
     args.powerstate = measure_power.DEFAULT_POWERSTATE
     args.wait = 10
     args.time = 60
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
     pm = measure_power.PowerMeasurement()
     pm.MeasurePower = unittest.mock.MagicMock(return_value=threading.Event())
     pm.FinishMeasurement = unittest.mock.MagicMock()
     dp.power_data = dut_power_data.DataSampler(pm)
     dp.power_data.sample_generator = unittest.mock.MagicMock()
-    threading.Event.__init__ = unittest.mock.MagicMock(return_value=None)
-    threading.Event.set = unittest.mock.MagicMock()
-    threading.Event.wait = unittest.mock.MagicMock()
-    threading.Thread.__init__ = unittest.mock.MagicMock(return_value=None)
-    threading.Thread.start = unittest.mock.MagicMock()
-    signal.signal = unittest.mock.MagicMock()
 
     dp._measure_power(args, pm)
 
@@ -283,6 +283,7 @@ class TestDutPower(unittest.TestCase):
       unittest.mock.call()
     ])
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
   def test_save_results(self):
     """Test _save_results()."""
     dp = dut_power.DutPower()
@@ -296,7 +297,6 @@ class TestDutPower(unittest.TestCase):
     os.path.isdir = unittest.mock.MagicMock(return_value=True)
     os.path.join = unittest.mock.MagicMock(return_value='logfile')
     shutil.move = unittest.mock.MagicMock()
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
     pm = measure_power.PowerMeasurement()
     pm._outdir = None
     pm.SaveSummary = unittest.mock.MagicMock()
@@ -312,6 +312,9 @@ class TestDutPower(unittest.TestCase):
     shutil.move.assert_called_once_with(dp.tmplogfile.name, 'logfile')
     dp.http_server_handler.save_visualization_html.assert_called_once_with(None)
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.ProcessMeasurement', unittest.mock.MagicMock())
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.DisplaySummary', unittest.mock.MagicMock())
   def test_main(self):
     """Test main()."""
     dp = dut_power.DutPower()
@@ -323,9 +326,6 @@ class TestDutPower(unittest.TestCase):
     dp._setup_visualization = unittest.mock.MagicMock()
     dp._measure_power = unittest.mock.MagicMock()
     dp._save_results = unittest.mock.MagicMock()
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
-    measure_power.PowerMeasurement.ProcessMeasurement = unittest.mock.MagicMock()
-    measure_power.PowerMeasurement.DisplaySummary = unittest.mock.MagicMock()
 
     dp.main(["--visualization"])
 
@@ -337,6 +337,7 @@ class TestDutPower(unittest.TestCase):
     measure_power.PowerMeasurement.DisplaySummary.assert_called_once()
     dp._save_results.assert_called_once()
 
+  @unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(side_effect=measure_power.NoSourceError()))
   def test_main_failure(self):
     """Test main() with measure_power failure."""
     dp = dut_power.DutPower()
@@ -346,7 +347,6 @@ class TestDutPower(unittest.TestCase):
     dp._build_parser = unittest.mock.MagicMock()
     dp._setup_logging = unittest.mock.MagicMock()
     dp._build_parser = unittest.mock.MagicMock()
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(side_effect=measure_power.NoSourceError())
 
     with self.assertRaises(SystemExit) as exc:
       dp.main([])
