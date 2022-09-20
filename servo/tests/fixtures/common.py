@@ -11,18 +11,18 @@ import pytest
 from enum import Enum
 from itertools import count
 
-class DeviceType(Enum):
-    SERVOV4P1 = 1
-    CR50 = 2
+import servo.servo_dev_templates as tmpl
 
 
 device_details = {}
-device_details[DeviceType.SERVOV4P1] = {"idVendor": 0x18D1, "idProduct": 0x520D}
-device_details[DeviceType.CR50] = {"idVendor": 0x18D1, "idProduct": 0x5014}
+device_details[tmpl.ServoV4p1.TYPE] = {"idVendor": tmpl.ServoV4p1.VID, "idProduct": tmpl.ServoV4p1.PID}
+device_details[tmpl.CcdCr50.TYPE] = {"idVendor": tmpl.CcdCr50.VID, "idProduct": tmpl.CcdCr50.PID}
+device_details[tmpl.ServoMicro.TYPE] = {"idVendor": tmpl.ServoMicro.VID, "idProduct": tmpl.ServoMicro.PID}
 
 DEFAULT_SERIALS = {
-    DeviceType.SERVOV4P1: "SERVOV4P1-S-%s%d",
-    DeviceType.CR50: "1002303D-%s%d",
+    tmpl.ServoV4p1.TYPE: "SERVOV4P1-S-%s%d",
+    tmpl.CcdCr50.TYPE: "1002303D-%s%d",
+    tmpl.ServoMicro.TYPE: "MICRO-S-%s%d",
 }
 
 PTY_END_LINE = b""

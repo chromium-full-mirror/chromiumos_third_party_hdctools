@@ -95,7 +95,6 @@ MOCKED_EC_PD_CONSOLE_DATA = {
 }
 
 MOCKED_SERVO41_I2C_DATA = {
-
     b"[0, 33, 1, 1, 0]": [array("B", [0, 0, 0, 0, 170])],
     b"[0, 33, 1, 1, 1]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 33, 1, 1, 2]": [array("B", [0, 0, 0, 0, 168]), array("B", [0, 0, 0, 0, 136]), array("B", [0, 0, 0, 0, 128]), array("B", [0, 0, 0, 0, 170])],
@@ -160,3 +159,91 @@ MOCKED_CR50_I2C_DATA = {
 }
 
 MOCKED_SERVO41_ATMEGA_DATA = {b"a": b"a"}
+
+MOCKED_SERVO_MICRO_PD_CR50_CONSOLE_DATA = {
+    b"": b"\r\n> ",
+    b"cc": b"cc\r\ncc: on\r\ndts mode: on\r\nchg mode: off\r\nchg allowed: on\r\ndrp enabled: off\r\ncc polarity: cc1\r\npd enabled: on\r\nemca: emarked\r\n> ",
+    b"chan 0xffffffff": b"chan 0xffffffff\r\n> ",
+    b"chan 1": b"chan 1\r\n> ",
+    b"chan restore": b"chan restore\r\n> ",
+    b"chan save": b"chan save\r\n> ",
+    b"gpioget ATMEL_HWB_L": b"gpioget ATMEL_HWB_L\r\n  1  O H ATMEL_HWB_L\r\n> ",
+    b"gpioset ATMEL_HWB_L 1": b"gpioset ATMEL_HWB_L 1\r\n> ",
+    b"gpioget DUT_HUB_USB_RESET_L": b"gpioget DUT_HUB_USB_RESET_L\r\n  1  O H ODR DUT_HUB_USB_RESET_L\r\n> ",
+    b"gpioget FASTBOOT_DUTHUB_MUX_EN_L": b"gpioget FASTBOOT_DUTHUB_MUX_EN_L\r\n  0  O L FASTBOOT_DUTHUB_MUX_EN_L\r\n> ",
+    b"gpioget FASTBOOT_DUTHUB_MUX_SEL": b"gpioget FASTBOOT_DUTHUB_MUX_SEL\r\n  1  O H FASTBOOT_DUTHUB_MUX_SEL\r\n> ",
+    b"version": b"version\r\nChip:    stm stm32f07x \r\nBoard:   3\r\nRO:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nRW:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nBuild:   servo_v4p1_v2.0.8584+1a7e7e64c\r\n         2021-04-30 23:54:40 dabros@dabros-l\r\n> ",
+}
+
+MOCKED_SERVO_MICRO_SERVO41_CONSOLE_DATA = {
+    b"": b"\r\n> ",
+    b"chan 0xffffffff": b"chan 0xffffffff\r\n> ",
+    b"chan 1": b"chan 1\r\n> ",
+    b"chan restore": b"chan restore\r\n> ",
+    b"chan save": b"chan save\r\n> ",
+    b"gpioget JTAG_BUFIN_EN_L": b"gpioget JTAG_BUFIN_EN_L\r\n  0  O L JTAG_BUFIN_EN_L\r\n> ",
+    b"gpioget JTAG_BUFOUT_EN_L": b"gpioget JTAG_BUFOUT_EN_L\r\n  1  O H JTAG_BUFOUT_EN_L\r\n> ",
+    b"gpioget SERVO_JTAG_RTCK": b"gpioget SERVO_JTAG_RTCK\r\n  0  O L SERVO_JTAG_RTCK\r\n> ",
+    b"gpioget SERVO_JTAG_TDI": b"gpioget SERVO_JTAG_TDI\r\n  0  O L SERVO_JTAG_TDI\r\n> ",
+    b"gpioget SERVO_JTAG_TDI_DIR": b"gpioget SERVO_JTAG_TDI_DIR\r\n  0  O L SERVO_JTAG_TDI_DIR\r\n> ",
+    b"gpioget SERVO_JTAG_TDO_BUFFER_EN": b"gpioget SERVO_JTAG_TDO_BUFFER_EN\r\n  1  O H SERVO_JTAG_TDO_BUFFER_EN\r\n> ",
+    b"gpioget SERVO_JTAG_TDO_SEL": b"gpioget SERVO_JTAG_TDO_SEL\r\n  1  O H SERVO_JTAG_TDO_SEL\r\n> ",
+    b"gpioget SERVO_JTAG_TMS": b"gpioget SERVO_JTAG_TMS\r\n  0  O L SERVO_JTAG_TMS\r\n> ",
+    b"gpioget SERVO_JTAG_TMS_DIR": b"gpioget SERVO_JTAG_TMS_DIR\r\n  0  O L SERVO_JTAG_TMS_DIR\r\n> ",
+    b"gpioget SERVO_JTAG_TRST_DIR": b"gpioget SERVO_JTAG_TRST_DIR\r\n  0  O L SERVO_JTAG_TRST_DIR\r\n> ",
+    b"gpioget SERVO_JTAG_TRST_L": b"gpioget SERVO_JTAG_TRST_L\r\n  1  O H SERVO_JTAG_TRST_L\r\n> ",
+    b"gpioget SPI1_BUF_EN_L": b"gpioget SPI1_BUF_EN_L\r\n  1  O H SPI1_BUF_EN_L\r\n> ",
+    b"gpioget SPI1_MUX_SEL": b"gpioget SPI1_MUX_SEL\r\n  1  O H SPI1_MUX_SEL\r\n> ",
+    b"gpioget SPI1_VREF_18": b"gpioget SPI1_VREF_18\r\n  0  O L SPI1_VREF_18\r\n> ",
+    b"gpioget SPI1_VREF_33": b"gpioget SPI1_VREF_33\r\n  0  O L SPI1_VREF_33\r\n> ",
+    b"gpioget SPI2_BUF_EN_L": b"gpioget SPI2_BUF_EN_L\r\n  1  O H SPI2_BUF_EN_L\r\n> ",
+    b"gpioget SPI2_VREF_18": b"gpioget SPI2_VREF_18\r\n  0  O L SPI2_VREF_18\r\n> ",
+    b"gpioget SPI2_VREF_33": b"gpioget SPI2_VREF_33\r\n  0* O L SPI2_VREF_33\r\n> ",
+    b"gpioget TCA6416_RESET_L": b"gpioget TCA6416_RESET_L\r\n  1  O H TCA6416_RESET_L\r\n> ",
+    b"gpioget UART1_EN_L": b"gpioget UART1_EN_L\r\n  0  O L UART1_EN_L\r\n> ",
+    b"gpioget UART2_EN_L": b"gpioget UART2_EN_L\r\n  0  O L UART2_EN_L\r\n> ",
+    b"gpioget UART3_RX_JTAG_BUFFER_TO_SERVO_TDO": b"gpioget UART3_RX_JTAG_BUFFER_TO_SERVO_TDO\r\n  1  ALT UART3_RX_JTAG_BUFFER_TO_SERVO_TDO\r\n> ",
+    b"gpioget UART3_TX_SERVO_JTAG_TCK": b"gpioget UART3_TX_SERVO_JTAG_TCK\r\n  1  ALT UART3_TX_SERVO_JTAG_TCK\r\n> ",
+    b"gpioset JTAG_BUFIN_EN_L 0": b"gpioset JTAG_BUFIN_EN_L 0\r\n> ",
+    b"gpioset JTAG_BUFIN_EN_L 1": b"gpioset JTAG_BUFIN_EN_L 1\r\n> ",
+    b"gpioset SERVO_JTAG_TDO_BUFFER_EN 0": b"gpioset SERVO_JTAG_TDO_BUFFER_EN 0\r\n> ",
+    b"gpioset SERVO_JTAG_TDO_BUFFER_EN 1": b"gpioset SERVO_JTAG_TDO_BUFFER_EN 1\r\n> ",
+    b"gpioset SERVO_JTAG_TDO_SEL 1": b"gpioset SERVO_JTAG_TDO_SEL 1\r\n> ",
+    b"gpioset SPI1_BUF_EN_L 1": b"gpioset SPI1_BUF_EN_L 1\r\n> ",
+    b"gpioset SPI1_MUX_SEL 1": b"gpioset SPI1_MUX_SEL 1\r\n> ",
+    b"gpioset SPI1_VREF_18 0": b"gpioset SPI1_VREF_18 0\r\n> ",
+    b"gpioset SPI1_VREF_33 0": b"gpioset SPI1_VREF_33 0\r\n> ",
+    b"gpioset SPI2_VREF_18 0": b"gpioset SPI2_VREF_18 0\r\n> ",
+    b"gpioset SPI2_VREF_33 1": b"gpioset SPI2_VREF_33 1\r\n> ",
+    b"gpioset UART1_EN_L 0": b"gpioset UART1_EN_L 0\r\n> ",
+    b"gpioset UART3_RX_JTAG_BUFFER_TO_SERVO_TDO 0": b"gpioset UART3_RX_JTAG_BUFFER_TO_SERVO_TDO 0\r\n> ",
+    b"gpioset UART3_RX_JTAG_BUFFER_TO_SERVO_TDO ALT": b"gpioset UART3_RX_JTAG_BUFFER_TO_SERVO_TDO ALT\r\n> ",
+    b"gpioset UART3_TX_SERVO_JTAG_TCK 0": b"gpioset UART3_TX_SERVO_JTAG_TCK 0\r\n> ",
+    b"gpioset UART3_TX_SERVO_JTAG_TCK ALT": b"gpioset UART3_TX_SERVO_JTAG_TCK ALT\r\n> ",
+    b"hold_usart usart2": b"hold_usart usart2\r\nUSART status: normal\r\n> ",
+    b"version": b"version\r\nChip:    stm stm32f07x \r\nBoard:   0\r\nRO:      servo_micro_v2.4.57-ce329f64f\r\nRW:      servo_micro_v2.4.57-ce329f64f\r\nBuild:   servo_micro_v2.4.57-ce329f64f\r\n         2020-12-03 18:26:08 @chromeos-ci-factory-us-east1-d-x32-1-bi6z\r\n> ",
+}
+
+MOCKED_SERVO_MICRO_I2C_DATA = {
+    b"[0, 32, 1, 1, 0]": [array("B", [0, 0, 0, 0, 3])],
+    b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 0])],
+    b"[0, 32, 1, 1, 2]": [array("B", [0, 0, 0, 0, 255])],
+    b"[0, 32, 1, 1, 6]": [array("B", [0, 0, 0, 0, 252])],
+    b"[0, 32, 1, 1, 7]": [array("B", [0, 0, 0, 0, 255])],
+}
+
+MOCKED_SERVO_MICRO_AP_DATA = {}
+
+MOCKED_SERVO_MICRO_EC_DATA = {
+    b"": b"",
+    b"cbi": b"",
+    b"chan 0xffffffff": b"",
+    b"chan 1": b"",
+    b"chan restore": b"",
+    b"chan save": b"",
+    b"gpioget LID_OPEN": b"",
+    b"lidstate": b"",
+    b"powerinfo": b"",
+    b"power on": b"",
+    b"version": b"",
+}

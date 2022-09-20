@@ -62,7 +62,7 @@ def mock_endpoint(mocker):
                     if command not in ep.parent.mocked_data:
                         # Store any command we do not have mocked data so the
                         # test data can report this.
-                        ep.parent.no_data_command_queue.put(command)
+                        ep.parent.no_data_command_queue.put("%s: %s" % (description, command))
                         _logger.debug(
                             "%s Missing mock data for command %s"
                             % (description, command)
