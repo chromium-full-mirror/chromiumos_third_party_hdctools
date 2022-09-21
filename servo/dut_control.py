@@ -179,16 +179,6 @@ def display_stats(stats, prefix=STATS_PREFIX):
       table.append(row)
   display_table(table, prefix)
 
-
-def timed_loop(time_in_secs):
-  """Pause for time_in_secs."""
-  start_time = time.time()
-  secs_so_far = 0.0
-  while secs_so_far <= time_in_secs:
-    yield secs_so_far
-    secs_so_far = time.time() - start_time
-
-
 def _print_gnuplot_header(control_args):
   """Prints gnuplot header.
 
@@ -305,17 +295,18 @@ def iterate(controls, options, sclient):
   if options.gnuplot:
     options.print_time = True
     _print_gnuplot_header(controls)
-
   stats = collections.defaultdict(list)
-  if options.time_in_secs > 0:
-    iterate_over = timed_loop(options.time_in_secs)
-  else:
-    iterate_over = range(options.repeat)
 
-  for _ in iterate_over:
+  repeat = options.repeat
+  time_in_secs = options.time_in_secs
+  while (repeat >= 1) or (time_in_secs > 0):
+    start_time = time.time()
     iter_output = do_iteration(controls, options, sclient, stats)
     if iter_output:  # Avoid printing empty lines
       print(iter_output)
+    secs_so_far = time.time() - start_time
+    repeat = repeat - 1
+    time_in_secs = time_in_secs - secs_so_far
 
   if (options.repeat != 1) or (options.time_in_secs > 0):
     prefix = STATS_PREFIX

@@ -9,8 +9,8 @@ from servo import servo_dev_templates
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4
 
-DEFAULT_VID = servo_dev_templates.GetVID("servo_v3_")
-DEFAULT_PID = servo_dev_templates.GetPID("servo_v3_")
+DEFAULT_VID = servo_dev_templates.GetVID("servo_v4")
+DEFAULT_PID = servo_dev_templates.GetPID("servo_v4")
 
 (INTERFACE_TYPE_ANY, INTERFACE_TYPE_GPIO, INTERFACE_TYPE_I2C,
  INTERFACE_TYPE_JTAG, INTERFACE_TYPE_SPI, INTERFACE_TYPE_UART) = \

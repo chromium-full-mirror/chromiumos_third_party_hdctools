@@ -5,7 +5,7 @@
 Servo AVR keyboard emulator
 ---------------------------
 
-This firmware installs into the avr in Servo v2, v3, v4 to allow serial control
+This firmware installs into the avr in Servo v2, v4 to allow serial control
 of a USB keyboard. It is intended to take the place of usb-km232
 http://www.hagstromelectronics.com/products/usbkm232.html and retain
 compatibility with the hdctools/usbkm232 library.
@@ -29,7 +29,7 @@ atmega_pty:/dev/pts/31
 
 Confirm the AVR is connected to USB via the USB mux.
 dut-control atmega_rst:off
-For Servo V2/V3, connect AVR to usb:
+For Servo V2, connect AVR to usb:
   dut-control usb_mux_sel4:on
 
 Verify on the DUT that the avr is visible:
@@ -68,7 +68,7 @@ dut-control atmega_rst:on
 dut-control atmega_rst:off
 dut-control at_hwb:off
 
-For Servo V2/V3, select AVR on the USB mux.
+For Servo V2, select AVR on the USB mux.
   dut-control usb_mux_sel4:on
 
 At this point you will see an Atmel DFU device in lsusb.

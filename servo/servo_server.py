@@ -121,7 +121,7 @@ class Servod(object):
       board: board name. e.g. octopus, coral, or scarlet.
       model: model name of a given board. e.g. fleex, ampton, or apel.
       version: String. Servo board version. Examples: servo_v1, servo_v2,
-          servo_v2_r0, servo_v3
+          servo_v2_r0
       usbkm232: String. Optional. Path to USB-KM232 device which allow for
           sending keyboard commands to DUTs that do not have built in
           keyboards. Used in FAFT tests. Use None for on board AVR MCU.

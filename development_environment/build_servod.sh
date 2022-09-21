@@ -20,8 +20,8 @@ then
 	    -t ${REGISTRY}/servod:release \
 	    -f servo/dockerfiles/Dockerfile .
 else
-     docker build --build-arg=BUILD_ENV=developer -t ${REGISTRY}/servod:dev -f servo/dockerfiles/Dockerfile .
-     docker push "${REGISTRY}/servod:dev"
+     docker build --build-arg=BUILD_ENV=developer -t ${REGISTRY}/servod:dev -f servo/dockerfiles/Dockerfile . \
+     && docker push "${REGISTRY}/servod:dev"
 fi
 
 cd -

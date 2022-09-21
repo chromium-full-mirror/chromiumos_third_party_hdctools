@@ -41,25 +41,6 @@ servo_devices {
   DEFAULT_CONFIG: 'servo_v2_r1.xml'
 }
 
-servo_devices {
-# Servo v3 template class.
-  TYPE: 'servo_v3'
-  VID: 0x18d1
-  PID: 0x5004
-  DEFAULT_CONFIG: 'servo_v3_r0.xml'
-}
-
-# Servo v2 template class for misprogrammed v3s.
-# The background here is that some servo v3's did not properly have their
-# vid/pid set to Google/Servo V3, but rather are still FTDI/ft232h
-servo_devices {
-  TYPE: 'servo_v3_'
-  VID: 0x0403
-  PID: 0x6014
-  DEFAULT_CONFIG: 'servo_v3_r0.xml' # copied from Servo3
-
-}
-
 # Servo v4 template class
 servo_devices {
   TYPE: 'servo_v4'
@@ -116,14 +97,6 @@ servo_devices {
   DEFAULT_CONFIG: 'c2d2.xml'
 }
 
-# Toad template class
-servo_devices {
-  TYPE: 'toad_v1'
-  VID: 0x0403  # Vendor ID is 0x0403 : FTDI
-  PID: 0x6015
-  DEFAULT_CONFIG: 'toad.xml'
-}
-
 # Reston template class
 servo_devices {
   TYPE: 'reston'
@@ -154,4 +127,12 @@ servo_devices {
   VID: 0x18d1
   PID: 0x503b
   DEFAULT_CONFIG: 'fluffy.xml'
+}
+
+# Pacman
+servo_devices {
+  TYPE: 'pacman'
+  VID: 0x18d1
+  PID: 0x5211
+  DEFAULT_CONFIG: 'pacman_v1.xml'
 }

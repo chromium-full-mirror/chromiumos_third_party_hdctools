@@ -20,8 +20,6 @@ import servo_dev_templates
 
 # Servo V2 PID
 V2_PID = servo_dev_templates.GetPID("servo_v2")
-# Servo V3 PID
-V3_PID = servo_dev_templates.GetPID("servo_v3")
 
 def do_cmd(cmd, timeout, plist=None, flist=None):
   """Executes a shell command
@@ -100,10 +98,7 @@ def launch_servod(options):
     xml_files += '-c servoflex_v2_r0_p50.xml '
   if options.legacy:
     xml_files = '-c servoflex_test_v1.xml -c servoflex_v1.xml'
-  if options.v3:
-    pid = V3_PID
-  else:
-    pid = V2_PID
+  pid = V2_PID
   cmd = 'sudo servod -p 0x%x %s' % (pid, xml_files)
   (retval, servod, _) = do_cmd(cmd, 5, plist=['Listening'], flist=['Errno'])
   logging.info('launch servod via %s', cmd)
@@ -175,18 +170,13 @@ def test_jtag(options):
   else:
     ctrls.extend(['spi2_vref:{pwr}', 'jtag_buf_on_flex_en:{val}'])
 
-  if options.v3:
-    openocd = OPENOCD_CFG % V3_PID
-  else:
-    openocd = OPENOCD_CFG % V2_PID
+  openocd = OPENOCD_CFG % V2_PID
 
   if not set_ctrls(' '.join(ctrls).format(pwr='pp3300', val='on')):
     logging.error('Enabling access to JTAG')
     set_ctrls(' '.join(ctrls).format(pwr='off', val='off'))
     return False
 
-  # Due to slowness on the beaglebone wait a bit before continuing.
-  time.sleep(5)
   fname = '/tmp/servoflex_test_openocd.cfg'
   fd = os.open(fname, os.O_WRONLY | os.O_CREAT)
 
@@ -232,10 +222,7 @@ def test_spi(dev_id, options):
   id_str = '%d' % dev_id
   errors = 0
   ctrls = []
-  if options.v3:
-    cmd = 'sudo flashrom -V -p linux_spi'
-  else:
-    cmd = 'sudo flashrom -V -p ft2232_spi:divisor=60,type=google-servo-v2'
+  cmd = 'sudo flashrom -V -p ft2232_spi:divisor=60,type=google-servo-v2'
   if options.legacy:
     cmd += '-legacy'
     ctrls.extend([
@@ -257,11 +244,10 @@ def test_spi(dev_id, options):
 
   # TODO(tbroch) Determine why this 'settling' time is needed.  Without it,
   # the flashrom command below is less stable.
-  time.sleep(10)
-  if not options.v3:
-    if dev_id == 1:
-      cmd += ',port=b'
-    cmd += ' -c SST25VF040'
+  time.sleep(1)
+  if dev_id == 1:
+    cmd += ',port=b'
+  cmd += ' -c SST25VF040'
   (retval, flash, _) = do_cmd(cmd, 5, plist=FLASHROM_PASS, flist=FLASHROM_FAIL)
   if not retval:
     logging.error('reading eeprom for spi %s', id_str)
@@ -384,60 +370,6 @@ def test_kbd_gpios():
   return errors
 
 
-V3_KBD_CONTROLS = ['bb_kbd_m2_c%d_r%d', 'bb_kbd_m1_c%d_r%d']
-
-
-def test_v3_kbd_gpios():
-  """Test keyboard row & column GPIOs.
-
-    V3 specific version of the test as the keyboard controls are now different
-    signals.
-
-    Note, test only necessary on 50pin -> 50pin flex
-
-    These must be tested differently than average GPIOs as the servo side logic,
-    a 4to1 mux, is responsible for shorting colX to rowY where X == 1|2 and Y
-    = 1|2|3.  To test the flex traces I'll set the row to both high and low
-    and examine that the corresponding column gets shorted correctly.
-
-    Returns:
-      errors: integer, number of errors encountered while testing
-    """
-  errors = 0
-  # disable everything initially
-  kbd_off_cmd = ('bb_kbd_m1_c2_r1:0 bb_kbd_m1_c2_r2:0 bb_kbd_m1_c2_r3:0 '
-                 'bb_kbd_m2_c1_r1:0 bb_kbd_m2_c1_r2:0 bb_kbd_m2_c1_r3:0')
-  for col_idx in range(2):
-    if not set_ctrls(kbd_off_cmd):
-      logging.error('Disabling all keyboard rows/cols')
-      errors += 1
-      break
-    mux_ctrl = V3_KBD_CONTROLS[col_idx]
-    kbd_col = 'kbd_col%d' % (col_idx + 1)
-    for row_idx in range(3):
-      kbd_row = 'kbd_row%d' % (row_idx + 1)
-      kbd_cntl = mux_ctrl % (col_idx + 1, row_idx + 1)
-      cmd = '%s:1 %s' % (kbd_cntl, kbd_col)
-      (retval, ctrls) = get_ctrls(cmd, timeout=30)
-      if not retval:
-        logging.error('ctrls = %s', ctrls)
-        errors += 1
-      for set_val in [GPIO_MAPS[ctrls[kbd_col]], ctrls[kbd_col]]:
-        cmd = '%s:%s sleep:0.2 %s' % (kbd_row, set_val, kbd_col)
-        (retval, ctrls) = get_ctrls(cmd)
-        if not retval:
-          logging.error('ctrls = %s', ctrls)
-          errors += 1
-        if ctrls[kbd_col] != set_val:
-          logging.error('After setting %s, %s != %s', kbd_row, kbd_col, set_val)
-          errors += 1
-      # Clear the keyboard key set.
-      cmd = '%s:0' % kbd_cntl
-      (retval, ctrls) = get_ctrls(cmd, timeout=30)
-
-  return errors
-
-
 def test_gpios(options):
   """Test GPIO's across the servoflex connector.
 
@@ -504,10 +436,7 @@ def test_gpios(options):
       all_ctrls[set_name] = set_val
 
   if pins == 50 or options.legacy:
-    if options.v3:
-      errors += test_v3_kbd_gpios()
-    else:
-      errors += test_kbd_gpios()
+    errors += test_kbd_gpios()
 
   if not set_ctrls(' '.join(cmd).format(pwr='pp3300', val='on')):
     logging.error('Disabling i2c mux to remote')
@@ -541,16 +470,12 @@ def parse_args():
                     help='Test legacy 40pin connector')
   parser.add_option('-t', '--tests', type=str, default=None,
                     help='Tests to run.  Default is all')
-  parser.add_option('-b', '--v3', action='store_true', default=False,
-                    help='use beaglebone + servo v3 settings.')
   parser.set_usage(parser.get_usage() + examples)
   return parser.parse_args()
 
 
 V2_TESTS = ['jtag(', 'uart(1,', 'uart(2,', 'spi(1,', 'spi(2,', 'gpios(']
 LEGACY_TESTS = ['jtag(', 'uart(3,', 'spi(0,', 'gpios(']
-# For V3 on the Legacy Flex just worry about gpios.
-V3_LEGACY_TESTS = ['gpios(']
 
 
 def main():
@@ -576,10 +501,7 @@ def main():
     if options.tests is None:
       tests = V2_TESTS
       if options.legacy:
-        if options.v3:
-          tests = V3_LEGACY_TESTS
-        else:
-          tests = LEGACY_TESTS
+        tests = LEGACY_TESTS
     else:
       tests = options.tests.split()
 

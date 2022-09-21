@@ -6,10 +6,6 @@
 
 import logging
 
-from servo.interface import bbadc
-from servo.interface import bbgpio
-from servo.interface import bbi2c
-from servo.interface import bbuart
 from servo.interface import common as c
 from servo.interface import empty
 from servo.interface import ec3po_interface
@@ -29,11 +25,6 @@ _interfaces = [
     ftdii2c.Fi2c,
     ftdigpio.Fgpio,
     ftdiuart.Fuart,
-    # Known BB interfaces
-    bbadc.BBadc,
-    bbgpio.BBgpio,
-    bbi2c.BBi2c,
-    bbuart.BBuart,
     # Known STM32 interfaces
     stm32gpio.Sgpio,
     stm32i2c.Si2cBus,

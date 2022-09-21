@@ -29,18 +29,6 @@ SERVO_DEVICE_DATA = {
     'servo_v2_r1.xml',
   ),
 
- 'servo_v3':
-  ( (0x18d1, 0x5004),
-    (),
-    'servo_v3_r0.xml',
-  ),
-
- 'servo_v3_':
-  ( (0x0403, 0x6014),
-    (),
-    'servo_v3_r0.xml',
-  ),
-
  'servo_v4':
   ( (0x18d1,  0x501b),
     (),
@@ -81,12 +69,6 @@ SERVO_DEVICE_DATA = {
   ( (0x18d1, 0x5041),
     (),
     'c2d2.xml',
-  ),
-
- 'toad_v1':
-  ( (0x0403, 0x6015),
-    (),
-    'toad.xml',
   ),
 
  'reston':

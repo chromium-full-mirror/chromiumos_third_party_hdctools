@@ -35,7 +35,7 @@ def start_servod(client, dut_hostname, board, model, serial_no, test=False):
 
     command = ["bash", "/start_servod.sh"]
     if test:
-        command = ["pytest", "/hdctools/servo/tests/"]
+        command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
 
     cont = client.containers.run(
         IMAGE,
