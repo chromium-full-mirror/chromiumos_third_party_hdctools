@@ -1,9 +1,9 @@
-# Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+# Copyright 2013 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # Expects to be run in an environment with sudo and no interactive password
-# prompt, such as within the Chromium OS development chroot.
+# prompt, such as within the ChromiumOS development chroot.
 from __future__ import print_function
 
 import logging

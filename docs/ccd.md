@@ -119,7 +119,7 @@ has a keyboard emulator.
 ## Using CCD
 
 To use most of the features of CCD, on your Linux workstation you need to
-[build Chromium OS][Developer Guide] and create a chroot environment. It’s
+[build ChromiumOS][Developer Guide] and create a chroot environment. It’s
 possible to use a subset of CCD without that; see the
 [Raw Access section](#raw-access).
 

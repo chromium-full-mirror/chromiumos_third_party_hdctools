@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Servo is a debug board used for Chromium OS test and development. Depending on
+Servo is a debug board used for ChromiumOS test and development. Depending on
 the version of Servo, it can connect to a debug header or USB port on the Chrome
 OS device. The debug header is used primarily during development and is often
 removed before a device is released to consumers.
@@ -60,7 +60,7 @@ See the detailed documentation in [Servo v4.1].
 ## Using Servo {#using-servo}
 
 To use Servo, on your Linux workstation you need to
-[build Chromium OS][developer_guide] and create a chroot environment.
+[build ChromiumOS][developer_guide] and create a chroot environment.
 
 The `hdctools` (Chrome OS Hardware Debug & Control Tools) package contains
 several tools needed to work with servo. Make sure the latest version is
@@ -160,10 +160,10 @@ Chrome devices:
 ```
 
 To set up servo to run automated tests, connect the servo board and the test
-device to the network via Ethernet, and load a Chromium OS image onto USB memory
+device to the network via Ethernet, and load a ChromiumOS image onto USB memory
 stick. The networking and build image steps are not described here; see [FAFT]
 for details on configuring servo to run automated tests. For information on
-writing tests, see the [servo library code] in the [Chromium OS autotest repo].
+writing tests, see the [servo library code] in the [ChromiumOS autotest repo].
 
 ## Using multiple servos on the same machine
 
@@ -263,7 +263,7 @@ symbolic name as as follows:
 [FAFT setup image]: https://www.chromium.org/for-testers/faft/Servo2_with_labels.jpg
 [developer_guide]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md
 [servo library code]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/HEAD/server/cros/servo/
-[Chromium OS autotest repo]: https://chromium.googlesource.com/chromiumos/third_party/autotest
+[ChromiumOS autotest repo]: https://chromium.googlesource.com/chromiumos/third_party/autotest
 [Servo v2]: ./servo_v2.md
 [Servo v4]: ./servo_v4.md
 [Servo v4.1]: ./servo_v4p1.md
