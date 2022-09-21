@@ -257,6 +257,10 @@ class usbImageManager(hw_driver.HwDriver):
                         os.path.realpath(active_storage_candidate)
                     ):
                         devpath = "/dev/%s" % os.path.basename(candidate)
+                        with open(devpath, "rb") as f:
+                            # ensure that the block device is readable
+                            if len(f.read(512)) < 512:
+                                continue
                         if os.path.exists(devpath):
                             return devpath
             # Enqueue the candidate again in hopes that it will eventually enumerate.
