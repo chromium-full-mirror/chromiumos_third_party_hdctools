@@ -41,7 +41,7 @@ MOCKED_CR50_CONSOLE_DATA = {
 MOCKED_SERVO41_CONSOLE_DATA = {
     b"": b">",
     b"ada_srccaps": b"ada_srccaps\r\n0: 5000mV/3000mA\r\n1: 9000mV/3000mA\r\n2: 15000mV/3000mA\r\n3: 20000mV/2250mA\r\n> ",
-    b"adc": b"> adc\r\nCHARGER = 1672\r\nSOC = 1683\r\nVBUS = 14932\r\nSKU1 = 123\r\nSKU2 = 998\r\n> ",
+    b"adc": b"> adc\r\nCHARGER = 1672\r\nSOC = 1683\r\nVBUS = 14932\r\nSKU1 = 123\r\nSKU2 = 998\r\nCHG_CC1_PD = 5 mV\r\n  CHG_CC2_PD = 5 mV\r\n  DUT_CC1_PD = 12 mV\r\n  DUT_CC2_PD = 14 mV\r\n  SBU1_DET = 120 mV\r\n  SBU2_DET = 103 mV\r\n  SUB_C_REF = 562 mV> ",
     b"cc": b"cc\r\ncc: on\r\ndts mode: on\r\nchg mode: on\r\nchg allowed: on\r\ndrp enabled: off\r\ncc polarity: cc1\r\npd enabled: on\r\nemca: emarked\r\n> ",
     b"chan 0xffffffff": b"chan 0xffffffff\r\n> ",
     b"chan 1": b"chan 1\r\n> ",
@@ -245,5 +245,50 @@ MOCKED_SERVO_MICRO_EC_DATA = {
     b"lidstate": b"",
     b"powerinfo": b"",
     b"power on": b"",
+    b"version": b"",
+}
+
+MOCKED_C2D2_H1_CONSOLE_DATA = {
+    b"": b"\r\n> ",
+    b"cc": b"cc\r\ncc: on\r\ndts mode: on\r\nchg mode: off\r\nchg allowed: on\r\ndrp enabled: off\r\ncc polarity: cc1\r\npd enabled: on\r\nemca: emarked\r\n> ",
+    b"chan 0xffffffff": b"chan 0xffffffff\r\n> ",
+    b"chan 1": b"chan 1\r\n> ",
+    b"chan restore": b"chan restore\r\n> ",
+    b"chan save": b"chan save\r\n> ",
+    b"gpioget ATMEL_HWB_L": b"gpioget ATMEL_HWB_L\r\n  1  O H ATMEL_HWB_L\r\n> ",
+    b"gpioset ATMEL_HWB_L 1": b"gpioset ATMEL_HWB_L 1\r\n> ",
+    b"gpioget DUT_HUB_USB_RESET_L": b"gpioget DUT_HUB_USB_RESET_L\r\n  1  O H ODR DUT_HUB_USB_RESET_L\r\n> ",
+    b"gpioget FASTBOOT_DUTHUB_MUX_EN_L": b"gpioget FASTBOOT_DUTHUB_MUX_EN_L\r\n  0  O L FASTBOOT_DUTHUB_MUX_EN_L\r\n> ",
+    b"gpioget FASTBOOT_DUTHUB_MUX_SEL": b"gpioget FASTBOOT_DUTHUB_MUX_SEL\r\n  1  O H FASTBOOT_DUTHUB_MUX_SEL\r\n> ",
+    b"version": b"version\r\nChip:    stm stm32f07x \r\nBoard:   3\r\nRO:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nRW:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nBuild:   servo_v4p1_v2.0.8584+1a7e7e64c\r\n         2021-04-30 23:54:40 dabros@dabros-l\r\n> ",
+}
+
+MOCKED_C2D2_SERVO41_CONSOLE_DATA = {
+    b"": b"\r\n> ",
+    b"chan 0xffffffff": b"chan 0xffffffff\r\n> ",
+    b"chan 1": b"chan 1\r\n> ",
+    b"chan restore": b"chan restore\r\n> ",
+    b"chan save": b"chan save\r\n> ",
+    b"enable_spi": b"enable_spi\r\nSPI Vref: 0\r\n> ",
+    b"gpioget EN_CLK_CSN_EC_UART": b"gpioget EN_CLK_CSN_EC_UART\r\n  1  EN_CLK_CSN_EC_UART\r\n> ",
+    b"gpioset EN_CLK_CSN_EC_UART 1": b"gpioset EN_CLK_CSN_EC_UART 1\r\n> ",
+    b"h1_reset": b"h1_reset\r\nH1 reset held: no\r\n> ",
+    b"hold_usart usart1": b"hold_usart usart1\r\nUSART status: normal\r\n> ",
+    b"version": b"version\r\nChip:    stm stm32f07x \r\nBoard:   0\r\nRO:      c2d2_v2.4.35-f1113c92b\r\nRW:      c2d2_v2.4.35-f1113c92b\r\nBuild:   c2d2_v2.4.35-f1113c92b\r\n         2020-07-24 06:53:49 @chromeos-ci-legacy-us-central1-b-x32-27-npfi\r\n> ",
+}
+
+MOCKED_C2D2_I2C_DATA = {}
+
+MOCKED_C2D2_AP_DATA = {}
+
+MOCKED_C2D2_EC_DATA = {
+    b"": b"",
+    b"cbi": b"",
+    b"chan 0xffffffff": b"",
+    b"chan 1": b"",
+    b"chan restore": b"",
+    b"chan save": b"",
+    b"gpioget LID_OPEN": b"",
+    b"lidstate": b"",
     b"version": b"",
 }

@@ -94,6 +94,7 @@ class Suart(uart.Uart):
     for t in [self._rx_thread, self._tx_thread]:
       t.join(timeout=0.2)
     del self._susb
+    os.close(self._ptym)
 
   def reinitialize(self):
     """Reinitialize the usb endpoint"""

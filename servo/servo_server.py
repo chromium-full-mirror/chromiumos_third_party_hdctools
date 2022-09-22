@@ -195,8 +195,16 @@ class Servod(object):
 
   def close(self):
     """Servod turn down logic."""
+    # Close ec3po interfaces first to remove all wrappers/pointers on the raw pty
     for i, interface in enumerate(self._interface_list):
-      if not isinstance(interface, _interface.empty.Empty):
+      if isinstance(interface, _interface.ec3po_interface.EC3PO):
+        self._logger.info('Turning down interface %d', i)
+        interface.close()
+    
+    # Close all the other non-placeholder interfaces
+    for i, interface in enumerate(self._interface_list):
+      if not isinstance(interface, _interface.empty.Empty) and \
+        not isinstance(interface, _interface.ec3po_interface.EC3PO):
         # Only print this on real interfaces and not place holders.
         self._logger.info('Turning down interface %d', i)
         interface.close()

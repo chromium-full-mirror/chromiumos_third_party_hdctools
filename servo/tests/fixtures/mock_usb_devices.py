@@ -164,6 +164,62 @@ def mock_servo_micro_configuration(mocker, mock_interface):
 
     return generate_mock_servo_micro_configuration
 
+@pytest.fixture(scope="function")
+def mock_c2d2_configuration(mocker, mock_interface):
+    def generate_mock_c2d2_configuration():
+        mock_cfg = mocker.Mock(name="C2D2 Configuration")
+
+        mock_cfg.interfaces = {
+            0: mock_interface(
+                0,
+                [1, 129],
+                "[H1 console, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_C2D2_H1_CONSOLE_DATA,
+                None,
+            ),  # H1 console, stm32_uart
+            3: mock_interface(
+                3,
+                [4, 132],
+                "[Servo console, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_C2D2_SERVO41_CONSOLE_DATA,
+                b"",
+            ),  # Servo console, stm32_uart
+            4: mock_interface(
+                4,
+                [5, 133],
+                "[I2C, stm32_i2c]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_C2D2_I2C_DATA,
+                b"",
+            ),  # I2C, stm32_i2c
+            5: mock_interface(
+                5,
+                [6, 134],
+                "[UART2/AP, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_C2D2_AP_DATA,
+                b"",
+            ),  # UART2/AP, stm32_uart
+            6: mock_interface(
+                6,
+                [7, 135],
+                "[UART1/EC, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_C2D2_EC_DATA,
+                b"",
+            ),  # UART1/EC, stm32_uart
+        }
+
+        def find_interface(mock_cfg, find_all, custom_match, args):
+            return mock_cfg.interfaces[args["bInterfaceNumber"]]
+
+        mock_cfg.find_descriptor.side_effect = partial(find_interface, mock_cfg)
+
+        return mock_cfg
+
+    return generate_mock_c2d2_configuration
 
 @pytest.fixture(scope="function")
 def mock_v4p1_usb_device(mock_usb_device, mock_v4p1_configuration):
@@ -205,6 +261,18 @@ def mock_servo_micro_usb_device(mock_usb_device, mock_servo_micro_configuration)
 
     return partial(create_device, mock_usb_device)
 
+@pytest.fixture(scope="function")
+def mock_c2d2_usb_device(mock_usb_device, mock_c2d2_configuration):
+    def create_device(mock_usb_device, iSerial, bus, address):
+        mock_device = mock_usb_device(
+            "C2d2 Device", tmpl.C2d2.VID, tmpl.C2d2.PID, mock_c2d2_configuration
+        )
+        mock_device.iSerial = iSerial
+        mock_device.bus = bus
+        mock_device.address = address
+        return mock_device
+
+    return partial(create_device, mock_usb_device)
 
 @pytest.fixture(scope="function")
 def mock_usb_device(mocker):

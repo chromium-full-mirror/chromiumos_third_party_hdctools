@@ -18,11 +18,13 @@ device_details = {}
 device_details[tmpl.ServoV4p1.TYPE] = {"idVendor": tmpl.ServoV4p1.VID, "idProduct": tmpl.ServoV4p1.PID}
 device_details[tmpl.CcdCr50.TYPE] = {"idVendor": tmpl.CcdCr50.VID, "idProduct": tmpl.CcdCr50.PID}
 device_details[tmpl.ServoMicro.TYPE] = {"idVendor": tmpl.ServoMicro.VID, "idProduct": tmpl.ServoMicro.PID}
+device_details[tmpl.C2d2.TYPE] = {"idVendor": tmpl.C2d2.VID, "idProduct": tmpl.C2d2.PID}
 
 DEFAULT_SERIALS = {
     tmpl.ServoV4p1.TYPE: "SERVOV4P1-S-%s%d",
     tmpl.CcdCr50.TYPE: "1002303D-%s%d",
     tmpl.ServoMicro.TYPE: "MICRO-S-%s%d",
+    tmpl.C2d2.TYPE: "100860-%s%d",
 }
 
 PTY_END_LINE = b""
@@ -66,6 +68,7 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
         "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
         "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
+        "servo_chocodile_overlay.xml",  # Not working as it includes servo_micro.xml
         "servo_hana_overlay.xml",   # Not working
         "servo_elm_overlay.xml",   # Not working
         "servo_oak_overlay.xml",   # Not working
