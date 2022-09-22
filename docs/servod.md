@@ -253,8 +253,8 @@ devices that a `servod` instance started with are still connected. Should this
 not be the case, it will issue a signal to the `servod` instance to turn itself
 off.
 
-The one exeption here is `ccd`: for ccd as it is hosted by cr50, the watchdog
-allows for a reinit period, where if the connection to cr50 is lost (cr50
+The one exeption here is `ccd`: for ccd as it is hosted by GSC, the watchdog
+allows for a reinit period, where if the connection to GSC is lost (GSC
 reboot, cable unplug, etc) and the device is found again within the timeout
 period, the interface is reinitialized. Controls issued during the
 reinitalization phase will block until the interface is reinitialized.

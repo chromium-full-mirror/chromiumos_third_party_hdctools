@@ -217,7 +217,7 @@ the following `drv`:
    information depending on a DUT/device
 
 2. [simple ec][simple_ec]: `simple_ec` will execute a command on a cros ec
-   console (EC, Cr50, servo console), match against a regex, and return the
+   console (EC, GSC, servo console), match against a regex, and return the
    output value. This is a very common flow in Chrome OS, and a powerful drv to
    create all sorts of controls by just providing the console command and the
    regex through the config

@@ -9,11 +9,12 @@ device's firmware or BIOS without using the AP, older Chrome OS devices required
 opening the device to get access to a debug header used by [Servo]. These servo
 headers are frequently unpopulated on production units.
 
-Newer Chrome OS devices have a secure microcontroller in them which runs an
-embedded OS called Cr50. Among other capabilities, this chip allows developers
-to securely debug the device without physically opening it.
+Newer Chrome OS devices have a secure microcontroller(Google Security Chip or
+GSC) in them which runs an embedded OS called Cr50 or Ti50. Among other
+capabilities, this chip allows developers to securely debug the device without
+physically opening it.
 
-Current Cr50 capabilities allow read/write access to a UART on the AP and a UART
+Current GSC capabilities allow read/write access to a UART on the AP and a UART
 on the EC, as well as a SPI interface (normally used to access the flash chips)
 and an I2C interface (normally used to access INAs, but may be used to flash the
 EC). Closed Case Debug replaces the capabilities that previously relied on the
@@ -28,30 +29,30 @@ This document describes basic "Closed Case Debug" (CCD) and debug cable (SuzyQ)
 information. For more in depth instructions on using CCD see the following:
 
 *   [General CCD information and background][CCD]
-*   [Guide to setting up Cr50 CCD][Cr50 CCD]: Cr50 restricts most CCD features.
-    You need to "open" Cr50 CCD and enable access to most Cr50 CCD capabilities.
+*   [Guide to setting up GSC CCD][GSC CCD]: GSC restricts most CCD features.
+    You need to "open" GSC CCD and enable access to most GSC CCD capabilities.
 
-## Communicating with Cr50
+## Communicating with Google Security Chip(GSC)
 
-The Cr50 code uses the microcontroller’s USB interface to expose its debugging
+The GSC code uses the microcontroller’s USB interface to expose its debugging
 functionality. This interface can be reached via a special USB Type-C cable
 called "SuzyQ" on one of the system’s ports.
 
-To put Cr50 into debug mode, the SuzyQ cable has to present itself as a Debug
+To put GSC into debug mode, the SuzyQ cable has to present itself as a Debug
 Accessory (see Chapter B of the USB Type-C Specification). When this cable is
-detected the system will connect the Cr50 full-speed USB2.0 interface to the SBU
+detected the system will connect the GSC full-speed USB2.0 interface to the SBU
 pins of the Type-C connector. Note that this prevents use of the DisplayPort
 alternate-mode (which also uses the SBU pins) but preserves regular USB
 operation on the port.
 
-Once the SuzyQ cable is connected, Cr50 makes several USB endpoints available to
+Once the SuzyQ cable is connected, GSC makes several USB endpoints available to
 the host to communicate with the consoles, to program firmware, etc. More
-details about [setting up Cr50][Cr50 CCD] and these [CCD software interfaces can
+details about [setting up GSC][GSC CCD] and these [CCD software interfaces can
 be found in the documentation section of the EC codebase][servo_micro ccd].
 
 ### SuzyQ / SuzyQable
 
-SuzyQ is a cable that tells the Cr50 to go into debug mode. SuzyQ includes a USB
+SuzyQ is a cable that tells the GSC to go into debug mode. SuzyQ includes a USB
 hub in the cable, which allows the host computer to access both the debug
 interface (on the SBU pins) and any gadget-mode interfaces exposed by the
 device-under-test (for example an ADB interface for debugging Android
@@ -77,10 +78,13 @@ doesn't work try the other port, or flip the connector. Check the
 using.
 
 To see if it worked you can check the presence of `/dev/ttyUSB*` devices, or
-monitor `lsusb` for Cr50 device enumeration:
+monitor `lsusb` for GSC device enumeration:
 
 ```bash
+# H1/Cr50
 (chroot) $ watch -n 1 "lsusb | grep 18d1:5014"
+# D2/Ti50
+(chroot) $ watch -n 1 "lsusb | grep 18d1:504A"
 ```
 ***
 <!-- mdformat on -->
@@ -131,7 +135,7 @@ installed in your chroot:
 (chroot) $ sudo emerge hdctools
 ```
 
-On your workstation, `servod` must also be running to communicate with Cr50:
+On your workstation, `servod` must also be running to communicate with GSC:
 
 ```bash
 (chroot) $ sudo servod -b $BOARD &
@@ -155,10 +159,10 @@ EC UART:
 (chroot) $ miniterm.py --eol LF `dut-control ec_uart_pty|cut -d ":" -f 2`
 ```
 
-The console is read only, unless you have [opened CCD][Cr50 CCD]. The console
+The console is read only, unless you have [opened CCD][GSC CCD]. The console
 will show various debug mesages from charging, keyboard scanning, power state.
 
-Cr50 itself has a console available, but most commands are locked by default for
+GSC itself has a console available, but most commands are locked by default for
 security:
 
 ```bash
@@ -167,9 +171,9 @@ security:
 
 #### Features
 
-Most CCD features are locked down by default on Cr50. You need to enable them
-before you can use them. For information on setting up Cr50 CCD see the
-[GSC CCD setup doc][Cr50 CCD].
+Most CCD features are locked down by default on GSC. You need to enable them
+before you can use them. For information on setting up GSC CCD see the
+[GSC CCD setup doc][GSC CCD].
 
 *   Control of firmware write protect.
 *   Flashing of the AP and EC firmware.
@@ -184,7 +188,7 @@ A subset of these features (e.g., UART lines) can be accessed without a
 
 Once the SuzyQ is plugged in, three `/dev/ttyUSB` devices will enumerate:
 
-1.  Cr50 console
+1.  GSC console
 1.  CPU/AP console (RW)
 1.  EC console (RW)
 
