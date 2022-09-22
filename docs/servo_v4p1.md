@@ -229,7 +229,7 @@ Type-C Servo v4.1 only
 <!-- mdformat on -->
 
 ```bash
-(chroot) $ dut-control servo_v4p1_dts_mode:off [on]
+(chroot) $ dut-control servo_dts_mode:off [on]
 ```
 
 ### Disable/Enable Chargethrough
@@ -241,7 +241,7 @@ Type-C Servo v4.1 only
 <!-- mdformat on -->
 
 ```bash
-(chroot) $ dut-control servo_v4p1_role:snk [src]
+(chroot) $ dut-control servo_pd_role:snk [src]
 ```
 
 ## Flashrom
