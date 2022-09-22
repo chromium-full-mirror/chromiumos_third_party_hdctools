@@ -17,7 +17,7 @@ chromebook DUT.
 Feature                              | v4.1            | v4
 ------------------------------------ | --------------- | ---------------------
 Host USB connector type              | C               | Micro
-Host max speed to switched USB ports | USB3 5 Gbps     | USB2 480 Gbps
+Host max speed to switched USB ports | USB3 5 Gbps     | USB2 480 Mbps
 Servo Power Options                  | Host BC1.2,     | Host only
 ''                                   | Host USBC @ 5V, |
 ''                                   | Alternate Power Port @ 5V |
