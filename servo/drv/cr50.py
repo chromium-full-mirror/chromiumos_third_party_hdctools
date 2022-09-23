@@ -97,8 +97,10 @@ class cr50(pty_driver.ptyDriver):
     while trys_left > 0:
         trys_left -= 1
         try:
+          # Arrows -> and => in startup text are excluded from counting as the
+          # prompt
           super(cr50, self)._issue_cmd_get_results('\n\n',
-                                                   [r'(>|Console is enabled)'])
+                                                   [r'([^-=]>|Console is enabled)'])
           break
         except pty_driver.ptyError:
           logging.debug("cr50 prompt detection failed, %d attempts left.", trys_left)
