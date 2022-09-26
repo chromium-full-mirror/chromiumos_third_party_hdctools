@@ -41,6 +41,9 @@ RUN pip3 install --upgrade pip && pip3 install wheel
 
 ENV CC=clang
 ENV CXX=clang++
+# Required to make the platform/ec makefile not think we are building
+# from portage.
+ENV BUILDCC_PREFIX=
 
 ######################################################################
 FROM clang-builder as cbfstool
