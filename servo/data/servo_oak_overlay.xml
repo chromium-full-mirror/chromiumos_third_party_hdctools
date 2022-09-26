@@ -1,0 +1,29 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>usbpd.xml</name>
+  </include>
+  <!-- EC and PD boot0 shares dev_mode control pin -->
+  <control>
+    <name>dev_mode</name>
+    <alias>ec_boot_mode</alias>
+    <params clobber_ok="" od="PP"></params>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="" shutdown_delay="3.0" reset_recovery="5.0"
+            drv="cros_ec_softrec_power" />
+  </control>
+  <control>
+    <name>usbpd_chip</name>
+    <doc>USB PD chip name (read-only)</doc>
+   <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="stm32"/>
+  </control>
+</root>
