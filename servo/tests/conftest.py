@@ -22,6 +22,8 @@ from servo.tests.fixtures.mock_usb_devices import (
 from servo.tests.fixtures.mock_servo_host import (
     mock_servo_host,
     mock_host_with_4p1_servo_and_c2d2,
+    mock_host_with_4p1_servo_and_c2d2_and_ccd,
     mock_host_with_4p1_servo_and_ccd,
     mock_host_with_4p1_servo_and_servo_micro,
+    mock_host_with_4p1_servo_and_servo_micro_and_ccd,
 )

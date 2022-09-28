@@ -106,17 +106,18 @@ def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_us
                     result[device.iSerial] = dump_interfaces(device)
                 return result
 
-            def start(self, serial, board, model):
-                self.starter = sd.ServodStarter(
-                    [
-                        "-s",
-                        serial,
-                        "-b",
-                        board,
-                        "-m",
-                        model,
-                    ]
-                )
+            def start(self, serial, board, model, dual_v4=False):
+                opts = [
+                    "-s",
+                    serial,
+                    "-b",
+                    board,
+                    "-m",
+                    model,
+                ]
+                if dual_v4:
+                    opts = opts + ['--allow-dual-v4']
+                self.starter = sd.ServodStarter(opts)
 
             def stop(self):
                 if self.starter:
@@ -182,8 +183,8 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
     return generate_host
 
 @pytest.fixture()
-def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
-    """A host device with a single servo v4.1 connected to a DUT through a c2d2.
+def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
+    """A host device with a single servo v4.1 connected to a DUT with CCD through a servo micro.
 
     Args:
         mock_servo_host (Mock): Mock host device
@@ -196,7 +197,34 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
             model (string): model name of the DUT
 
         Yields:
-            Mock: mock host device with a servo 4.1, c2d2 and servod started on it.
+            Mock: mock host device with a servo 4.1, servo micro and servod started on it.
+        """
+        servo_host = mock_servo_host()
+        # Setup
+        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
+        servo_micro_device = servo_host.add_device(tmpl.ServoMicro.TYPE, 1, 57, "2.3")
+        ccd_device = servo_host.add_device(tmpl.CcdCr50.TYPE, 1, 58, "2.2")
+        servo_host.start(servo_v4p1_device.iSerial, board, model, True)
+        return (servo_host, servo_v4p1_device, servo_micro_device, ccd_device)
+
+    return generate_host
+
+@pytest.fixture()
+def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
+    """A host device with a single servo v4.1 connected to a DUT through a C2D2.
+
+    Args:
+        mock_servo_host (Mock): Mock host device
+    """
+    def generate_host(board, model):
+        """Generate a mock DUT for the given board/model
+
+        Args:
+            board (string): board name of the DUT
+            model (string): model name of the DUT
+
+        Yields:
+            Mock: mock host device with a servo 4.1, C2D2 and servod started on it.
         """
         servo_host = mock_servo_host()
         # Setup
@@ -204,5 +232,32 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         c2d2_device = servo_host.add_device(tmpl.C2d2.TYPE, 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, c2d2_device)
+
+    return generate_host
+
+@pytest.fixture()
+def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
+    """A host device with a single servo v4.1 connected to a DUT with CCD through a C2D2.
+
+    Args:
+        mock_servo_host (Mock): Mock host device
+    """
+    def generate_host(board, model):
+        """Generate a mock DUT for the given board/model
+
+        Args:
+            board (string): board name of the DUT
+            model (string): model name of the DUT
+
+        Yields:
+            Mock: mock host device with a servo 4.1, C2D2 and servod started on it.
+        """
+        servo_host = mock_servo_host()
+        # Setup
+        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
+        c2d2_device = servo_host.add_device(tmpl.C2d2.TYPE, 1, 57, "2.3")
+        ccd_device = servo_host.add_device(tmpl.CcdCr50.TYPE, 1, 58, "2.2")
+        servo_host.start(servo_v4p1_device.iSerial, board, model, True)
+        return (servo_host, servo_v4p1_device, c2d2_device, ccd_device)
 
     return generate_host
