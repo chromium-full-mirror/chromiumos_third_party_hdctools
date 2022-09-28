@@ -87,9 +87,13 @@ class Fi2c(i2c_base.BaseI2CBus):
     self._i2c_mask = ~self._fic.gpio.mask
 
   @staticmethod
-  def Build(index, vid, pid, sid, **kwargs):
+  def Build(index, vid, pid, sid, interface_data, **kwargs):
     """Factory method to implement the interface."""
     interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+
+    if 'interface' in interface_data:
+      interface = interface_data['interface']
+
     fobj = Fi2c(vendor=vid, product=pid, interface=interface, serialname=sid)
     fobj.open()
 

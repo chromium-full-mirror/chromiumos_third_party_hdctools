@@ -7,8 +7,13 @@
   <include>
     <name>power_tools.xml</name>
   </include>
-  <control>
-    <name>read_this_thing</name>
-    <params cmd="get" interface="servo" drv="pac1954" subtype="signed" base_name="ppvar_vddcr"/>
-  </control>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <include>
+    <name>ina2xx.xml</name>
+  </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
 </root>

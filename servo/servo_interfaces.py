@@ -47,7 +47,8 @@ PACMAN_DEFAULTS = [(0x18d1, 0x5211)]
 for vid, pid in PACMAN_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['empty',
-     'ftdi_i2c',                           # 1
+     'empty',
+     {'name': 'ftdi_i2c', 'interface': 1},  # 2: FTDI i2c 0/interface 1
     ]
 
 # Ryu Raiden CCD
