@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import mock
-import unittest
+"""Tests usbImageManager class."""
 
-from mock import call
+import unittest
+import mock
+
 from servo.drv import hw_driver
 from servo.drv import usb_image_manager
 from servo.interface import interface
@@ -16,66 +17,136 @@ class TestUsbImageManager(unittest.TestCase):
   Unit test class for usbImageManager
   Please note that this class isn't fully implemented, only the most recent changes are tested.
   """
-  class interface_stub(interface.Interface):
+  class InterfaceStub(interface.Interface):
+    """Interface stub"""
     def __init__(self):
-       pass
-    _logger = mock.MagicMock()
+      pass
 
-  class servod_stub(servo_server.Servod):
+  class ServodStub(servo_server.Servod):
+    """Servod stub"""
     def __init__(self):
-       pass
-    _logger = mock.MagicMock()
+      pass
 
-  # Test Init in the case that there is no map dict
-  # This case happens  when a _Get/_Set function is called that lacks
-  # the usbkey map param
-  def test_init_empty_dict(self):
-    params = {'cmd': 'set'}
-    intfc = self.interface_stub()
+  def setUp(self):
+    """Set up for each test case"""
+    intfc = self.InterfaceStub()
+    params = {'cmd': 'set', 'map':'usb_key',
+              'map_params': {'dut_sees_usbkey': '0', 'servo_sees_usbkey': '1'} }
+    svd = self.ServodStub()
     hw_drv = hw_driver.HwDriver(intfc, params)
-    svd = self.servod_stub()
-    usbMgr = usb_image_manager.usbImageManager(hw_drv, params, svd)
-    self.assertEqual(None, usbMgr._MAP_DICT)
+    self.usb_mgr = usb_image_manager.usbImageManager(hw_drv, params, svd)
 
-  # Test the Init function in the case that there is a map dict in the params
-  def test_init_usbkey_dict(self):
-    # Set up vals
-    params = {'cmd': 'set', 'map':'usb_key', 'map_params': {'dut_sees_usbkey': '0', 'servo_sees_usbkey': '1'} }
-    intfc = self.interface_stub()
-    hw_drv = hw_driver.HwDriver(intfc, params)
-    svd = self.servod_stub()
-    # Run Init
-    usbMgr = usb_image_manager.usbImageManager(hw_drv, params, svd)
-    # Confirm resultant map dicts are set up as expected
-    expected_map_dict = {'dut_sees_usbkey': '0', 'servo_sees_usbkey': '1'}
-    self.assertEqual(expected_map_dict, usbMgr._MAP_DICT)
-    expected_reversed = {'0': 'dut_sees_usbkey', '1': 'servo_sees_usbkey'}
-    self.assertEqual(expected_reversed, usbMgr._MAP_DICT_REVERSED)
 
-  # Test the set_image_usbkey_direction function, and ensure that it passes the desired
-  # string types into _SafelySwitchMux
+  @staticmethod
+  def get_usb_to_servo_calls(usbkey_mux, usbkey_pwr):
+    """Returns Expected Usb to Servo calls for Set_X_usbkey_direction functions"""
+    return [mock.call(usbkey_pwr, 'off'),
+            mock.call(usbkey_mux, 'servo_sees_usbkey'),
+            mock.call(usbkey_pwr, 'on')]
+
+  @staticmethod
+  def get_usb_to_dut_calls(usbkey_mux, usbkey_pwr):
+    """Returns Expected Usb to Dut calls for Set_X_usbkey_direction functions"""
+    return [mock.call(usbkey_pwr, 'off'),
+            mock.call(usbkey_mux, 'dut_sees_usbkey'),
+            mock.call(usbkey_pwr, 'on')]
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = 'mock_direction')
+  def test_get_image_usbkey(self, servod_get_mock):
+    """Test Get_image_usbkey_direction"""
+    self.assertEqual(self.usb_mgr._Get_image_usbkey_direction(), 'mock_direction')
+    servod_get_mock.assert_called_once_with('image_usbkey_mux')
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = 'mock_direction')
+  def test_get_second_usbkey(self, servod_get_mock):
+    """Test Get_second_usbkey_direction"""
+    self.assertEqual(self.usb_mgr._Get_second_usbkey_direction(), 'mock_direction')
+    servod_get_mock.assert_called_once_with('bottom_usbkey_mux')
+
   @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
-  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get')
-  @mock.patch('servo.drv.usb_image_manager.usbImageManager._SafelySwitchMux')
-  def test_set_image_usbkey_direction(self, SafelySwitchMuxMock, ServodGetMock, ServodSetMock):
-    # Set up vals
-    intfc = self.interface_stub()
-    params = {'cmd': 'set', 'map':'usb_key', 'map_params': {'dut_sees_usbkey': '0', 'servo_sees_usbkey': '1'} }
-    hw_drv = hw_driver.HwDriver(intfc, params)
-    svd = self.servod_stub()
-    usbMgr = usb_image_manager.usbImageManager(hw_drv, params, svd)
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_image_usbkey_1(self, servod_get_mock, servod_set_mock):
+    """Test the Set_image_usbkey_direction function with 1 as an input."""
+    usb_to_servo_calls = self.get_usb_to_servo_calls('image_usbkey_mux', 'image_usbkey_pwr')
+    self.usb_mgr._Set_image_usbkey_direction(1)
+    servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    # Test all the different possible inputs
-    usbMgr._Set_image_usbkey_direction(1)
-    SafelySwitchMuxMock.assert_called_with('servo_sees_usbkey')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_second_usbkey_1(self, servod_get_mock, servod_set_mock):
+    """Test the Set_second_usbkey_direction function with 1 as an input."""
+    usb_to_servo_calls = self.get_usb_to_servo_calls('bottom_usbkey_mux', 'bottom_usbkey_pwr')
+    self.usb_mgr._Set_second_usbkey_direction(1)
+    servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    usbMgr._Set_image_usbkey_direction(0)
-    SafelySwitchMuxMock.assert_called_with('dut_sees_usbkey')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_image_usbkey_0(self, servod_get_mock, servod_set_mock):
+    """Test the Set_image_usbkey_direction function with 0 as an input."""
+    usb_to_dut_calls = self.get_usb_to_dut_calls('image_usbkey_mux', 'image_usbkey_pwr')
+    self.usb_mgr._Set_image_usbkey_direction(0)
+    servod_set_mock.assert_has_calls(usb_to_dut_calls)
 
-    usbMgr._Set_image_usbkey_direction('servo_sees_usbkey')
-    SafelySwitchMuxMock.assert_called_with('servo_sees_usbkey')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_second_usbkey_0(self, servod_get_mock, servod_set_mock):
+    """Test the Set_second_usbkey_direction function with 0 as an input."""
+    usb_to_dut_calls = self.get_usb_to_dut_calls('bottom_usbkey_mux', 'bottom_usbkey_pwr')
+    self.usb_mgr._Set_second_usbkey_direction(0)
+    servod_set_mock.assert_has_calls(usb_to_dut_calls)
 
-    usbMgr._Set_image_usbkey_direction('dut_sees_usbkey')
-    SafelySwitchMuxMock.assert_called_with('dut_sees_usbkey')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_image_usbkey_servo(self, servod_get_mock, servod_set_mock):
+    """Test the Set_image_usbkey_direction function with input servo_sees_usbkey."""
+    usb_to_servo_calls = self.get_usb_to_servo_calls('image_usbkey_mux', 'image_usbkey_pwr')
+    self.usb_mgr._Set_image_usbkey_direction('servo_sees_usbkey')
+    servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    self.assertRaises(usb_image_manager.UsbImageManagerError, usbMgr._Set_image_usbkey_direction, 2)
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_second_usbkey_servo(self, servod_get_mock, servod_set_mock):
+    """Test the Set_second_usbkey_direction function with input servo_sees_usbkey."""
+    usb_to_servo_calls = self.get_usb_to_servo_calls('bottom_usbkey_mux', 'bottom_usbkey_pwr')
+    self.usb_mgr._Set_second_usbkey_direction('servo_sees_usbkey')
+    servod_set_mock.assert_has_calls(usb_to_servo_calls)
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_image_usbkey_dut(self, servod_get_mock, servod_set_mock):
+    """Test the Set_image_usbkey_direction function with input dut_sees_usbkey."""
+    usb_to_dut_calls = self.get_usb_to_dut_calls('image_usbkey_mux', 'image_usbkey_pwr')
+    self.usb_mgr._Set_image_usbkey_direction('dut_sees_usbkey')
+    servod_set_mock.assert_has_calls(usb_to_dut_calls)
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = '')
+  def test_set_second_usbkey_dut(self, servod_get_mock, servod_set_mock):
+    """Test the Set_second_usbkey_direction function with input dut_sees_usbkey."""
+    usb_to_dut_calls = self.get_usb_to_dut_calls('bottom_usbkey_mux', 'bottom_usbkey_pwr')
+    self.usb_mgr._Set_second_usbkey_direction('dut_sees_usbkey')
+    servod_set_mock.assert_has_calls(usb_to_dut_calls)
+
+  def test_set_image_usbkey_dut_err(self):
+    """Confirm that a bad numerical value results in an error"""
+    self.assertRaises(usb_image_manager.UsbImageManagerError,
+                      self.usb_mgr._Set_image_usbkey_direction, 2)
+
+  def test_set_second_usbkey_dut_err(self):
+    """Confirm that a bad numerical value results in an error"""
+    self.assertRaises(usb_image_manager.UsbImageManagerError,
+                      self.usb_mgr._Set_second_usbkey_direction, 2)
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = 'servo_sees_usbkey')
+  def test_set_image_usbkey_repeat(self, servod_get_mock, servod_set_mock):
+    """Test that when usbkey is already set to the requested direction, then no call is made"""
+    self.usb_mgr._Set_image_usbkey_direction('servo_sees_usbkey')
+    assert mock.call('servo_sees_usbkey') not in servod_set_mock.mock_calls
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_get', return_value = 'servo_sees_usbkey')
+  def test_set_second_usbkey_repeat(self, servod_get_mock, servod_set_mock):
+    """Test that when usbkey is already set to the requested direction, then no call is made"""
+    self.usb_mgr._Set_second_usbkey_direction('servo_sees_usbkey')
+    assert mock.call('servo_sees_usbkey') not in servod_set_mock.mock_calls

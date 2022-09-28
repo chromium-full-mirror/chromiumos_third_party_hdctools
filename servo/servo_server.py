@@ -20,6 +20,8 @@ class Servod(object):
 
   # Separator for control strings between servo device prefix and control name
   PREFIX_DELIMITER = '.'
+  # Constant for flex Control
+  _IS_FLEX_CTRL = 'is_flex_board'
 
   def __init__(self, usbkm232=None):
     """Servod constructor.
@@ -448,11 +450,27 @@ class Servod(object):
         interfaces += [(str(dev), interface)]
     return interfaces
 
+  def is_flex_board(self):
+    """Returns true if servod is run with a flex board"""
+    if not self.has_control(self._IS_FLEX_CTRL):
+      return False
+    is_flex_board = self.get(self._IS_FLEX_CTRL)
+    if is_flex_board == 'no':
+        return False
+    if is_flex_board == 'yes':
+        return True
+    raise ServodError('Control %r has invalid value %r.' %
+                        (self._IS_FLEX_CTRL, is_flex_board))
+
   def validate_dut_controller(self):
     """Validate the servod instance has at least 1 dut controller."""
     for dev in self.get_devices():
       if dev.template.DUT_CONTROLLER:
         return
+
+    if self.is_flex_board():
+      self._logger.info('Flex board doesn\'t use DUT controller, skip check.')
+      return
 
     # Start diagnosing why servod does not have DUT controller.
     # Fail if we requested board control but don't have an interface for this.
