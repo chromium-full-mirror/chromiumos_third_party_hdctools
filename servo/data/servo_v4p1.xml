@@ -45,6 +45,12 @@
     <doc>Determines whether DUT or host sees USB port</doc>
     <params servo_sees_usbkey="0" dut_sees_usbkey="1"></params>
   </map>
+  <control>
+    <name>second_usbkey_direction</name>
+    <doc>Safely switch second usbkey direction by cycling power first. This port isn't currently implemented to use usb drives.</doc>
+    <params subtype="second_usbkey_direction" interface="servo"
+      drv="usb_image_manager" map="usbkey" usb_power_off_delay="2"></params>
+  </control>
   <map>
     <name>servo_v4p1_cc_map</name>
     <doc>Enable CC and power config for various CCD modes</doc>

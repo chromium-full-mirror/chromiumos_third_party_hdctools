@@ -1,0 +1,64 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""Test relay_switch works as intended."""
+import unittest
+import mock
+import serial
+
+from servo import servo_server
+from servo.drv import hw_driver
+from servo.drv import relay_switch
+from servo.interface import interface
+
+class TestRelaySwitch(unittest.TestCase):
+  """
+  Unit test class for relaySwitch
+  """
+  def setUp(self):
+    intfc = mock.Mock(interface.Interface)
+    servod = mock.Mock(servo_server.Servod)
+    params = {'cmd': 'set'}
+    hw_drv = hw_driver.HwDriver(intfc, params)
+    self.relay_switch = relay_switch.relaySwitch(hw_drv, params, servod)
+
+  def generate_comport(self, vid, pid):
+    """Create a populated serial comport object."""
+    fakeport = serial.tools.list_ports_common.ListPortInfo("fake_device")
+    fakeport.vid = vid
+    fakeport.pid = pid
+    return fakeport
+
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('serial.tools.list_ports.comports')
+  def test_pwrbtn_press_fail(self, comports_mock, servod_set_mock):
+    """Test that Set_relay_pwrbtn_press throws error when relay switch is not present."""
+    comports_mock.return_value =  [self.generate_comport(vid=0x0000, pid=0x0000)]
+
+    # Run tests
+    self.assertRaises(relay_switch.RelaySwitchError,
+                      self.relay_switch._Set_relay_pwrbtn_press,
+                      press_secs=0,
+                      num_attempts=0)
+    servod_set_mock.assert_called_once_with('second_usbkey_direction', 'servo_sees_usbkey')
+
+  @mock.patch('serial.Serial.write', mock.MagicMock())
+  @mock.patch('serial.Serial.close', mock.MagicMock())
+  @mock.patch('servo.drv.hw_driver.HwDriver._servod_set')
+  @mock.patch('serial.Serial')
+  @mock.patch('serial.tools.list_ports.comports')
+  def test_pwrbtn_press_success(self, comports_mock, serial_mock, servod_set_mock):
+    """Test that Set_relay_pwrbtn_press activates relay switch when it's present."""
+    # Set up comport mock with a recognized vid and pid
+    comports_mock.return_value =  [self.generate_comport(vid=0x1a86, pid=0x7523)]
+    # Set up mock serial object whose member functions are expected to be called
+    serial_mock.return_value = mock.Mock(serial.Serial)
+
+    # Run the function being tested
+    self.relay_switch._Set_relay_pwrbtn_press(0)
+
+    # Confirm that all resultant calls occur
+    servod_set_mock.assert_called_once_with('second_usbkey_direction', 'servo_sees_usbkey')
+    write_calls = [mock.call(b"\xA0\x01\x01\xA2\r\n"), mock.call(b"\xA0\x01\x00\xA1\r\n")]
+    serial_mock.return_value.write.assert_has_calls(write_calls)
+    serial_mock.return_value.close.assert_called_once()

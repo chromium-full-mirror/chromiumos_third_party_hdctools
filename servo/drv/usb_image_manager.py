@@ -9,10 +9,10 @@ import os
 import subprocess
 import tempfile
 import time
+import usb
 
 from servo.drv import hw_driver
 import servo.utils.usb_hierarchy as usb_hierarchy
-import usb
 
 
 # If a hub is attached to the usual image usb storage slot, use this port on the
@@ -41,7 +41,9 @@ class usbImageManager(hw_driver.HwDriver):
 
   # Control aliases to the image mux and power intended for image management
   _IMAGE_USB_MUX = 'image_usbkey_mux'
+  _USB_MUX_BOTTOM = 'bottom_usbkey_mux' # only for servo v4.1
   _IMAGE_USB_PWR = 'image_usbkey_pwr'
+  _USB_PWR_BOTTOM = 'bottom_usbkey_pwr'
   _IMAGE_DEV = 'image_usbkey_dev'
   _IMAGE_MUX_TO_SERVO = 'servo_sees_usbkey'
 
@@ -84,6 +86,12 @@ class usbImageManager(hw_driver.HwDriver):
     """Return direction of image usbkey mux (as a usbkey string)."""
     return self._servod_get(self._IMAGE_USB_MUX)
 
+  def _Get_second_usbkey_direction(self):
+    """Return direction of bottom usbkey mux.
+    Please note that this is only compatible with servo_v4p1
+    """
+    return self._servod_get(self._USB_MUX_BOTTOM)
+
   def _Set_image_usbkey_direction(self, mux_direction):
     """Connect USB flash stick to either servo or DUT.
 
@@ -109,7 +117,28 @@ class usbImageManager(hw_driver.HwDriver):
       # enumerates.
       self._servod_get(self._IMAGE_DEV)
 
-  def _SafelySwitchMux(self, mux_direction):
+  def _Set_second_usbkey_direction(self, mux_direction):
+    """Connect USB port to either servo or DUT.
+
+    This function switches 'usb_mux_sel2' to provide electrical
+    connection between the USB port and either servo or DUT side.
+
+    Args:
+      mux_direction: string/int values of "servo_sees_usbkey" or "dut_sees_usbkey".
+    Raises:
+      UsbImageManagerError: if an invalid usbkey int is passed in
+    """
+    # If mux_direction is an int, change it to its corresponding string
+    if isinstance(mux_direction, int) and self._MAP_DICT_REVERSED is not None:
+      try:
+        mux_direction = self._MAP_DICT_REVERSED[str(mux_direction)]
+      except KeyError as e:
+        raise UsbImageManagerError('Invalid usbkey value. Try one of these values: ' +
+                                     str(self._MAP_DICT)) from e
+    self._SafelySwitchMux(mux_direction, self._USB_MUX_BOTTOM)
+    # Note: We don't check that image usb is connected as this port isn't currently used for images
+
+  def _SafelySwitchMux(self, mux_direction, usb_mux=None):
     """Helper to switch the usb mux.
 
     Switching the usb mux is accompanied by powercycling
@@ -119,14 +148,21 @@ class usbImageManager(hw_driver.HwDriver):
     Args:
       mux_direction: string values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
-    if self._servod_get(self._IMAGE_USB_MUX) != mux_direction:
-      self._servod_set(self._IMAGE_USB_PWR, 'off')
+    # Older servos have just one usb "image port", so the default mux is image.
+    if usb_mux is None:
+      usb_mux = self._IMAGE_USB_MUX
+
+    # Select corresponding usb_pwr
+    usb_pwr = self._IMAGE_USB_PWR if usb_mux == self._IMAGE_USB_MUX else self._USB_PWR_BOTTOM
+
+    if self._servod_get(usb_mux) != mux_direction:
+      self._servod_set(usb_pwr, 'off')
       time.sleep(self._poweroff_delay)
-      self._servod_set(self._IMAGE_USB_MUX, mux_direction)
+      self._servod_set(usb_mux, mux_direction)
       time.sleep(self._poweroff_delay)
-    if self._servod_get(self._IMAGE_USB_PWR) != 'on':
+    if self._servod_get(usb_pwr) != 'on':
       # Enforce that power is supplied.
-      self._servod_set(self._IMAGE_USB_PWR, 'on')
+      self._servod_set(usb_pwr, 'on')
 
   def _PathIsHub(self, usb_sysfs_path):
     """Return whether |usb_sysfs_path| is a usb hub."""
@@ -150,7 +186,7 @@ class usbImageManager(hw_driver.HwDriver):
     servod = self._servod
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
-    self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
+    self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO, self._IMAGE_USB_MUX)
     # Look for own servod usb device
     # pylint: disable=protected-access
 
