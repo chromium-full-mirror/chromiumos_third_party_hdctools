@@ -238,10 +238,7 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
-        bzip2 \
-        curl \
         dnsutils \
-        fdisk \
         iptables \
         iputils-ping \
         kmod \
@@ -327,9 +324,6 @@ COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
 
 RUN mkdir -p /usr/share/ec-devutils
-# Avoid watchtower updating servod, it gets pulled before every start of the
-# container, we should not stop/start it in the case a new version is pushed.
-LABEL com.centurylinklabs.watchtower.enable="false"
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
