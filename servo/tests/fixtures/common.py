@@ -68,8 +68,14 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
         "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
         "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
-        "servo_chocodile_overlay.xml",  # Not working as it includes servo_micro.xml
-        "servo_hana_overlay.xml",   # Not working
+        "servo_bloonchipper_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dartmonkey_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragonclaw_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragontalon_overlay.xml",   # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_icetower_overlay.xml",      # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_zerblebarn_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_chocodile_overlay.xml",     # Not working as it includes servo_micro.xml
+        "servo_hana_overlay.xml",  # Not working
         "servo_elm_overlay.xml",   # Not working
         "servo_oak_overlay.xml",   # Not working
     ]

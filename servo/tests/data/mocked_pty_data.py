@@ -255,11 +255,17 @@ MOCKED_C2D2_H1_CONSOLE_DATA = {
     b"chan 1": b"chan 1\r\n> ",
     b"chan restore": b"chan restore\r\n> ",
     b"chan save": b"chan save\r\n> ",
+    b"ecrst": b"EC_RST_L is deasserted\r\n> ",
+    b"ecrst off": b"ecrst off\r\nEC_RST_L is deasserted\r\n> ",
+    b"ecrst on": b"ecrst on\r\nEC_RST_L is asserted\r\n> ",
     b"gpioget ATMEL_HWB_L": b"gpioget ATMEL_HWB_L\r\n  1  O H ATMEL_HWB_L\r\n> ",
     b"gpioset ATMEL_HWB_L 1": b"gpioset ATMEL_HWB_L 1\r\n> ",
     b"gpioget DUT_HUB_USB_RESET_L": b"gpioget DUT_HUB_USB_RESET_L\r\n  1  O H ODR DUT_HUB_USB_RESET_L\r\n> ",
     b"gpioget FASTBOOT_DUTHUB_MUX_EN_L": b"gpioget FASTBOOT_DUTHUB_MUX_EN_L\r\n  0  O L FASTBOOT_DUTHUB_MUX_EN_L\r\n> ",
     b"gpioget FASTBOOT_DUTHUB_MUX_SEL": b"gpioget FASTBOOT_DUTHUB_MUX_SEL\r\n  1  O H FASTBOOT_DUTHUB_MUX_SEL\r\n> ",
+    b"sysrst": b"sysrst\r\nSYS_RST_L is deasserted\r\n> ",
+    b"sysrst off": b"\r\n> ",
+    b"sysrst on": b"sysrst on\r\nSYS_RST_L is asserted\r\n> ",
     b"version": b"version\r\nChip:    stm stm32f07x \r\nBoard:   3\r\nRO:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nRW:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nBuild:   servo_v4p1_v2.0.8584+1a7e7e64c\r\n         2021-04-30 23:54:40 dabros@dabros-l\r\n> ",
 }
 
@@ -290,5 +296,7 @@ MOCKED_C2D2_EC_DATA = {
     b"chan save": b"",
     b"gpioget LID_OPEN": b"",
     b"lidstate": b"",
+    b"powerinfo": b"",
+    b"power off": b"",
     b"version": b"",
 }
