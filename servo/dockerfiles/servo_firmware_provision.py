@@ -8,34 +8,34 @@ import subprocess
 
 # TODO (anhdle): Update to track servo-firmware ebuild instead of hardcoding.
 # stable channel firmware
-C2D2_NAME="c2d2_v2.4.35-f1113c92b"                # servo-firmware-R81-12768.40.0
-SERVO_MICRO_NAME="servo_micro_v2.4.57-ce329f64f"  # servo-firmware-R81-12768.71.0
-SERVO_V4_NAME="servo_v4_v2.4.58-c37246f9c"       # servo-firmware-R81-12768.74.0
-SERVO_V4P1_NAME="servo_v4p1_v2.0.8584+1a7e7e64c"  # Local builds are temporary b/153464312
-SWEETBERRY_NAME="sweetberry_v2.3.7-096c7ee84"     # servo-firmware-R70-11011.14.0
+C2D2_NAME="c2d2_v2.4.73-d771c18ba9"                # servo-firmware-R81-12768.40.0
+SERVO_MICRO_NAME="servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.71.0
+SERVO_V4_NAME="servo_v4_v2.4.58-c37246f9c"         # servo-firmware-R81-12768.74.0
+SERVO_V4P1_NAME="servo_v4p1_v2.0.8584+1a7e7e64c"   # Local builds are temporary b/153464312
+SWEETBERRY_NAME="sweetberry_v2.3.7-096c7ee84"      # servo-firmware-R70-11011.14.0
 
 # Prev channel firmware
-SERVO_MICRO_NAME_PREV="servo_micro_v2.4.35-f1113c92b"  # servo-firmware-R81-12768.40.0
+C2D2_NAME_PREV="c2d2_v2.4.35-f1113c92b"                # servo-firmware-R81-12768.40.0
+SERVO_MICRO_NAME_PREV="servo_micro_v2.4.57-ce329f64f"  # servo-firmware-R81-12768.40.0
 SERVO_V4_NAME_PREV="servo_v4_v2.4.57-ce329f64f"        # servo-firmware-R81-12768.71.0
 SERVO_V4P1_NAME_PREV="servo_v4p1_v2.0.7721-8af602eee"  # Local builds are temporary b/153464312
 
 # Dev channel firmware
 SERVO_V4P1_NAME_DEV="servo_v4p1_v2.0.18563-55348847f"  # EC ToT from 09/07/2022
-C2D2_NAME_DEV="c2d2_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.151.0
+C2D2_NAME_DEV="c2d2_v2.4.73-d771c18ba9"                # servo-firmware-R81-12768.151.0
 SERVO_MICRO_NAME_DEV="servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.151.0
 
 # Alpha channel firmware
 C2D2_NAME_ALPHA="c2d2_v2.0.18040-0fa6cb3063"                # R106-15042.0.0 build
 SERVO_MICRO_NAME_ALPHA="servo_micro_v2.0.18040-0fa6cb3063"  # R106-15042.0.0 build
-SERVO_V4P1_NAME_ALPHA="servo_v4p1_v2.0.13477-1c6bb5adb" # R103-14703.0.0 build
+SERVO_V4P1_NAME_ALPHA="servo_v4p1_v2.0.13477-1c6bb5adb"     # R103-14703.0.0 build
 
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
 
 # Temporary solution to the different file extensions
-GZ_FILES = [C2D2_NAME, SERVO_MICRO_NAME_PREV, SWEETBERRY_NAME]
+GZ_FILES = [C2D2_NAME_PREV, SWEETBERRY_NAME]
 
 # Sets the paths for the shared binaries.
-C2D2_NAME_PREV = C2D2_NAME
 SERVO_V4_NAME_ALPHA = SERVO_V4_NAME
 SERVO_V4_NAME_DEV = SERVO_V4_NAME
 SWEETBERRY_NAME_ALPHA = SWEETBERRY_NAME
