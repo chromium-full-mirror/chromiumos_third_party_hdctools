@@ -212,7 +212,7 @@ RUN apt-get update \
 	    libpci-dev
 
 WORKDIR /flashrom
-RUN meson builddir -Dconfig_atahpt=false -Dconfig_atapromise=false -Dconfig_atavia=false -Dconfig_drkaiser=false -Dconfig_gfxnvidia=false -Dconfig_it8212=false -Dconfig_nic3com=false -Dconfig_nicintel_eeprom=false -Dconfig_nicintel=false -Dconfig_nicintel_spi=false -Dconfig_nicnatsemi=false -Dconfig_nicrealtek=false -Dconfig_ogp_spi=false -Dconfig_rayer_spi=false -Dconfig_satamv=false -Dconfig_satasii=false && cd builddir && meson install
+RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
 
 ######################################################################

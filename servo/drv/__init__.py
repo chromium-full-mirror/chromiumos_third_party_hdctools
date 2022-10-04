@@ -60,7 +60,6 @@ from servo.drv import pca9500
 from servo.drv import pca9537
 from servo.drv import pca9546
 from servo.drv import pca95xx
-from servo.drv import plankton
 from servo.drv import power_kb
 from servo.drv import ps8742
 from servo.drv import pty_driver

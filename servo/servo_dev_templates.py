@@ -94,18 +94,6 @@ def GetTemplateClass(vid, pid, serial=None):
     return None
   return dev_class_candidates.pop()
 
-def _CamelToSnakeCase(iput):
-  """Convert CamelCase to snake_case, and remove trailing underscores.
-  Substitute each upper-case letter preceded by a lower-case one (or number)
-  with a _ and its lower case equivalent.
-  Args:
-    iput: input string to convert
-  Returns:
-    iput string converted to camel-case
-  """
-  s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', iput)
-  return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).rstrip('_').lower()
-
 class _ServoDevTemplate(object):
   """Base servo device template class.
   Servo device template classes are classes to centrally collect information
@@ -216,27 +204,6 @@ class C2d2(_ServoDevTemplate):
   VID = 0x18d1
   PID = 0x5041
   DEFAULT_CONFIG = 'c2d2.xml'
-
-class Reston(_ServoDevTemplate):
-  """Reston template class."""
-  TYPE = 'reston'
-  VID = 0x18d1
-  PID = 0x5007
-  DEFAULT_CONFIG = 'reston.xml'
-
-class Fruitpie(_ServoDevTemplate):
-  """Fruitpie template class."""
-  TYPE = 'fruitpie'
-  VID = 0x18d1
-  PID = 0x5009
-  DEFAULT_CONFIG = 'fruitpie.xml'
-
-class Plankton(_ServoDevTemplate):
-  """Plankton template class."""
-  TYPE = 'plankton'
-  VID = 0x18d1
-  PID = 0x500c
-  DEFAULT_CONFIG = 'plankton.xml'
 
 class Fluffy(_ServoDevTemplate):
   """Fluffy template class."""

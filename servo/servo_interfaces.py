@@ -225,36 +225,6 @@ for vid, pid in MINISERVO_ID_DEFAULTS:
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
-# Reston
-RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
-for vid, pid in RESTON_ID_DEFAULTS:
-  INTERFACE_DEFAULTS[vid][pid] = \
-    ['empty',
-     'ftdi_gpiouart', # occupies 2 slots
-     'empty',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-    ]
-
-# Fruitpie
-FRUITPIE_ID_DEFAULTS = [(0x18d1, 0x5009)]
-for vid, pid in FRUITPIE_ID_DEFAULTS:
-  INTERFACE_DEFAULTS[vid][pid] = \
-    ['empty',
-     'ftdi_gpiouart', # occupies 2 slots
-     'empty',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-    ]
-
-# Plankton
-PLANKTON_ID_DEFAULTS = [(0x18d1, 0x500c)]
-for vid, pid in PLANKTON_ID_DEFAULTS:
-  INTERFACE_DEFAULTS[vid][pid] = \
-    ['empty',
-     'ftdi_gpiouart', # occupies 2 slots
-     'empty',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-    ]
-
 # Fluffy
 FLUFFY_ID_DEFAULTS = [(0x18d1, 0x503b)]
 for vid, pid in FLUFFY_ID_DEFAULTS:
