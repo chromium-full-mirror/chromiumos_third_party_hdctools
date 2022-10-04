@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Class to control and interact with USBKM232 USB keyboard emulator."""
@@ -156,9 +156,9 @@ class usbkm232(object):
     def __init__(self, serial_device):
         """Constructor for usbkm232 class."""
         self.serial = serial.Serial(serial_device, 9600, timeout=0.1)
-        self.serial.setInterCharTimeout(0.5)
-        self.serial.setTimeout(0.5)
-        self.serial.setWriteTimeout(0.5)
+        self.serial.interCharTimeout = 0.5
+        self.serial.timeout = 0.5
+        self.serial.writeTimeout = 0.5
 
 
     def _press(self, press_ch):
@@ -231,14 +231,14 @@ class usbkm232(object):
         for i, write_ch in enumerate(mylist):
             print('usbkm232: writing  [%d] = \\0%03o 0x%02x' % \
                   (i, ord(write_ch), ord(write_ch)))
-            self.serial.write(write_ch)
+            self.serial.write(write_ch.encode('utf-8'))
             if check:
                 self._rsp(write_ch)
             time.sleep(.05)
 
         if clear:
             print('usbkm232: clearing keystrokes')
-            self.serial.write(self.CLEAR)
+            self.serial.write(self.CLEAR.encode('utf-8'))
             if check:
                 self._rsp(self.CLEAR)
 

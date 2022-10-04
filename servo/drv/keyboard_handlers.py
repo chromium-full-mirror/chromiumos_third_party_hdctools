@@ -1,9 +1,9 @@
-# Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+# Copyright 2013 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
 # Expects to be run in an environment with sudo and no interactive password
-# prompt, such as within the Chromium OS development chroot.
+# prompt, such as within the ChromiumOS development chroot.
 from __future__ import print_function
 
 import logging
@@ -575,6 +575,97 @@ class ChromeECHandler(_BaseHandler):
     """Simulate an arbitrary key press."""
     self._press_and_release_keys([self._arb_key], press_secs)
 
+class ChromeECMithraxHandler(ChromeECHandler):
+  """Mithrax is a brya family device that is re-using its OEM's custom
+     keyboard matrix, thus it requires a custom key matrix here.
+     """
+
+  KEY_MATRIX = {
+      # key: (row, col)
+      '`': (3, 1),
+      '1': (7, 1),
+      '2': (6, 4),
+      '3': (6, 2),
+      '4': (6, 3),
+      '5': (3, 3),
+      '6': (3, 6),
+      '7': (6, 6),
+      '8': (6, 5),
+      '9': (6, 9),
+      '0': (0, 9),
+      '-': (3, 8),
+      '=': (0, 8),
+      'q': (6, 12),
+      'w': (7, 4),
+      'e': (5, 8),
+      'r': (7, 3),
+      't': (2, 3),
+      'y': (2, 6),
+      'u': (7, 6),
+      'i': (7, 5),
+      'o': (6, 8),
+      'p': (7, 8),
+      '[': (2, 8),
+      ']': (2, 5),
+      '\\': (1, 11),
+      'a': (4, 1),
+      's': (5, 6),
+      'd': (0, 14),
+      'f': (4, 3),
+      'g': (1, 3),
+      'h': (1, 6),
+      'j': (4, 6),
+      'k': (4, 5),
+      'l': (4, 9),
+      ';': (4, 8),
+      '\'': (1, 8),
+      'z': (7, 9),
+      'x': (5, 5),
+      'c': (7, 13),
+      'v': (7, 2),
+      'b': (0, 3),
+      'n': (0, 6),
+      'm': (5, 1),
+      ',': (5, 4),
+      '.': (5, 9),
+      '/': (6, 11),
+      ' ': (5, 3),
+      '<right>': (1, 12),
+      '<alt_r>': (0, 10),
+      '<down>': (5, 11),
+      '<tab>': (6, 1),
+      '<f10>': (1, 4),
+      '<shift_r>': (7, 7),
+      '<ctrl_r>': (4, 0),
+      '<esc>': (1, 1),
+      '<backspace>': (7, 11),
+      '<f2>': (3, 2),
+      '<alt_l>': (6, 10),
+      '<ctrl_l>': (2, 0),
+      '<f1>': (4, 2),
+      '<search>': (3, 0),
+      '<f3>': (2, 2),
+      '<f4>': (1, 2),
+      '<f5>': (4, 4),
+      '<f6>': (3, 4),
+      '<f7>': (2, 4),
+      '<f8>': (2, 9),
+      '<f9>': (1, 9),
+      '<up>': (2, 11),
+      '<shift_l>': (1, 7),
+      '<enter>': (4, 11),
+      '<left>': (0, 12)
+  }
+
+  def __init__(self, servo):
+    """Sets up the servo communication infrastructure.
+
+        @param servo: A Servo object representing
+                           the host running servod.
+        """
+    super(ChromeECMithraxHandler, self).__init__(servo)
+    self.open()
+
 class ChromeECOsirisHandler(ChromeECHandler):
   """Osiris is a brya family device that is re-using its OEM's custom
      keyboard matrix, thus it requires a custom key matrix here.
@@ -700,6 +791,107 @@ class ChromeECBansheeHandler(ChromeECHandler):
     super(ChromeECBansheeHandler, self).__init__(servo)
     self.open()
 
+class ChromeECDelbinHandler(ChromeECHandler):
+  """Delbin is a volteer family device that is re-using its OEM's custom
+     keyboard matrix, thus it requires a custom key matrix here.
+     """
+  KEY_MATRIX_DELBING = {
+      # key: (row, col)
+      '`': (3, 1),
+      '1': (7, 1),
+      '2': (6, 4),
+      '3': (6, 2),
+      '4': (6, 3),
+      '5': (3, 3),
+      '6': (3, 6),
+      '7': (6, 6),
+      '8': (6, 5),
+      '9': (6, 9),
+      '0': (0, 9),
+      '-': (3, 8),
+      '=': (0, 8),
+      'q': (6, 12),
+      'w': (7, 4),
+      'e': (5, 8),
+      'r': (7, 3),
+      't': (2, 3),
+      'y': (2, 6),
+      'u': (7, 6),
+      'i': (7, 5),
+      'o': (6, 8),
+      'p': (7, 8),
+      '[': (2, 8),
+      ']': (2, 5),
+      '\\': (1, 11),
+      'a': (4, 1),
+      's': (5, 6),
+      'd': (0, 14),
+      'f': (4, 3),
+      'g': (1, 3),
+      'h': (1, 6),
+      'j': (4, 6),
+      'k': (4, 5),
+      'l': (4, 9),
+      ';': (4, 8),
+      '\'': (1, 8),
+      'z': (7, 9),
+      'x': (5, 5),
+      'c': (7, 13),
+      'v': (7, 2),
+      'b': (0, 3),
+      'n': (0, 6),
+      'm': (5, 1),
+      ',': (5, 4),
+      '.': (5, 9),
+      '/': (6, 11),
+      ' ': (5, 3),
+      '<right>': (1, 12),
+      '<alt_r>': (0, 10),
+      '<down>': (5, 11),
+      '<tab>': (6, 1),
+      '<f10>': (1, 4),
+      '<shift_r>': (7, 7),
+      '<ctrl_r>': (4, 0),
+      '<esc>': (1, 1),
+      '<backspace>': (7, 11),
+      '<f2>': (3, 2),
+      '<alt_l>': (6, 10),
+      '<ctrl_l>': (2, 0),
+      '<f1>': (4, 2),
+      '<search>': (3, 0),
+      '<f3>': (2, 2),
+      '<f4>': (1, 2),
+      '<f5>': (4, 4),
+      '<f6>': (3, 4),
+      '<f7>': (2, 4),
+      '<f8>': (2, 9),
+      '<f9>': (1, 9),
+      '<up>': (2, 11),
+      '<shift_l>': (1, 7),
+      '<enter>': (4, 11),
+      '<left>': (0, 12)
+  }
+
+  def __init__(self, servo):
+    """Sets up the servo communication infrastructure.
+
+        @param servo: A Servo object representing
+                           the host running servod.
+        """
+    super(ChromeECDelbinHandler, self).__init__(servo)
+
+    # Try to query SKU_ID or FW_CONFIG from EC Uart
+    servo.set('ec_uart_regexp', '["SKU_ID:\\s+(\\d+)\\s+"]')
+    #servo.set('ec_uart_regexp', '["FW_CONFIG:\\s+(\\d+)\\s+"]')
+    servo.set('ec_uart_cmd', 'cbi')
+
+    sku_id = servo.get('ec_uart_cmd')
+
+    if '65543' in sku_id or '65542' in sku_id:
+      self.KEY_MATRIX = self.KEY_MATRIX_DELBING
+
+    servo.set('ec_uart_regexp', 'None')
+    self.open()
 
 class USBkm232Handler(_BaseHandler):
   """Keyboard handler for devices without internal keyboard."""
@@ -1047,7 +1239,7 @@ class ServoUSBkm232Handler(USBkm232Handler):
     """
     Args:
       servo: Servo device used to execute controls
-      legacy: bool, true for servo v2, v3 as they require more setup.
+      legacy: bool, true for servo v2 as they require more setup.
     """
     servo.set('atmega_rst', 'on')
     servo.set('at_hwb', 'off')

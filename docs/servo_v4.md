@@ -4,7 +4,7 @@ Servo v4 is a debug device in the Servo family.
 
 Servo v4 functions as a configurable USB hub to support developer and lab
 recovery features. However, it doesn't have any hardware debug features on its
-own. It must be paired with CCD (Cr50's on-board servo implementation) or
+own. It must be paired with CCD (GSC's on-board servo implementation) or
 [Servo Micro].
 
 [TOC]
@@ -70,7 +70,7 @@ The plastic case has labels `HOST`, `DUT POWER`, and `uSERVO`.
     *   The DUT connector (which is a captive cable: servo side is permanently
         connected) can be plugged into a DUT, providing the DUT access to the
         ethernet and blue USB port. The Type-C captive cable enables debugging
-        of devices that have a Cr50 (recent Chromebooks) through [CCD].
+        of devices that have a GSC (recent Chromebooks) through [CCD].
 
     *   The "uServo" USB port can be used to plug a servo micro to debug DUT
         over the Yoshi debug header.
@@ -149,7 +149,7 @@ around three hundred of these total.
 
 ## Software
 
-Servo v4 runs more or less equivalently to Servo v2 and v3, through [`servod`].
+Servo v4 runs more or less equivalently to Servo v2, through [`servod`].
 It's intended to be mostly transparent, but there are some differences.
 
 Most functionality is exported through `dut-control`.
@@ -161,7 +161,7 @@ Most functionality is exported through `dut-control`.
 To use with a specific board, you can connect a servo_micro to the "uServo"
 labeled port (or use the Type-C cable to connect to [CCD]) and run [`servod`],
 which will load the board config and control both Servo v4 and Servo Micro (or
-Cr50).
+GSC).
 
 ```bash
 (chroot) $ sudo servod -b [board] -s [serialno printed on servo v4 sticker]
@@ -183,10 +183,13 @@ Connect to Servo Micro Console:
 (chroot) $ usb_console -d 18d1:501a -i 3
 ```
 
-Connect to Cr50 Console:
+Connect to GSC Console:
 
 ```bash
+#H1/Cr50
 (chroot) $ usb_console -d 18d1:5014
+# D2/Ti50
+(chroot) $ watch -n 1 "lsusb | grep 18d1:504A"
 ```
 
 #### Switch SD to Host
@@ -254,7 +257,7 @@ Type-C Servo v4 only
 <!-- mdformat off(b/139308852) -->
 *** note
 For [CCD]: Flashrom doesn't need to specify voltage anymore, this is done
-within Cr50. See the "care and feeding" for your specific device for the
+within GSC. See the "care and feeding" for your specific device for the
 correct `flashrom` commands for [CCD], Servo Micro, and Servo v2, as they are
 each different.
 ***
@@ -263,7 +266,7 @@ each different.
 <!-- mdformat off(b/139308852) -->
 *** note
 When flashing the BIOS or EC with [CCD], you need to make sure the [`FlashAP`]
-capability is enabled in Cr50.
+capability is enabled in GSC.
 ***
 <!-- mdformat on -->
 
@@ -323,13 +326,13 @@ side of the device. If the command doesn't work, try the other ports.
 ***
 <!-- mdformat on -->
 
-Connect to Cr50 console:
+Connect to GSC console:
 
 ```bash
 (chroot) $ usb_console -d 18d1:5014
 ```
 
-Check the Cr50 version in the Cr50 console:
+Check the GSC FW version in the GSC console:
 
 ```
 > version
@@ -346,7 +349,7 @@ CCD requires Cr50 version 0.3.9+ / 0.4.9+
 ***
 <!-- mdformat on -->
 
-Open CCD in the Cr50 console:
+Open CCD in the GSC console:
 
 ```
 > ccd open
@@ -363,12 +366,12 @@ not have developer mode enabled.
 
 <!-- mdformat off(b/139308852) -->
 *** note
-Cr50 loses the developer mode state after "opening CCD". If your device boots
+GSC loses the developer mode state after "opening CCD". If your device boots
 into recovery mode, try re-entering developer  mode.
 ***
 <!-- mdformat on -->
 
-Enable testlab mode in the Cr50 console:
+Enable testlab mode in the GSC console:
 
 ```
 > ccd testlab enable

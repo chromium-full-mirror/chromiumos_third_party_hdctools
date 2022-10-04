@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -216,9 +216,6 @@ class ptyDriver(hw_driver.HwDriver):
         # groups.
         output.append(member)
       else:
-        # for python2 compatibility we want to always convert |member| into a
-        # utf-8 string
-        member = member.decode(encoding='utf-8', errors='replace')
         # Now, we want to make sure that each character can go through XMLRPC.
         # To do this we 1. exempt \t, \r, and \n per spec, and 2. check
         # the rest for having a numerical value between 31 and and 127.
@@ -232,6 +229,7 @@ class ptyDriver(hw_driver.HwDriver):
         # While this might be marginally more resource intensive, it will be
         # both safer and more permissive as only characters that genuinely
         # cannot be sent will be stripped.
+        member = member.decode(encoding='utf-8', errors='replace')
         clean = []
         for c in member:
           if ord(c) > 31 and ord(c) < 128:

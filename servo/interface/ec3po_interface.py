@@ -1,4 +1,4 @@
-# Copyright 2015 The Chromium OS Authors. All rights reserved.
+# Copyright 2015 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Servo interface for the EC-3PO console interpreter."""
@@ -236,7 +236,6 @@ class EC3PO(uart.Uart):
 
     self._logger.info('-------------------- %s console on: %s', self._source,
                       user_pty_name)
-
 
   @staticmethod
   def Build(index, vid, pid, sid, interface_data, servo_device):

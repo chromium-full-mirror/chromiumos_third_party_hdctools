@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -62,7 +62,7 @@ def mock_endpoint(mocker):
                     if command not in ep.parent.mocked_data:
                         # Store any command we do not have mocked data so the
                         # test data can report this.
-                        ep.parent.no_data_command_queue.put(command)
+                        ep.parent.no_data_command_queue.put("%s: %s" % (description, command))
                         _logger.debug(
                             "%s Missing mock data for command %s"
                             % (description, command)
@@ -246,6 +246,9 @@ def mock_pyusb(mocker):
         Returns:
             string: serial number of the device passed in.
         """
+        # Simulate bad USB device
+        if isinstance(dev.iSerial, Exception):
+            raise dev.iSerial
         return dev.iSerial
 
     def mock_find_descriptor(desc, find_all=False, custom_match=None, **args):

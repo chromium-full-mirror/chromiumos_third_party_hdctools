@@ -1,7 +1,7 @@
-# Servo Micro
+# Servo 
 
 Servo Micro (aka "uServo") is a self contained replacement for Yoshi Servo Flex.
-It is meant to be compatible with Servo v2/v3 via [`servod`]. The design uses
+It is meant to be compatible with Servo v2 via [`servod`]. The design uses
 [Case Closed Debug][CCD] software on an STM32 microcontroller to provide a [CCD]
 interface into systems with a Yoshi debug port.
 
@@ -65,6 +65,19 @@ The names of the pins loosely correspond to the name of the controls used by
 the Servo Micro internals.
 
 ![Servo Micro Header Pins]
+
+### Power Sourcing
+
+Servo Micro is designed to supply power to power-monitoring ICs, independent
+from the DUT's power supply. This allows more accurate measurements of total
+system power when the DUT is in a low-power state. We expect less than 50mW
+of power if the maximum number of power-monitoring IC is in use drawing
+from the PP3300 pin.
+
+The PP3300 and VREF pins on the connector can provide a maximum total of 100mA
+of current before exceeding limits and damaging the regulators. Future designs
+may reduce the limit and use resettable fuses to reduce the risk of damaging
+components. Designs should target a limit under 50mA.
 
 ## Known Issues
 

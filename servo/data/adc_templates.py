@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Templates for register and functional ADC control generation."""
@@ -350,7 +350,7 @@ class INA219Template(ADCTemplate):
 
   # Add some maps to the REG_MAP
   REG_MAP = collections.defaultdict(lambda: None)
-  REG_MAP.update(dict(cal='calibrate', cfg='ina219_cfg'))
+  REG_MAP.update(dict(cfg='ina219_cfg'))
 
   # Supported higher level functions
   FUNCTIONS = dict(mv='millivolts', mw='milliwatts', ma='milliamps',
@@ -376,7 +376,7 @@ class INA231Template(INA219Template):
 
   # Add some maps to the REG_MAP
   REG_MAP = collections.defaultdict(lambda: None)
-  REG_MAP.update(dict(cal='calibrate', cfg='ina231_cfg'))
+  REG_MAP.update(dict(cfg='ina231_cfg'))
 
 
 class INA3221Template(INA219Template):
@@ -388,7 +388,7 @@ class INA3221Template(INA219Template):
 
   # Add some maps to the REG_MAP
   REG_MAP = collections.defaultdict(lambda: None)
-  REG_MAP.update(dict(cal='calibrate', cfg='ina3221_cfg'))
+  REG_MAP.update(dict(cfg='ina3221_cfg'))
 
   def reg_offset(self, reg):
     """INA3221 has channel dependent offsets for busv and shv reg.

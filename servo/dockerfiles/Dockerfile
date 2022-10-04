@@ -1,4 +1,4 @@
-# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,7 +14,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:bullseye-slim as clang-builder
+FROM debian:bullseye as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -41,6 +41,9 @@ RUN pip3 install --upgrade pip && pip3 install wheel
 
 ENV CC=clang
 ENV CXX=clang++
+# Required to make the platform/ec makefile not think we are building
+# from portage.
+ENV BUILDCC_PREFIX=
 
 ######################################################################
 FROM clang-builder as cbfstool
@@ -182,7 +185,14 @@ RUN strip  /uhubctl/uhubctl
 ######################################################################
 FROM python:3.10-bullseye as firmware-installer
 
-RUN pip install --upgrade pip && pip3 install gsutil
+RUN apt-get update --no-install-recommends  \
+    && apt-get install -y --no-install-recommends  \
+         apt-transport-https ca-certificates gnupg sudo \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.gpg
+RUN sudo apt-get update && sudo apt-get install google-cloud-cli
 
 RUN mkdir -p /usr/share/servo_updater/firmware/
 WORKDIR /usr/share/servo_updater/firmware/
@@ -212,6 +222,7 @@ FROM flashrom-builder as futility-builder
 WORKDIR /
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference
 WORKDIR /vboot_reference
+RUN sed -i 's/%" PRIi64 "/%ld/g' futility/cmd_gbb_utility.c
 RUN make && make install
 
 RUN strip /usr/bin/futility
@@ -227,8 +238,6 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
-        bzip2 \
-        curl \
         dnsutils \
         fdisk \
         iptables \
@@ -242,6 +251,9 @@ RUN apt-get update --no-install-recommends \
         usbutils \
         udev \
         xz-utils \
+        build-essential \
+        make \
+        gcc \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
@@ -301,21 +313,18 @@ RUN chmod 755 /usr/local/bin/uhubctl
 COPY --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/
 RUN chmod 755 /usr/local/sbin/flashrom
 
-# Install futility
+#Install futility
 COPY --from=futility-builder /usr/bin/futility /usr/bin/
 RUN chmod 755 /usr/bin/futility
-COPY --from=futility-builder /usr/local/lib/x86_64-linux-gnu/libflashrom.so.1.0.0 /usr/lib
+COPY --from=futility-builder /usr/local/lib/*/libflashrom.so.1.0.0 /usr/lib
 RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
-    ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
+   ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
 
 # Install cbfstool for flashrom and ec.
 COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
 
 RUN mkdir -p /usr/share/ec-devutils
-# Avoid watchtower updating servod, it gets pulled before every start of the
-# container, we should not stop/start it in the case a new version is pushed.
-LABEL com.centurylinklabs.watchtower.enable="false"
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
@@ -333,6 +342,9 @@ RUN chmod 755 /bin/sync
 # Try to remove as much as possible to make the container smaller
 RUN apt-get remove --purge -y \
         xz-utils \
+        build-essential \
+        make \
+        gcc \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /usr/local/lib/python3.10/site-packages/numpy/core/tests \

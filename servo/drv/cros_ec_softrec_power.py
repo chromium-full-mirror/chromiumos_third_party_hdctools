@@ -1,4 +1,4 @@
-# Copyright (c) 2014 The Chromium OS Authors. All rights reserved.
+# Copyright 2014 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import time
@@ -118,7 +118,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     # ec_gpio is known to use the ec drv
-    _, ec_driver, _ = self._servod._get_param_drv('ec_gpio')
+    _, ec_driver, _ = self._servod.get_main_device()._get_param_drv('ec_gpio')
     ec_driver._limit_channel()
     try:
       if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:

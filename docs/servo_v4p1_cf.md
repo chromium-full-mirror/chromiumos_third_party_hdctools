@@ -139,7 +139,7 @@ You need to run `cc <snkdts|srcdts> <cc1|cc2>` in ServoV4.1 EC console to get it
 (minicom) $ v<enter> (to see MCU name)
 <Ctrl+A, let go, Z> (to see help) <Ctrl+A, let go, Q> (to quit)
 	0 = (usually) ServoV4.1 STM32
-	3 = (usually) DUT Cr50
+	3 = (usually) DUT GSC
 	4 = (usually) DUT AP
 	5 = (usually) DUT EC
 

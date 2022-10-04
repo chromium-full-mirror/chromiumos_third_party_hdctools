@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<root>
+  <!-- ********** Maps ********** -->
+  <include>
+    <name>ftdii2c_cmd.xml</name>
+  </include>
+  <include>
+    <name>power_tools.xml</name>
+  </include>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <include>
+    <name>ina2xx.xml</name>
+  </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
+</root>

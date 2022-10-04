@@ -1,10 +1,10 @@
-# Copyright 2021 The Chromium OS Authors. All rights reserved.
+# Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""brya rev2 on-board adc map"""
+"""brya rev2+ on-board adc map"""
 
-# generates brya_rev2
-revs = [2]
+# generates brya_rev2 and brya_rev4
+revs = [2, 4]
 
 # these devices are pac1934 (4-channels/i2c address) devices
 inas = [

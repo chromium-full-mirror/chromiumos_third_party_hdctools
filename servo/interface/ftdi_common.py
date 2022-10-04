@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Defines common structures for use with c libraries related to FTDI devices.
@@ -9,8 +9,8 @@ from servo import servo_dev_templates
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4
 
-DEFAULT_VID = servo_dev_templates.ServoV3_.VID
-DEFAULT_PID = servo_dev_templates.ServoV3_.PID
+DEFAULT_VID = servo_dev_templates.ServoV4.VID
+DEFAULT_PID = servo_dev_templates.ServoV4.PID
 
 (INTERFACE_TYPE_ANY, INTERFACE_TYPE_GPIO, INTERFACE_TYPE_I2C,
  INTERFACE_TYPE_JTAG, INTERFACE_TYPE_SPI, INTERFACE_TYPE_UART) = \

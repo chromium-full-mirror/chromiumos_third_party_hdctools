@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """System configuration module."""
@@ -332,8 +332,9 @@ class SystemConfig(object):
                                   (tag, name, len(params_list), element_str))
         # If name_prefix was given, use it as the interface prefix. Use '' if
         # it wasn't.'
-        set_dict['interface_prefix'] = name_prefix or ''
-        get_dict['interface_prefix'] = name_prefix or ''
+        if tag == CONTROL_TAG:
+          set_dict['interface_prefix'] = name_prefix or ''
+          get_dict['interface_prefix'] = name_prefix or ''
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.

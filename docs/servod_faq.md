@@ -89,7 +89,7 @@ Common interfaces are:
 
 *   `2`: DUT i2c for INAs
 *   `8`: AP console
-*   `9`: cr50 console
+*   `9`: GSC console
 *   `10`: EC console
 
 ## How do I reroute/overwrite a control for a board? {#reroute-control}

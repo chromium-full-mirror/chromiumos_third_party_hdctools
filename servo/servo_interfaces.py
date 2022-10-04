@@ -1,9 +1,10 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Defines the interfaces for the different servo models."""
 
 import collections
+
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
@@ -19,8 +20,7 @@ INTERFACE_DEFAULTS[0x18d1][0x5001] = \
 # servo V2
 # Empty interface 1 == JTAG via openocd
 # Empty interface 5,6 == SPI via flashrom
-# ec3po_uart interface 9,10 == usbpd console, ec console. Applicable to servo v3
-# as well.
+# ec3po_uart interface 9,10 == usbpd console, ec console.
 SERVO_V2_DEFAULTS = [(0x18d1, 0x5002)]
 for vid, pid in SERVO_V2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
@@ -41,29 +41,15 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
-# servo v3
-SERVO_V3_DEFAULTS = [(0x18d1, 0x5004)]
-for vid, pid in SERVO_V3_DEFAULTS:
+
+# pacman servod configs
+PACMAN_DEFAULTS = [(0x18d1, 0x5211)]
+for vid, pid in PACMAN_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['empty',
-     'bb_gpio',                          # 1
-     {'name': 'dev_i2c', 'bus_num': 1},  # 2
-     {'name': 'bb_uart', 'uart_num': 5,  # 3: uart3/legacy
-      'txd': ['lcd_data8', 0x4],
-      'rxd': ['lcd_data9', 0x4]},
-     {'name': 'bb_uart', 'uart_num': 4}, # 4: ATMEGA
-     'bb_adc',                           # 5
-     {'name': 'dev_i2c', 'bus_num': 2},  # 6
-     {'name': 'bb_uart', 'uart_num': 1}, # 7: EC
-     {'name': 'bb_uart', 'uart_num': 2}, # 8: AP
-     'empty',                            # 9
-     {'name': 'ec3po_uart',              #10: EC3PO(EC)
-      'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-     {'name': 'ec3po_uart',              #11: EC3PO(AP)
-      'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
+     'empty',
+     {'name': 'ftdi_i2c', 'interface': 1},  # 2: FTDI i2c 0/interface 1
     ]
-
-INTERFACE_DEFAULTS[0x0403][0x6014] = INTERFACE_DEFAULTS[0x18d1][0x5004]
 
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
@@ -239,16 +225,6 @@ for vid, pid in MINISERVO_ID_DEFAULTS:
      {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
     ]
 
-# Toad
-TOAD_ID_DEFAULTS = [(0x403, 0x6015)]
-for vid, pid in TOAD_ID_DEFAULTS:
-  INTERFACE_DEFAULTS[vid][pid] = \
-    ['empty',
-     'ftdi_gpiouart', # occupies 2 slots
-     'empty',         # reserved for the above ftdi_gpiouart
-     {'name': 'ec3po_uart', 'raw_pty': 'raw_ec_uart_pty', 'source': 'EC'},
-    ]
-
 # Reston
 RESTON_ID_DEFAULTS = [(0x18d1, 0x5007)]
 for vid, pid in RESTON_ID_DEFAULTS:
@@ -296,8 +272,7 @@ for vid, pid in FLUFFY_ID_DEFAULTS:
 
 # Allow Board overrides of interfaces as we've started to overload some servo V2
 # pinout functionality.  To-date just swapping EC SPI and JTAG interfaces for
-# USB PD MCU UART.  Note this can NOT be done on servo V3.  See crbug.com/567842
-# for details.
+# USB PD MCU UART.
 INTERFACE_BOARDS = collections.defaultdict(
     lambda: collections.defaultdict(dict))
 
@@ -325,7 +300,6 @@ for board in [
     'eve',
     'fizz',
     'flapjack',
-    'glados',
     'goroh',
     'grunt',
     'hatch',

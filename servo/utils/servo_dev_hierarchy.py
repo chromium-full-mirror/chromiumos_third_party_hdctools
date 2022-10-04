@@ -373,7 +373,7 @@ class ServoDeviceHierarchy(object):
       the highest priority in the cluster.
     1: Debug header servos, e.g. Servo Micro, C2D2, Servo V2
     2: CCD DUT controllers, e.g. CCD CR50, CCD TI50
-    3. Other DUT controllers, e.g. Servo V3
+    3. Other DUT controllers (currently there are no such controllers)
     4: non-dut-controller non-cluster-root devices, e.g. Sweetberry
     5: cluster-root devices, e.g. a cluster-root Servo V4
 
@@ -383,7 +383,7 @@ class ServoDeviceHierarchy(object):
     Returns:
       A list of lists representing the priority of each given device. The list index
       indicates the priority for a device to be the main device.
-      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], ["servo v3"],
+      Example. [[], ["servo micro 1", "servo micro 2"], ["ccd_cr50"], [""],
                 ["sweetberry"], ["servo v4"]]
               - list[0] is empty as the user does not specify a main device in the
               command line.
@@ -392,7 +392,7 @@ class ServoDeviceHierarchy(object):
               decide which one is the main device through an interactive menu.
               - list[2] only contains "c2d2". Its priority to be the main device is lower
               than the debug headers but higher than other dut controllers.
-              - list[3] only contains "servo v3". Its priority to be the main device is
+              - list[3] contains nothing. Its priority to be the main device is
               the lowest among all dut controllers.
               - list[4] only contains "sweetberry". Its priority to be the main device
               is lower than all dut controllers and higher than the cluster root hub

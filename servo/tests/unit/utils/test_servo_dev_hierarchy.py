@@ -334,22 +334,19 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
                                     pid=dev_templates.ServoV2.PID,
                                     serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.ServoV3.VID,
-                                    pid=dev_templates.ServoV3.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
                                     pid=dev_templates.Sweetberry.PID,
+                                    serial='z', dev_path='i-o-p')
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
+                                    pid=dev_templates.ServoV4.PID,
                                     serial='z', dev_path='i-o-p')
     test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                     pid=dev_templates.ServoV4.PID,
                                     serial='z', dev_path='i-o-p')
-    test_entry9 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
-                                    serial='z', dev_path='i-o-p')
-    test_entry9.cluster_root = test_entry9
+    test_entry8.cluster_root = test_entry8
 
     test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
-      test_entry5, test_entry6, test_entry7, test_entry8, test_entry9]
+      test_entry5, test_entry6, test_entry7, test_entry8]
     prioritized_devs = ServoDeviceHierarchy.generate_device_priority(test_entries)
     assert 6 == len(prioritized_devs)
     assert not prioritized_devs[servo_dev_hierarchy.PRIORITY_MAIN_DEV]
@@ -360,13 +357,12 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     assert 2 == len(prioritized_devs[servo_dev_hierarchy.PRIORITY_CCD_SERVO])
     assert test_entry3 in prioritized_devs[servo_dev_hierarchy.PRIORITY_CCD_SERVO]
     assert test_entry4 in prioritized_devs[servo_dev_hierarchy.PRIORITY_CCD_SERVO]
-    assert 1 == len(prioritized_devs[servo_dev_hierarchy.PRIORITY_DUT_CONTROLLER_DEFAULT])
-    assert test_entry6 in prioritized_devs[servo_dev_hierarchy.PRIORITY_DUT_CONTROLLER_DEFAULT]
+    assert 0 == len(prioritized_devs[servo_dev_hierarchy.PRIORITY_DUT_CONTROLLER_DEFAULT])
     assert 2 == len(prioritized_devs[servo_dev_hierarchy.PRIORITY_DEFAULT])
+    assert test_entry6 in prioritized_devs[servo_dev_hierarchy.PRIORITY_DEFAULT]
     assert test_entry7 in prioritized_devs[servo_dev_hierarchy.PRIORITY_DEFAULT]
-    assert test_entry8 in prioritized_devs[servo_dev_hierarchy.PRIORITY_DEFAULT]
     assert 1 == len(prioritized_devs[servo_dev_hierarchy.PRIORITY_CLUSTER_ROOT_DEV])
-    assert test_entry9 in prioritized_devs[servo_dev_hierarchy.PRIORITY_CLUSTER_ROOT_DEV]
+    assert test_entry8 in prioritized_devs[servo_dev_hierarchy.PRIORITY_CLUSTER_ROOT_DEV]
 
   def test_generate_device_priority_non_root_main(self):
     """Generate device priority for a list of device entries with a user chosen main device.

@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Servo Device Templates."""
@@ -164,25 +164,6 @@ class ServoV2(ServoV2R0):
             FORCE_V2_LOTID]
   DEFAULT_CONFIG = 'servo_v2_r1.xml'
 
-class ServoV3(_ServoDevTemplate):
-  """Servo v3 template class."""
-  TYPE = 'servo_v3'
-  VID = 0x18d1
-  PID = 0x5004
-  DEFAULT_CONFIG = 'servo_v3_r0.xml'
-  HUB_SERVO = True
-  DUT_CONTROLLER = True
-
-class ServoV3_(ServoV3):
-  """Servo v2 template class for misprogrammed v3s.
-  The background here is that some servo v3's did not properly have their
-  vid/pid set to Google/Servo V3, but rather are still FTDI/ft232h
-  """
-  # pylint: disable=invalid-name
-  # See docstring
-  VID = 0x0403
-  PID = 0x6014
-
 class ServoV4(_ServoDevTemplate):
   """Servo v4 template class."""
   TYPE = 'servo_v4'
@@ -206,6 +187,13 @@ class ServoMicro(_ServoDevTemplate):
   PID = 0x501a
   DEFAULT_CONFIG = 'servo_micro.xml'
   DUT_CONTROLLER = True
+
+class Pacman(_ServoDevTemplate):
+  """pacman template class."""
+  TYPE = 'pacman'
+  VID = 0x18d1
+  PID = 0x5211
+  DEFAULT_CONFIG = 'pacman_v1.xml'
 
 class CcdCr50(_ServoDevTemplate):
   """Servo ccd cr50 template class."""
@@ -238,13 +226,6 @@ class C2d2(_ServoDevTemplate):
   DEFAULT_CONFIG = 'c2d2.xml'
   DUT_CONTROLLER = True
 
-class ToadV1(_ServoDevTemplate):
-  """Toad template class."""
-  TYPE = 'toad_v1'
-  VID = 0x0403  # Vendor ID is 0x0403 : FTDI
-  PID = 0x6015
-  DEFAULT_CONFIG = 'toad.xml'
-
 class Reston(_ServoDevTemplate):
   """Reston template class."""
   TYPE = 'reston'
@@ -274,6 +255,7 @@ class Fluffy(_ServoDevTemplate):
   DEFAULT_CONFIG = 'fluffy.xml'
   # Fluffy USB mux is simply designed for power testing and thus
   # not considered as a HUB_SERVO
+
 
 def _InitMaps(servo_dev_module):
   """Helper to initialize the vid/pid/lotid maps for easy retrieval.

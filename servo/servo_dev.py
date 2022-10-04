@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Copyright 2019 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -276,7 +276,7 @@ class ServoDevice(object):
     interfaces_len = len(self._interfaces)
     interface_list_len = len(self._interface_list)
     if interfaces_len > interface_list_len:
-      self._interface_list += [None] * (interfaces_len - interface_list_len)
+      self._interface_list += [_interface.empty.Empty()] * (interfaces_len - interface_list_len)
       self._interface_init += [False] * (interfaces_len - interface_list_len)
 
   def set_base_board(self, board):
@@ -292,12 +292,20 @@ class ServoDevice(object):
     for i, interface in enumerate(self._interface_list):
       interface.reinitialize()
     # Indicate interfaces are safe to use again.
-    device.connect()
+    self.connect()
 
   def close(self):
-    """Servod turn down logic."""
+    """Servo device turn down logic."""
+    # Close ec3po interfaces first to remove all wrappers/pointers on the raw pty
     for i, interface in enumerate(self._interface_list):
-      if interface and not isinstance(interface, _interface.empty.Empty):
+      if isinstance(interface, _interface.ec3po_interface.EC3PO):
+        self._logger.info('Turning down interface %d', i)
+        interface.close()
+    
+    # Close all the other non-placeholder interfaces
+    for i, interface in enumerate(self._interface_list):
+      if not isinstance(interface, _interface.empty.Empty) and \
+        not isinstance(interface, _interface.ec3po_interface.EC3PO):
         # Only print this on real interfaces and not place holders.
         self._logger.info('Turning down interface %d', i)
         interface.close()

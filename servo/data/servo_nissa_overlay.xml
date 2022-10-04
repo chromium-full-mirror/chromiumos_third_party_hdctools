@@ -5,7 +5,7 @@
   <map>
     <name>ec_chip_map</name>
     <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
-    <params npcx_uut="npcx" it83xx="it81302"></params>
+    <params npcx_uut="npcx" it8xxx2="it81302"></params>
   </map>
   <control>
     <name>ec_chip</name>

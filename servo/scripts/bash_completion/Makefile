@@ -1,4 +1,4 @@
-# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Copyright 2019 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 include $(HDCTOOLS_DIR)/defs/definitions.mk
@@ -12,9 +12,10 @@ SCRIPT_DST = $(addprefix $(SCRIPT_DEST_DIR)/, $(subst .bash,,$(SCRIPT_SRC)))
 
 $(SCRIPT_DEST_DIR)/%: $(HDCTOOLS_SOURCE_DIR)/%.bash
 	$(MESSAGE) "Copying $(notdir $@)"
+	$(MKDIR) -p `dirname $@`
 	$(CP) $< $@
 
 all:
-	$(MKDIR) -p $(SCRIPT_DEST_DIR)
+	true
 
 install: $(SCRIPT_DST)

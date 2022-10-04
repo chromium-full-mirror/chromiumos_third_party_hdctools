@@ -12,6 +12,7 @@ without the chroot.
 *   [Servo: Debug Board](./docs/servo.md)
     *   [Servo v2](./docs/servo_v2.md)
     *   [Servo v4](./docs/servo_v4.md)
+    *   [Servo v4.1](./docs/servo_v4p1.md)
     *   [Servo Micro](./docs/servo_micro.md)
 
 ## servod

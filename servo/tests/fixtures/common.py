@@ -1,25 +1,30 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
+import logging
 import os
 import time
+import pytest
+
 from enum import Enum
 from itertools import count
 
-
-class DeviceType(Enum):
-    SERVOV4P1 = 1
-    CR50 = 2
+import servo.servo_dev_templates as tmpl
 
 
 device_details = {}
-device_details[DeviceType.SERVOV4P1] = {"idVendor": 0x18D1, "idProduct": 0x520D}
-device_details[DeviceType.CR50] = {"idVendor": 0x18D1, "idProduct": 0x5014}
+device_details[tmpl.ServoV4p1.TYPE] = {"idVendor": tmpl.ServoV4p1.VID, "idProduct": tmpl.ServoV4p1.PID}
+device_details[tmpl.CcdCr50.TYPE] = {"idVendor": tmpl.CcdCr50.VID, "idProduct": tmpl.CcdCr50.PID}
+device_details[tmpl.ServoMicro.TYPE] = {"idVendor": tmpl.ServoMicro.VID, "idProduct": tmpl.ServoMicro.PID}
+device_details[tmpl.C2d2.TYPE] = {"idVendor": tmpl.C2d2.VID, "idProduct": tmpl.C2d2.PID}
 
 DEFAULT_SERIALS = {
-    DeviceType.SERVOV4P1: "SERVOV4P1-S-%s%d",
-    DeviceType.CR50: "1002303D-%s%d",
+    tmpl.ServoV4p1.TYPE: "SERVOV4P1-S-%s%d",
+    tmpl.CcdCr50.TYPE: "1002303D-%s%d",
+    tmpl.ServoMicro.TYPE: "MICRO-S-%s%d",
+    tmpl.C2d2.TYPE: "100860-%s%d",
 }
 
 PTY_END_LINE = b""
@@ -48,160 +53,53 @@ def get_servo_serial(device_type):
     )
 
 
-def get_board_model_pairs(exclude_list=None):
+def get_board_model_pairs(board_exclude_list=[]):
     """Get a list of board, model tuples that can have tests scheduled.
 
     If a test can not run for a specific board
 
     Args:
-        exclude_list (list, optional): List of boards to exclude from the returned list. Defaults to None.
+        board_exclude_list (list, optional): List of boards to exclude from the returned list. Defaults to None.
 
     Returns:
         list if string tuples: board model pairs.
     """
-    # TODO(haddowk) generate this list dynamically from the files in /data/*
-    return [
-        ("amenia", "default"),  # delete
-        ("arkham", "default"),  # Jetstream ( Google Wifi ) not support v4p1
-        ("asuka", "default"),  #   In DLM
-        ("asurada", "default"),  # Not in DLM
-        ("atlas", "default"),
-        ("auron", "default"),  # Not in DLM Error does not support v4p1
-        ("banon", "default"),
-        ("beltino", "default"),
-        ("bloonchipper", "default"),
-        ("bob", "default"),
-        ("brask", "default"),
-        ("brya", "banshee"),
-        ("brya", "default"),
-        ("brya", "volmar"),
-        ("caroline", "ndktranslation"),
-        ("caroline", "default"),
-        ("cave", "default"),
-        ("celes", "default"),
-        ("chell", "default"),
-        ("cherry", "default"),
-        ("cheza", "default"),
-        ("chocodile", "default"),
-        ("coral", "default"),
-        ("cosmos", "default"),
-        ("cube", "pd"),
-        ("cyan", "default"),
-        ("d2db", "default"),
-        ("daisy", "default"),
-        ("dartmonkey", "default"),
-        ("dedede", "bugzzy"),
-        ("dedede", "magolor"),
-        ("dedede", "metaknight"),
-        ("dedede", "default"),
-        ("dedede", "sasuke"),
-        ("draco", "default"),
-        ("dragonclaw", "default"),
-        ("dragontalon", "default"),
-        ("drallion", "default"),
-        ("edgar", "default"),
-        ("electro", "default"),
-        # ("elm", "default"),
-        ("endeavour", "default"),
-        ("eve", "default"),
-        ("excelsior", "default"),
-        ("fizz", "labstation"),
-        ("fizz", "default"),
-        ("flapjack", "default"),
-        # ("fpmcu", "dev"), fails
-        ("gale", "default"),
-        ("ghost", "default"),
-        ("glados", "default"),
-        ("goroh", "default"),
-        ("gru", "default"),
-        ("grunt", "default"),
-        ("guado", "default"),
-        ("guybrush", "default"),
-        ("hadoken", "default"),
-        ("hammer", "default"),
-        # ("hana", "default"),
-        ("hatch", "default"),
-        ("hayato", "default"),
-        ("herobrine", "default"),
-        ("icetower", "default"),
-        ("jacuzzi", "default"),
-        ("jecht", "default"),
-        ("kahlee", "default"),
-        ("kalista", "default"),
-        ("keeby", "habokay"),
-        ("keeby", "haboki"),
-        ("keeby", "lalala"),
-        ("keeby", "default"),
-        ("kefka", "default"),
-        ("kevin", "default"),
-        ("kingler", "default"),
-        ("krabby", "default"),
-        ("krane", "default"),
-        ("kukui", "common"),
-        ("kukui", "icarus"),
-        ("kukui", "jacuzzi"),
-        ("kukui", "default"),
-        ("kunimitsu", "default"),
-        ("lars", "default"),
-        ("mancomb", "default"),
-        ("mistral", "default"),
-        ("nami", "default"),
-        ("nasher", "default"),
-        ("nautilus", "default"),
-        ("nefario", "default"),
-        ("nightfury", "default"),
-        ("nissa", "craask"),
-        ("nissa", "ite"),
-        ("nissa", "nereid"),
-        ("nissa", "nivviks"),
-        ("nissa", "npcx"),
-        ("nocturne", "default"),
-        ("nyan", "default"),
-        # ("oak", "default"),
-        ("octopus", "ampton"),
-        ("octopus", "apel"),
-        ("octopus", "casta"),
-        ("octopus", "ite"),
-        ("octopus", "npcx"),
-        ("octopus", "default"),
-        ("pbody", "default"),
-        ("peach", "pi"),
-        ("peach", "pit"),
-        ("poppy", "default"),
-        ("puff", "default"),
-        ("pyro", "default"),
-        ("rambi", "default"),
-        ("rammus", "default"),
-        ("reef", "default"),
-        ("reks", "default"),
-        ("relm", "default"),
-        ("sand", "default"),
-        ("sarien", "default"),
-        ("scarlet", "default"),
-        ("sentry", "default"),
-        ("setzer", "default"),
-        ("skyrim", "default"),
-        ("slippy", "default"),
-        ("smaug", "default"),
-        ("snappy", "default"),
-        ("snoball", "default"),
-        ("soraka", "default"),
-        ("spherion", "default"),
-        ("terra", "default"),
-        ("trogdor", "default"),
-        ("ultima", "default"),
-        ("umaro", "default"),
-        ("urara", "default"),
-        ("volteer", "default"),
-        ("volteer", "usbdb"),
-        ("waddledee", "default"),
-        ("waddledoo", "default"),
-        ("whirlwind", "default"),
-        ("wizpig", "default"),
-        ("zerblebarn", "default"),
-        ("zoombini", "default"),
-        # ("zork", "default"),
+    exclude_list = [
+        "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
+        "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
+        "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
+        "servo_bloonchipper_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dartmonkey_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragonclaw_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragontalon_overlay.xml",   # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_icetower_overlay.xml",      # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_zerblebarn_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_chocodile_overlay.xml",     # Not working as it includes servo_micro.xml
+        "servo_hana_overlay.xml",  # Not working
+        "servo_elm_overlay.xml",   # Not working
+        "servo_oak_overlay.xml",   # Not working
     ]
+    filenames = glob.glob("/usr/local/lib/*/site-packages/servo/data/servo_*_overlay.xml")
+    board_model_list = []
+    for filename in filenames:
+        basename = os.path.basename(filename)
+
+        if basename in exclude_list:
+            continue
+
+        parts = basename[:-4].split('_')
+
+        if parts[1] in board_exclude_list:
+            continue
+
+        if len(parts) == 3:
+            board_model_list.append((parts[1], "default"))
+        elif len(parts) == 4:
+            board_model_list.append((parts[1], parts[2]))
+        else:
+            raise Exception("Data file %s not in correct format - untested" % os.path.basename(filename))
+
+    return board_model_list
 
 
 def compare_results(expected, results):

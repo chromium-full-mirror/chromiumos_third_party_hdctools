@@ -1,4 +1,4 @@
-# Copyright 2018 The Chromium OS Authors. All rights reserved.
+# Copyright 2018 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -61,7 +61,7 @@ class kbHandlerInit(hw_driver.HwDriver):
         msg = 'No atmega in servo board. So no keyboard support.'
         self._logger.warning(msg)
         raise kbHandlerInitError(msg)
-      # This flag is used in servo v2/v3 to setup the atmega chip properly.
+      # This flag is used in servo v2 to setup the atmega chip properly.
       legacy_atmega = 'init_atmega_uart' in self._params
       usb_kb = keyboard_handlers.ServoUSBkm232Handler(self._servod,
                                                       legacy_atmega)

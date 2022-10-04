@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,9 +9,7 @@ Details of the drivers can be found in hw_driver.py
 
 from servo.drv import active_v4_device
 from servo.drv import ad5248
-from servo.drv import alex_power
 from servo.drv import ap
-from servo.drv import beltino_power
 from servo.drv import cr50
 from servo.drv import cr50_i2c
 from servo.drv import cros_chip
@@ -20,8 +18,6 @@ from servo.drv import cros_ec_hardrec_power
 from servo.drv import cros_ec_pd_softrec_power
 from servo.drv import cros_ec_power
 from servo.drv import cros_ec_softrec_power
-from servo.drv import daisy_ec
-from servo.drv import daisy_power
 from servo.drv import ec
 from servo.drv import ec3po_c2d2
 from servo.drv import ec3po_driver
@@ -50,21 +46,16 @@ from servo.drv import ina3221
 from servo.drv import kb
 from servo.drv import kb_handler_init
 from servo.drv import keyboard_handlers
-from servo.drv import kitty_power
 from servo.drv import larvae_adc
 from servo.drv import lcm2004
-from servo.drv import link_power
 from servo.drv import loglevel
 from servo.drv import ltc1663
-from servo.drv import lumpy_power
 from servo.drv import m24c02
 from servo.drv import macro
 from servo.drv import na
 from servo.drv import pac1934
 from servo.drv import pac1954
 from servo.drv import pac1954_gpio
-from servo.drv import parrot_ec
-from servo.drv import parrot_power
 from servo.drv import pca9500
 from servo.drv import pca9537
 from servo.drv import pca9546
@@ -73,7 +64,6 @@ from servo.drv import plankton
 from servo.drv import power_kb
 from servo.drv import ps8742
 from servo.drv import pty_driver
-from servo.drv import sarien_power
 from servo.drv import select_control
 from servo.drv import servo_firmware_checker
 from servo.drv import servo_metadata
@@ -84,8 +74,6 @@ from servo.drv import servo_watchdog
 from servo.drv import sflag
 from servo.drv import simple_ec
 from servo.drv import sleep
-from servo.drv import storm_power
-from servo.drv import stumpy_power
 from servo.drv import sx1505
 from servo.drv import sx1506
 from servo.drv import sx1506_v4
@@ -96,7 +84,3 @@ from servo.drv import uart
 from servo.drv import undefined
 from servo.drv import usb_downloader
 from servo.drv import usb_image_manager
-from servo.drv import veyron_chromebox_power
-from servo.drv import veyron_mickey_power
-from servo.drv import veyron_power
-from servo.drv import veyron_rialto_power

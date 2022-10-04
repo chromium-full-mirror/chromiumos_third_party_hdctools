@@ -57,7 +57,7 @@
     <name>ap_flash_select</name>
     <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
     <params subtype="ap_flash_select" interface="9" drv="cr50"
-      map="onoff" init="off" />
+      map="onoff" init="off" clobber_ok=""/>
   </control>
   <control>
     <name>cpu_fw_spi</name>

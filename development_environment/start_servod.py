@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -35,7 +35,7 @@ def start_servod(client, dut_hostname, board, model, serial_no, test=False):
 
     command = ["bash", "/start_servod.sh"]
     if test:
-        command = ["pytest", "/hdctools/servo/tests/"]
+        command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
 
     cont = client.containers.run(
         IMAGE,

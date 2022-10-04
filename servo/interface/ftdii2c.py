@@ -1,4 +1,4 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Allows creation of i2c interface via libftdii2c (C) library for FTDI devices.
@@ -87,9 +87,13 @@ class Fi2c(i2c_base.BaseI2CBus):
     self._i2c_mask = ~self._fic.gpio.mask
 
   @staticmethod
-  def Build(index, vid, pid, sid, **kwargs):
+  def Build(index, vid, pid, sid, interface_data, **kwargs):
     """Factory method to implement the interface."""
     interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+
+    if 'interface' in interface_data:
+      interface = interface_data['interface']
+
     fobj = Fi2c(vendor=vid, product=pid, interface=interface, serialname=sid)
     fobj.open()
 

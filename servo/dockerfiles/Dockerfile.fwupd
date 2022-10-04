@@ -1,0 +1,21 @@
+# Copyright 2022 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+FROM alpine/curl as downloader
+
+WORKDIR /usr/share/hub/
+RUN curl --create-dirs -O --output-dir /usr/share/hub/ \
+    https://fwupd.org/downloads/c6fc09dab559e56a562bc90703c647a0e807b6565eb71237ab7154bac5c13c5f-GenesysLogic_GL3590_64.16.cab
+
+########################################################################
+FROM debian:bookworm-slim
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        fwupd
+WORKDIR /usr/share/hub/
+COPY --from=downloader /usr/share/hub/* /usr/share/hub/
+
+CMD ["fwupdtool", "install", \
+    "/usr/share/hub/c6fc09dab559e56a562bc90703c647a0e807b6565eb71237ab7154bac5c13c5f-GenesysLogic_GL3590_64.16.cab"]

@@ -20,7 +20,9 @@ steps:
   args:
     - -n
     - auto
+    - --forked
     - -vv
+    - --cov=/usr/local/lib/python3.10/site-packages/servo
     - /hdctools/servo/tests/
   waitFor: ['build']
 

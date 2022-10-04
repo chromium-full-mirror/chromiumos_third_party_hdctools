@@ -1,0 +1,38 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'binfmt'
+  args:
+    - run
+    - --privileged
+    - --rm
+    - tonistiigi/binfmt
+    - --install
+    - all
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'driver'
+  args:
+    - 'buildx'
+    - 'create'
+    - --use
+  waitFor: ['binfmt']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'build'
+  args:
+  - 'buildx'
+  - 'build'
+  - --push
+  - --platform
+  - linux/amd64,linux/arm64
+  - -t=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi:$COMMIT_SHA
+  - -f=/workspace/servo/dockerfiles/Dockerfile
+  - '.'
+  waitFor: ['driver']
+
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  machineType: 'N1_HIGHCPU_32'
+
+timeout: 3600s
+

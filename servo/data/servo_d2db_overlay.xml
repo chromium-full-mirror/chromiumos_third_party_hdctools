@@ -9,20 +9,20 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
   <control>
     <name>jtag_buf_on_flex_en</name>
     <doc>Enables JTAG buffer on servo flex.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
+    <params interface="2" drv="pca95xx" subtype="gpio"
     child="0x26" offset="3" map="onoff_i" clobber_ok=""></params>
   </control>
   <control>
     <name>spi1_buf_on_flex_en</name>
     <doc>Enables SPI1 buffers on servo flex.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
+    <params interface="2" drv="pca95xx" subtype="gpio"
     child="0x26" offset="7" map="onoff_i" ccd_d2_drv="na" servo_micro_drv="na"
     clobber_ok=""></params>
   </control>
   <control>
     <name>spi2_buf_on_flex_en</name>
     <doc>Enables SPI2 buffers on servo flex.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
+    <params interface="2" drv="pca95xx" subtype="gpio"
     child="0x26" offset="6" map="onoff_i" ccd_d2_drv="na" servo_micro_drv="na"
     clobber_ok=""></params>
   </control>
@@ -31,7 +31,7 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <alias>raw_d2_uart_pty,raw_usbpd_uart_pty</alias>
     <doc>Pseudo-terminal (pty) thats connnected to d2 uart console</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
-    servo_v3_drv="na"></params>
+    ></params>
   </control>
   <control>
     <name>usbpd_uart_routing</name>
@@ -42,25 +42,25 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <name>d2_loglevel</name>
     <doc>d2 console loglevel</doc>
     <params interface="9" drv="ec3po_driver" input_type="str"
-    subtype="loglevel" servo_v3_drv="na"></params>
+    subtype="loglevel" ></params>
   </control>
   <control>
     <name>d2_uart_raw_debug</name>
     <doc>Turn on per-message-received logs to the D2 console messages.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="off"
-    subtype="raw_debug" servo_v3_drv="na"></params>
+    subtype="raw_debug" ></params>
   </control>
   <control>
     <name>d2_uart_timestamp</name>
     <doc>Add timestamps to the D2 console messages</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="off"
-    subtype="timestamp" servo_v3_drv="na"></params>
+    subtype="timestamp" ></params>
   </control>
   <control>
     <name>ec3po_d2_uart</name>
     <alias>ec3po_usbpd_uart_pty,d2_uart_pty,usbpd_uart_pty</alias>
     <doc>d2 UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart" servo_v3_drv="na">
+    <params cmd="get" subtype="pty" interface="9" drv="uart" >
     </params>
   </control>
   <control>
@@ -68,13 +68,13 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <alias>usbpd_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the D2 UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok="" servo_v3_drv="na"></params>
+    subtype="interp_connect" clobber_ok="" ></params>
   </control>
   <control>
     <name>uart4_on_flex_en</name>
     <alias>d2_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params interface="2" servo_v3_interface="6" drv="pca95xx" subtype="gpio"
+    <params interface="2" drv="pca95xx" subtype="gpio"
     child="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
     servo_micro_drv="na" c2d2_drv="na"></params>
   </control>
@@ -82,7 +82,7 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <name>jtag_buf_en</name>
     <alias>d2_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params servo_v3_drv="na" ccd_d2_drv="na" servo_micro_drv="na"
+    <params  ccd_d2_drv="na" servo_micro_drv="na"
     clobber_ok="" init="on" c2d2_drv="na">
     </params>
   </control>
