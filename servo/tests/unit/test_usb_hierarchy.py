@@ -1,19 +1,21 @@
-# Copyright 2020 The Chromium OS Authors. All rights reserved.
+# Copyright 2020 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 
 """USB hierarchy class tests for both the pyusb wrappers and sysfs functions."""
 
+import unittest
+import pytest
 
 import os
 import shutil
 import tempfile
-import unittest
+
+import usb
 
 from servo.utils.usb_hierarchy import Hierarchy
 from servo.utils.usb_hierarchy import HierarchyError
-
 
 class TestUsbHierarchy(unittest.TestCase):
   """Test UsbHierarchy code logic."""
@@ -480,3 +482,61 @@ class TestUsbHierarchy(unittest.TestCase):
     with self.assertRaisesRegex(HierarchyError, 'Unexpected content %r at '
                                  'sysfs file %r' % (bad_vid, vid_f)):
       _ = Hierarchy.VendorIDFromSysfs(devd)
+
+
+class TestUsbHierarchyPyTest:
+  def test_GetUsbDevice(self, mock_v4p1_usb_device, mock_pyusb):
+      _mock_usb = mock_pyusb
+      device = mock_v4p1_usb_device("serialno", 1, 1)
+      _mock_usb.devices.append(device)
+      found_device = Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
+      assert found_device.iSerial == device.iSerial
+
+  def test_GetUsbDeviceNoFound(self, mock_v4p1_usb_device, mock_pyusb):
+      _mock_usb = mock_pyusb
+      device = mock_v4p1_usb_device("serialno", 1, 1)
+      _mock_usb.devices.append(device)
+      found_device = Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, "garbage")
+      assert found_device == None
+
+  def test_GetUsbDeviceMultiple(self, mock_v4p1_usb_device, mock_pyusb):
+      _mock_usb = mock_pyusb
+      device = mock_v4p1_usb_device("serialno", 1, 1)
+      device2 = mock_v4p1_usb_device("serialno2", 2, 2)
+      _mock_usb.devices.append(device)
+      _mock_usb.devices.append(device2)
+      found_device = Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
+      assert found_device.iSerial == device.iSerial
+
+  def test_GetUsbDeviceDuplicate(self, mock_v4p1_usb_device, mock_pyusb):
+      _mock_usb = mock_pyusb
+      device = mock_v4p1_usb_device("serialno", 1, 1)
+      device2 = mock_v4p1_usb_device("serialno", 2, 2)
+      _mock_usb.devices.append(device)
+      _mock_usb.devices.append(device2)
+      with pytest.raises(HierarchyError):
+        found_device = Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
+
+  def test_GetUsbDeviceBadUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
+      _mock_usb = mock_pyusb
+      current_get_string = usb.util.get_string
+      device = mock_v4p1_usb_device("serialno", 1, 1)
+      device2 = mock_v4p1_usb_device("serialno2", 2, 2)
+      device2.iSerial = ValueError("This is a test")
+      _mock_usb.devices.append(device)
+      _mock_usb.devices.append(device2)
+      found_device = Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
+      assert found_device.iSerial == device.iSerial
+
+  def test_GetUsbDeviceAllBadUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
+      _mock_usb = mock_pyusb
+      current_get_string = usb.util.get_string
+      device = mock_v4p1_usb_device("serialno", 1, 1)
+      device2 = mock_v4p1_usb_device("serialno2", 2, 2)
+      device2.iSerial = ValueError("This is a test")
+      device.iSerial = ValueError("This is a test")
+      _mock_usb.devices.append(device)
+      _mock_usb.devices.append(device2)
+      found_device = Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
+      assert found_device == None
+

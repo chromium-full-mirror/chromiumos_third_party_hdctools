@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Client to control DUT hardware connected to servo debug board."""
@@ -172,10 +172,10 @@ def display_stats(stats, prefix=STATS_PREFIX):
       stats_np = numpy.array(stats[key])
       disp_key = key.lstrip(KEY_PREFIX)
       row = [disp_key, str(len(stats_np))]
-      row.append('%.2f' % stats_np.mean())
-      row.append('%.2f' % stats_np.std())
-      row.append('%.2f' % stats_np.max())
-      row.append('%.2f' % stats_np.min())
+      row.append('%.4f' % stats_np.mean())
+      row.append('%.4f' % stats_np.std())
+      row.append('%.4f' % stats_np.max())
+      row.append('%.4f' % stats_np.min())
       table.append(row)
   display_table(table, prefix)
 

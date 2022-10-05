@@ -1,9 +1,10 @@
-# Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+# Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Defines the interfaces for the different servo models."""
 
 import collections
+
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
@@ -40,6 +41,15 @@ for vid, pid in SERVO_V2_DEFAULTS:
       'raw_pty': 'raw_cpu_uart_pty', 'source': 'CPU'},
     ]
 
+
+# pacman servod configs
+PACMAN_DEFAULTS = [(0x18d1, 0x5211)]
+for vid, pid in PACMAN_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    ['empty',
+     'empty',
+     {'name': 'ftdi_i2c', 'interface': 1},  # 2: FTDI i2c 0/interface 1
+    ]
 
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]

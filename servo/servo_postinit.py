@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium OS Authors. All rights reserved.
+# Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Specific Servo PostInit functions."""
@@ -104,7 +104,15 @@ class ServoV4PostInit(BasePostInit):
     servo_v4_candidates = usb_hierarchy.Hierarchy.GetAllUsbDevices(
         servo_interfaces.SERVO_V4_DEFAULTS)
     for d in servo_v4_candidates:
-      d_serial = usb.util.get_string(d, d.iSerialNumber)
+      d_serial = None
+      try:
+        d_serial = usb.util.get_string(d, d.iSerialNumber)
+      except ValueError:
+        # The servo did not respond to a request to read the serial number.
+        # just ignore this servo vs crashing as there may be other working
+        # servos on the host that need to start servod.
+        logging.debug("Unable to communicate with USB device to get the serial number.")
+
       if (not self.servod.get_serial_number(self.servod.MAIN_SERIAL) or
           d_serial == self.servod.get_serial_number(self.servod.MAIN_SERIAL)):
         return d
@@ -144,7 +152,14 @@ class ServoV4PostInit(BasePostInit):
           servo we should be checking against.
       servo_serial_key: Key to the servo serial dict.
     """
-    serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
+    serial = None
+    try:
+      serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
+    except ValueError:
+      # The servo did not respond to a request to read the serial number.
+      # just ignore this servo vs crashing as there may be other working
+      # servos on the host that need to start servod.
+      logging.debug("Unable to communicate with USB device to get the serial number.")
     self.servod.add_serial_number(servo_serial_key, serial)
 
   def init_servo_interfaces(self, servo_usb, servo_interface=None):
@@ -158,7 +173,14 @@ class ServoV4PostInit(BasePostInit):
     """
     vendor = servo_usb.idVendor
     product = servo_usb.idProduct
-    serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
+    serial = None
+    try:
+      serial = usb.util.get_string(servo_usb, servo_usb.iSerialNumber)
+    except ValueError:
+      # The servo did not respond to a request to read the serial number.
+      # just ignore this servo vs crashing as there may be other working
+      # servos on the host that need to start servod.
+      logging.debug("Unable to communicate with USB device to get the serial number.")
     if not servo_interface:
       servo_interface = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
 

@@ -1,4 +1,4 @@
-# Copyright 2020 The Chromium OS Authors. All rights reserved.
+# Copyright 2020 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,6 +9,7 @@ import collections
 import fcntl
 import os
 import re
+import logging
 
 import usb
 
@@ -211,7 +212,11 @@ class Hierarchy(object):
     devices = Hierarchy.GetAllUsbDevices([(vid, pid)])
     devs = []
     for device in devices:
-      d_serial = usb.util.get_string(device, device.iSerialNumber)
+      try:
+        d_serial = usb.util.get_string(device, device.iSerialNumber)
+      except ValueError as e:
+        logging.debug('Device %s has USB comms issues. %s', device, e)
+        d_serial = None
       if d_serial == serial:
         devs.append(device)
     if len(devs) > 1:

@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Test dut_power_data works as intended."""
@@ -16,9 +16,9 @@ class TestDataSampler(unittest.TestCase):
   def setUp(self):
     """Set up for each unit test."""
     unittest.TestCase.setUp(self)
-    measure_power.PowerMeasurement.__init__ = unittest.mock.MagicMock(return_value=None)
-    pm = measure_power.PowerMeasurement(None, None)
-    self.data_sampler = dut_power_data.DataSampler(pm)
+    with unittest.mock.patch('servo.measure_power.PowerMeasurement.__init__', unittest.mock.MagicMock(return_value=None)):
+      pm = measure_power.PowerMeasurement(None, None)
+      self.data_sampler = dut_power_data.DataSampler(pm)
 
   @unittest.mock.patch('time.time', unittest.mock.MagicMock(return_value=12345))
   def test_get_data_sample_streaming(self):

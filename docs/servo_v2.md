@@ -118,10 +118,10 @@ and spiflash utility can be used to send the new firmare to the chip.
 
 ## Known Issues
 
-### Cr50 UART Support
+### GSC UART Support
 
-On Servo v2, by default the Cr50/USBPD UART is not enabled and requires a
-[rework]. If this is not done, any Cr50 controls will fail with a timeout since
+On Servo v2, by default the GSC/USBPD UART is not enabled and requires a
+[rework]. If this is not done, any GSC controls will fail with a timeout since
 the console is not hooked up.
 
 Something like the following might show up on initialization:

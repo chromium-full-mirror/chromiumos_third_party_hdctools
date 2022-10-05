@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
+# Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Python version of Servo hardware debug & control board server."""
@@ -61,9 +61,15 @@ def usb_get_iserial(device):
     iserial: USB devices iSerial string or empty string if the device has
              no serial number.
   """
+  iserial = None
   try:
     # The get_string API always returns a unicode string, in py2 or py3
     iserial = usb.util.get_string(device, device.iSerialNumber)
+  except ValueError:
+    # The servo did not respond to a request to read the serial number.
+    # just ignore this servo vs crashing as there may be other working
+    # servos on the host that need to start servod.
+    logging.debug("Unable to communicate with USB device to get the serial number.")
   except usb.USBError:
     # TODO(tbroch) other non-FTDI devices on my host cause following msg
     #   usb.USBError: error sending control message: Broken pipe

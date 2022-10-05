@@ -237,7 +237,6 @@ class EC3PO(uart.Uart):
     self._logger.info('-------------------- %s console on: %s', self._source,
                       user_pty_name)
 
-
   @staticmethod
   def Build(index, vid, pid, sid, interface_data, servod):
     """Factory method to implement the interface."""

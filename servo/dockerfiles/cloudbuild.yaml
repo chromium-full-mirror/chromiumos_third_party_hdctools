@@ -20,6 +20,7 @@ steps:
   args:
     - -n
     - auto
+    - --forked
     - -vv
     - /hdctools/servo/tests/
   waitFor: ['build']

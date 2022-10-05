@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -95,7 +95,6 @@ class DataSampler():
     """
     self._current_data_format = data_sample_format
     data_sample_format = ['time'] + data_sample_format
-    self._logger.info('data sample format: %s', data_sample_format)
     self._data_sample = DataSample(data_sample_format)
 
   def sample_generator(self):

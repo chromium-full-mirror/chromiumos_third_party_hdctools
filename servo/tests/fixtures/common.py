@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,18 +11,20 @@ import pytest
 from enum import Enum
 from itertools import count
 
-class DeviceType(Enum):
-    SERVOV4P1 = 1
-    CR50 = 2
+import servo.servo_dev_templates as tmpl
 
 
 device_details = {}
-device_details[DeviceType.SERVOV4P1] = {"idVendor": 0x18D1, "idProduct": 0x520D}
-device_details[DeviceType.CR50] = {"idVendor": 0x18D1, "idProduct": 0x5014}
+device_details[tmpl.ServoV4p1.TYPE] = {"idVendor": tmpl.ServoV4p1.VID, "idProduct": tmpl.ServoV4p1.PID}
+device_details[tmpl.CcdCr50.TYPE] = {"idVendor": tmpl.CcdCr50.VID, "idProduct": tmpl.CcdCr50.PID}
+device_details[tmpl.ServoMicro.TYPE] = {"idVendor": tmpl.ServoMicro.VID, "idProduct": tmpl.ServoMicro.PID}
+device_details[tmpl.C2d2.TYPE] = {"idVendor": tmpl.C2d2.VID, "idProduct": tmpl.C2d2.PID}
 
 DEFAULT_SERIALS = {
-    DeviceType.SERVOV4P1: "SERVOV4P1-S-%s%d",
-    DeviceType.CR50: "1002303D-%s%d",
+    tmpl.ServoV4p1.TYPE: "SERVOV4P1-S-%s%d",
+    tmpl.CcdCr50.TYPE: "1002303D-%s%d",
+    tmpl.ServoMicro.TYPE: "MICRO-S-%s%d",
+    tmpl.C2d2.TYPE: "100860-%s%d",
 }
 
 PTY_END_LINE = b""
@@ -66,6 +68,7 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
         "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
         "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
+        "servo_chocodile_overlay.xml",  # Not working as it includes servo_micro.xml
         "servo_hana_overlay.xml",   # Not working
         "servo_elm_overlay.xml",   # Not working
         "servo_oak_overlay.xml",   # Not working
