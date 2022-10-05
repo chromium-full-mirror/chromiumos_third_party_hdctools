@@ -18,14 +18,35 @@ steps:
   id: 'test'
   entrypoint: pytest
   args:
-    - -n
-    - auto
+    - -n=auto
     - --forked
-    - -vv
+    - --cov-report=html
+    - --cov-report=xml
     - --cov=/usr/local/lib/python3.10/site-packages/servo
     - /hdctools/servo/tests/
   waitFor: ['build']
 
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: bash
+  args:
+    - -c
+    - |
+      set -ex
+
+      cd /workspace
+      gcloud config set project chromeos-hw-tools-dev
+      # We overwrite htmlcov every CL - keep a copy as a history.
+      cp -r htmlcov htmlcov.$COMMIT_SHA
+      # Cloud storage serving requires absolute vs relative for src/href tags. Fix that.
+      sed -i s#href=\"#href=\"https://storage.cloud.google.com/python-test-coverage/htmlcov/#g htmlcov/*
+      sed -i s#src=\"#src=\"https://storage.cloud.google.com/python-test-coverage/htmlcov/#g htmlcov/*
+      sed -i s#href=\"#href=\"https://storage.cloud.google.com/python-test-coverage/htmlcov.$COMMIT_SHA/#g htmlcov.$COMMIT_SHA/*
+      sed -i s#src=\"#src=\"https://storage.cloud.google.com/python-test-coverage/htmlcov.$COMMIT_SHA/#g htmlcov.$COMMIT_SHA/*
+      # Keep the coverage.xml - likely we can use this data to graph later.
+      gsutil cp coverage.xml gs://python-test-coverage/coverage.$COMMIT_SHA.xml
+      # Copy the test results to the cloud bucket
+      gsutil -m cp -r htmlcov/ htmlcov.$COMMIT_SHA gs://python-test-coverage/
+  waitFor: ['test']
 
 options:
   # Use higher CPU machines so the caching and build steps are faster.
