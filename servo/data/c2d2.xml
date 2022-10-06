@@ -186,6 +186,47 @@
     <params cmd="get" subtype="pty" interface="6" drv="uart">
     </params>
   </control>
+  <!-- C2D2 Console Automation Controls -->
+  <control>
+    <name>c2d2_uart_cmd</name>
+    <doc>Set to send command to the c2d2 console. Get to obtain the
+    matched results with the regular expression of c2d2_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="6" drv="uart" input_type="str"
+    clobber_ok="" tags="servo_cmd_ctrl"></params>
+  </control>
+  <control>
+    <name>c2d2_uart_timeout</name>
+    <doc>Timeout value for waiting c2d2 console response of issuing
+    an EC command.</doc>
+    <params subtype="uart_timeout" interface="6" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>c2d2_uart_multicmd</name>
+    <doc>Set to send multiple commands to the c2d2 console.</doc>
+    <params interface="6" drv="na" cmd="get" clobber_ok=""></params>
+    <params subtype="uart_multicmd" interface="6" drv="uart" input_type="str"
+    cmd="set" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>c2d2_uart_regexp</name>
+    <doc>List of regular expressions to match the response of
+    c2d2_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="6" drv="uart"
+    input_type="str" cmd="set" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>c2d2_uart_capture</name>
+    <doc>enable c2d2 console capture</doc>
+    <params subtype="uart_capture" interface="6" drv="uart"
+    map="onoff" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>c2d2_uart_stream</name>
+    <doc>c2d2 stream collected while c2d2_uart_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="6" drv="uart"
+    clobber_ok=""></params>
+  </control>
   <!-- firmware version introspection controls -->
   <control>
     <name>c2d2_version</name>
