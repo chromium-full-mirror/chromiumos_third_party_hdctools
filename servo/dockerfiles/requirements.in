@@ -12,6 +12,7 @@ pexpect
 protobuf
 pyserial
 pytest
+pytest-cov
 pytest-mock
 pytest-xdist
 pyusb

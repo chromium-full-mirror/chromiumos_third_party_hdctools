@@ -13,18 +13,16 @@ from itertools import count
 
 import servo.servo_dev_templates as tmpl
 
-
+device_types = ['servo_v4p1', 'ccd_cr50', 'servo_micro', 'c2d2']
 device_details = {}
-device_details[tmpl.ServoV4p1.TYPE] = {"idVendor": tmpl.ServoV4p1.VID, "idProduct": tmpl.ServoV4p1.PID}
-device_details[tmpl.CcdCr50.TYPE] = {"idVendor": tmpl.CcdCr50.VID, "idProduct": tmpl.CcdCr50.PID}
-device_details[tmpl.ServoMicro.TYPE] = {"idVendor": tmpl.ServoMicro.VID, "idProduct": tmpl.ServoMicro.PID}
-device_details[tmpl.C2d2.TYPE] = {"idVendor": tmpl.C2d2.VID, "idProduct": tmpl.C2d2.PID}
+for type in device_types:
+    device_details[type] = {"idVendor": tmpl.GetVID(type), "idProduct": tmpl.GetPID(type)}
 
 DEFAULT_SERIALS = {
-    tmpl.ServoV4p1.TYPE: "SERVOV4P1-S-%s%d",
-    tmpl.CcdCr50.TYPE: "1002303D-%s%d",
-    tmpl.ServoMicro.TYPE: "MICRO-S-%s%d",
-    tmpl.C2d2.TYPE: "100860-%s%d",
+    'servo_v4p1': "SERVOV4P1-S-%s%d",
+    'ccd_cr50': "1002303D-%s%d",
+    'servo_micro': "MICRO-S-%s%d",
+    'c2d2': "100860-%s%d",
 }
 
 PTY_END_LINE = b""
@@ -68,8 +66,14 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
         "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
         "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
-        "servo_chocodile_overlay.xml",  # Not working as it includes servo_micro.xml
-        "servo_hana_overlay.xml",   # Not working
+        "servo_bloonchipper_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dartmonkey_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragonclaw_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragontalon_overlay.xml",   # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_icetower_overlay.xml",      # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_zerblebarn_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_chocodile_overlay.xml",     # Not working as it includes servo_micro.xml
+        "servo_hana_overlay.xml",  # Not working
         "servo_elm_overlay.xml",   # Not working
         "servo_oak_overlay.xml",   # Not working
     ]
