@@ -63,10 +63,11 @@ class ServoDevice(object):
     """
     self.template = dev_entry.dev_template
     self.prefix = dev_entry.devopts.prefix
+    # Some device might have multiple alias prefixes
+    self.prefixes = [self.prefix]
     self._logger = logging.getLogger('ServoDevice %s - %s'
       % (self.template.TYPE, self.prefix))
     self._logger.debug('')
-    
     vendor = self.template.VID
     product = self.template.PID
     self._serial = dev_entry.serial
@@ -155,8 +156,17 @@ class ServoDevice(object):
     return os.path.exists(self._sysfs_path)
 
   def get_prefix(self):
-    """Get the prefix of the device."""
+    """Get the main prefix of the device."""
     return self.prefix
+
+  def get_prefixes(self):
+    """Get all prefixes, including the alias prefixes, of the device."""
+    return self.prefixes
+
+  def add_prefix(self, alias):
+    """Add a prefix for the device. The prefix can be an alias prefix."""
+    if alias not in self.prefixes:
+      self.prefixes += [alias]
 
   def set_disconnect_ok(self, disconnect_ok):
     """Set if it's ok for the device to disconnect.

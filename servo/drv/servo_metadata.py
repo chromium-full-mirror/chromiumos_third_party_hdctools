@@ -86,3 +86,7 @@ class servoMetadata(hw_driver.HwDriver):
   def _Set_log_msg(self, msg):
     """Log |msg| into info."""
     self._logger.info('%s', msg)
+
+  def _Get_all_controls(self):
+    """Return all controls supported by current servod instance."""
+    return self._servod._controls

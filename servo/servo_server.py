@@ -75,6 +75,8 @@ class Servod(object):
     self._unique_devices[device.get_id()] = device
     self._devices[prefix] = device
     self.add_serial_number(prefix, device._serial)
+    # ensure the device records all its alias prefixes
+    device.add_prefix(prefix)
     if prefix == servo_dev_templates.MAIN_DEV_PREFIX:
       # This is the main device as the prefix is empty. Add prefix alias here
       # for the main device.
@@ -155,13 +157,16 @@ class Servod(object):
     if not dev.syscfg.is_control(processed_name):
       if self._is_main_dev_prefix(prefix) and dev.get_root_hub_device() is not None:
         dev = dev.get_root_hub_device()
-    
+
     if not dev.syscfg.is_control(processed_name):
-      raise ServodError('Control %s is not registerd with any connected servo device. '
-        'Servo device %s (prefix: \'%s\') is picked as the targed device for the control.'
-        '\nAll controls: \n%s'
-        % (name, dev, prefix, self._controls))
-      # TODO(konmari): refactor this to be a control. Too long to show in command line
+      error_msg = ("No control named '%s' registerd with any connected servo device.\n"
+      "Servo device %s (prefix: %s) is picked as the targed device for the control.\n"
+      ) % (name, dev, dev.get_prefixes())
+      candidates = [ctrl for ctrl in self._controls if name in ctrl]
+      if candidates:
+        error_msg += "Do you mean %s?\n" % candidates
+      error_msg += "You can check all servod controls with 'dut-control all_controls'."
+      raise ServodError(error_msg)
 
     self._logger.debug('Using servo device %s for control %s.', dev, name)
     return (dev, processed_name)
@@ -382,24 +387,19 @@ class Servod(object):
       config_files[dev.prefix] = [entry[0] for entry in xml_files]
     return config_files
 
-  def get_interfaces(self):
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
-    #                Will be cleaned up after ServoDevice interface is properly implemented.
-    main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
-    return main_device._interfaces
-
   def get_interface_list(self):
-    # TODO(konmari): temporarily use the main device to hold all interfaces and drvs.
-    #                Will be cleaned up after ServoDevice interface is properly implemented.
-    main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
-    return main_device._interface_list
-  
+    interfaces = []
+    for dev in self._unique_devices.values():
+      for interface in dev.get_interface_list():
+        interfaces += [(dev.prefix, interface)]
+    return interfaces
+
   def validate_dut_controller(self):
     """Validate the servod instance has at least 1 dut controller."""
     for dev in self._devices.values():
       if dev.template.DUT_CONTROLLER:
         return
-    
+
     # Start diagnosing why servod does not have DUT controller.
     # Fail if we requested board control but don't have an interface for this.
     if self.get_board():

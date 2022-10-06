@@ -209,4 +209,9 @@
     <doc>servo type (flex or ccd)</doc>
     <params drv="echo" value="flex" interface="servo" clobber_ok=""/>
   </control>
+  <control>
+    <name>all_controls</name>
+    <doc>All control names support by current servod instance.</doc>
+    <params drv="servo_metadata" subtype="all_controls" interface="servo"/>
+  </control>
 </root>

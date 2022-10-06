@@ -38,20 +38,7 @@ class ServoClientError(Exception):
     """
     if xmlexc:
       xml_error = re.sub('^.*>:', '', xmlexc.faultString)
-      err_match = re.match('No control named (\w+)', xml_error)
-      if err_match:
-        name = err_match.group(1)
-        error_msg = 'No control named "%s"\n' % name
-        # We know that the second line of the fault text is the comma
-        # separated list of all available controls. Let's try finding
-        # something similar to what user requested.
-        all_controls = xml_error.splitlines()[1]
-        candidates = [x for x in all_controls.split(',') if name in x]
-        if candidates:
-          error_msg += 'Consider %s' % ' '.join(candidates)
-      else:
-        error_msg = xml_error
-      self.message = '%s :: %s' % (text, error_msg)
+      self.message = '%s :: %s' % (text, xml_error)
     else:
       self.message = text
 
