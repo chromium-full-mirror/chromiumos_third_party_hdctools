@@ -14,12 +14,9 @@ import os
 import pkg_resources
 import select
 import signal
-try:
-  from SimpleXMLRPCServer import SimpleXMLRPCServer
-except ImportError:
-  from xmlrpc.server import SimpleXMLRPCServer
-  # TODO(crbug.com/999878): This is for python3 compatibility.
-  # Remove once fully moved to python3.
+
+from xmlrpc.server import SimpleXMLRPCServer
+
 import socket
 import sys
 import threading
