@@ -443,7 +443,7 @@ class ServodStarter(object):
     vendor, product, serialname = (options.vendor, options.product,
                                    options.serialname)
     all_servos = []
-    for (vid, pid) in servo_dev_templates.SERVO_ID_DEFAULTS:
+    for (vid, pid) in servo_dev_templates.GetAllServoIDs():
       if (vendor and vendor != vid) or \
             (product and product != pid):
         continue
@@ -461,7 +461,7 @@ class ServodStarter(object):
     # See if only one primary servo. Filter secondary servos.
     all_primary_servos = [
         servo for servo in all_servos
-        if (servo.idVendor, servo.idProduct) not in servo_dev_templates.SECONDARY_SERVOS
+        if (servo.idVendor, servo.idProduct) not in servo_dev_templates.GetSecondaryServos()
     ]
     if len(all_primary_servos) == 1:
       return all_primary_servos[0]

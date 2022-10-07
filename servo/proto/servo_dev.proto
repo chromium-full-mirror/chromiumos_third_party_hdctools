@@ -1,0 +1,30 @@
+// Copyright 2022 The Chromium OS Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+/*
+Servo device template classes are classes to centrally collect information
+about a servo device. This us to quickly answer questions about different
+servo devices, and to abstract capabilities from device types/names by
+having different capabilities just be attributes.
+*/
+message ServoDevice {
+  // The Vendor ID associated with this servo device;
+  uint32 VID = 1;
+  // The product ID associated with this servo device
+  uint32 PID = 2;
+  // For some servo devices, different lot ids (from serialname) identify the
+  // template class
+  repeated string LOTIDS = 3;
+  // The default configuration file to pull in for this servo device
+  string DEFAULT_CONFIG = 4;
+  // The type string of a servo device
+  string TYPE = 5;
+}
+
+// Additional data structure necessary to list multiple devices in .textproto files
+message ServoDeviceList {
+  repeated ServoDevice servo_devices = 1;
+}

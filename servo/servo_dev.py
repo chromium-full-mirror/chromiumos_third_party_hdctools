@@ -21,7 +21,9 @@ class ServoDevice(object):
   """Device class to track disconnects and device information."""
 
   # Reinit capable devices.
-  REINIT_CAPABLE = set([servo_dev_templates.CcdCr50.ID, servo_dev_templates.CcdTi50.ID])
+  REINIT_CAPABLE = set(
+    [servo_dev_templates.GetID("ccd_cr50"), servo_dev_templates.GetID("ccd_ti50")]
+  )
 
   # Available attempts to reconnect a device
   REINIT_ATTEMPTS = 100

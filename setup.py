@@ -47,7 +47,7 @@ setup(
   version = __version__,
   package_dir = {'': 'build'},
   py_modules=['servo.servod', 'servo.dut_control'],
-  packages=['servo', 'servo.data', 'servo.drv', 'servo.interface',
+  packages=['servo', 'servo.data', 'servo.proto', 'servo.drv', 'servo.interface',
             'servo.tools', 'servo.utils', 'servo.tests.e2e',
             'servo.tests.fixtures', 'servo.tests.unit', 'servo.tests.data'],
   package_data={
@@ -55,6 +55,7 @@ setup(
           'data/*.xml',
           'data/*.scenario',
           'data/*.board',
+          'proto/*.textproto',
       ],
   },
   cmdclass={'build_py': servo_build_py},
