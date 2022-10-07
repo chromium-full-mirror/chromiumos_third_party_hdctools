@@ -97,30 +97,6 @@ servo_devices {
   DEFAULT_CONFIG: 'c2d2.xml'
 }
 
-# Reston template class
-servo_devices {
-  TYPE: 'reston'
-  VID: 0x18d1
-  PID: 0x5007
-  DEFAULT_CONFIG: 'reston.xml'
-}
-
-# Fruitpie template class
-servo_devices {
-  TYPE: 'fruitpie'
-  VID: 0x18d1
-  PID: 0x5009
-  DEFAULT_CONFIG: 'fruitpie.xml'
-}
-
-# Plankton template class
-servo_devices {
-  TYPE: 'plankton'
-  VID: 0x18d1
-  PID: 0x500c
-  DEFAULT_CONFIG: 'plankton.xml'
-}
-
 # Fluffy template class
 servo_devices {
   TYPE: 'fluffy'

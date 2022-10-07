@@ -71,24 +71,6 @@ SERVO_DEVICE_DATA = {
     'c2d2.xml',
   ),
 
- 'reston':
-  ( (0x18d1, 0x5007),
-    (),
-    'reston.xml',
-  ),
-
- 'fruitpie':
-  ( (0x18d1, 0x5009),
-    (),
-    'fruitpie.xml',
-  ),
-
- 'plankton':
-  ( (0x18d1, 0x500c),
-    (),
-    'plankton.xml',
-  ),
-
  'fluffy':
   ( (0x18d1, 0x503b),
     (),
