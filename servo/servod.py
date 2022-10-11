@@ -82,6 +82,7 @@ class ServodStarter(object):
     loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
     logging.basicConfig(level=loglevel, format=fmt)
     self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
+    self._init_parsers_and_option_helpers()
     sopts, devopts_list = self._parse_args(cmdline)
     self._host = sopts.host
 
@@ -129,6 +130,7 @@ class ServodStarter(object):
     else:
       discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
     finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
+                                                devopts_generator=self.devopts_generator,
                                                 dev_hierarchy=dev_hierarchy,
                                                 scratch=self._scratchutil,
                                                 discover_mode=discover_mode)
@@ -232,18 +234,16 @@ class ServodStarter(object):
       self._server.server_close()
       self._servod.close()
       self._logger.info('Successfully turned off')
+  
+  def _init_parsers_and_option_helpers(self):
+    """Initialize parsers and namespace generation.
 
-  def _parse_args(self, cmdline):
-    """Parse commandline arguments.
+    Initialize server and servo device argument parsers as well as a unified
+    help generator.
 
-    Args:
-      cmdline: list of cmdline arguments
-
-    Returns:
-      tuple: (server, dev) args Namespaces after parsing & processing cmdline
-        server: holds --port, --host, --log-dir, --allow-dual-v4, --debug flags
-        dev: holds all the device flags (serialname, interfaces, configs etc -
-             see below) necessary to configure a servo device.
+    Additionally, store a function to generate an empty servo device namespace.
+    This is used to generate new device options for devices pull in through
+    device auto-discovery.
     """
     description = (
         '%(prog)s is server to interact with servo debug & control board. '
@@ -328,19 +328,36 @@ class ServodStarter(object):
                                                      examples=examples,
                                                      parents=[server_pars,
                                                               dev_pars])
-    if any([True for argstr in cmdline if argstr in ['-h', '--help']]):
-      help_displayer.print_help()
-      help_displayer.exit()
     # Both parsers should display the same usage information when an
     # argument is not found. Fix it here by pointing both of their methods
     # to the help_displayer.
     server_pars.format_usage = help_displayer.format_usage
     dev_pars.format_usage = help_displayer.format_usage
-    server_args, dev_cmdline = server_pars.parse_known_args(cmdline)
+    self.hel_displayer = help_displayer
+    self.server_pars = server_pars
+    self.dev_pars = dev_pars
+    # Generator function for an empty namespace for a servo device.
+    self.devopts_generator = lambda: self.dev_pars.parse_args([])
+
+  def _parse_args(self, cmdline):
+    """Parse commandline arguments.
+
+    Args:
+      cmdline: list of cmdline arguments
+
+    Returns:
+      tuple: (server, dev) args Namespaces after parsing & processing cmdline
+        server: holds --port, --host, --log-dir, --allow-dual-v4, --debug flags
+        dev: holds all the device flags (serialname, interfaces, configs etc -
+             see below) necessary to configure a servo device.
+    """
+    if any([True for argstr in cmdline if argstr in ['-h', '--help']]):
+      self.help_displayer.print_help()
+      self.help_displayer.exit()
+    server_args, dev_cmdline = self.server_pars.parse_known_args(cmdline)
     # Adjust log-dir to be None if no_log_dir is requested.
     if server_args.no_log_dir:
       server_args.log_dir = None
-
     # The dev cmdline uses ' --- ' to indicate that a new device is being
     # configured. Thus, parse each segment individually.
     dev_cmdline_chunks = [list(group) for is_delimiter, group in
@@ -352,7 +369,7 @@ class ServodStarter(object):
     # they intended to invoke at least one device. This ensures that at least
     # one device will be initialized.
     dev_cmdline_chunks = dev_cmdline_chunks if dev_cmdline_chunks else [[]]
-    dev_args_list = [dev_pars.parse_args(dev_cmdline) for dev_cmdline in
+    dev_args_list = [self.dev_pars.parse_args(dev_cmdline) for dev_cmdline in
                      dev_cmdline_chunks]
     return (server_args, dev_args_list)
 

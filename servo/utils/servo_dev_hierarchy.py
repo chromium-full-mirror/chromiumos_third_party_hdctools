@@ -4,6 +4,7 @@
 
 """Servo device hierarchy based on the USB hierarchy."""
 
+import argparse
 import collections
 import logging
 
@@ -69,7 +70,8 @@ class ServoDeviceEntry(object):
     if self.dev_template.HUB_SERVO:
       self.cluster_members = None
       self.hub_stub = UsbHierarchy.GetSysfsParentHubStub(dev_path)
-    self.devopts = servo_parsing.empty_devopts()
+    # Device options of this device. Will be filled by device finder.
+    self.devopts = None
     # This is used to hold a pointer to its own ServoDevice object
     self.servo_device = None
 
@@ -403,7 +405,7 @@ class ServoDeviceHierarchy(object):
     prioritized_devs = [[], [], [], [], [], []]
     user_chosen_main_roots = []
     for device in devices:
-      if device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+      if device.devopts and device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
         if device.is_cluster_root():
           user_chosen_main_roots.append(device)
         else:

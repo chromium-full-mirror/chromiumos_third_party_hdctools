@@ -4,6 +4,7 @@
 
 """Servo device finder class tests."""
 
+import argparse
 import logging
 import os
 import shutil
@@ -106,18 +107,15 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_discover_servos_full_auto(self):
     """Test servod device list is completed and the device list does not contain partial clusters."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    devopts.vendor = None
-    devopts.product = None
-    devopts.serialname = None
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
     assert 3 == len(entries)
@@ -127,20 +125,19 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_discover_servos_min_auto(self):
     """Test servod device list is completed and the device list can contain partial clusters."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
+    devopts = empty_devopts()
     devopts.vendor = dev_templates.ServoMicro.VID
     devopts.product = dev_templates.ServoMicro.PID
-    devopts.serialname = None
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
     assert 2 == len(entries)
@@ -149,20 +146,19 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_discover_servos_no_auto(self):
     """Test servod device list is completed and the device list only contains devices in devopts."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
+    devopts = empty_devopts()
     devopts.vendor = dev_templates.ServoMicro.VID
     devopts.product = dev_templates.ServoMicro.PID
-    devopts.serialname = None
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.NO_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
     assert 1 == len(entries)
@@ -171,20 +167,19 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_discover_servos_solo_device(self):
     """Test servod device list is completed for a solo device."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
+    devopts = empty_devopts()
     devopts.vendor = dev_templates.ServoV2.VID
     devopts.product = dev_templates.ServoV2.PID
-    devopts.serialname = None
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
     assert 1 == len(entries)
@@ -193,20 +188,17 @@ class TestServoDeviceFinder(unittest.TestCase):
   def test_discover_servos_multiple_devices_full_auto(self):
     """Test discover_servos error out when there are multiple devices matched with invocation
     arguments and user specifies which device they want through the interative menu."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_2_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    devopts.vendor = None
-    devopts.product = None
-    devopts.serialname = None
+    devopts = empty_devopts()
     _non_root_servo_dev_1_entry = hierarchy.get_entry(dev_templates.ServoMicro.VID,
                                             dev_templates.ServoMicro.PID, 'dev-b')
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO,
       lambda devs: _non_root_servo_dev_1_entry)
     entries = finder.discover_servos()
@@ -218,20 +210,17 @@ class TestServoDeviceFinder(unittest.TestCase):
   def test_discover_servos_multiple_devices_no_auto(self):
     """Test discover_servos error out when there are multiple devices matched with invocation
     arguments and user specifies which device they want through the interative menu."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_3_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    devopts.vendor = None
-    devopts.product = None
-    devopts.serialname = None
+    devopts = empty_devopts()
     _non_root_servo_dev_1_entry = hierarchy.get_entry(dev_templates.ServoMicro.VID,
                                             dev_templates.ServoMicro.PID, 'dev-b')
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.NO_AUTO,
       lambda devs: _non_root_servo_dev_1_entry)
     entries = finder.discover_servos()
@@ -242,18 +231,15 @@ class TestServoDeviceFinder(unittest.TestCase):
   def test_discover_servos_multiple_devices_no_user_input(self):
     """Test discover_servos error out when there are multiple devices matched with invocation
     arguments but user does not choose what they mean through the interative menu."""
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._root_servo_dev_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_1_attrs)
-    AddFakeUsbEntry(usb_devices_dir=self._fake_sysfs_usb_path,
+    add_fake_usb_entry(usb_devices_dir=self._fake_sysfs_usb_path,
                                      **self._non_root_servo_dev_2_attrs)
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    devopts.vendor = None
-    devopts.product = None
-    devopts.serialname = None
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'User does not choose a valid device for'):
@@ -262,11 +248,8 @@ class TestServoDeviceFinder(unittest.TestCase):
   def test_discover_servos_no_device(self):
     """Test discover_servos error out when there are no devices connected."""
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    devopts.vendor = None
-    devopts.product = None
-    devopts.serialname = None
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'Cannot find a servo device with'):
@@ -277,14 +260,16 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s', dev_path='a-b-c')
+    test_entry.devopts = empty_devopts()
     test_entry.devopts.prefix = ''
     test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
                                    pid=dev_templates.C2d2.PID,
                                    serial='s', dev_path='1-2-3')
+    test_entry2.devopts = empty_devopts()
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     main = finder.choose_main_device(devs)
     assert main == test_entry
@@ -296,15 +281,13 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s', dev_path='a-b-c')
-    test_entry.devopts.prefix = ''
     test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
                                    pid=dev_templates.C2d2.PID,
                                    serial='s', dev_path='1-2-3')
-    test_entry2.devopts.prefix = ''
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, lambda devs: test_entry)
     main = finder.choose_main_device(devs)
     assert main == test_entry
@@ -316,15 +299,13 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s', dev_path='a-b-c')
-    test_entry.devopts.prefix = ''
     test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
                                    pid=dev_templates.C2d2.PID,
                                    serial='s', dev_path='1-2-3')
-    test_entry2.devopts.prefix = ''
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'No device is picked as the main device'):
@@ -340,8 +321,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     main = finder.choose_main_device(devs)
     assert main == test_entry
@@ -357,8 +338,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, lambda devs: test_entry)
     main = finder.choose_main_device(devs)
     assert main == test_entry
@@ -374,8 +355,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'No device is picked as the main device'):
@@ -386,16 +367,17 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s', dev_path='a-b-c')
+    test_entry.devopts = empty_devopts()
     test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='s', dev_path='1-2-3')
+    test_entry2.devopts = empty_devopts()
+    test_entry2.devopts.prefix = dev_templates.MAIN_DEV_PREFIX
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
-    test_entry.devopts.prefix = None
-    test_entry2.devopts.prefix = dev_templates.MAIN_DEV_PREFIX
 
     finder.generate_prefixes(devs, test_entry)
     assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
@@ -406,24 +388,29 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s', dev_path='a-b-c')
+    test_entry.devopts = empty_devopts()
     test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s', dev_path='a-b-c')
+    test_entry2.devopts = empty_devopts()
     test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='4321', dev_path='1-2-3')
+    test_entry3.devopts = empty_devopts()
+    test_entry3.devopts.prefix = 'servo_v4-1234'
     test_entry4 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='11234', dev_path='1-2-3')
+    test_entry4.devopts = empty_devopts()
     test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='21234', dev_path='1-2-3')
+    test_entry5.devopts = empty_devopts()
     devs = [test_entry, test_entry2, test_entry3, test_entry4, test_entry5]
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
-    test_entry3.devopts.prefix = 'servo_v4-1234'
 
     finder.generate_prefixes(devs, test_entry)
     assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
@@ -437,9 +424,10 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='s', dev_path='a-b-c')
+    test_entry.devopts = empty_devopts()
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    devopts = empty_devopts()
+    finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError, 'does not have a prefix'):
       main = finder.validate_devopts([test_entry])
@@ -449,14 +437,15 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='s', dev_path='a-b-c')
+    test_entry.devopts = empty_devopts()
+    test_entry.devopts.prefix = ''
     test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
                                    pid=dev_templates.ServoV4.PID,
                                    serial='s2', dev_path='a-b-c')
-    test_entry.devopts.prefix = ''
+    test_entry2.devopts = empty_devopts()
     test_entry2.devopts.prefix = ''
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, Scratch(),
+    finder = dev_finder.ServoDeviceFinder([empty_devopts()], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'Multiple devices are chosen as the main device.'):
@@ -471,8 +460,7 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    pid=dev_templates.ServoMicro.PID,
                                    serial='s2', dev_path='e-f-g')
     hierarchy = ServoDeviceHierarchy()
-    devopts = servo_parsing.empty_devopts()
-    finder = dev_finder.ServoDeviceFinder([devopts], hierarchy, MockScratch(),
+    finder = dev_finder.ServoDeviceFinder([empty_devopts()], empty_devopts, hierarchy, MockScratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'Not all devices requested are available right now.'):
@@ -482,7 +470,7 @@ class MockScratch(Scratch):
   def GetAllEntries(self):
     return [{"serials": ["s"], "port": 9999}, {"serials": ["s2"], "port": 9998}]
 
-def AddFakeUsbEntry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
+def add_fake_usb_entry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
                     busnum=None, serial=None, vid=None, pid=None):
   """Helper to add a fake sysfs-like device file for a usb device.
 
@@ -514,6 +502,21 @@ def AddFakeUsbEntry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
       with open(attr_path, 'w') as f:
         f.write(format(attr, fmt))
   return dev_dir_path_full
+
+def empty_devopts():
+  """Generate new devopts formatted the same as from servod parser.
+
+  This is a temporary solution to be used to dev_namespace_for_device_cluster().
+  Vendor and product are not initiated as they are provided by servo device hierarchy.
+  """
+  new_opts = argparse.Namespace()
+  for opt in ['board', 'model']:
+    setattr(new_opts, opt, '')
+  for opt in ['vendor', 'product', 'serialname', 'usbkm232', 'noautoconfig', 'prefix']:
+    setattr(new_opts, opt, None)
+  for opt in ['config', 'interfaces']:
+    setattr(new_opts, opt, [])
+  return new_opts
 
 if __name__ == '__main__':
   unittest.main()

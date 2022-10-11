@@ -53,11 +53,14 @@ class ServoDeviceDiscoveryMode(Enum):
 class ServoDeviceFinder(object):
   """ Discover devices to be served by a servod instance."""
 
-  def __init__(self, devopts, dev_hierarchy, scratch, discover_mode, choose_device=None):
+  def __init__(self, devopts, devopts_generator, dev_hierarchy, scratch, discover_mode,
+    choose_device=None):
     """Set up the servo device finder.
 
     Args:
       devopts: a list of device opts parsed from the servod starting commandline
+      default_devopts_generator: a function that generates a default devopts
+        for devices pulled in during device auto-discovery.
       dev_hierarchy: a ServoDeviceHierarchy generated when the servod starts
       scratch: ServoSratch that manages information across different servod instances.
       discover_mode: ServoDeviceDiscoveryMode that indicates how much auto discovery
@@ -67,6 +70,7 @@ class ServoDeviceFinder(object):
     """
     self._logger = logging.getLogger('ServoDeviceFinder')
     self._devopts = devopts
+    self._devopts_generator = devopts_generator
     self._dev_hierarchy = dev_hierarchy
     self._scratch = scratch
     self.discover_mode = discover_mode
@@ -196,9 +200,9 @@ class ServoDeviceFinder(object):
       new_dev: a ServoDeviceEntry whose device options is to be generated
       old_dev: a ServoDeviceEntry which already has device options
     """
-    # TODO(konmari): find out what args based on device type
-    servo_parsing.inherit_opts(new_dev.devopts, old_dev.devopts,
-      ['board', 'model', 'config', 'noautoconfig'])
+    new_dev.devopts = self._devopts_generator()
+    for arg in ['board', 'model', 'config', 'noautoconfig']:
+      setattr(new_dev.devopts, arg, getattr(old_dev.devopts, arg))
 
   def choose_main_device(self, devs):
     """Choose the main device of the servod instance.
