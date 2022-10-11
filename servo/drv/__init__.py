@@ -28,6 +28,7 @@ from servo.drv import ec3po_servo_v4
 from servo.drv import ec_i2c_pin
 from servo.drv import ec_lm4
 from servo.drv import echo
+from servo.drv import stud_evb
 from servo.drv import fast_ec
 from servo.drv import fluffy
 from servo.drv import ftdii2c_cmd
