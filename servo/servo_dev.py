@@ -225,9 +225,18 @@ class ServoDevice(object):
                           % type(interface_data))
 
       self._logger.info('Initializing interface %d to %s', i, name)
-      result = _interface.Build(name=name, index=i, vid=self.template.VID,
+      try:
+        result = _interface.Build(name=name, index=i, vid=self.template.VID,
                                 pid=self.template.PID, sid=self._serial,
                                 interface_data=interface_data, servo_device=self)
+      except Exception:
+        if fault_tolerant:
+          self._logger.warning('Failure trying to initialize interface %s (%s) '
+                               'in fault toleratant mode, so this will not crash servod.',
+                               i, name)
+          continue
+        else:
+          raise
       if isinstance(result, tuple):
         result_len = len(result)
         self._interface_list[i:(i + result_len)] = result

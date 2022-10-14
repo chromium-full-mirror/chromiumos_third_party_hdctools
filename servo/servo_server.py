@@ -6,12 +6,6 @@
 import collections
 import logging
 import sys
-try:
-  from SimpleXMLRPCServer import SimpleXMLRPCServer
-except ImportError:
-  from xmlrpc.server import SimpleXMLRPCServer
-  # TODO(crbug.com/999878): This is for python3 compatibility.
-  # Remove once fully moved to python3.
 
 from servo import recovery
 from servo import servo_dev_templates
@@ -26,9 +20,6 @@ class Servod(object):
 
   # Separator for control strings between servo device prefix and control name
   PREFIX_DELIMITER = '.'
-
-  # This is the key to get the main serial used in the serialnames dict.
-  MAIN_SERIAL = 'main'
 
   def __init__(self, usbkm232=None):
     """Servod constructor.
@@ -67,8 +58,8 @@ class Servod(object):
     self._logger.debug('Adding ServoDevice %s to instance.', device)
     if prefix in self._devices:
       if device != self._devices[prefix]:
-        raise ServodError('ServoDevice prefix %s alredy represents device %s and cannot be added as %s.',
-          prefix, self._devices[prefix], device)
+        raise ServodError('ServoDevice prefix %s alredy represents device %s and cannot be added as %s.' %
+          (prefix, self._devices[prefix], device))
       else:
         self._logger.debug('ServoDevice prefix %s is already added as %s.', prefix, self._devices[prefix])
         return
@@ -81,11 +72,11 @@ class Servod(object):
       # This is the main device as the prefix is empty. Add prefix alias here
       # for the main device.
       self._devices[servo_dev_templates.MAIN_DEV_PREFIX_ALIAS] = device
-      self.add_serial_number(self.MAIN_SERIAL, device._serial)
+      self.add_serial_number(servo_dev_templates.MAIN_DEV_PREFIX_ALIAS, device._serial)
 
   def reinitialize(self):
     """Reinitialize all devices that support reinitialization"""
-    for device in self._devices.values():
+    for device in self.get_devices():
         device.reinitialize()
 
   def close(self):
@@ -95,7 +86,7 @@ class Servod(object):
 
   def get_devices(self):
     """Get all devices connected to this servod instance."""
-    return set(self._devices.values())
+    return list(self._unique_devices.values())
 
   @staticmethod
   def _get_control_prefix_and_name(name):
@@ -155,8 +146,8 @@ class Servod(object):
     # Controls routed to main that are not covered by main are covered by their
     # root hub device.
     if not dev.syscfg.is_control(processed_name):
-      if self._is_main_dev_prefix(prefix) and dev.get_root_hub_device() is not None:
-        dev = dev.get_root_hub_device()
+      if self._is_main_dev_prefix(prefix) and self.get_root_device() is not None:
+        dev = self.get_root_device()
 
     if not dev.syscfg.is_control(processed_name):
       error_msg = ("No control named '%s' registerd with any connected servo device.\n"
@@ -319,8 +310,7 @@ class Servod(object):
     Returns:
       A string of the board name, or None if not present.
     """
-    main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
-    return main_device.board
+    return self.get_main_device().board
 
   def get_base_board(self):
     """Returns the board probed from EC in case the main device is a dut controller.
@@ -328,31 +318,26 @@ class Servod(object):
     Returns:
       A string of the board name, or None if not present.
     """
-    main_device = self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
-    return main_device.base_board
+    return self.get_main_device().base_board
 
   def get_servo_serials(self):
     """Return all the serials associated with this process."""
     return self._serialnames
 
-  def add_serial_number(self, name, serial_number):
+  def add_serial_number(self, prefix, serial_number):
     """Adds the serial number to the _serialnames dictionary.
 
     Args:
-      name: A string which is the key into the _serialnames dictionary.
+      prefix: A string which is the key into the _serialnames dictionary.
       serial_number: A string which is the key into the _serialnames dictionary.
     """
-    self._serialnames[name] = serial_number
-    self._logger.debug('Added %s %s to serialnames.', name, serial_number)
-
-  def get_serials(self):
-    """Gets the current servo serial."""
-    return self._serialnames
+    self._serialnames[prefix] = serial_number
+    self._logger.debug('Added %s %s to serialnames.', prefix, serial_number)
 
   def get_main_device(self):
     """Gets the main servo device."""
     return self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
-  
+
   def get_root_device(self):
     """Gets the root servo device."""
     if servo_dev_templates.ROOT_DEV_PREFIX not in self._devices:
@@ -376,12 +361,12 @@ class Servod(object):
                   (prefix == servo_dev_templates.ROOT_DEV_PREFIX)
       for dev_ctrl in dev.syscfg.get_controls_for_tag(tag):
         controls.add(dev_ctrl if no_prefix else '%s.%s' % (prefix, dev_ctrl))
-    return list(controls)
+    return sorted(list(controls))
 
   def get_config_files(self):
     """Gets the configuration files used for this servo server invocation"""
     config_files = {}
-    for dev in self._unique_devices.values():
+    for dev in self.get_devices():
       xml_files = dev.syscfg._loaded_xml_files
       # See system_config.py for schema, but entry[0] is the file name
       config_files[dev.prefix] = [entry[0] for entry in xml_files]
@@ -389,14 +374,14 @@ class Servod(object):
 
   def get_interface_list(self):
     interfaces = []
-    for dev in self._unique_devices.values():
+    for dev in self.get_devices():
       for interface in dev.get_interface_list():
         interfaces += [(dev.prefix, interface)]
     return interfaces
 
   def validate_dut_controller(self):
     """Validate the servod instance has at least 1 dut controller."""
-    for dev in self._devices.values():
+    for dev in self.get_devices():
       if dev.template.DUT_CONTROLLER:
         return
 

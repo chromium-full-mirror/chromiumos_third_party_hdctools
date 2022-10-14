@@ -13,12 +13,7 @@ import logging
 import os
 import pkg_resources
 import signal
-try:
-  from SimpleXMLRPCServer import SimpleXMLRPCServer
-except ImportError:
-  from xmlrpc.server import SimpleXMLRPCServer
-  # TODO(crbug.com/999878): This is for python3 compatibility.
-  # Remove once fully moved to python3.
+from xmlrpc.server import SimpleXMLRPCServer
 import socket
 import sys
 import threading
@@ -52,7 +47,6 @@ DEFAULT_PORT_RANGE = (9200, 9999)
 # pylint: disable=g-bad-exception-name
 class ServodError(Exception):
   """Exception class for servod server."""
-  pass
 
 
 class ServodStarter(object):
@@ -90,134 +84,25 @@ class ServodStarter(object):
     if sopts.recovery_mode:
       recovery.set_recovery_active()
 
-    if servo_parsing.ArgMarkedAsUserSupplied(sopts, 'port'):
-      start_port = sopts.port
-      end_port = sopts.port
-    else:
-      end_port, start_port = DEFAULT_PORT_RANGE
-    for self._servo_port in range(start_port, end_port - 1, -1):
-      try:
-        self._server = SimpleXMLRPCServer((self._host, self._servo_port),
-                                          logRequests=False)
-        break
-      except socket.error as e:
-        if e.errno == errno.EADDRINUSE:
-          continue  # Port taken, see if there is another one next to it.
-        self._logger.fatal("Problem opening Server's socket: %s", e)
-        sys.exit(-1)
-    else:
-      if start_port == end_port:
-        # This condition indicates that a specific port was being requested.
-        # Report that the port itself is busy.
-        err_msg = ('Port %d is busy' % sopts.port)
-      else:
-        err_msg = ('Could not find a free port in %d..%d range' % (end_port,
-                                                                   start_port))
+    servo_port = self._start_xml_server(sopts)
 
-      self._logger.fatal(err_msg)
-      sys.exit(-1)
-    servo_logging.setup(logdir=sopts.log_dir, port=self._servo_port,
+    servo_logging.setup(logdir=sopts.log_dir, port=servo_port,
                         debug_stdout=sopts.debug,
                         backup_count=sopts.log_dir_backup_count)
 
     self._logger.info('Start')
 
-    dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
-    if sopts.no_device_discovery:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
-    elif sopts.min_device_discovery:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO
-    else:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
-    finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
-                                                devopts_generator=self.devopts_generator,
-                                                dev_hierarchy=dev_hierarchy,
-                                                scratch=self._scratchutil,
-                                                discover_mode=discover_mode)
-    try:
-      dev_entries = finder.discover_servos()
-      main_dev_entry = finder.choose_main_device(dev_entries)
-      finder.generate_prefixes(dev_entries, main_dev_entry)
-      finder.validate_devopts(dev_entries)
-    except servo_dev_finder.ServoDeviceFinderError as e:
-      self._logger.fatal("Failure during discovering servo devices: %s", e)
-      sys.exit(-1)
+    (dev_entries, main_dev_entry) = self._discover_servos(sopts, devopts_list)
 
     self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
     prober = servo_dev_prober.DeviceProber()
-    for dev_entry in dev_entries:
-      self._logger.debug('Start initializing servo device %s', dev_entry)
-      devopts, dev_tmpl = dev_entry.devopts, dev_entry.dev_template
-
-      all_configs = []
-      if not devopts.noautoconfig:
-        all_configs.append(dev_tmpl.DEFAULT_CONFIG)
-      if devopts.config:
-        for config in devopts.config:
-          # quietly ignore duplicate configs for backwards compatibility
-          if config not in all_configs:
-            all_configs.append(config)
-      if not all_configs:
-        raise ServodError('No automatic config found,'
-                        ' and no config specified with -c <file>')
-
-      scfg = system_config.SystemConfig()
-      for cfg_file in all_configs:
-        scfg.add_cfg_file(cfg_file)
-      
-      self._logger.debug('System configs for device %s\n%s', dev_entry,
-        scfg.display_config())
-
-      servo_device = servo_dev.ServoDevice(dev_entry=dev_entry, config=scfg,
-        interfaces=devopts.interfaces, servod=weakref.proxy(self._servod))
-
-      if servo_device.template.DUT_CONTROLLER and not devopts.board:
-        # Initialize all interfaces already possible to see if the board
-        # can be probed
-        servo_device.init_servo_interfaces(fault_tolerant=True)
-        ec_board = prober.get_board_from_ec(servo_device)
-        if not ec_board:
-          self._logger.warn('Cannot probe board for DUT controller %s.'
-            'Start device without board specific config.', servo_device)
-        else:
-          devopts.board = ec_board
-        devopts.model = prober.get_model_from_ec(servo_device)
-        servo_device.set_base_board(devopts.board)
-      # Set the board and the model for a DUT
-      if devopts.board:
-        if not servo_device.set_board_and_model(devopts.board, devopts.model):
-          self._logger.warn('Cannot set up board %s for device %s. '
-            'Start device without board specific config.',
-            devopts.board, servo_device)
-      servo_device.syscfg.finalize()
-      self._servod.add_device(servo_device, dev_entry.devopts.prefix)
-
-    # ensure main device is given prefix '' and 'main'
-    main_device = main_dev_entry.servo_device
-    self._servod.add_device(main_device, servo_dev_templates.MAIN_DEV_PREFIX)
-    # ensure root hub device is given prefix 'root'
-    root_device = main_device.get_root_hub_device()
-    if root_device:
-      self._servod.add_device(root_device, servo_dev_templates.ROOT_DEV_PREFIX)
-
-    self._servod.update_known_ctrls()
-    for servo_device in self._servod.get_devices():      
-      # Real init this time i.e. initialization will fail if there are issues
-      # with creating the servo interfaces
-      servo_device.init_servo_interfaces()
+    self._setup_servos(dev_entries, main_dev_entry, prober)
     # Small timeout to allow interface threads to initialize.
-    self._servod.update_known_ctrls()
     time.sleep(0.5)
 
     self._servod.validate_dut_controller()
-    for servo_device in self._servod.get_devices():
-      skip_controls = set()
-      for dev in servo_device.get_child_devices():
-        skip_controls.update(set(control_name for control_name, _ in dev.syscfg.hwinit))
-      servo_device.hwinit(verbose=True, skip_controls=skip_controls)
-    self._server.register_introspection_functions()
-    self._server.register_multicall_functions()
-    self._server.register_instance(self._servod)
+    self._hwinit()
+    self._setup_servod_server()
     self._server_thread = threading.Thread(target=self._serve)
     self._server_thread.daemon = True
     self._turndown_initiated = False
@@ -333,7 +218,7 @@ class ServodStarter(object):
     # to the help_displayer.
     server_pars.format_usage = help_displayer.format_usage
     dev_pars.format_usage = help_displayer.format_usage
-    self.hel_displayer = help_displayer
+    self.help_displayer = help_displayer
     self.server_pars = server_pars
     self.dev_pars = dev_pars
     # Generator function for an empty namespace for a servo device.
@@ -372,6 +257,159 @@ class ServodStarter(object):
     dev_args_list = [self.dev_pars.parse_args(dev_cmdline) for dev_cmdline in
                      dev_cmdline_chunks]
     return (server_args, dev_args_list)
+
+  def _start_xml_server(self, sopts):
+    """Start the xml server.
+
+    Args:
+      sopts: server options parsed from cmdline.
+
+    Returns:
+      the port at which the xml server starts at
+    """
+    if servo_parsing.ArgMarkedAsUserSupplied(sopts, 'port'):
+      start_port = sopts.port
+      end_port = sopts.port
+    else:
+      end_port, start_port = DEFAULT_PORT_RANGE
+    for self._servo_port in range(start_port, end_port - 1, -1):
+      try:
+        self._server = SimpleXMLRPCServer((self._host, self._servo_port),
+                                          logRequests=False)
+        break
+      except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+          continue  # Port taken, see if there is another one next to it.
+        self._logger.fatal("Problem opening Server's socket: %s", e)
+        sys.exit(-1)
+    else:
+      if start_port == end_port:
+        # This condition indicates that a specific port was being requested.
+        # Report that the port itself is busy.
+        err_msg = ('Port %d is busy' % sopts.port)
+      else:
+        err_msg = ('Could not find a free port in %d..%d range' % (end_port,
+                                                                   start_port))
+
+      self._logger.fatal(err_msg)
+      sys.exit(-1)
+    return self._servo_port
+
+  def _setup_servod_server(self):
+    """Set up the xml server so that servod is used as the backend."""
+    self._server.register_introspection_functions()
+    self._server.register_multicall_functions()
+    self._server.register_instance(self._servod)
+
+  def _discover_servos(self, sopts, devopts_list):
+    """Discover and setup servos for this servod instance.
+
+    Args:
+      sopts: server options parsed from cmdline
+      devopts_list: device options parsed from cmdline
+
+    Returns:
+      a tuple of all the ServoDeviceEntry's and the main device's ServoDeviceEntry
+    """
+    dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
+    if sopts.no_device_discovery:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
+    elif sopts.min_device_discovery:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO
+    else:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
+    finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
+                                                devopts_generator=self.devopts_generator,
+                                                dev_hierarchy=dev_hierarchy,
+                                                scratch=self._scratchutil,
+                                                discover_mode=discover_mode)
+    try:
+      dev_entries = finder.discover_servos()
+      main_dev_entry = finder.choose_main_device(dev_entries)
+      finder.generate_prefixes(dev_entries, main_dev_entry)
+      finder.validate_devopts(dev_entries)
+    except servo_dev_finder.ServoDeviceFinderError as e:
+      self._logger.fatal("Failure during discovering servo devices: %s", e)
+      sys.exit(-1)
+    return (dev_entries, main_dev_entry)
+
+  def _setup_servos(self, dev_entries, main_dev_entry, prober):
+    """Setup servo devices for this servod instance.
+
+    Args:
+      dev_entries: all the devices' ServoDeviceEntry
+      main_dev_entry: the main device's ServoDeviceEntry
+      prober: a ServoDeviceProber to probe the board and model information
+    """
+    for dev_entry in dev_entries:
+      self._logger.debug('Start initializing servo device %s', dev_entry)
+      devopts, dev_tmpl = dev_entry.devopts, dev_entry.dev_template
+
+      all_configs = []
+      if not devopts.noautoconfig:
+        all_configs.append(dev_tmpl.DEFAULT_CONFIG)
+      if devopts.config:
+        for config in devopts.config:
+          # quietly ignore duplicate configs for backwards compatibility
+          if config not in all_configs:
+            all_configs.append(config)
+      if not all_configs:
+        raise ServodError('No automatic config found,'
+                        ' and no config specified with -c <file>')
+
+      scfg = system_config.SystemConfig()
+      for cfg_file in all_configs:
+        scfg.add_cfg_file(cfg_file)
+
+      self._logger.debug('System configs for device %s\n%s', dev_entry,
+        scfg.display_config())
+
+      servo_device = servo_dev.ServoDevice(dev_entry=dev_entry, config=scfg,
+        interfaces=devopts.interfaces, servod=weakref.proxy(self._servod))
+
+      if servo_device.template.DUT_CONTROLLER and not devopts.board:
+        # Initialize all interfaces already possible to see if the board
+        # can be probed
+        servo_device.init_servo_interfaces(fault_tolerant=True)
+        ec_board = prober.get_board_from_ec(servo_device)
+        if not ec_board:
+          self._logger.warn('Cannot probe board for DUT controller %s.'
+            'Start device without board specific config.', servo_device)
+        else:
+          devopts.board = ec_board
+        devopts.model = prober.get_model_from_ec(servo_device)
+        servo_device.set_base_board(devopts.board)
+      # Set the board and the model for a DUT
+      if devopts.board:
+        if not servo_device.set_board_and_model(devopts.board, devopts.model):
+          self._logger.warn('Cannot set up board %s for device %s. '
+            'Start device without board specific config.',
+            devopts.board, servo_device)
+      servo_device.syscfg.finalize()
+      self._servod.add_device(servo_device, dev_entry.devopts.prefix)
+
+    # ensure main device is given prefix '' and 'main'
+    main_device = main_dev_entry.servo_device
+    self._servod.add_device(main_device, servo_dev_templates.MAIN_DEV_PREFIX)
+    # ensure root hub device is given prefix 'root'
+    root_device = main_device.get_root_hub_device()
+    if root_device:
+      self._servod.add_device(root_device, servo_dev_templates.ROOT_DEV_PREFIX)
+
+    self._servod.update_known_ctrls()
+    for servo_device in self._servod.get_devices():
+      # Real init this time i.e. initialization will fail if there are issues
+      # with creating the servo interfaces
+      servo_device.init_servo_interfaces()
+    self._servod.update_known_ctrls()
+
+  def _hwinit(self):
+    """Initialize controls for servo devices."""
+    for servo_device in self._servod.get_devices():
+      skip_controls = set()
+      for dev in servo_device.get_child_devices():
+        skip_controls.update(set(control_name for control_name, _ in dev.syscfg.hwinit))
+      servo_device.hwinit(verbose=True, skip_controls=skip_controls)
 
   def cleanup(self):
     """Perform any cleanup related work after servod server shut down."""
@@ -470,7 +508,7 @@ def main(cmdline=sys.argv[1:]):
   try:
     starter = ServodStarter(cmdline)
   except ServodError as e:
-    print('Error: ', e.message)
+    print('Error: %s' % e)
     sys.exit(1)
   starter.serve()
 
