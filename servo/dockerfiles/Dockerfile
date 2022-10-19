@@ -128,7 +128,7 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
-RUN make utils-host \
+RUN make utils-host BOARD=host \
     && make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
@@ -142,9 +142,9 @@ RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
 RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shflags
 
 RUN strip /ec/extra/usb_updater/usb_updater2 \
-          /ec/build/elm/util/stm32mon \
-          /ec/build/elm/util/uartupdatetool \
-          /ec/build/elm/util/iteflash
+          /ec/build/host/util/stm32mon \
+          /ec/build/host/util/uartupdatetool \
+          /ec/build/host/util/iteflash
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
@@ -281,13 +281,13 @@ COPY --from=chromiumos_overlays \
 
 # Install ec tools
 COPY --from=ec-builder \
-    /ec/build/elm/util/ectool \
-    /ec/build/elm/util/ec_parse_panicinfo \
-    /ec/build/elm/util/ec_sb_firmware_update \
+    /ec/build/host/util/ectool \
+    /ec/build/host/util/ec_parse_panicinfo \
+    /ec/build/host/util/ec_sb_firmware_update \
     /ec/extra/usb_updater/usb_updater2 \
-    /ec/build/elm/util/stm32mon \
-    /ec/build/elm/util/uartupdatetool \
-    /ec/build/elm/util/iteflash \
+    /ec/build/host/util/stm32mon \
+    /ec/build/host/util/uartupdatetool \
+    /ec/build/host/util/iteflash \
     /ec/util/flash_ec \
     /ec/util/uart_stress_tester.py \
     /usr/sbin/
