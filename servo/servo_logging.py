@@ -131,24 +131,6 @@ def _generateTs(time=None):
   return time.strftime(TS_FORMAT)[:-3]
 
 
-def _loglevelFromF(f):
-  """Helper to extract loglevel from file name |f|.
-
-  Args:
-    f: log filename to inspect
-
-  Returns:
-    loglevel in specified in |f|
-
-  Raises:
-    ServoLoggingError: if no known loglevel found in |f|
-  """
-  search = extractor_re.search(f)
-  if not search:
-    raise ServoLoggingError('No loglevel found in file %s' % f)
-  return search.group(LOGLEVEL_RE_GROUP)
-
-
 def _sortLogTagFn(f):
   """Helper function to pass to .sort for a loglevel.
 
