@@ -75,13 +75,13 @@ def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_us
 
                 device = None
 
-                if type == tmpl.CcdCr50.TYPE:
+                if type == 'ccd_cr50':
                     device =mock_cr50_usb_device(serial, bus, address)
-                elif type == tmpl.ServoV4p1.TYPE:
+                elif type == 'servo_v4p1':
                     device = mock_v4p1_usb_device(serial, bus, address)
-                elif type == tmpl.ServoMicro.TYPE:
+                elif type == 'servo_micro':
                     device = mock_servo_micro_usb_device(serial, bus, address)
-                elif type == tmpl.C2d2.TYPE:
+                elif type == 'c2d2':
                     device = mock_c2d2_usb_device(serial, bus, address)
 
                 if device:
@@ -139,8 +139,8 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
-        ccd_device = servo_host.add_device(tmpl.CcdCr50.TYPE, 1, 57, "2.3")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        ccd_device = servo_host.add_device('ccd_cr50', 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, ccd_device)
 
@@ -165,8 +165,8 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
-        servo_micro_device = servo_host.add_device(tmpl.ServoMicro.TYPE, 1, 57, "2.3")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        servo_micro_device = servo_host.add_device('servo_micro', 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, servo_micro_device)
 
@@ -191,9 +191,9 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
-        servo_micro_device = servo_host.add_device(tmpl.ServoMicro.TYPE, 1, 57, "2.3")
-        ccd_device = servo_host.add_device(tmpl.CcdCr50.TYPE, 1, 58, "2.2")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        servo_micro_device = servo_host.add_device('servo_micro', 1, 57, "2.3")
+        ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, servo_micro_device, ccd_device)
 
@@ -218,8 +218,8 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
-        c2d2_device = servo_host.add_device(tmpl.C2d2.TYPE, 1, 57, "2.3")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        c2d2_device = servo_host.add_device('c2d2', 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, c2d2_device)
 
@@ -244,9 +244,9 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device(tmpl.ServoV4p1.TYPE, 1, 56, "2.5")
-        c2d2_device = servo_host.add_device(tmpl.C2d2.TYPE, 1, 57, "2.3")
-        ccd_device = servo_host.add_device(tmpl.CcdCr50.TYPE, 1, 58, "2.2")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        c2d2_device = servo_host.add_device('c2d2', 1, 57, "2.3")
+        ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, c2d2_device, ccd_device)
 

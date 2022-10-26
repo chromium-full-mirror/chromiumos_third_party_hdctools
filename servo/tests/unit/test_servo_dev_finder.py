@@ -13,7 +13,6 @@ import unittest
 
 from servo import servo_dev_finder as dev_finder
 from servo import servo_dev_templates as dev_templates
-from servo import servo_parsing
 from servo.servo_dev_finder import ServoDeviceFinderError
 from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
 from servo.utils.scratch import Scratch
@@ -39,33 +38,33 @@ class TestServoDeviceFinder(unittest.TestCase):
                                 'devnum': 3,
                                 'busnum': default_busnum,
                                 'serial': 'dev-a',
-                                'vid': dev_templates.ServoV4.VID,
-                                'pid': dev_templates.ServoV4.PID}
+                                'vid': dev_templates.GetVID("servo_v4"),
+                                'pid': dev_templates.GetPID("servo_v4")}
     self._non_root_servo_dev_1_attrs = {'hub_port_path': '1.1.2',
                                    'devnum': 4,
                                    'busnum': default_busnum,
                                    'serial': 'dev-b',
-                                   'vid': dev_templates.ServoMicro.VID,
-                                   'pid': dev_templates.ServoMicro.PID}
+                                   'vid': dev_templates.GetVID("servo_micro"),
+                                   'pid': dev_templates.GetPID("servo_micro")}
 
     self._non_root_servo_dev_2_attrs = {'hub_port_path': '1.1.3',
                                    'devnum': 5,
                                    'busnum': default_busnum,
                                    'serial': 'dev-c',
-                                   'vid': dev_templates.ServoMicro.VID,
-                                   'pid': dev_templates.ServoMicro.PID}
+                                   'vid': dev_templates.GetVID("servo_micro"),
+                                   'pid': dev_templates.GetPID("servo_micro")}
     self._non_root_servo_dev_3_attrs = {'hub_port_path': '1.1.4.1',
                                    'devnum': 6,
                                    'busnum': default_busnum,
                                    'serial': 'dev-d',
-                                   'vid': dev_templates.ServoV4.VID,
-                                   'pid': dev_templates.ServoV4.PID}
+                                   'vid': dev_templates.GetVID("servo_v4"),
+                                   'pid': dev_templates.GetPID("servo_v4")}
     self._solo_dev_attrs = {'hub_port_path': '1.2.7',
                             'devnum': 8,
                             'busnum': default_busnum,
                             'serial': 'dev-f',
-                            'vid': dev_templates.ServoV2.VID,
-                            'pid': dev_templates.ServoV2.PID}
+                            'vid': dev_templates.GetVID("servo_v2"),
+                            'pid': dev_templates.GetPID("servo_v2")}
     self._dummy_choose_device = lambda devs: None
 
   def tearDown(self):
@@ -135,8 +134,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
-    devopts.vendor = dev_templates.ServoMicro.VID
-    devopts.product = dev_templates.ServoMicro.PID
+    devopts.vendor = dev_templates.GetVID("servo_micro")
+    devopts.product = dev_templates.GetPID("servo_micro")
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
@@ -156,8 +155,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
-    devopts.vendor = dev_templates.ServoMicro.VID
-    devopts.product = dev_templates.ServoMicro.PID
+    devopts.vendor = dev_templates.GetVID("servo_micro")
+    devopts.product = dev_templates.GetPID("servo_micro")
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.NO_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
@@ -177,8 +176,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                      **self._solo_dev_attrs)
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
-    devopts.vendor = dev_templates.ServoV2.VID
-    devopts.product = dev_templates.ServoV2.PID
+    devopts.vendor = dev_templates.GetVID("servo_v2")
+    devopts.product = dev_templates.GetPID("servo_v2")
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     entries = finder.discover_servos()
@@ -196,8 +195,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                      **self._non_root_servo_dev_2_attrs)
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
-    _non_root_servo_dev_1_entry = hierarchy.get_entry(dev_templates.ServoMicro.VID,
-                                            dev_templates.ServoMicro.PID, 'dev-b')
+    _non_root_servo_dev_1_entry = hierarchy.get_entry(dev_templates.GetVID("servo_micro"),
+                                            dev_templates.GetPID("servo_micro"), 'dev-b')
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO,
       lambda devs: _non_root_servo_dev_1_entry)
@@ -218,8 +217,8 @@ class TestServoDeviceFinder(unittest.TestCase):
                                      **self._non_root_servo_dev_3_attrs)
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
-    _non_root_servo_dev_1_entry = hierarchy.get_entry(dev_templates.ServoMicro.VID,
-                                            dev_templates.ServoMicro.PID, 'dev-b')
+    _non_root_servo_dev_1_entry = hierarchy.get_entry(dev_templates.GetVID("servo_micro"),
+                                            dev_templates.GetPID("servo_micro"), 'dev-b')
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.NO_AUTO,
       lambda devs: _non_root_servo_dev_1_entry)
@@ -257,13 +256,13 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_choose_main_device_1_user_main(self):
     """Test choose_main_device return the only main device chosen by the user."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
     test_entry.devopts.prefix = ''
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
     test_entry2.devopts = empty_devopts()
     devs = [test_entry, test_entry2]
@@ -278,11 +277,11 @@ class TestServoDeviceFinder(unittest.TestCase):
     """Test choose_main_device ask for user input if user choose multiple main devices during
     servod invocation."""
     """Test choose_main_device return the only main device chosen by the user."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
@@ -296,11 +295,11 @@ class TestServoDeviceFinder(unittest.TestCase):
     """Test choose_main_device ask for user input if user choose multiple main devices during
     servod invocation. Error out if user does not provide any input."""
     """Test choose_main_device return the only main device chosen by the user."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
@@ -313,11 +312,11 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_choose_main_device_no_user_main(self):
     """Test choose_main_device smartly choose a main device when user does not choose one."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                   pid=dev_templates.Sweetberry.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("sweetberry"),
+                                   pid=dev_templates.GetPID("sweetberry"),
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
@@ -330,11 +329,11 @@ class TestServoDeviceFinder(unittest.TestCase):
   def test_choose_main_device_multiple_candidates(self):
     """Test choose_main_device tries smartly choose a main device, but there are multiple
     candidates so user still needs to manually choose one."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
@@ -347,11 +346,11 @@ class TestServoDeviceFinder(unittest.TestCase):
   def test_choose_main_device_multiple_candidates_no_user_input(self):
     """Test choose_main_device smartly choose a main device when user does not choose one
     and there are multiple candidates, but user does not choose one from the candidates."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
@@ -364,12 +363,12 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_generate_prefixes_main_device(self):
     """Test generate_prefixes generate correct prefixes for the main device and non-main devices."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='s', dev_path='1-2-3')
     test_entry2.devopts = empty_devopts()
     test_entry2.devopts.prefix = dev_templates.MAIN_DEV_PREFIX
@@ -385,25 +384,25 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_generate_prefixes_auto_generation(self):
     """Test generate_prefixes auto generate prefixes for devices."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
     test_entry2.devopts = empty_devopts()
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='4321', dev_path='1-2-3')
     test_entry3.devopts = empty_devopts()
     test_entry3.devopts.prefix = 'servo_v4-1234'
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='11234', dev_path='1-2-3')
     test_entry4.devopts = empty_devopts()
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='21234', dev_path='1-2-3')
     test_entry5.devopts = empty_devopts()
     devs = [test_entry, test_entry2, test_entry3, test_entry4, test_entry5]
@@ -421,8 +420,8 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_validate_devopts_no_prefix(self):
     """Test validate_devopts error out when a device does not have a prefix"""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
     hierarchy = ServoDeviceHierarchy()
@@ -434,13 +433,13 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_validate_devopts_multiple_main_devices(self):
     """Test validate_devopts error out if there are multiple devices chosen as the main device."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
     test_entry.devopts.prefix = ''
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='s2', dev_path='a-b-c')
     test_entry2.devopts = empty_devopts()
     test_entry2.devopts.prefix = ''
@@ -453,11 +452,11 @@ class TestServoDeviceFinder(unittest.TestCase):
 
   def test_validate_device_availability(self):
     """Test validate_device_availability error out when some device is not available."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                   pid=dev_templates.ServoV4.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                   pid=dev_templates.GetPID("servo_v4"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s2', dev_path='e-f-g')
     hierarchy = ServoDeviceHierarchy()
     finder = dev_finder.ServoDeviceFinder([empty_devopts()], empty_devopts, hierarchy, MockScratch(),

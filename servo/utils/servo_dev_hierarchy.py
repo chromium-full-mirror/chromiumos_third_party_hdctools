@@ -4,12 +4,10 @@
 
 """Servo device hierarchy based on the USB hierarchy."""
 
-import argparse
 import collections
 import logging
 
 from servo import servo_dev_templates
-from servo import servo_parsing
 from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
 
 # Priorities of different kinds of servo devices.
@@ -40,7 +38,7 @@ class ServoDeviceEntry(object):
     dev_template: device template of the servo device
     cluster_root: the root servo of the cluster the device is currently
                   a part of
-    hub_stub: stub of dev_path that up to and exluding the device's own port
+    hub_stub: stub of dev_path that up to and excluding the device's own port
               i.e. if the device is at 1-3.3.4 the stub would be 1-3.3
     cluster_members: the members in the cluster this device is currently a
                     root servo to
@@ -137,18 +135,17 @@ class ServoDeviceEntry(object):
       self.cluster_root.validate_entry_uniqueness(root_servo)
       if self.cluster_root == root_servo:
         return
-      elif self.is_cluster_root():
+      if self.is_cluster_root():
         raise ServoDeviceHierarchyError('Currently servod does not support chaining '
                                         '3 or more levels of servo devices (e.g. '
                                         'servo v4 -> servo v4 -> ccd). Failed to set '
                                         '%s as the root servo of %r because the latter '
                                         'is already a root servo.' % (root_servo, self))
-      else:
-        raise ServoDeviceHierarchyError('A servo device entry cannot have more than '
-                                        'one root servo. Current device: %r.'
-                                        'Current device root servo: %r.'
-                                        'Trying to also set %r as root servo.' % (
-                                        self, self.cluster_root, root_servo))
+      raise ServoDeviceHierarchyError('A servo device entry cannot have more than '
+                                      'one root servo. Current device: %r.'
+                                      'Current device root servo: %r.'
+                                      'Trying to also set %r as root servo.' % (
+                                      self, self.cluster_root, root_servo))
 
   def _validate_root_is_hub(self, root_servo):
     """Validate root_servo has a USB hub and other servo devices can connect to it
@@ -336,10 +333,8 @@ class ServoDeviceHierarchy(object):
       if not dev.cluster_root:
         return [dev]
       # Find the root servo of the cluster and return all members
-      else:
-        return dev.cluster_root.cluster_members
-    else:
-      return []
+      return dev.cluster_root.cluster_members
+    return []
 
   # Note on the following three methods. In a functional system:
   # d = set(get_cluster_root_servos())
@@ -423,15 +418,15 @@ class ServoDeviceHierarchy(object):
 
     # Do substitution if the main device chosen by the user is a cluster root
     for root in user_chosen_main_roots:
-      for idx in range(len(prioritized_devs)):
+      for idx, devs in enumerate(prioritized_devs):
         # Only do substitution for children of the main root devices not yet chosen as main devices
-        if idx == PRIORITY_MAIN_DEV or idx == PRIORITY_CLUSTER_ROOT_DEV:
+        if idx in (PRIORITY_MAIN_DEV, PRIORITY_CLUSTER_ROOT_DEV):
           continue
-        root_children = [dev for dev in prioritized_devs[idx] if dev in root.cluster_members]
+        root_children = [dev for dev in devs if dev in root.cluster_members]
         # Substitution is done when some children are chosen to substitute the main root devices
         if root_children:
           prioritized_devs[PRIORITY_MAIN_DEV].extend(root_children)
-          prioritized_devs[idx] = [dev for dev in prioritized_devs[idx] if dev not in root_children]
+          prioritized_devs[idx] = [dev for dev in devs if dev not in root_children]
           prioritized_devs[PRIORITY_CLUSTER_ROOT_DEV].append(root)
           break
     return prioritized_devs

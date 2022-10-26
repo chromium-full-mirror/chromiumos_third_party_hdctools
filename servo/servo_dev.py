@@ -22,15 +22,15 @@ HwDriverError = servo_drv.hw_driver.HwDriverError
 
 class ServoDeviceError(Exception):
   """General servo device error class."""
-  pass
 
 
 class ServoDevice(object):
-  """Device class that each corresponds to a physical servo device.
-  """
+  """Device class that each corresponds to a physical servo device."""
 
   # Reinit capable devices.
-  REINIT_CAPABLE = set([servo_dev_templates.CcdCr50.ID, servo_dev_templates.CcdTi50.ID])
+  REINIT_CAPABLE = set(
+    [servo_dev_templates.GetID("ccd_cr50"), servo_dev_templates.GetID("ccd_ti50")]
+  )
 
   # Available attempts to reconnect a device
   REINIT_ATTEMPTS = 100
@@ -145,6 +145,7 @@ class ServoDevice(object):
     self._logger.debug('%d reinit attempts remaining.', self._reinit_attempts)
 
   def reinit_ok(self):
+    """Check whether reinit is okay."""
     return self._reinit_capable and (self._reinit_attempts > 0)
 
   def get_id(self):
@@ -206,13 +207,13 @@ class ServoDevice(object):
     self.clear_cached_drv()
     for i, interface_data in enumerate(self._interfaces):
       if self._interface_init[i]:
-        # Ensure intialized interfaces are not reinitialized
+        # Ensure initialized interfaces are not reinitialized
         continue
-      if type(interface_data) is dict:
+      if isinstance(interface_data, dict):
         name = interface_data['name']
         # Store interface index for those that care about it.
         interface_data['index'] = i
-      elif type(interface_data) is str:
+      elif isinstance(interface_data, str):
         if interface_data in ['empty', 'ftdi_empty']:
           # 'empty' reserves the interface for future use.  Typically the
           # interface will be managed by external third-party tools like
@@ -235,8 +236,7 @@ class ServoDevice(object):
                                'in fault toleratant mode, so this will not crash servod.',
                                i, name)
           continue
-        else:
-          raise
+        raise
       if isinstance(result, tuple):
         result_len = len(result)
         self._interface_list[i:(i + result_len)] = result
@@ -308,7 +308,7 @@ class ServoDevice(object):
 
   def reinitialize(self):
     """Reinitialize all interfaces that support reinitialization"""
-    for i, interface in enumerate(self._interface_list):
+    for _, interface in enumerate(self._interface_list):
       interface.reinitialize()
     # Indicate interfaces are safe to use again.
     self.connect()
@@ -320,7 +320,7 @@ class ServoDevice(object):
       if isinstance(interface, _interface.ec3po_interface.EC3PO):
         self._logger.info('Turning down interface %d', i)
         interface.close()
-    
+
     # Close all the other non-placeholder interfaces
     for i, interface in enumerate(self._interface_list):
       if not isinstance(interface, _interface.empty.Empty) and \
@@ -488,10 +488,10 @@ class ServoDevice(object):
     """
     candidates = ['%s_%s' % (self.template.TYPE, param_key)]
     candidates.append(param_key)
-    for c in candidates:
-      if c in params:
-        self._logger.debug('Using %s parameter.', c)
-        return params[c]
+    for candidate in candidates:
+      if candidate in params:
+        self._logger.debug('Using %s parameter.', candidate)
+        return params[candidate]
     self._logger.error('Unable to determine %s for %s', param_key, control_name)
     self._logger.error('params: %r', params)
     return None
@@ -506,7 +506,7 @@ class ServoDevice(object):
     self._drv_dict = {}
 
   def doc_all(self):
-    """Return all documenation for controls.
+    """Return all documenations for controls.
 
     Returns:
       string of <doc> text in config file (xml) and the params dictionary for
@@ -519,7 +519,7 @@ class ServoDevice(object):
     return self.syscfg.display_config()
 
   def doc(self, name):
-    """Retreive doc string in system config file for given control name.
+    """Retrieve doc string in system config file for given control name.
 
     Args:
       name: name string of control to get doc string
@@ -533,8 +533,7 @@ class ServoDevice(object):
     self._logger.debug('name(%s)' % (name))
     if self.syscfg.is_control(name):
       return self.syscfg.get_control_docstring(name)
-    else:
-      raise NameError('No control %s' % name)
+    raise NameError('No control %s' % name)
 
   def hwinit(self, verbose, skip_controls):
     """Initialize all controls.
@@ -571,10 +570,10 @@ class ServoDevice(object):
           self.set(control_name, value)
         if verbose:
           self._logger.info('Initialized %s to %s', control_name, value)
-      except Exception as e:
+      except Exception as error:
         self._logger.error(
             'Problem initializing %s -> %s', control_name, value)
-        self._logger.error(str(e))
+        self._logger.error(str(error))
         self._logger.error('Please consider verifying the logs and if the '
                            'error is not just a setup issue, consider filing '
                            'a bug. Also checkout go/servo-ki.')
@@ -584,14 +583,14 @@ class ServoDevice(object):
     try:
       if self.syscfg.is_control('active_dut_controller'):
         self.set('active_dut_controller', 'default')
-    except servo_drv.active_v4_device.activeV4DeviceError as e:
-      self._logger.debug('Could not set active device: %s', str(e))
+    except servo_drv.active_v4_device.activeV4DeviceError as error:
+      self._logger.debug('Could not set active device: %s', str(error))
 
     return True
-  
+
   def get_root_hub_device(self):
     """Get the root hub device of this device, if it has one.
-    
+
     This device might hang on another hub device.
 
     Returns:

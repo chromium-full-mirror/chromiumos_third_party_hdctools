@@ -36,40 +36,40 @@ class TestServoDeviceHierarchy(unittest.TestCase):
                                 'devnum': 3,
                                 'busnum': default_busnum,
                                 'serial': 'dev-a',
-                                'vid': dev_templates.ServoV4.VID,
-                                'pid': dev_templates.ServoV4.PID}
+                                'vid': dev_templates.GetVID("servo_v4"),
+                                'pid': dev_templates.GetPID("servo_v4")}
     self._non_root_servo_dev_1_attrs = {'hub_port_path': '1.1.2',
                                    'devnum': 4,
                                    'busnum': default_busnum,
                                    'serial': 'dev-b',
-                                   'vid': dev_templates.ServoMicro.VID,
-                                   'pid': dev_templates.ServoMicro.PID}
+                                   'vid': dev_templates.GetVID("servo_micro"),
+                                   'pid': dev_templates.GetPID("servo_micro")}
 
     self._non_root_servo_dev_2_attrs = {'hub_port_path': '1.1.3',
                                    'devnum': 5,
                                    'busnum': default_busnum,
                                    'serial': 'dev-c',
-                                   'vid': dev_templates.ServoMicro.VID,
-                                   'pid': dev_templates.ServoMicro.PID}
+                                   'vid': dev_templates.GetVID("servo_micro"),
+                                   'pid': dev_templates.GetPID("servo_micro")}
     self._non_root_servo_dev_3_attrs = {'hub_port_path': '1.1.4.1',
                                    'devnum': 6,
                                    'busnum': default_busnum,
                                    'serial': 'dev-d',
-                                   'vid': dev_templates.ServoV4.VID,
-                                   'pid': dev_templates.ServoV4.PID}
+                                   'vid': dev_templates.GetVID("servo_v4"),
+                                   'pid': dev_templates.GetPID("servo_v4")}
     self._non_root_servo_dev_4_attrs = {'hub_port_path': '1.1.4.2',
                                    'devnum': 7,
                                    'busnum': default_busnum,
                                    'serial': 'dev-e',
-                                   'vid': dev_templates.ServoMicro.VID,
-                                   'pid': dev_templates.ServoMicro.PID}
+                                   'vid': dev_templates.GetVID("servo_micro"),
+                                   'pid': dev_templates.GetPID("servo_micro")}
 
     self._solo_dev_attrs = {'hub_port_path': '1.2.7',
                             'devnum': 8,
                             'busnum': default_busnum,
                             'serial': 'dev-f',
-                            'vid': dev_templates.ServoV2.VID,
-                            'pid': dev_templates.ServoV2.PID}
+                            'vid': dev_templates.GetVID("servo_v2"),
+                            'pid': dev_templates.GetPID("servo_v2")}
 
   def tearDown(self):
     """Remove /sys/bus/usb/devices mocking & destroy temp directory."""
@@ -148,7 +148,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     entries = hierarchy.get_entries(None, None, None)
     assert not entries
 
-    entries = hierarchy.get_entries(dev_templates.ServoV4.VID, None, None)
+    entries = hierarchy.get_entries(dev_templates.GetVID("servo_v4"), None, None)
     # ServoV4, ServoMicro and ServoV2 has the same VID
     assert 5 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_1_attrs,
@@ -156,7 +156,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
                   self._solo_dev_attrs]:
       assert self.attrs_in_entries(attrs, entries)
 
-    entries = hierarchy.get_entries(None, dev_templates.ServoV4.PID, None)
+    entries = hierarchy.get_entries(None, dev_templates.GetPID("servo_v4"), None)
     assert 2 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_3_attrs]:
       assert self.attrs_in_entries(attrs, entries)
@@ -165,22 +165,22 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     assert 1 == len(entries)
     assert self.attrs_in_entries(self._root_servo_dev_attrs, entries)
 
-    entries = hierarchy.get_entries(dev_templates.ServoV4.VID,
-      dev_templates.ServoV4.PID, None)
+    entries = hierarchy.get_entries(dev_templates.GetVID("servo_v4"),
+      dev_templates.GetPID("servo_v4"), None)
     assert 2 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_3_attrs]:
       assert self.attrs_in_entries(attrs, entries)
 
-    entries = hierarchy.get_entries(dev_templates.ServoV4.VID, None, 'dev-a')
+    entries = hierarchy.get_entries(dev_templates.GetVID("servo_v4"), None, 'dev-a')
     assert 1 == len(entries)
     assert self.attrs_in_entries(self._root_servo_dev_attrs, entries)
 
-    entries = hierarchy.get_entries(None, dev_templates.ServoV4.PID, 'dev-a')
+    entries = hierarchy.get_entries(None, dev_templates.GetPID("servo_v4"), 'dev-a')
     assert 1 == len(entries)
     assert self.attrs_in_entries(self._root_servo_dev_attrs, entries)
 
-    entries = hierarchy.get_entries(dev_templates.ServoV4.VID,
-      dev_templates.ServoV4.PID, 'dev-a')
+    entries = hierarchy.get_entries(dev_templates.GetVID("servo_v4"),
+      dev_templates.GetPID("servo_v4"), 'dev-a')
     assert 1 == len(entries)
     assert self.attrs_in_entries(self._root_servo_dev_attrs, entries)
 
@@ -320,29 +320,29 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_generate_device_priority_no_main(self):
     """Generate device priority for a list of device entries without a user chosen main device."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                    pid=dev_templates.CcdCr50.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                    pid=dev_templates.GetPID("ccd_cr50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
-                                    pid=dev_templates.CcdTi50.PID,
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_ti50"),
+                                    pid=dev_templates.GetPID("ccd_ti50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
-                                    pid=dev_templates.ServoV2.PID,
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v2"),
+                                    pid=dev_templates.GetPID("servo_v2"),
                                     serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                    pid=dev_templates.Sweetberry.PID,
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.GetVID("sweetberry"),
+                                    pid=dev_templates.GetPID("sweetberry"),
                                     serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
-    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry8 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
     test_entry8.cluster_root = test_entry8
 
@@ -369,29 +369,29 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     """Generate device priority for a list of device entries with a user chosen main device.
     The user chosen main device is not a cluster root.
     """
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                    pid=dev_templates.CcdCr50.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                    pid=dev_templates.GetPID("ccd_cr50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
-                                    pid=dev_templates.CcdTi50.PID,
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_ti50"),
+                                    pid=dev_templates.GetPID("ccd_ti50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
-                                    pid=dev_templates.ServoV2.PID,
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v2"),
+                                    pid=dev_templates.GetPID("servo_v2"),
                                     serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                    pid=dev_templates.Sweetberry.PID,
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.GetVID("sweetberry"),
+                                    pid=dev_templates.GetPID("sweetberry"),
                                     serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
-    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry8 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
     test_entry8.cluster_root = test_entry8
     test_entry7.devopts = argparse.Namespace()
@@ -420,29 +420,29 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     """Generate device priority for a list of device entries with a user chosen main device.
     The user chosen main device is a cluster root.
     """
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.C2d2.VID,
-                                   pid=dev_templates.C2d2.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
+                                   pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                    pid=dev_templates.CcdCr50.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                    pid=dev_templates.GetPID("ccd_cr50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.CcdTi50.VID,
-                                    pid=dev_templates.CcdTi50.PID,
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_ti50"),
+                                    pid=dev_templates.GetPID("ccd_ti50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry5 = ServoDeviceEntry(vid=dev_templates.ServoV2.VID,
-                                    pid=dev_templates.ServoV2.PID,
+    test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v2"),
+                                    pid=dev_templates.GetPID("servo_v2"),
                                     serial='z', dev_path='i-o-p')
-    test_entry6 = ServoDeviceEntry(vid=dev_templates.Sweetberry.VID,
-                                    pid=dev_templates.Sweetberry.PID,
+    test_entry6 = ServoDeviceEntry(vid=dev_templates.GetVID("sweetberry"),
+                                    pid=dev_templates.GetPID("sweetberry"),
                                     serial='z', dev_path='i-o-p')
-    test_entry7 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry7 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
-    test_entry8 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry8 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
     test_entry7.cluster_root = test_entry7
     test_entry7.devopts = argparse.Namespace()
@@ -474,8 +474,8 @@ class TestServoDeviceHierarchy(unittest.TestCase):
 
   def test_most_prioritized_devices(self):
     """Given a list of device entries with priority, return the list of devices with the highest priority."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                   pid=dev_templates.ServoMicro.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                   pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
     prioritized_devs = [[], [], [], [], [test_entry], []]
     most_prirotized_devs = ServoDeviceHierarchy.most_prirotized_devices(prioritized_devs)
@@ -490,16 +490,16 @@ class TestServoDeviceEntry(unittest.TestCase):
     # It is not crucial what the exact vid/pids are, they just need to be
     # from a serial servo dev template for initialization to work properly.
     unittest.TestCase.setUp(self)
-    self._vid = dev_templates.ServoV2.VID
-    self._pid = dev_templates.ServoV2.PID
+    self._vid = dev_templates.GetVID("servo_v2")
+    self._pid = dev_templates.GetPID("servo_v2")
 
   def test_set_cluster_root(self):
     """Setting a ServoDeviceEntry as the cluster root servo of another works."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                   pid=dev_templates.CcdCr50.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                   pid=dev_templates.GetPID("ccd_cr50"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='c', dev_path='1-2-3')
     test_entry.set_cluster_root(test_entry2)
     assert test_entry2 == test_entry.cluster_root
@@ -510,14 +510,14 @@ class TestServoDeviceEntry(unittest.TestCase):
 
   def test_set_cluster_root_duplicate(self):
     """Setting a ServoDeviceEntry's cluster_root_servo twice raises a ServoDeviceHierarchyError."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                   pid=dev_templates.CcdCr50.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                   pid=dev_templates.GetPID("ccd_cr50"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='c', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
     test_entry.set_cluster_root(test_entry2)
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
@@ -527,11 +527,11 @@ class TestServoDeviceEntry(unittest.TestCase):
 
   def test_set_cluster_root_not_hub(self):
     """Setting a ServoDeviceEntry's cluster_root_servo as a non-root-hub raises a ServoDeviceHierarchyError."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                   pid=dev_templates.CcdCr50.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                   pid=dev_templates.GetPID("ccd_cr50"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoMicro.VID,
-                                    pid=dev_templates.ServoMicro.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
+                                    pid=dev_templates.GetPID("servo_micro"),
                                     serial='c', dev_path='1-2-3')
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
                                 'because the former is not a hub servo'):
@@ -539,17 +539,17 @@ class TestServoDeviceEntry(unittest.TestCase):
 
   def test_set_cluster_root_too_many_levels(self):
     """Setting a ServoDeviceEntry's cluster with more than 2 levels raises a ServoDeviceHierarchyError."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                   pid=dev_templates.CcdCr50.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                   pid=dev_templates.GetPID("ccd_cr50"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='c', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='h', dev_path='x-y-z')
     test_entry2.set_cluster_root(test_entry3)
     with self.assertRaisesRegex(ServoDeviceHierarchyError,
@@ -563,14 +563,14 @@ class TestServoDeviceEntry(unittest.TestCase):
 
   def test_validate_entry_uniqueness(self):
     """Each physical device only corresponds to a device entry."""
-    test_entry = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                   pid=dev_templates.CcdCr50.PID,
+    test_entry = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                   pid=dev_templates.GetPID("ccd_cr50"),
                                    serial='s', dev_path='a-b-c')
-    test_entry2 = ServoDeviceEntry(vid=dev_templates.CcdCr50.VID,
-                                   pid=dev_templates.CcdCr50.PID,
+    test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
+                                   pid=dev_templates.GetPID("ccd_cr50"),
                                    serial='s', dev_path='1-2-3')
-    test_entry3 = ServoDeviceEntry(vid=dev_templates.ServoV4.VID,
-                                    pid=dev_templates.ServoV4.PID,
+    test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
+                                    pid=dev_templates.GetPID("servo_v4"),
                                     serial='z', dev_path='i-o-p')
     test_entry.validate_entry_uniqueness(None)
     test_entry.validate_entry_uniqueness(test_entry)

@@ -454,31 +454,21 @@ For the Windows ST tools, it is required to enable in the submenu to detect in h
 
 Sam has successfully used the Segger JLink Pro with some Segger Linux tools.
 
-## RS232 Serial Console
+## RS232 Serial Console Port
 
 The 6P6C (RJ25) receptacle on Servo v4.1 is an RS232 serial port.  With the standard firmware it provides console access, even when Host-facing USB may not be working.
 
-Serial terminal settings (for use with standard firmware):
+### Terminal settings (for use with standard firmware)
 
 * 115200 baud 8N1
 * Hardware Flow Control: No
 * Software Flow Control: N/A
 
+### Pinout
+
 The receptacle is logically a 6P4C (RJ14) as only the middle 4 pins are used, so either 6P6C or 6P4C cable may be used.
 
 The pinout matches the middle pins of Cisco router 8P8C (RJ45) console ports.  Connect to it in the same manner, except instead of 8P8C, use either 6P6C or 6P4C.
-
-Example off-the-shelf hardware for connecting to this port:
-
-(this is ***not*** an endorsement of any specific vendors or products!)
-
-1. USB-A plug to DB9 plug RS232 Serial adapter (or built-in RS232 port on your host if available) ([Example](https://www.tripplite.com/keyspan-high-speed-usb-to-serial-adapter~USA19HS))
-2. DB9 receptacle to 8P8C (RJ45) receptacle "straight through" pinout adapter (DB9&lt;->8P8C adapters are also widely available as open cases for trivially assembling in any pinout) ([Example](https://www.tripplite.com/modular-serial-adapter-straight-through-wiring-db9-female-rj45-female~B090A9F))
-3. 6P6C or 6P4C rollover cable (or crimp your own) ([Example](https://www.monoprice.com/product?p_id=939))
-
-It should also be possible to just crimp a 6P6C plug onto the end of a USB&lt;->8P8C (RJ45) Cisco-compatible cable, however the width of the typically flat 8P8C cable might be awkward to deal with in the narrower plug, the author has not attempted this.
-
-With sufficient tools and expertise, you could build your own USB&lt;->6P6C/6P4C adapter cable using actual 6P6C/6P4C cable, if so desired.
 
 Servo v4.1 RS232 6P6C receptacle pinout reference:
 
@@ -499,6 +489,23 @@ Or pretending it's a 6P4C receptacle (for easier reference if crimping a 6P4C pl
 3 | GND
 4 | RXD
 ```
+
+### Example hardware for connecting to the port
+
+**IMPORTANT:** This is ***not*** an endorsement of any specific vendors or products!  Each example product linked here has been successfully used as part of a desk setup providing Servo v4.1 serial console access, but none has gone through any kind of thorough or large-scale qualification testing for this use.  Additionally, there may be hardware revisions of these products which have not been tested at all for this use.  Use of these products is at your own risk, this document makes no promises or guarantees about them.
+
+1. USB plug to DB9 plug RS232 Serial adapter (or built-in RS232 port on your host if available)
+   * Example: Tripp Lite `USA-19HS` [Keyspan USB to Serial Adapter - USB-A Male to DB9 RS232 Male, 3 ft. (0.91 m), TAA](https://www.tripplite.com/keyspan-high-speed-usb-to-serial-adapter~USA19HS)
+   * Example: Gearmo `GM-FTDI4X-M` [4 Port Serial RS-232 Hub w/ FTDI Chipset & RX/TX LED Indicators](https://www.gearmo.com/shop/gearmo-usb-4-port-serial-rs232-featuring-ftdi-chipset-with-rx-tx-led-indicators-industrial-version/)
+2. DB9 receptacle to 8P8C (RJ45) receptacle "Straight Through" or "Cisco Terminal" pinout adapter
+   * Example: Tripp Lite `B090-A9F` [Modular Serial Adapter Straight-Through Wiring (DB9 F to RJ45 F)](https://www.tripplite.com/modular-serial-adapter-straight-through-wiring-db9-female-rj45-female~B090A9F)
+   * Example: CablesAndKits.com `CAB-9AS-FDTE` (generic Cisco `74-0495-01`) [Cisco DB9 Female to RJ45 Female Console Adapter](https://www.cablesandkits.com/accessories/cable-adapters/cab-9as-fdte-/pro-614/)
+3. 6P6C or 6P4C rollover cable (or crimp your own)
+   * Example: Monoprice `939` [Phone Cable, RJ12 (6P6C), Reverse for Voice - 7ft](https://www.monoprice.com/product?p_id=939)
+
+It may be possible to crimp a 6P6C plug onto the end of a USB&lt;->8P8C (RJ45) Cisco-compatible cable, of which there are many on the market.  However the width of the typically flat cable jacket intended for serial connections might be awkward to deal with in the narrower 6P6C plug and the author has not attempted this.
+
+With sufficient tools and expertise, you could build your own USB&lt;->6P6C/6P4C adapter cable using actual 6-wire or 4-wire cable into a 6P6C / 6P4C plug, if so desired.
 
 ## References
 
