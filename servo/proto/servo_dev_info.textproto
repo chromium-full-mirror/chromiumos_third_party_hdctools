@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -27,6 +27,8 @@ servo_devices {
   PID: 0x5002
   LOTIDS: ['609600', '629871']
   DEFAULT_CONFIG: 'servo_v2_r0.xml'
+  HUB_SERVO: true
+  DUT_CONTROLLER: true
 }
 
 # Servo v2 template class
@@ -39,6 +41,8 @@ servo_devices {
   # it registers as v2 as after a while all the new(er) lotids are v2.
   LOTIDS: ['641200', '686203', '730422', '780735', '868534', '875286', 'force-v2-lotid']
   DEFAULT_CONFIG: 'servo_v2_r1.xml'
+  HUB_SERVO: true
+  DUT_CONTROLLER: true
 }
 
 # Servo v4 template class
@@ -47,6 +51,7 @@ servo_devices {
   VID: 0x18d1
   PID: 0x501b
   DEFAULT_CONFIG: 'servo_v4.xml'
+  HUB_SERVO: true
 }
 
 # Servo v4p1 template class
@@ -55,6 +60,7 @@ servo_devices {
   VID: 0x18d1
   PID: 0x520d
   DEFAULT_CONFIG: 'servo_v4p1.xml'
+  HUB_SERVO: true
 }
 
 # Servo micro template class.
@@ -63,6 +69,7 @@ servo_devices {
   VID: 0x18d1
   PID: 0x501a
   DEFAULT_CONFIG: 'servo_micro.xml'
+  DUT_CONTROLLER: true
 }
 
 # Servo ccd cr50 template class.
@@ -71,6 +78,7 @@ servo_devices {
   VID: 0x18d1
   PID: 0x5014
   DEFAULT_CONFIG: 'ccd_cr50.xml'
+  DUT_CONTROLLER: true
 }
 
 # Servo ccd cr50 template class.
@@ -79,6 +87,7 @@ servo_devices {
   VID: 0x18d1
   PID: 0x504a
   DEFAULT_CONFIG: 'ccd_ti50.xml'
+  DUT_CONTROLLER: true
 }
 
 # Sweetberry template class
@@ -95,6 +104,7 @@ servo_devices {
   VID: 0x18d1
   PID: 0x5041
   DEFAULT_CONFIG: 'c2d2.xml'
+  DUT_CONTROLLER: true
 }
 
 # Fluffy template class
@@ -103,6 +113,8 @@ servo_devices {
   VID: 0x18d1
   PID: 0x503b
   DEFAULT_CONFIG: 'fluffy.xml'
+  # Fluffy USB mux is simply designed for power testing and thus
+  # not considered as a HUB_SERVO
 }
 
 # Pacman
