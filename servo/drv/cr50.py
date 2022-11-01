@@ -16,6 +16,7 @@ import time
 
 from servo.drv import pty_driver
 
+
 def restricted_command(func):
   """Decorator for methods which use restricted console command."""
 
@@ -52,7 +53,8 @@ class cr50(pty_driver.ptyDriver):
   PROMPT_DETECTION_TRIES = 3
   PROMPT_DETECTION_INTERVAL = 1
 
-  RDD_RE = r'Rdd:\s+(?P<rdd>\S+)[\r\n]+(KeepAlive: (?P<keepalive>\S+)\s)?'
+  RDD_RE = re.compile(
+          r'Rdd:\s+(?P<rdd>\S+)[\r\n]+(KeepAlive:\s+(?P<keepalive>\S+)\s)?')
 
   def __init__(self, interface, params, servod=None):
     """Constructor.
@@ -173,7 +175,7 @@ class cr50(pty_driver.ptyDriver):
       1: keepalive enabled.
     """
     result = self._issue_cmd_get_results('ccdstate', ['ccdstate.*>'])[0]
-    rddstate = re.search(self.RDD_RE, result)
+    rddstate = self.RDD_RE.search(result)
     if not rddstate:
       raise cr50Error('Unable to get rdd output %r', result)
     # Older versions of cr50 don't have a devoted KeepAlive field. Use the
