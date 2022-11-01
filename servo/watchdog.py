@@ -17,15 +17,19 @@ class DeviceWatchdog(threading.Thread):
     done: event to signal that the watchdog functionality can stop
   """
 
+  # Default rate in seconds used to poll.
+  DEFAULT_POLL_RATE = 1.0
+
   # Rate in seconds used to poll when a reinit capable device is attached.
   REINIT_POLL_RATE = 0.1
 
-  def __init__(self, servod, poll_rate=1.0):
+  def __init__(self, servod, reconnect_timeout=0.0):
     """Setup watchdog thread.
 
     Args:
       servod: servod server the watchdog is watching over.
-      poll_rate: poll rate in seconds
+      reconnect_timeout: approx. secs for device reconnect,
+                         poll rate will be adjusted accordingly.
     """
     threading.Thread.__init__(self)
     self.daemon = True
@@ -33,15 +37,21 @@ class DeviceWatchdog(threading.Thread):
     self._turndown_signal = signal.SIGTERM
     self.done = threading.Event()
     self._servod = servod
-    self._rate = poll_rate
+    self._rate = self.DEFAULT_POLL_RATE
     self._devices = []
 
     for device in self._servod.get_devices():
       self._devices.append(device)
       if device.reinit_ok():
-        self._rate = self.REINIT_POLL_RATE
-        self._logger.info('Reinit capable device found. Polling rate set '
-                          'to %.2fs.', self._rate)
+        if reconnect_timeout <= 0:
+            self._rate = self.REINIT_POLL_RATE
+            self._logger.info('Reinit capable device found. Polling rate set '
+                              'to %.2fs.', self._rate)
+        else:
+            self._rate = reconnect_timeout / max(device.REINIT_ATTEMPTS, 1)
+            self._logger.info('Reinit capable device found. Polling rate set '
+                              'to %.2fs for %.2fs reconnect timeout',
+                              self._rate, reconnect_timeout)
 
     # TODO(coconutruben): Here and below in addition to VID/PID also print out
     # the device type i.e. servo_micro.

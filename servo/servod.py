@@ -104,7 +104,8 @@ class ServodStarter(object):
     self._server_thread.daemon = True
     self._turndown_initiated = False
     # Needs access to the servod instance.
-    self._watchdog_thread = watchdog.DeviceWatchdog(self._servod)
+    self._watchdog_thread = watchdog.DeviceWatchdog(self._servod,
+                            reconnect_timeout=sopts.reconnect_timeout)
     self._exit_status = 0
 
   def handle_sig(self, signum):
@@ -179,6 +180,10 @@ class ServodStarter(object):
                                'sending keyboard commands to DUTs that do not '
                                'have built in keyboards. Used in FAFT tests. '
                                '(Optional), e.g. /dev/ttyUSB0')
+    server_pars.add_argument('--reconnect-timeout', type=float, default=0.0,
+                          help='number of seconds (approx.) to allow for device '
+                               'reconnect, default is unspecified but is ~20 '
+                               'seconds depending on internal polling rate.')
     # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
     dev_pars = servo_parsing.ServodRCParser(add_help=False)
     dev_pars.add_argument('--vendor', default=None, type=lambda x: int(x, 0),
