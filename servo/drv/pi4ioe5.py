@@ -134,6 +134,10 @@ class pi4Ioe5(hw_driver.HwDriver):
         1 for pullup resistor
     """
 
+    _, mask = self._get_offset_mask()
+    if mask is None:
+      raise Pi4Ioe5Error('Unable to determine mask. Is offset declared?')
+
     # Set pin direction to input
     current_dir_reg = self._i2c_obj._read_reg(self.REG_DIR + self._port)
     new_dir_reg = current_dir_reg | mask
