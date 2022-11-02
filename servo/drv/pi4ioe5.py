@@ -309,6 +309,9 @@ class pi4Ioe5(hw_driver.HwDriver):
       if not 'O' in args or (not 'PP' in args and not 'OD' in args) or not digit:
         raise Pi4Ioe5Error(self._help_msg_for_set())
 
+      if int(args[int_idx]) not in (0,1):
+        raise Pi4Ioe5Error(self._help_msg_for_set())
+
       if 'PP' in args:
         flags = 0
       else:
@@ -336,6 +339,8 @@ class pi4Ioe5(hw_driver.HwDriver):
       pullup = -1 # Neither PU nor PD
 
     if digit:
+      if int(args[int_idx]) not in (0,1):
+        raise Pi4Ioe5Error(self._help_msg_for_set())
       set_output(int(args[int_idx]), 0) # Default is push-pull
     else:
       set_input(pullup)
