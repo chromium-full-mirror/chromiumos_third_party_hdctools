@@ -795,4 +795,24 @@
     offset="3" input_type="str" mux_chan="1"/>
   </control>
 
+  <!--Accessors to whole set of Ioex pins-->
+  <control>
+    <name>STUD_EVB_IOEX_0</name>
+    <doc>All pins on IOEX U8, see EVB schematics.</doc>
+    <params interface="2" drv="stud_evb" child="0x21" port="0"
+    offset="0" input_type="str" mux_chan="0" subtype="whole_ioex"/>
+  </control>
+  <control>
+    <name>STUD_EVB_IOEX_1</name>
+    <doc>All pins on IOEX U9, see EVB schematics.</doc>
+    <params interface="2" drv="stud_evb" child="0x23" port="0"
+    offset="0" input_type="str" mux_chan="0" subtype="whole_ioex"/>
+  </control>
+  <control>
+    <name>STUD_EVB_IOEX_2</name>
+    <doc>All pins on IOEX U10, see EVB schematics.</doc>
+    <params interface="2" drv="stud_evb" child="0x22" port="0"
+    offset="0" input_type="str" mux_chan="0" subtype="whole_ioex"/>
+  </control>
+
 </root>

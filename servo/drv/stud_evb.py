@@ -282,4 +282,21 @@ class studEvb(hw_driver.HwDriver):
                          'special pins (See EVB user guide)')
     return False
 
+  def _Set_whole_ioex(self, fmt_value):
+    """Set value and configure all ioexpander pins
+
+    Args:
+      fmt_value: see _help_msg_for_set() within pi4ioe5.py module for description.
+    """
+    self.i2c_mux._set(1)
+    self.ioex._Set_whole_ioex(fmt_value)
+
+  def _Get_whole_ioex(self):
+    """Get levels of all pins in particular ioex"""
+    mux_reg = self.i2c_mux._get()
+    self.i2c_mux._set(1)
+    retval = self.ioex._Get_whole_ioex()
+    self.i2c_mux._set(1, mux_reg)
+    return retval
+
 # TODO(b/254600051): Add option to configure pins on per-bank basis
