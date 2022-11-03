@@ -234,8 +234,8 @@ class pi4Ioe5(hw_driver.HwDriver):
   # Handler for a subclass controls - see 'get()' description in hw_driver.py
   def _Get_whole_ioex(self):
     """Get levels of all pins in particular ioex"""
-    for port in range(PORT_CNT):
-      value = self._i2c_obj._read_reg(self._REG_INP + port)
+    for port in range(self.PORT_CNT):
+      value = self._i2c_obj._read_reg(self.REG_INP + port)
       output += "P" + str(port) + ":" + str(value) + "\n"
 
     return output
@@ -262,7 +262,7 @@ class pi4Ioe5(hw_driver.HwDriver):
         0 for pulldown resistor
         1 for pullup resistor
     """
-    for port in range(PORT_CNT):
+    for port in range(self.PORT_CNT):
       self._i2c_obj._write_reg(self.REG_DIR + port, 0xFF)
 
       if pullup == -1:
