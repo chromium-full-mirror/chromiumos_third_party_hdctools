@@ -162,6 +162,14 @@ class Servod(object):
     self._logger.debug('Using servo device %s for control %s.', dev, name)
     return (dev, processed_name)
 
+  def hwinit(self, verbose=True):
+    """Initialize controls for servo devices."""
+    for servo_device in self.get_devices():
+      skip_controls = set()
+      for dev in servo_device.get_child_devices():
+        skip_controls.update(set(control_name for control_name, _ in dev.syscfg.hwinit))
+      servo_device.hwinit(verbose=verbose, skip_controls=skip_controls)
+
   def get(self, name):
     """Get control value.
 
@@ -411,3 +419,17 @@ class Servod(object):
         self._logger.fatal('No device interface '
                         '(Servo Micro, C2D2, or CCD) connected.')
         sys.exit(-1)
+
+  def get_version(self):
+    """DEPRECATED. Please use 'devices' control instead.
+    Gets the type of the servo device setups.
+    """
+    main_device = self.get_main_device()
+    root_device = self.get_root_device()
+    type = main_device.template.TYPE
+    if root_device:
+      type = root_device.template.TYPE + '_with_' + type
+      for dev in root_device.get_child_devices():
+        if dev.template.DUT_CONTROLLER and dev != main_device:
+          type += '_and_' + dev.template.TYPE
+    return type

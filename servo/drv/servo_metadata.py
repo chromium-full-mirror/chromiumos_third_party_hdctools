@@ -29,16 +29,9 @@ class servoMetadata(hw_driver.HwDriver):
     super(servoMetadata, self).__init__(interface, params, servod)
 
   def _Get_type(self):
-    """Gets the type of the servo device setups."""
-    main_device = self._servod.get_main_device()
-    root_device = self._servod.get_root_device()
-    type = main_device.template.TYPE
-    if root_device:
-      type = root_device.template.TYPE + '_with_' + type
-      for dev in root_device.get_child_devices():
-        if dev.template.DUT_CONTROLLER and dev != main_device:
-          type += '_and_' + dev.template.TYPE
-    return type
+    """DEPRECATED. Please use 'devices' control instead.
+    Gets the type of the servo device setups."""
+    return self._servod.get_version()
 
   def _Get_devices(self):
     """Gets detailed information about the devices set up for the servod instance."""

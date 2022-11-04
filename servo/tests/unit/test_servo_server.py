@@ -406,5 +406,24 @@ class TestServod(unittest.TestCase):
     ])
     servod._logger.fatal.assert_called_once_with('No device interface (Servo Micro, C2D2, or CCD) connected.')
 
+  @unittest.mock.patch('servo.servod.ServodStarter.__init__', unittest.mock.MagicMock(return_value=None))
+  def test_hwinit(self):
+    """Test _hwinit()."""
+    servod = servo_server.Servod()
+    dev1 = unittest.mock.MagicMock()
+    dev2 = unittest.mock.MagicMock()
+    dev1.get_child_devices = unittest.mock.MagicMock(return_value=[])
+    dev2.get_child_devices = unittest.mock.MagicMock(return_value=[dev1])
+    dev1.syscfg = unittest.mock.MagicMock()
+    dev1.syscfg.hwinit = [("ctr1", "dummy"), ("ctr2", "dummy")]
+    dev1.hwinit = unittest.mock.MagicMock()
+    dev2.hwinit = unittest.mock.MagicMock()
+    servod.get_devices = unittest.mock.MagicMock(return_value=[dev1, dev2])
+
+    servod.hwinit(verbose=True)
+
+    dev1.hwinit.assert_called_once_with(verbose=True, skip_controls=set())
+    dev2.hwinit.assert_called_once_with(verbose=True, skip_controls=set(["ctr1", "ctr2"]))
+
 if __name__ == '__main__':
   unittest.main()

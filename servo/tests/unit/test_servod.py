@@ -34,12 +34,12 @@ class TestServoStarter(unittest.TestCase):
   @unittest.mock.patch('servo.servod.ServodStarter._start_xml_server', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servod.ServodStarter._discover_servos', unittest.mock.MagicMock(return_value=(None, None)))
   @unittest.mock.patch('servo.servod.ServodStarter._setup_servos', unittest.mock.MagicMock())
-  @unittest.mock.patch('servo.servod.ServodStarter._hwinit', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servod.ServodStarter._setup_servod_server', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.recovery.set_recovery_active', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servo_logging.setup', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servo_server.Servod.__init__', unittest.mock.MagicMock(return_value=None))
   @unittest.mock.patch('servo.servo_server.Servod.validate_dut_controller', unittest.mock.MagicMock())
+  @unittest.mock.patch('servo.servod.servo_server.Servod.hwinit', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.watchdog.DeviceWatchdog.__init__', unittest.mock.MagicMock(return_value=None))
   def test_init(self):
     """Test __init__()."""
@@ -53,10 +53,10 @@ class TestServoStarter(unittest.TestCase):
     servod.ServodStarter._start_xml_server.assert_called_once()
     servod.ServodStarter._discover_servos.assert_called_once_with(sopts, [])
     servod.ServodStarter._setup_servos.assert_called_once_with(None, None, unittest.mock.ANY)
-    servod.ServodStarter._hwinit.assert_called_once()
     servod.ServodStarter._setup_servod_server.assert_called_once()
     recovery.set_recovery_active.assert_called_once()
     servo_logging.setup.assert_called_once()
+    servo_server.Servod.hwinit.assert_called_once_with(verbose=True)
     servo_server.Servod.validate_dut_controller.assert_called_once()
     self.assertTrue(isinstance(starter._server_thread, threading.Thread))
     self.assertTrue(isinstance(starter._watchdog_thread, watchdog.DeviceWatchdog))
@@ -417,26 +417,6 @@ class TestServoStarter(unittest.TestCase):
     servo_dev.ServoDevice.set_base_board.assert_called_once_with('atlas')
     servo_dev.ServoDevice.set_board_and_model.assert_called_once_with('atlas', 'nuvoton')
     system_config.SystemConfig.finalize.assert_called_once()
-
-  @unittest.mock.patch('servo.servod.ServodStarter.__init__', unittest.mock.MagicMock(return_value=None))
-  def test_hwinit(self):
-    """Test _hwinit()."""
-    starter = servod.ServodStarter([])
-    starter._servod = unittest.mock.MagicMock()
-    dev1 = unittest.mock.MagicMock()
-    dev2 = unittest.mock.MagicMock()
-    dev1.get_child_devices = unittest.mock.MagicMock(return_value=[])
-    dev2.get_child_devices = unittest.mock.MagicMock(return_value=[dev1])
-    dev1.syscfg = unittest.mock.MagicMock()
-    dev1.syscfg.hwinit = [("ctr1", "dummy"), ("ctr2", "dummy")]
-    dev1.hwinit = unittest.mock.MagicMock()
-    dev2.hwinit = unittest.mock.MagicMock()
-    starter._servod.get_devices = unittest.mock.MagicMock(return_value=[dev1, dev2])
-
-    starter._hwinit()
-
-    dev1.hwinit.assert_called_once_with(verbose=True, skip_controls=set())
-    dev2.hwinit.assert_called_once_with(verbose=True, skip_controls=set(["ctr1", "ctr2"]))
 
   @unittest.mock.patch('servo.servod.ServodStarter.__init__', unittest.mock.MagicMock(return_value=None))
   def test_cleanup(self):

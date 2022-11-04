@@ -98,7 +98,7 @@ class ServodStarter(object):
     time.sleep(0.5)
 
     self._servod.validate_dut_controller()
-    self._hwinit()
+    self._servod.hwinit(verbose=True)
     self._setup_servod_server()
     self._server_thread = threading.Thread(target=self._serve)
     self._server_thread.daemon = True
@@ -404,14 +404,6 @@ class ServodStarter(object):
       # with creating the servo interfaces
       servo_device.init_servo_interfaces()
     self._servod.update_known_ctrls()
-
-  def _hwinit(self):
-    """Initialize controls for servo devices."""
-    for servo_device in self._servod.get_devices():
-      skip_controls = set()
-      for dev in servo_device.get_child_devices():
-        skip_controls.update(set(control_name for control_name, _ in dev.syscfg.hwinit))
-      servo_device.hwinit(verbose=True, skip_controls=skip_controls)
 
   def cleanup(self):
     """Perform any cleanup related work after servod server shut down."""
