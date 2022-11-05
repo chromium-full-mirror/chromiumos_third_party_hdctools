@@ -46,7 +46,7 @@ class TestServoDevice(unittest.TestCase):
     self.assertEqual(self.v4_dev.prefixes, ['v4'])
     self.assertEqual(self.v4_dev._serial, 'servo_v4_serial')
     self.assertEqual(self.v4_dev.board, 'brya_default')
-    self.assertIsNone(self.v4_dev.base_board)
+    self.assertEqual(self.v4_dev.base_board, '')
     self.assertEqual(self.v4_dev.model, 'default')
     self.assertTrue(self.v4_dev._ifaces_available.isSet())
     self.assertEqual(self.v4_dev._reinit_attempts, self.v4_dev.REINIT_ATTEMPTS)

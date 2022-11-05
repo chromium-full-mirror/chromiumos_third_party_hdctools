@@ -73,7 +73,7 @@ class ServoDevice(object):
     self._serial = dev_entry.serial
     board = dev_entry.devopts.board
     self.board = board
-    self.base_board = None
+    self.base_board = ''
     self.model = dev_entry.devopts.model
     if self.model:
       self.board += '_' + self.model

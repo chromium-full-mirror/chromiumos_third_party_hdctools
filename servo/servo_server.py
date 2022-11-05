@@ -38,6 +38,7 @@ class Servod(object):
     self._usbkm232 = usbkm232
     self._keyboard = None
     self._usb_keyboard = None
+    # A map of device serialname strings keyed by the device's name/prefix.
     self._serialnames = collections.defaultdict(lambda: None)
     # A map of ServoDevices keyed by their name/prefix.
     # A ServoDevice can have multiple name/prefix (e.g. 'main', '')
@@ -316,7 +317,7 @@ class Servod(object):
     """Returns the board specified for the main device.
 
     Returns:
-      A string of the board name, or None if not present.
+      A string of the board name, or '' if not present.
     """
     return self.get_main_device().board
 
@@ -324,7 +325,7 @@ class Servod(object):
     """Returns the board probed from EC in case the main device is a dut controller.
 
     Returns:
-      A string of the board name, or None if not present.
+      A string of the board name, or '' if not present.
     """
     return self.get_main_device().base_board
 
