@@ -151,6 +151,33 @@ class TestServod(unittest.TestCase):
 
     self.assertEqual(servod.get("cold_reset"), "on")
 
+  def test_get_serial(self):
+    """Test get()."""
+    servod = servo_server.Servod()
+    servod.get_legacy_serial_number = unittest.mock.MagicMock(return_value="12345")
+
+    self.assertEqual(servod.get("ccd_serialname"), "12345")
+
+  def test_get_legacy_serial_number(self):
+    """Test get_legacy_serial_number()."""
+    servod = servo_server.Servod()
+    dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+    dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+    dev3 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+    dev.template = servo_dev_templates.GetTemplateClassByName('servo_v4p1')
+    dev2.template = servo_dev_templates.GetTemplateClassByName('ccd_cr50')
+    dev3.template = servo_dev_templates.GetTemplateClassByName('c2d2')
+    servod._unique_devices = {"dev" : dev, "dev2" : dev2, "dev3" : dev3}
+    dev._serial = "dev_serial"
+    dev2._serial = "dev2_serial"
+    dev3._serial = "dev3_serial"
+    servod.get_main_device = unittest.mock.MagicMock(return_value=dev)
+    self.assertEqual(servod.get("_serialname"), "dev_serial")
+    self.assertEqual(servod.get("111._serialname"), "dev_serial")
+    self.assertEqual(servod.get("ccd_serialname"), "dev2_serial")
+    self.assertEqual(servod.get("c_serialname"), "unknown")
+    self.assertEqual(servod.get("servo_micro_serialname"), "unknown")
+
   def test_set(self):
     """Test set()."""
     servod = servo_server.Servod()

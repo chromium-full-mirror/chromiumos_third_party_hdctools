@@ -185,8 +185,60 @@ class Servod(object):
       HwDriverError: Error occurred while using drv
       ServodError: if interfaces are not available within timeout period
     """
+    if name.endswith('_serialname'):
+      # This route is to retrieve serialnames on servo v4, which
+      # connects to multiple servo-micros or CCD, like the controls,
+      # 'ccd_serialname', 'servo_micro_serialname', etc.
+      return self.get_legacy_serial_number(name)
+
     dev, name = self._get_dev_and_name(name)
     return dev.get(name)
+
+  def get_legacy_serial_number(self, control_name):
+    """Returns the desired serial number of a device.
+
+    This is a method to support the legacy controls of <...>_serialname.
+    Consider removing it if all clients move away from this pattern.
+
+    Args:
+      control_name: Name of the control.
+
+    Returns:
+       A string containing the serial number or "unknown".
+    """
+    # Remove the prefix from the serialname control. Serialnames are
+    # universal. It doesn't matter what the prefix is.
+    control_name = control_name.split('.', 1)[-1]
+
+    suffix = '_serialname'
+    dev_type = control_name[:-len(suffix)]
+    board_model = ''
+    main_dev = self.get_main_device()
+
+    if not dev_type:
+      return main_dev._serial
+
+    if '_for_' in control_name:
+      board_model = dev_type.split('_for_')[1]
+      dev_type = dev_type.split('_for_')[0]
+
+    candidates = set()
+    for (_, dev) in self._unique_devices.items():
+      if dev_type not in dev.template.TYPE:
+        continue
+      if not board_model:
+        candidates.add(dev)
+      elif board_model in [dev.board, dev.model, main_dev.board, main_dev.model]:
+        candidates.add(dev)
+
+    if len(candidates) == 0:
+      self._logger.info("'%s' not found!", control_name)
+      return 'unknown'
+    elif len(candidates) == 1:
+      return candidates.pop()._serial
+    else:
+      self._logger.info("'%s' is ambiguous as there are multiple matching devices %s", candidates)
+      return 'unknown'
 
   def set(self, name, wr_val_str):
     """Set control on servo device.
@@ -333,15 +385,15 @@ class Servod(object):
     """Return all the serials associated with this process."""
     return self._serialnames
 
-  def add_serial_number(self, prefix, serial_number):
+  def add_serial_number(self, key, serial_number):
     """Adds the serial number to the _serialnames dictionary.
 
     Args:
-      prefix: A string which is the key into the _serialnames dictionary.
+      key: A string which is the key into the _serialnames dictionary.
       serial_number: A string which is the key into the _serialnames dictionary.
     """
-    self._serialnames[prefix] = serial_number
-    self._logger.debug('Added %s %s to serialnames.', prefix, serial_number)
+    self._serialnames[key] = serial_number
+    self._logger.debug('Added %s %s to serialnames.', key, serial_number)
 
   def get_main_device(self):
     """Gets the main servo device."""
