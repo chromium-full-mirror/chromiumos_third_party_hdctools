@@ -168,7 +168,9 @@ class studEvb(hw_driver.HwDriver):
     # Configure buddy pin to Hi-Z input
     board_id_ioex._set("I")
 
-    # Caller should continue with setting original pin to desired value
+    # Configure original pin to desired value
+    fmt_value = ','.join(args)
+    self.ioex._set(fmt_value)
 
   def _fb_ppvar_setter_help(self):
     description ="""Incorrect arguments.
@@ -271,7 +273,7 @@ class studEvb(hw_driver.HwDriver):
 
     if self._params['control_name'] in self.BOARD_ID_PINS:
       self._apply_board_id_restrictions(args)
-      return False
+      return True
     elif self._params['control_name'] in self.FB_PPVAR_PINS:
       self._apply_fb_ppvar_restrictions(args)
       return True
