@@ -20,7 +20,7 @@ class studEvb(hw_driver.HwDriver):
                    'STUD_EVB_LEGO_ADDR_2_R',
                    'STUD_EVB_LEGO_ADDR_0_1M',
                    'STUD_EVB_LEGO_ADDR_1_1M',
-                   'STUD_EVB_LEGO_ADDR_1_1M']
+                   'STUD_EVB_LEGO_ADDR_2_1M']
   FB_PPVAR_PINS = ['STUD_EVB_FB_PPVAR_SYS_0',
                    'STUD_EVB_FB_PPVAR_SYS_1']
 
