@@ -23,6 +23,7 @@ class pi4Ioe5(hw_driver.HwDriver):
 
   PORT_CNT = 5
   PORT_VALID_ERR_STR = '0 .. 4'
+  PINS_PER_PORT = 8
   PULLUP_VALID_ERR_STR = '-1, 0 or 1'
 
   def __init__(self, interface, params):
