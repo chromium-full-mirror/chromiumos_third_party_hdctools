@@ -4,6 +4,7 @@
 """Driver for board config controls stud_evb board (i2c mux & ioexes)."""
 
 import copy
+import time
 
 from servo.drv import hw_driver
 from servo.drv import pi4msd
@@ -246,14 +247,15 @@ class studEvb(hw_driver.HwDriver):
     self.i2c_mux._set(1)
 
     # Configure LEGO_RST as PP output with high level
-    lego_rst_ioex.set("1")
+    lego_rst_ioex._set("1")
 
     # Set desired FB_PPVAR_SYS pin value
-    self.ioex.set(fmt_value)
+    fmt_value = ','.join(args)
+    self.ioex._set(fmt_value)
     time.sleep(0.5)
 
     # Configure LEGO_RST as hi-z input
-    lego_rst_ioex.set("I")
+    lego_rst_ioex._set("I")
 
   def _apply_pins_restrictions(self, fmt_value):
     """Some pins' configurations on stud EVB are invalid and we need to protect
