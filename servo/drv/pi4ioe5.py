@@ -93,13 +93,13 @@ class pi4Ioe5(hw_driver.HwDriver):
     4. For output check push-pull vs open drain
 
     Returns:
-      string of format "<gpio_state> <I | O> <N/PU/PD | PP/OD>"
+      string of format "<gpio_state>,<I | O>,<N/PU/PD | PP/OD>"
     """
 
     state = self._read_logical_from_reg(self.REG_INP)
 
     direction = 'I' if self._read_logical_from_reg(self.REG_DIR) == 1 else 'O'
-    flags = str(state) + ' ' + direction + ' '
+    flags = str(state) + ',' + direction + ','
     if direction == 'I': # Input pin
       pull_en = self._read_logical_from_reg(self.REG_PULL_EN)
       pullup = self._read_logical_from_reg(self.REG_PULL_SEL)
