@@ -131,8 +131,14 @@
   </control>
   <control>
     <name>serialname</name>
-    <doc>The serial number of servo being used.</doc>
+    <doc>The main serial number of servo being used.</doc>
     <params drv="servo_metadata" subtype="serial"
+    interface="servo" />
+  </control>
+  <control>
+    <name>serialnames</name>
+    <doc>The serial number of servo being used.</doc>
+    <params drv="servo_metadata" subtype="serials"
     interface="servo" />
   </control>
   <control>

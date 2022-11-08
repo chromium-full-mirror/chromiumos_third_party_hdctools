@@ -45,6 +45,10 @@ class servoMetadata(hw_driver.HwDriver):
     return os.getpid()
 
   def _Get_serial(self):
+    """Gets the main servo device's serial."""
+    return self._servod.get_main_device()._serial
+
+  def _Get_serials(self):
     """Gets the current servo serial."""
     return json.dumps(self._servod.get_servo_serials(), sort_keys=True, indent=4)
 
