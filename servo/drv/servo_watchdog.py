@@ -44,7 +44,7 @@ class servoWatchdog(hw_driver.HwDriver):
     """String of the current device state."""
     connected_str = '' if device.is_connected() else 'dis'
     disconnect_ok_str = ' (disconnect ok)' if device.disconnect_is_ok() else ''
-    name = device.get_prefix()
+    name = '/'.join(device.get_prefixes())
     return '%s: %sconnected%s' % (name, connected_str, disconnect_ok_str)
 
   def _Get_watchdog(self):

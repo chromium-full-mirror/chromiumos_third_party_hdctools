@@ -400,7 +400,7 @@ class ServoDeviceHierarchy(object):
     prioritized_devs = [[], [], [], [], [], []]
     user_chosen_main_roots = []
     for device in devices:
-      if device.devopts and device.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+      if device.devopts and set(device.devopts.prefix).intersection(set(servo_dev_templates.MAIN_DEV_PREFIXES)):
         if device.is_cluster_root():
           user_chosen_main_roots.append(device)
         else:

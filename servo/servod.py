@@ -205,8 +205,8 @@ class ServodStarter(object):
     dev_pars.add_argument('-i', '--interfaces', type=str, nargs='+', default='',
                           help='ordered space-delimited list of interfaces. '
                                'Valid choices are gpio|i2c|uart|gpiouart|empty')
-    dev_pars.add_argument('--prefix', type=str, default=None, action='store',
-                          help='prefix used to route controls to this device')
+    dev_pars.add_argument('--prefix', type=str, nargs='+', default=[],
+                          help='prefix(s) used to route controls to this device')
     # Create a unified parser with both server & device arguments to display
     # meaningful help messages to the user.
     # pylint: disable=protected-access
@@ -311,7 +311,7 @@ class ServodStarter(object):
       devopts_list: device options parsed from cmdline
 
     Returns:
-      a tuple of all the ServoDeviceEntry's and the main device's ServoDeviceEntry
+      a tuple of all the ServoDeviceEntry's, the main device's ServoDeviceEntry
     """
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
     if sopts.no_device_discovery:
@@ -388,15 +388,8 @@ class ServodStarter(object):
             'Start device without board specific config.',
             devopts.board, servo_device)
       servo_device.syscfg.finalize()
-      self._servod.add_device(servo_device, dev_entry.devopts.prefix)
-
-    # ensure main device is given prefix '' and 'main'
-    main_device = main_dev_entry.servo_device
-    self._servod.add_device(main_device, servo_dev_templates.MAIN_DEV_PREFIX)
-    # ensure root hub device is given prefix 'root'
-    root_device = main_device.get_root_hub_device()
-    if root_device:
-      self._servod.add_device(root_device, servo_dev_templates.ROOT_DEV_PREFIX)
+      for prefix in dev_entry.devopts.prefix:
+        self._servod.add_device(servo_device, prefix)
 
     self._servod.update_known_ctrls()
     for servo_device in self._servod.get_devices():

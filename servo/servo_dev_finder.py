@@ -290,41 +290,43 @@ class ServoDeviceFinder(object):
     # a dictionary of devices without prefix, keyed by device type
     devs_without_prefix = collections.defaultdict(lambda: [])
     for dev in devs:
+      dev_prefix = set(dev.devopts.prefix) - known_prefixes
       # handle main device's prefix
       if dev == main_dev:
-        if dev.devopts.prefix is None:
-          dev.devopts.prefix = servo_dev_templates.MAIN_DEV_PREFIX
-        else:
-          known_prefixes.update(dev.devopts.prefix)
-        known_prefixes.update(servo_dev_templates.MAIN_DEV_PREFIXES)
+        if len(dev_prefix) == 0:
+          devs_without_prefix[dev.dev_template.TYPE].append(dev)
+        dev_prefix.update(servo_dev_templates.MAIN_DEV_PREFIXES)
+        dev.devopts.prefix = list(dev_prefix)
+        known_prefixes.update(dev_prefix)
         self._logger.debug('Device %s is the main device and is given prefix %s',
-            dev, servo_dev_templates.MAIN_DEV_PREFIXES)
+          dev, servo_dev_templates.MAIN_DEV_PREFIXES)
         continue
+
       # prevent non-main device to have main device's prefix
-      if dev.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
-        dev.devopts.prefix = None
-      
+      dev_prefix = dev_prefix - set(servo_dev_templates.MAIN_DEV_PREFIXES)
+
       # handle root device's prefix
       if dev == main_dev.cluster_root:
-        if dev.devopts.prefix is None:
-          dev.devopts.prefix = servo_dev_templates.ROOT_DEV_PREFIX
-        else:
-          known_prefixes.update(dev.devopts.prefix)
-        known_prefixes.update(servo_dev_templates.ROOT_DEV_PREFIX)
+        if len(dev_prefix) == 0:
+          devs_without_prefix[dev.dev_template.TYPE].append(dev)
+        dev_prefix.add(servo_dev_templates.ROOT_DEV_PREFIX)
+        dev.devopts.prefix = list(dev_prefix)
+        known_prefixes.update(dev_prefix)
         self._logger.debug('Device %s is the root device and is given prefix %s',
           dev, servo_dev_templates.ROOT_DEV_PREFIX)
         continue
+
       # prevent non-root device to have root device's prefix
-      if dev.devopts.prefix == servo_dev_templates.ROOT_DEV_PREFIX:
-        dev.devopts.prefix = None
+      dev_prefix = dev_prefix - set([servo_dev_templates.ROOT_DEV_PREFIX])
 
       # handle all other device's prefix
-      if dev.devopts.prefix:
-        known_prefixes.add(dev.devopts.prefix)
-        self._logger.debug('Device %s is given prefix %s during invocation',
-          dev, dev.devopts.prefix)
-      else:
+      dev.devopts.prefix = list(dev_prefix)
+      known_prefixes.update(dev_prefix)
+      if len(dev_prefix) == 0:
         devs_without_prefix[dev.dev_template.TYPE].append(dev)
+      else:
+        self._logger.debug('Device %s is given prefix %s during invocation',
+          dev, dev_prefix)
 
     # auto generate prefix based on device type
     for dev_type, devs in devs_without_prefix.items():
@@ -335,16 +337,15 @@ class ServoDeviceFinder(object):
         # otherwise, use device type and the last 4 digit of serial
         else:
           prefix = '%s-%s' % (dev_type, dev.serial[-4:])
-        if prefix not in known_prefixes:
-          dev.devopts.prefix = prefix
-        else:
+        if prefix in known_prefixes:
           suffix = 2
           while ('%s-%s' % (prefix, suffix)) in known_prefixes:
             suffix += 1
-          dev.devopts.prefix = '%s-%s' % (prefix, suffix)
-        known_prefixes.add(dev.devopts.prefix)
+          prefix = '%s-%s' % (prefix, suffix)
+        dev.devopts.prefix.append(prefix)
+        known_prefixes.add(prefix)
         self._logger.debug('Device %s is given prefix %s which is automatically generated',
-          dev, dev.devopts.prefix)
+          dev, prefix)
 
   def validate_device_availability(self, devs):
     """Check against ServoScratch that all devices are not served by another servod instance.
@@ -378,9 +379,9 @@ class ServoDeviceFinder(object):
     """
     main_prefix_count = 0
     for dev in devs:
-      if dev.devopts.prefix is None:
+      if not dev.devopts.prefix:
         raise ServoDeviceFinderError("Device %s does not have a prefix." % dev)
-      if dev.devopts.prefix in servo_dev_templates.MAIN_DEV_PREFIXES:
+      if set(dev.devopts.prefix).intersection(set(servo_dev_templates.MAIN_DEV_PREFIXES)):
         main_prefix_count += 1
     if main_prefix_count > 1:
       raise ServoDeviceFinderError("Multiple devices are chosen as the main device.")

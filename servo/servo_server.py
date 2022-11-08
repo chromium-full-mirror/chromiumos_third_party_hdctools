@@ -422,10 +422,10 @@ class Servod(object):
       controls under that tag
     """
     controls = set()
+    no_prefix_devs = [self.get_main_device(), self.get_root_device()]
     for prefix, dev in self._devices.items():
       # controls for root and main dev does not need to have prefixes
-      no_prefix = (prefix in servo_dev_templates.MAIN_DEV_PREFIXES) or \
-                  (prefix == servo_dev_templates.ROOT_DEV_PREFIX)
+      no_prefix = dev in no_prefix_devs
       for dev_ctrl in dev.syscfg.get_controls_for_tag(tag):
         controls.add(dev_ctrl if no_prefix else '%s.%s' % (prefix, dev_ctrl))
     return sorted(list(controls))
@@ -436,14 +436,14 @@ class Servod(object):
     for dev in self.get_devices():
       xml_files = dev.syscfg._loaded_xml_files
       # See system_config.py for schema, but entry[0] is the file name
-      config_files[dev.prefix] = [entry[0] for entry in xml_files]
+      config_files[str(dev)] = [entry[0] for entry in xml_files]
     return config_files
 
   def get_interface_list(self):
     interfaces = []
     for dev in self.get_devices():
       for interface in dev.get_interface_list():
-        interfaces += [(dev.prefix, interface)]
+        interfaces += [(str(dev), interface)]
     return interfaces
 
   def validate_dut_controller(self):

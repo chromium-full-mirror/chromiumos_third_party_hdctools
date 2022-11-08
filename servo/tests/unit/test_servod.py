@@ -336,7 +336,7 @@ class TestServoStarter(unittest.TestCase):
     dev_entry_1.devopts = argparse.Namespace()
     dev_entry_1.devopts.noautoconfig = False
     dev_entry_1.devopts.config = ["extraconfig1", "extraconfig2"]
-    dev_entry_1.devopts.prefix = ''
+    dev_entry_1.devopts.prefix = ['']
     dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
     dev_entry_1.devopts.interfaces = []
     dev_entry_1.dev_template = servo_dev_templates.GetTemplateClassByName('ccd_cr50')
@@ -344,7 +344,7 @@ class TestServoStarter(unittest.TestCase):
     dev_entry_2.devopts = argparse.Namespace()
     dev_entry_2.devopts.noautoconfig = False
     dev_entry_2.devopts.config = []
-    dev_entry_2.devopts.prefix = 'v4'
+    dev_entry_2.devopts.prefix = ['v4']
     dev_entry_2.devopts.board = dev_entry_2.devopts.model = 'dummy'
     dev_entry_2.devopts.interfaces = []
     dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName('servo_v4p1')
@@ -390,7 +390,7 @@ class TestServoStarter(unittest.TestCase):
     dev_entry_1.devopts = argparse.Namespace()
     dev_entry_1.devopts.noautoconfig = False
     dev_entry_1.devopts.config = ["extraconfig1", "extraconfig2"]
-    dev_entry_1.devopts.prefix = ''
+    dev_entry_1.devopts.prefix = ['']
     dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
     dev_entry_1.devopts.interfaces = []
     dev_entry_1.dev_template = servo_dev_templates.GetTemplateClassByName('ccd_cr50')
@@ -398,7 +398,7 @@ class TestServoStarter(unittest.TestCase):
     dev_entry_2.devopts = argparse.Namespace()
     dev_entry_2.devopts.noautoconfig = True
     dev_entry_2.devopts.config = []
-    dev_entry_2.devopts.prefix = 'v4'
+    dev_entry_2.devopts.prefix = ['v4']
     dev_entry_2.devopts.board = dev_entry_2.devopts.model = 'dummy'
     dev_entry_2.devopts.interfaces = []
     dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName('servo_v4p1')

@@ -317,21 +317,23 @@ class TestServod(unittest.TestCase):
     dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
     dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
     servod._devices = {"dev" : dev, "dev2" : dev2, "" : dev}
+    servod.get_main_device = unittest.mock.MagicMock(return_value=dev)
+    servod.get_root_device = unittest.mock.MagicMock(return_value=dev2)
     dev.syscfg = unittest.mock.MagicMock()
     dev2.syscfg = unittest.mock.MagicMock()
     dev.syscfg.get_controls_for_tag = unittest.mock.MagicMock(return_value=['ctrl1', 'ctrl2'])
     dev2.syscfg.get_controls_for_tag = unittest.mock.MagicMock(return_value=['ctrl1', 'ctrl2'])
 
     self.assertEqual(servod.get_controls_for_tag('tag'),
-      ['ctrl1', 'ctrl2', 'dev.ctrl1', 'dev.ctrl2', 'dev2.ctrl1', 'dev2.ctrl2'])
+      ['ctrl1', 'ctrl2'])
 
   def test_get_config_files(self):
     """Test get_config_files()."""
     servod = servo_server.Servod()
     dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
     dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
-    dev.prefix = 'dev-p'
-    dev2.prefix = 'dev2-p'
+    dev.__str__ = unittest.mock.MagicMock(return_value='dev-p')
+    dev2.__str__ = unittest.mock.MagicMock(return_value='dev2-p')
     dev.syscfg = unittest.mock.MagicMock()
     dev2.syscfg = unittest.mock.MagicMock()
     dev.syscfg._loaded_xml_files = [('file1', 'file-data'), ('file2', 'file-data')]
@@ -345,8 +347,8 @@ class TestServod(unittest.TestCase):
     servod = servo_server.Servod()
     dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
     dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
-    dev.prefix = 'dev-p'
-    dev2.prefix = 'dev2-p'
+    dev.__str__ = unittest.mock.MagicMock(return_value='dev-p')
+    dev2.__str__ = unittest.mock.MagicMock(return_value='dev2-p')
     dev.get_interface_list = unittest.mock.MagicMock(return_value=['interface1', 'interface2'])
     dev2.get_interface_list = unittest.mock.MagicMock(return_value=['interface3'])
     servod._unique_devices = {"dev" : dev, "dev2" : dev2}

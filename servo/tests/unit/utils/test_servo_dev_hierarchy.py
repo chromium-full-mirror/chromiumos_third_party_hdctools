@@ -395,7 +395,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
                                     serial='z', dev_path='i-o-p')
     test_entry8.cluster_root = test_entry8
     test_entry7.devopts = argparse.Namespace()
-    test_entry7.devopts.prefix = ''
+    test_entry7.devopts.prefix = ['']
 
     test_entries = [test_entry, test_entry2, test_entry3, test_entry4,
       test_entry5, test_entry6, test_entry7, test_entry8]
@@ -446,11 +446,11 @@ class TestServoDeviceHierarchy(unittest.TestCase):
                                     serial='z', dev_path='i-o-p')
     test_entry7.cluster_root = test_entry7
     test_entry7.devopts = argparse.Namespace()
-    test_entry7.devopts.prefix = 'main'
+    test_entry7.devopts.prefix = ['main']
     test_entry7.cluster_members = [test_entry7, test_entry6]
     test_entry8.cluster_root = test_entry8
     test_entry8.devopts = argparse.Namespace()
-    test_entry8.devopts.prefix = ''
+    test_entry8.devopts.prefix = ['']
     test_entry8.cluster_members = [test_entry, test_entry2, test_entry3]
 
     test_entries = [test_entry, test_entry2, test_entry3, test_entry4,

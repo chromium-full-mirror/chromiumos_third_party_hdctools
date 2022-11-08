@@ -260,7 +260,7 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    pid=dev_templates.GetPID("servo_micro"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
-    test_entry.devopts.prefix = ''
+    test_entry.devopts.prefix = ['']
     test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("c2d2"),
                                    pid=dev_templates.GetPID("c2d2"),
                                    serial='s', dev_path='1-2-3')
@@ -371,7 +371,7 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    pid=dev_templates.GetPID("servo_v4"),
                                    serial='s', dev_path='1-2-3')
     test_entry2.devopts = empty_devopts()
-    test_entry2.devopts.prefix = dev_templates.MAIN_DEV_PREFIX
+    test_entry2.devopts.prefix = dev_templates.MAIN_DEV_PREFIXES.copy()
     devs = [test_entry, test_entry2]
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
@@ -379,8 +379,8 @@ class TestServoDeviceFinder(unittest.TestCase):
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
 
     finder.generate_prefixes(devs, test_entry)
-    assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
-    assert test_entry2.devopts.prefix == 'servo_v4'
+    assert set(test_entry.devopts.prefix) == set(dev_templates.MAIN_DEV_PREFIXES.copy() + ['servo_micro'])
+    assert test_entry2.devopts.prefix == ['servo_v4']
 
   def test_generate_prefixes_auto_generation(self):
     """Test generate_prefixes auto generate prefixes for devices."""
@@ -390,13 +390,13 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry.devopts = empty_devopts()
     test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_micro"),
                                    pid=dev_templates.GetPID("servo_micro"),
-                                   serial='s', dev_path='a-b-c')
+                                   serial='h', dev_path='a-b-c')
     test_entry2.devopts = empty_devopts()
     test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
                                    pid=dev_templates.GetPID("servo_v4"),
                                    serial='4321', dev_path='1-2-3')
     test_entry3.devopts = empty_devopts()
-    test_entry3.devopts.prefix = 'servo_v4-1234'
+    test_entry3.devopts.prefix = ['servo_v4-1234']
     test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
                                    pid=dev_templates.GetPID("servo_v4"),
                                    serial='11234', dev_path='1-2-3')
@@ -412,11 +412,11 @@ class TestServoDeviceFinder(unittest.TestCase):
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
 
     finder.generate_prefixes(devs, test_entry)
-    assert test_entry.devopts.prefix == dev_templates.MAIN_DEV_PREFIX
-    assert test_entry2.devopts.prefix == 'servo_micro'
-    assert test_entry3.devopts.prefix == 'servo_v4-1234'
-    assert test_entry4.devopts.prefix == 'servo_v4-1234-2'
-    assert test_entry5.devopts.prefix == 'servo_v4-1234-3'
+    assert set(test_entry.devopts.prefix) == set(dev_templates.MAIN_DEV_PREFIXES.copy() + ['servo_micro-s'])
+    assert test_entry2.devopts.prefix == ['servo_micro-h']
+    assert test_entry3.devopts.prefix == ['servo_v4-1234']
+    assert test_entry4.devopts.prefix == ['servo_v4-1234-2']
+    assert test_entry5.devopts.prefix == ['servo_v4-1234-3']
 
   def test_validate_devopts_no_prefix(self):
     """Test validate_devopts error out when a device does not have a prefix"""
@@ -437,12 +437,12 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    pid=dev_templates.GetPID("servo_v4"),
                                    serial='s', dev_path='a-b-c')
     test_entry.devopts = empty_devopts()
-    test_entry.devopts.prefix = ''
+    test_entry.devopts.prefix = ['']
     test_entry2 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v4"),
                                    pid=dev_templates.GetPID("servo_v4"),
                                    serial='s2', dev_path='a-b-c')
     test_entry2.devopts = empty_devopts()
-    test_entry2.devopts.prefix = ''
+    test_entry2.devopts.prefix = ['']
     hierarchy = ServoDeviceHierarchy()
     finder = dev_finder.ServoDeviceFinder([empty_devopts()], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
@@ -511,9 +511,9 @@ def empty_devopts():
   new_opts = argparse.Namespace()
   for opt in ['board', 'model']:
     setattr(new_opts, opt, '')
-  for opt in ['vendor', 'product', 'serialname', 'usbkm232', 'noautoconfig', 'prefix']:
+  for opt in ['vendor', 'product', 'serialname', 'usbkm232', 'noautoconfig']:
     setattr(new_opts, opt, None)
-  for opt in ['config', 'interfaces']:
+  for opt in ['config', 'interfaces', 'prefix']:
     setattr(new_opts, opt, [])
   return new_opts
 

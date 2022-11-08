@@ -62,11 +62,10 @@ class ServoDevice(object):
       ServoDeviceError: if unable to locate init method for particular interface
     """
     self.template = dev_entry.dev_template
-    self.prefix = dev_entry.devopts.prefix
-    # Some device might have multiple alias prefixes
-    self.prefixes = [self.prefix]
+    self.prefixes = dev_entry.devopts.prefix
+    logger_prefix = self.prefixes[-1] if self.prefixes else ''
     self._logger = logging.getLogger('ServoDevice %s - %s'
-      % (self.template.TYPE, self.prefix))
+      % (self.template.TYPE, logger_prefix))
     self._logger.debug('')
     vendor = self.template.VID
     product = self.template.PID
@@ -156,16 +155,12 @@ class ServoDevice(object):
     """Returns True if the device is connected."""
     return os.path.exists(self._sysfs_path)
 
-  def get_prefix(self):
-    """Get the main prefix of the device."""
-    return self.prefix
-
   def get_prefixes(self):
-    """Get all prefixes, including the alias prefixes, of the device."""
+    """Get all prefixes of the device."""
     return self.prefixes
 
   def add_prefix(self, alias):
-    """Add a prefix for the device. The prefix can be an alias prefix."""
+    """Add a prefix for the device."""
     if alias not in self.prefixes:
       self.prefixes += [alias]
 
@@ -627,12 +622,12 @@ class ServoDevice(object):
   def to_json(self):
     """Serialize this device to a json string."""
     root_hub_device = self.get_root_hub_device()
-    data = {"prefix" : self.prefix,
+    data = {"prefix" : self.prefixes,
             "type" : self.template.TYPE,
             "vendor_id" : self.template.VID,
             "product_id": self.template.PID,
             "serial" : self._serial,
             "sysfs_path" : self._sysfs_path,
-            "root_hub_device" : root_hub_device.prefix if root_hub_device else None,
-            "child_devices": [dev.prefix for dev in self.get_child_devices()]}
+            "root_hub_device" : str(root_hub_device) if root_hub_device else None,
+            "child_devices": [str(dev) for dev in self.get_child_devices()]}
     return json.dumps(data, indent=4)
