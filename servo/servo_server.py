@@ -171,6 +171,12 @@ class Servod(object):
         skip_controls.update(set(control_name for control_name, _ in dev.syscfg.hwinit))
       servo_device.hwinit(verbose=verbose, skip_controls=skip_controls)
 
+    # Autotest directly uses this method, so we have to return True
+    # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
+    # xmlrpc server & client I still have to return something to appease the
+    # marshall/unmarshall
+    return True
+
   def get(self, name):
     """Get control value.
 
