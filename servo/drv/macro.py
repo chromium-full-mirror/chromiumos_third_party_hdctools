@@ -22,15 +22,14 @@ class macro(hw_driver.HwDriver):
 
   _STATE_UNKNOWN = 'unknown'
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: driver interface object
       params: dictionary of params
-      servod: Servod that is used for cross-servo-device communication
     """
-    super(macro, self).__init__(interface, params, servod)
+    super(macro, self).__init__(interface, params)
     str_prefix = 'set_value_'
 
     def build_sequence(value):
@@ -46,7 +45,7 @@ class macro(hw_driver.HwDriver):
 
   def _has_control(self, control):
     """Returns True if control is available in current interface."""
-    return self._servod.has_control(control)
+    return self._interface._syscfg.is_control(control)
 
   def _set(self, new_state):
     """Transit to a new state."""
@@ -61,7 +60,7 @@ class macro(hw_driver.HwDriver):
                      control, state)
         continue
       # TODO(hungte) Support more commands like sleep(ms).
-      self._servod_set(control, state)
+      self._interface_set(control, state)
 
   def _get(self):
     """Checks and returns current state."""
@@ -72,7 +71,7 @@ class macro(hw_driver.HwDriver):
     def get_value(ctrl):
       if ctrl in cached:
         return cached[ctrl]
-      value = self._servod_get(ctrl)
+      value = self._interface_get(ctrl)
       cached[ctrl] = value
       return value
 

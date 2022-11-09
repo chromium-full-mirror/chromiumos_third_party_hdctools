@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import pytest
-
 from servo.tests.fixtures import common
 
 
@@ -24,19 +22,14 @@ class TestMetadata:
         servo_host.clear_all_interfaces()
         try:
             assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_ccd_cr50")
-            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
-            assert (serial_json["root"] == servo_v4p1_device.iSerial)
-            assert (serial_json["main"] == ccd_device.iSerial)
-            assert (servo_host.starter._servod.get("serialname") == ccd_device.iSerial)
-            assert (servo_host.starter._servod.get("servo_serialname") == servo_v4p1_device.iSerial)
-            assert (servo_host.starter._servod.get("ccd_serialname") == ccd_device.iSerial)
+            assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             # aleena is the harcoded board name in mocked_pty_data
             # not_applicable is the board name overriden by some overlays
             if board == 'mistral':
-                assert (servo_host.starter._servod.get("ccd_cr50.ec_board") == "not_applicable")
+                assert (servo_host.starter._servod.get("ec_board") == "not_applicable")
             else:
-                assert (servo_host.starter._servod.get("ccd_cr50.ec_board") == "aleena")
-            assert (servo_host.starter._servod.get("servo_v4p1.servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
+                assert (servo_host.starter._servod.get("ec_board") == "aleena")
+            assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("cold_reset") == "off")
             assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
@@ -69,13 +62,9 @@ class TestMetadata:
         servo_host.clear_all_interfaces()
         try:
             assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_servo_micro")
-            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
-            assert (serial_json["root"] == servo_v4p1_device.iSerial)
-            assert (serial_json["main"] == servo_micro_device.iSerial)
-            assert (servo_host.starter._servod.get("serialname") == servo_micro_device.iSerial)
-            assert (servo_host.starter._servod.get("servo_micro_serialname") == servo_micro_device.iSerial)
-            assert (servo_host.starter._servod.get("servo_v4p1.servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
-            assert (servo_host.starter._servod.get("servo_micro.servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
+            assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
+            assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
+            assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
             assert (servo_host.starter._servod.get("cold_reset") == "on")
             assert (servo_host.starter._servod.get("warm_reset") == "on")
             # there is no effective way of checking state change yet
@@ -108,11 +97,7 @@ class TestMetadata:
         servo_host.clear_all_interfaces()
         try:
             assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_servo_micro_and_ccd_cr50")
-            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
-            assert (serial_json["root"] == servo_v4p1_device.iSerial)
-            assert (serial_json["main"] == servo_micro_device.iSerial)
-            assert (serial_json["ccd_cr50"] == ccd_device.iSerial)
-            assert (servo_host.starter._servod.get("serialname") == servo_micro_device.iSerial)
+            assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
             assert (servo_host.starter._servod.get("cold_reset") == "on")
@@ -149,10 +134,7 @@ class TestMetadata:
         servo_host.clear_all_interfaces()
         try:
             assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_c2d2")
-            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
-            assert (serial_json["root"] == servo_v4p1_device.iSerial)
-            assert (serial_json["main"] == c2d2_device.iSerial)
-            assert (servo_host.starter._servod.get("serialname") == c2d2_device.iSerial)
+            assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
             assert (servo_host.starter._servod.get("cold_reset") == "off")
@@ -191,11 +173,7 @@ class TestMetadata:
         servo_host.clear_all_interfaces()
         try:
             assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_c2d2_and_ccd_cr50")
-            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
-            assert (serial_json["root"] == servo_v4p1_device.iSerial)
-            assert (serial_json["main"] == c2d2_device.iSerial)
-            assert (serial_json["ccd_cr50"] == ccd_device.iSerial)
-            assert (servo_host.starter._servod.get("serialname") == c2d2_device.iSerial)
+            assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
             assert (servo_host.starter._servod.get("cold_reset") == "off")

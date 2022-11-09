@@ -25,16 +25,15 @@ class servoFirmwareChecker(hw_driver.HwDriver):
   REQUIRED_GET_PARAMS = ['board']
   REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: servod instance
       params: control params, of which we actively care about:
         - board: the servo board name
-      servod: Servod that is used for cross-servo-device communication
     """
-    super(servoFirmwareChecker, self).__init__(interface, params, servod)
+    super(servoFirmwareChecker, self).__init__(interface, params)
 
     # Set can be used by passing 'print' as an argument.
     self._choices = re.compile('^0$')
@@ -52,18 +51,18 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         True if |{self._board}_version| == |{self._board}_latest_version|
         False otherwise
     """
-    current = self._servod_get(self._current_fw_cmd)
-    latest = self._servod_get(self._latest_fw_cmd)
+    current = self._interface_get(self._current_fw_cmd)
+    latest = self._interface_get(self._latest_fw_cmd)
     return int(latest == current)
 
   def _set(self, _):
     """Print what the current firmware is, what the latest available is."""
-    current = self._servod_get(self._current_fw_cmd)
-    latest = self._servod_get(self._latest_fw_cmd)
+    current = self._interface_get(self._current_fw_cmd)
+    latest = self._interface_get(self._latest_fw_cmd)
     if self.get():
       self._logger.info('%s firmware up to date.', self._board)
     else:
-      channel = self._servod_get(self._fw_channel_cmd)
+      channel = self._interface_get(self._fw_channel_cmd)
       # Let the user know what channel they are currently running
       self._logger.info('current %r firmware: %s', self._board, current)
       self._logger.info('current firmware is from channel %r', channel)

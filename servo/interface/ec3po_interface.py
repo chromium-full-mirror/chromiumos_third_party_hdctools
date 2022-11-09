@@ -1,4 +1,4 @@
-# Copyright 2015 The ChromiumOS Authors
+# Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Servo interface for the EC-3PO console interpreter."""
@@ -238,13 +238,13 @@ class EC3PO(uart.Uart):
                       user_pty_name)
 
   @staticmethod
-  def Build(index, vid, pid, sid, interface_data, servo_device):
+  def Build(index, vid, pid, sid, interface_data, servod):
     """Factory method to implement the interface."""
     device_info = DeviceInfo(vid, pid, sid)
     raw_uart_name = interface_data['raw_pty']
     raw_uart_source = interface_data['source']
-    if servo_device.syscfg.is_control(raw_uart_name):
-      raw_ec_uart = servo_device.get(raw_uart_name)
+    if servod._syscfg.is_control(raw_uart_name):
+      raw_ec_uart = servod.get(raw_uart_name)
       return EC3PO(raw_ec_uart, raw_uart_source, device_info)
     else:
       # The overlay doesn't have the raw PTY defined, therefore we can skip

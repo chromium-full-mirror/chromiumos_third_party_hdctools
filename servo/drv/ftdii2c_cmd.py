@@ -8,7 +8,6 @@ See ftdii2c.py for details on controls available.
 """
 
 from servo.drv import hw_driver
-from servo.interface import ftdii2c
 
 
 # pylint: disable=C0103
@@ -24,24 +23,22 @@ class ftdii2cCmd(hw_driver.HwDriver):
 
   """
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: servod instance to get a hold of the ftdii2c object
       params: dictionary of params needed to perform operations on
         devices.
-      servod: Servod that is used for cross-servo-device communication
     """
     # pylint: disable=protected-access
-    super(ftdii2cCmd, self).__init__(interface, params, servod)
+    super(ftdii2cCmd, self).__init__(interface, params)
     self._logger.debug('')
-    for (_, interface) in servod.get_interface_list():
-      if isinstance(interface, ftdii2c.Fi2c):
-        self._ftdii2c = interface
-        break
-    else:
+    try:
+      index = interface._interfaces.index('ftdi_i2c')
+    except ValueError:
       raise ftdii2cCmdError('No ftdi_i2c object found.')
+    self._ftdii2c = interface._interface_list[index]
 
   def _set(self, cmd):
     """Execute |cmd| on |self._ftdii2c| object.

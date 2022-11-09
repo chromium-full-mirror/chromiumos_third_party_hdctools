@@ -13,17 +13,15 @@ import servo.servo_logging
 class loglevel(hw_driver.HwDriver):
   """Class to access loglevel controls."""
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Initializes the loglevel driver.
 
     Args:
       interface: A driver interface object, but is ignored.
       params: A dictionary of parameters, but is ignored.
-      servod: Servod that is used for cross-servo-device communication
     """
     self._interface = interface
     self._params = params
-    self._servod = servod
 
   def _set(self, new_level):
     """Changes the current loglevel of the root logger.
@@ -53,7 +51,7 @@ class loglevel(hw_driver.HwDriver):
       root_logger.setLevel(level)
       # Set EC-3PO's logging level. This is only relevant when filtering through
       # the root-logger and not through the handlers.
-      for (_, interface) in self._servod.get_interface_list():
+      for interface in self._interface._interface_list:
         if isinstance(interface, servo.interface.ec3po_interface.EC3PO):
           interface.set_loglevel(new_level)
     else:

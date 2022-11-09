@@ -17,9 +17,9 @@ from servo.drv import hw_driver
 class na(hw_driver.HwDriver):
   """Object to access drv=na controls."""
 
-  def __init__(self, interface, params, servod=None):
+  def __init__(self, interface, params):
     """Constructor."""
-    super(na, self).__init__(interface, params, servod)
+    super(na, self).__init__(interface, params)
 
   def get(self):
     """Return not_applicate"""

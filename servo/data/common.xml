@@ -131,25 +131,14 @@
   </control>
   <control>
     <name>serialname</name>
-    <doc>The main serial number of servo being used.</doc>
+    <doc>The serial number of servo being used.</doc>
     <params drv="servo_metadata" subtype="serial"
     interface="servo" />
   </control>
   <control>
-    <name>serialnames</name>
-    <doc>The serial number of servo being used.</doc>
-    <params drv="servo_metadata" subtype="serials"
-    interface="servo" />
-  </control>
-  <control>
     <name>servo_type</name>
-    <doc>What type of servo devices are set up for the servod instance.</doc>
+    <doc>What type of servo is being used.</doc>
     <params drv="servo_metadata" subtype="type" interface="servo" />
-  </control>
-  <control>
-    <name>devices</name>
-    <doc>Detailed information of servo devices set up for the servod instance.</doc>
-    <params drv="servo_metadata" subtype="devices" interface="servo" />
   </control>
   <control>
     <name>watchdog</name>
@@ -214,10 +203,5 @@
     <name>servo_class</name>
     <doc>servo type (flex or ccd)</doc>
     <params drv="echo" value="flex" interface="servo" clobber_ok=""/>
-  </control>
-  <control>
-    <name>all_controls</name>
-    <doc>All control names support by current servod instance.</doc>
-    <params drv="servo_metadata" subtype="all_controls" interface="servo"/>
   </control>
 </root>
