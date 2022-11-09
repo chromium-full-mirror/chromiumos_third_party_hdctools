@@ -45,15 +45,14 @@ class PowerStateDriver(hw_driver.HwDriver):
   REC_OFF = 'off'
   REC_ON_FORCE_MRC = 'force_mrc'
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: driver interface object
       params: dictionary of params
-      servod: Servod that is used for cross-servo-device communication
     """
-    super(PowerStateDriver, self).__init__(interface, params, servod)
+    super(PowerStateDriver, self).__init__(interface, params)
     self._reset_hold_time = float(self._params.get('reset_hold', 0.5))
     self._reset_recovery_time = float(self._params.get('reset_recovery', 5.0))
 
@@ -64,9 +63,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     exact affect on the hardware varies depending on the board type.
 
     """
-    self._servod_set('cold_reset', 'on')
+    self._interface_set('cold_reset', 'on')
     time.sleep(self._reset_hold_time)
-    self._servod_set('cold_reset', 'off')
+    self._interface_set('cold_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -78,9 +77,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     exact affect on the hardware varies depending on the board type.
 
     """
-    self._servod_set('warm_reset', 'on')
+    self._interface_set('warm_reset', 'on')
     time.sleep(self._reset_hold_time)
-    self._servod_set('warm_reset', 'off')
+    self._interface_set('warm_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -135,14 +134,14 @@ class PowerStateDriver(hw_driver.HwDriver):
 
     Reboot cr50 and reset ccd to recover from the usb reset.
     """
-    self._servod_set('cr50_reboot', 'on')
+    self._interface_set('cr50_reboot', 'on')
     # Wait long enough for cr50 to reboot and for usb to have dropped out,
     # and ServoWatchdog to have reinitialized cr50 interfaces.
     time.sleep(0.3)
     # Attempt to reinitialize the device in case the cr50 reenumerated quicker
     # than the polling resolution. By now, if the device did not reenumerate,
     # the Watchdog should be attempting to catch & reinitalize it.
-    self._servod.reinitialize()
+    self._interface.reinitialize()
 
   def _set(self, statename):
     """Set power state according to `statename`."""

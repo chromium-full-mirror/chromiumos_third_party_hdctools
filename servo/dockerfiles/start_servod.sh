@@ -29,6 +29,7 @@ update_config $CONFIG_FILE BOARD $BOARD
 update_config $CONFIG_FILE MODEL $MODEL
 update_config $CONFIG_FILE SERIAL $SERIAL
 update_config $CONFIG_FILE CONFIG $CONFIG
+update_config $CONFIG_FILE DUAL_V4 $DUAL_V4
 
 echo "Store servo hub location and servo micro serial if presents. "\
     "$CONFIG_FILE $SERIAL"
@@ -85,6 +86,12 @@ if [ ! -z "$REC_MODE" ]; then
     REC_MODE_FLAG="--recovery_mode"
 fi
 
+if [ "$DUAL_V4" = "1" ]; then
+    DUAL_V4_FLAG="--allow-dual-v4"
+else
+    DUAL_V4_FLAG=""
+fi
+
 if [ -n "$SERIAL" ]; then
     servodtool device -s $SERIAL reboot
     sleep 5
@@ -101,4 +108,5 @@ servod \
     $PORT_FLAG \
     $DEBUG_FLAG \
     $REC_MODE_FLAG \
-    $CONFIG_FLAG
+    $CONFIG_FLAG \
+    $DUAL_V4_FLAG

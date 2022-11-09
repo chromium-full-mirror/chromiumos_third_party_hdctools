@@ -41,13 +41,13 @@ def diagnose_ccd(servo_dev):
   sbu_en = servo_dev.get('sbu_mux_enable') == 'on'  # SuzyQ plugged
   sbu_flip = servo_dev.get('sbu_flip_sel') == 'on'  # SuzyQ flipped
   # Check servo info.
-  dut_connection_type = servo_dev.get('dut_connection_type')
-  servo_fw = servo_dev.get('servo_fw_version')
-  servo_latest_fw = servo_dev.get('servo_latest_fw_version')
+  dut_connection_type = servo_dev.get('root.dut_connection_type')
+  servo_fw = servo_dev.get('root.servo_fw_version')
+  servo_latest_fw = servo_dev.get('root.servo_latest_fw_version')
 
   logger.error('')
   logger.error('CCD diagnosis info:')
-  logger.error('%s dut connection is %s', servo_dev.template.TYPE,
+  logger.error('%s dut connection is %s', servo_dev._base_version,
                dut_connection_type)
   logger.error('firmware version is %s', servo_fw)
   logger.error('')
@@ -57,7 +57,7 @@ def diagnose_ccd(servo_dev):
     logger.error("servo firmware version doesn't match latest.")
     logger.error("latest available firmware: %s" % servo_latest_fw)
     logger.error("  Run 'sudo servo_updater -b %s' to correct.",
-                 servo_dev.template.TYPE)
+                 servo_dev._base_version)
     logger.error('')
 
   # Check if chargethrough is plugged in.

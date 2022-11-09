@@ -469,14 +469,6 @@ class SystemConfig(object):
     return (self.syscfg_dict[CONTROL_TAG][name]['get_params'],
             self.syscfg_dict[CONTROL_TAG][name]['set_params'])
 
-  def get_all_controls(self):
-    """Return an iterable of all controls specified.
-
-    Returns:
-      ctrls: set of all control names known to SystemConfig
-    """
-    return set(self.syscfg_dict[CONTROL_TAG].keys())
-
   def is_control(self, name):
     """Determine if name is a control or not.
 
@@ -487,24 +479,6 @@ class SystemConfig(object):
       boolean, True if name is control, False otherwise
     """
     return name in self.syscfg_dict[CONTROL_TAG]
-
-  def get_control_str(self, name):
-    """Generate a string that describes all information of the control.
-
-    Args:
-      name: string of control name to lookup
-
-    Returns:
-      A string representing the control
-    """
-    ctrl_dict = self.syscfg_dict[CONTROL_TAG]
-    max_len = max(len(name) for name in ctrl_dict)
-    dashes = '-' * max_len
-    padded_name = '%-*s' % (max_len, '%s' % name)
-    doc = '%s DOC: %s' % (padded_name, ctrl_dict[name]['doc'])
-    get = '%s GET: %s' % (dashes, str(ctrl_dict[name]['get_params']))
-    set = '%s SET: %s' % (dashes, str(ctrl_dict[name]['set_params']))
-    return '%s\n%s\n%s' % (doc, get, set)
 
   def is_map(self, name):
     """Determine if name is a map or not.
@@ -716,51 +690,6 @@ class SystemConfig(object):
           rsp.append('%s SET: %s' % (dashes, str(item_dict['set_params'])))
 
     return '\n'.join(rsp)
-
-  def get_board_model_config(self, board=None, model=None):
-    """Get the configuration file and board name for |board| & |model| pair.
-
-    This essentially tries to find a configuration file for board/model first,
-    before attempting to find a configuration file just for board, before
-    giving up.
-
-    Configuration filename format is servo_[board][_model]?_overlay.xml
-
-    Args:
-      board: board name
-      model: model name under |board|
-
-    Returns:
-      tuple (board_config, board_id)
-        board_config: the file name of the board's overlay file
-        board_id: |board| or |board_model| if model was used to find an overlay
-    """
-    board_config = board_id = None
-    if board:
-      board_id = board
-      # Handle differentiated model case.
-      if model:
-        board_id = '%s_%s' % (board_id, model)
-        board_config = 'servo_%s_overlay.xml' % board_id
-
-        if self.find_cfg_file(board_config):
-          self._logger.info('Found XML overlay for model %s:%s', board, model)
-        else:
-          self._logger.info('No XML overlay for model %s, falling back to '
-                      'board %s default', model, board)
-          board_config = board_id = None
-
-      # Handle generic board config.
-      if not board_config:
-        board_id = board
-        board_config = 'servo_%s_overlay.xml' % board_id
-        if self.find_cfg_file(board_config):
-          self._logger.info('Found XML overlay for board %s', board)
-        else:
-          self._logger.error('No XML overlay for board %s', board)
-          board_config = board_id = None
-
-    return board_config, board_id
 
 
 def test():
