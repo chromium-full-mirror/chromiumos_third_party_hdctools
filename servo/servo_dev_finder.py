@@ -287,14 +287,13 @@ class ServoDeviceFinder(object):
       devs: a list of ServoDeviceEntry devices
     """
     known_prefixes = set()
-    # a dictionary of devices without prefix, keyed by device type
-    devs_without_prefix = collections.defaultdict(lambda: [])
+    # a dictionary of devices keyed by device type
+    dev_type_map = collections.defaultdict(lambda: [])
     for dev in devs:
+      dev_type_map[dev.dev_template.TYPE].append(dev)
       dev_prefix = set(dev.devopts.prefix) - known_prefixes
       # handle main device's prefix
       if dev == main_dev:
-        if len(dev_prefix) == 0:
-          devs_without_prefix[dev.dev_template.TYPE].append(dev)
         dev_prefix.update(servo_dev_templates.MAIN_DEV_PREFIXES)
         dev.devopts.prefix = list(dev_prefix)
         known_prefixes.update(dev_prefix)
@@ -307,8 +306,6 @@ class ServoDeviceFinder(object):
 
       # handle root device's prefix
       if dev == main_dev.cluster_root:
-        if len(dev_prefix) == 0:
-          devs_without_prefix[dev.dev_template.TYPE].append(dev)
         dev_prefix.add(servo_dev_templates.ROOT_DEV_PREFIX)
         dev.devopts.prefix = list(dev_prefix)
         known_prefixes.update(dev_prefix)
@@ -322,14 +319,11 @@ class ServoDeviceFinder(object):
       # handle all other device's prefix
       dev.devopts.prefix = list(dev_prefix)
       known_prefixes.update(dev_prefix)
-      if len(dev_prefix) == 0:
-        devs_without_prefix[dev.dev_template.TYPE].append(dev)
-      else:
-        self._logger.debug('Device %s is given prefix %s during invocation',
-          dev, dev_prefix)
+      self._logger.debug('Device %s is given prefix %s during invocation',
+        dev, dev_prefix)
 
     # auto generate prefix based on device type
-    for dev_type, devs in devs_without_prefix.items():
+    for dev_type, devs in dev_type_map.items():
       for dev in devs:
         # use the device type as the prefix if it is the only 1 device of the kind
         if len(devs) == 1 and dev_type not in known_prefixes:
@@ -346,6 +340,15 @@ class ServoDeviceFinder(object):
         known_prefixes.add(prefix)
         self._logger.debug('Device %s is given prefix %s which is automatically generated',
           dev, prefix)
+
+        # Add ccd_gsc as a prefix for ccd_ti50 for backward compatibility
+        # TODO: decide whether to unify ccd_cr50 and ccd_ti50 to ccd_gsc
+        if prefix.startswith("ccd_ti50"):
+          gsc_prefix = prefix.replace("ccd_ti50", "ccd_gsc")
+          dev.devopts.prefix.append(gsc_prefix)
+          known_prefixes.add(gsc_prefix)
+          self._logger.debug('Device %s is given prefix %s which is automatically generated',
+            dev, gsc_prefix)
 
   def validate_device_availability(self, devs):
     """Check against ServoScratch that all devices are not served by another servod instance.
