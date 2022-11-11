@@ -43,7 +43,8 @@ class pi4Msd(hw_driver.HwDriver):
 
     # Cannot use dedicted _read_reg since muxer has only one register and there
     # is no extra i2c transaction with register addr"""
-    return self._i2c_obj._i2c.wr_rd(self.PI4MSD_I2C_ADDR, [], 1)
+    rlist = self._i2c_obj._i2c.wr_rd(self.PI4MSD_I2C_ADDR, [], 1)
+    return self._i2c_obj._convert_rd(rlist, True)
 
   def _set(self, enable, ctrl_reg=None):
     """Enable or disable i2c muxer, configure channel for particular control.
@@ -70,7 +71,7 @@ class pi4Msd(hw_driver.HwDriver):
       ctrl_reg = (enable << self.PI4MSD_EN_BIT_OFFSET) | self._get_chan()
 
     if ctrl_reg not in self.VALID_CTRL_REG_VAL:
-      raise Pi4MsdError("Incorrect value for i2c mux ctrl reg")
+      raise Pi4MsdError("Incorrect value for i2c mux ctrl reg %s" % ctrl_reg)
 
     self._i2c_obj._i2c.wr_rd(self.PI4MSD_I2C_ADDR,[ctrl_reg], 0)
 
