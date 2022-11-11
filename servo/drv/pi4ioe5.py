@@ -155,7 +155,7 @@ class pi4Ioe5(hw_driver.HwDriver):
         new_pull_sel_reg = current_pull_sel_reg | mask
 
       if new_pull_sel_reg != current_pull_sel_reg:
-        self._i2c_obj._write_reg(self.REG_PULL_SEL + self._port)
+        self._i2c_obj._write_reg(self.REG_PULL_SEL + self._port, new_pull_sel_reg)
 
     # Enable pullup or pulldown
     current_pull_en_reg = self._i2c_obj._read_reg(self.REG_PULL_EN + self._port)
@@ -165,7 +165,7 @@ class pi4Ioe5(hw_driver.HwDriver):
       new_pull_en_reg = current_pull_en_reg | mask
 
     if new_pull_en_reg != current_pull_en_reg:
-      self._i2c_obj._write_reg(self.REG_PULL_EN + self._port)
+      self._i2c_obj._write_reg(self.REG_PULL_EN + self._port, new_pull_en_reg)
 
   def _set_pin_to_output(self, value, opendrain):
     """Configure particular ioex pin to output
@@ -200,15 +200,15 @@ class pi4Ioe5(hw_driver.HwDriver):
     # Open drain/push pull is configured on per-port basis via Output Port
     # Configuration Register and can be modified by settings in Individual
     # Pin Output Configuration Register.
-    port_oden = self._i2c_obj._read_reg(self.REG_OPCR) >> self._port
+    port_oden = self._i2c_obj._read_reg(self.REG_OUT_PORT_CONFIG) >> self._port
     hw_value = port_oden ^ opendrain
     if hw_value:
       hw_value = self._create_hw_value(hw_value)
 
-    current_ipoc_reg = self._i2c_obj._read_reg(self.REG_IPOC + self._port)
+    current_ipoc_reg = self._i2c_obj._read_reg(self.REG_OUT_PIN_CONFIG + self._port)
     new_ipoc_reg = hw_value | (current_ipoc_reg & ~mask)
     if new_ipoc_reg != current_ipoc_reg:
-      self._i2c_obj._write_reg(self.REG_IPOC + self._port, new_ipoc_reg)
+      self._i2c_obj._write_reg(self.REG_OUT_PIN_CONFIG + self._port, new_ipoc_reg)
 
     # TODO(b/254521543): Add a knob for modifying output drive strength
 
@@ -235,6 +235,8 @@ class pi4Ioe5(hw_driver.HwDriver):
   # Handler for a subclass controls - see 'get()' description in hw_driver.py
   def _Get_whole_ioex(self):
     """Get levels of all pins in particular ioex"""
+    output = ''
+
     for port in range(self.PORT_CNT):
       value = self._i2c_obj._read_reg(self.REG_INP + port)
       output += "P" + str(port) + ":" + str(value) + "\n"
