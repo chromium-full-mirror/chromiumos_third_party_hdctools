@@ -26,7 +26,7 @@ class studEvb(hw_driver.HwDriver):
                    'STUD_EVB_FB_PPVAR_SYS_1']
 
   # LEGO_RST pin credentials
-  LEGO_RST_PIN_OFFSET = 2
+  LEGO_RST_PIN_OFFSET = 0
   LEGO_RST_PIN_PORT = 2
   LEGO_RST_PIN_IOEX_I2C_ADDR = 0x21
 
