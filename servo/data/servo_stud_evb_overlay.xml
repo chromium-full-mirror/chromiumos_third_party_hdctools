@@ -643,8 +643,8 @@
     offset="5" input_type="str" mux_chan="1"/>
   </control>
   <control>
-    <name>STUD_EVB_LEGO_RST_OD</name>
-    <doc>STUD_EVB_LEGO_RST_OD pin, see EVB schematics.</doc>
+    <name>STUD_EVB_LEGO_RST_ODL</name>
+    <doc>STUD_EVB_LEGO_RST_ODL pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
     offset="0" input_type="str" mux_chan="1"/>
   </control>

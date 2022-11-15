@@ -201,7 +201,7 @@ class studEvb(hw_driver.HwDriver):
   def _apply_fb_ppvar_restrictions(self, args):
     """FB_PPVAR_SYS_[0:1] pins on EVB requires extra handling:
       1. Before a FB_PPVPAR_SYS_[0:1] pin state is changed, LEGO_RST must be
-         set as an output HIGH.
+         set as an output LOW.
       2. LEGO_RST will change to a Hi-Z input with a delay after FB_PPVAR_SYS
          pin is changed.
       3. FB_PVPAR_SYS pins can only be set as Hi-Z inputs or LOW outputs.
@@ -246,8 +246,8 @@ class studEvb(hw_driver.HwDriver):
     # instantiated in constructor
     self.i2c_mux._set(1)
 
-    # Configure LEGO_RST as PP output with high level
-    lego_rst_ioex._set("1")
+    # Configure LEGO_RST as PP output with low level
+    lego_rst_ioex._set("0")
 
     # Set desired FB_PPVAR_SYS pin value
     fmt_value = ','.join(args)
