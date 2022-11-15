@@ -24,6 +24,7 @@ class studEvb(hw_driver.HwDriver):
                    'STUD_EVB_LEGO_ADDR_2_1M']
   FB_PPVAR_PINS = ['STUD_EVB_FB_PPVAR_SYS_0',
                    'STUD_EVB_FB_PPVAR_SYS_1']
+  LEGO_RST_PIN = ['STUD_EVB_LEGO_RST_ODL']
 
   # LEGO_RST pin credentials
   LEGO_RST_PIN_OFFSET = 0
@@ -257,6 +258,73 @@ class studEvb(hw_driver.HwDriver):
     # Configure LEGO_RST as hi-z input
     lego_rst_ioex._set("I")
 
+  def _lego_rst_setter_help(self):
+    description ="""Incorrect arguments.
+
+    For LEGO_RST_ODL pin value to be set is comma-separated value string with:
+      1. integers - '0' as LEGO_RST_ODL may only by set to LOW level when output
+      2. 'I'/'O' - direction to be configured
+      3. 'PP' - as BOARD_ID pins can only be push-pull outputs
+      4. 'force' flag - REQUIRED to ensure that user is aware LEGO_RST_ODL pin
+         status will be modified during the procedure.
+
+    Caller has three options:
+      a) '0' + 'force'
+      b) 'I' + 'force'
+      c) 'O' + 'PP' + '0' + 'force'
+
+    Examples:
+    1. Set LEGO_RST_ODL pin to input:
+    "I,force"
+    2. Set LEGO_RST_ODL pin to low-level output:
+    "O,PP,0,force"
+    3. Shorter version:
+    "0,force"
+    """
+    return description
+
+  def _apply_lego_rst_pin_restrictions(self, args):
+    """LEGO_RST_ODL pin on EVB requires extra handling:
+      1. LEGO_RST_ODL pin can only be set as Hi-Z input or LOW output.
+
+    Args:
+      args: Table of command line options provided by the caller
+    """
+    if 'force' not in args:
+      raise StudEvbError('Please provide "force" argument in order to proceed\n' +
+                           self._lego_rst_setter_help())
+    else:
+      self._logger.warning('force flag provided, LEGO_RST_ODL can be changed.')
+
+    # Remove "force" flag as it is not needed for lower level drivers
+    args.remove('force')
+
+    digit = False
+    for idx, i in enumerate(args):
+      if i.isdigit():
+        digit = True
+        int_idx = idx
+        break
+
+    if len(args) != 1 and len(args) != 3:
+      raise StudEvbError(self._lego_rst_setter_help())
+
+    if len(args) == 1 and digit:
+      if int(args[int_idx]) != 0:
+        raise StudEvbError(self._lego_rst_setter_help())
+    elif len(args) == 1 and 'I' not in args:
+        raise StudEvbError(self._lego_rst_setter_help())
+
+    # Case with setting to output "O,0,PP"
+    if len(args) == 3:
+      if 'O' not in args or 'PP' not in args or not digit:
+        raise StudEvbError(self._lego_rst_setter_help())
+
+      if int(args[int_idx]) != 0:
+        raise StudEvbError(self._lego_rst_setter_help())
+
+    # Just return and continue with normal flow of operations (i.e. generic ioex driver)
+
   def _apply_pins_restrictions(self, fmt_value):
     """Some pins' configurations on stud EVB are invalid and we need to protect
     user from setting those. Some other options require manual actions from the
@@ -279,6 +347,9 @@ class studEvb(hw_driver.HwDriver):
     elif self._params['control_name'] in self.FB_PPVAR_PINS:
       self._apply_fb_ppvar_restrictions(args)
       return True
+    elif self._params['control_name'] in self.LEGO_RST_PIN:
+      self._apply_lego_rst_pin_restrictions(args)
+      return False
 
     # Warn user that force flag is being set even though it is not required.
     if 'force' in args:
