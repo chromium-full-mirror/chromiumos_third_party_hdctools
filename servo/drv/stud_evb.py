@@ -235,6 +235,14 @@ class studEvb(hw_driver.HwDriver):
     elif len(args) == 1 and 'I' not in args:
         raise StudEvbError(self._fb_ppvar_setter_help())
 
+    # Case with setting to output "O,0,PP"
+    if len(args) == 3:
+      if 'O' not in args or 'PP' not in args or not digit:
+        raise StudEvbError(self._fb_ppvar_setter_help())
+
+      if int(args[int_idx]) != 0:
+        raise StudEvbError(self._fb_ppvar_setter_help())
+
     # Create ioex object for LEGO_RST pin
     lego_rst_params = copy.copy(self._params)
     lego_rst_params['offset'] = str(self.LEGO_RST_PIN_OFFSET)
