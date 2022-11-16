@@ -75,6 +75,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._usb_power_restore = (
         ('yes' == self._params.get('usb_power_restore', 'no'))
         and interface._syscfg.is_control(self._USB3_PWR_EN))
+    self._warm_reset_ec_jump_to_rw_delay = float(self._params.get(
+        'warm_reset_ec_jump_to_rw_delay', 1.2))
     self._ec_reboot_wait_ext_delay = float(self._params.get(
         'ec_reboot_wait_ext_delay', 0.1))
     self._on = 'on'
@@ -121,24 +123,26 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     ec_driver._limit_channel()
     try:
       if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
+        # Need to retrieve ec_feat before warm_reset to avoid doing that while
+        # EC is jumping to RW with EFS2.
+        efs2 = bool(int(self._interface_get('ec_feat'), 16) &
+                    crosEcSoftrecPower._EC_FEATURE_EFS2)
         if self._warm_reset_can_hold_ap:
           # Hold warm reset so the AP doesn't boot when EC reboots.
           # Note that this only seems to work reliably for ARM devices.
           self._interface_set('warm_reset', 'on')
-        try:
-          efs2 = bool(int(self._interface_get('ec_feat'), 16) &
-                      crosEcSoftrecPower._EC_FEATURE_EFS2)
-        except ec.ecError:
-          # Assume EFS2 is unsupported if the EC doesn't support the feat
-          # command.
-          efs2 = False
-        ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
+          if efs2:
+            self._logger.debug(
+                'Delay %s after warm_reset for EC to jump to RW (EFS2)',
+                self._warm_reset_ec_jump_to_rw_delay)
+            time.sleep(self._warm_reset_ec_jump_to_rw_delay)
         try:
           if self._wait_ext_is_fake:
             raise Exception("wait-ext isn't supported")
           # Before proceeding, we should really check that the EC has reset from
           # our command.  Pexpect is minimally greedy so we won't be able to match
           # the exact reset cause string.  But, this should be good enough.
+          ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
           ec_driver._issue_cmd_get_results(
               'reboot wait-ext %s' %
               ap_off_option, ["Waiting"], flush=True, timeout=6)
