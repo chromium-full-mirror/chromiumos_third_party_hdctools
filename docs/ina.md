@@ -79,7 +79,7 @@ building `hdctools` will be named
 *   `filetype` is either `.xml` or `.board`/`.scenario` depending on the
     configuration being for `servod` or `powerlog` usage.
 *   `rev` being the revision numbers specified in the `revs` variable
-*   `rev[rev]` also matches the output from `mosys platform version` in AP
+*   `[rev]` also matches the output from `crossystem board_id` in AP
     console
 
 Each `rev` in `revs` produces the same configuration. For example if `revs =
