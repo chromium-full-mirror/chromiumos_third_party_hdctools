@@ -24,17 +24,16 @@ class selectControl(hw_driver.HwDriver):
 
   SELECT_SUFFIX = '_select'
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: driver interface object
       params: dictionary of params
-      servod: Servod that is used for cross-servo-device communication
     """
-    super(selectControl, self).__init__(interface, params, servod)
-    if not hasattr(self._servod, 'selected_controls'):
-      self._servod.selected_controls = {}
+    super(selectControl, self).__init__(interface, params)
+    if not hasattr(self._interface, 'selected_controls'):
+      self._interface.selected_controls = {}
 
   def _get(self):
     """Get the control value."""
@@ -45,11 +44,11 @@ class selectControl(hw_driver.HwDriver):
     # Return the selected control
     select, control_key = self._get_control_key_info(control_name)
     if select:
-      return self._servod.selected_controls.get(control_key, '')
+      return self._interface.selected_controls.get(control_key, '')
 
     # Return the value from the selected control
     selected_control = self._get_selected_control(control_key)
-    return self._servod_get(selected_control)
+    return self._interface_get(selected_control)
 
   def _get_control_key_info(self, control_name):
     """Get the base control information
@@ -65,7 +64,7 @@ class selectControl(hw_driver.HwDriver):
 
   def _get_selected_control(self, control_key):
     """Return the control being used."""
-    selected_control = self._servod.selected_controls.get(control_key, None)
+    selected_control = self._interface.selected_controls.get(control_key, None)
     if not selected_control:
       raise selectControlError('%r not set' % control_key)
     return selected_control
@@ -84,8 +83,8 @@ class selectControl(hw_driver.HwDriver):
     if select:
       # Change the selected control
       self._logger.info('%s -> %s', control_key, logical_value)
-      self._servod.selected_controls[control_key] = logical_value
+      self._interface.selected_controls[control_key] = logical_value
       return
     # Set the value of the selected control
     selected_control = self._get_selected_control(control_key)
-    self._servod_set(selected_control, logical_value)
+    self._interface_set(selected_control, logical_value)

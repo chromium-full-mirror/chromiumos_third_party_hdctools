@@ -1,0 +1,13 @@
+<root>
+  <include>
+    <name>servo_skyrim_overlay.xml</name>
+  </include>
+  <!-- Frostflow has a unique keyboard matrix -->
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeECFrostflow" clobber_ok=''>
+    </params>
+  </control>
+</root>

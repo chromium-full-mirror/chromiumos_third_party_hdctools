@@ -728,37 +728,6 @@ class PowerMeasurement(object):
     for tracker in self._power_trackers:
       if tracker.is_alive():
         tracker.join()
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
 
   def GetPMStatus(self):
     """Pass the information if the power measurement is finished or not

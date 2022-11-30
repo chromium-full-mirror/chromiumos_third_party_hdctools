@@ -255,7 +255,6 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         dnsutils \
-        fdisk \
         iptables \
         iputils-ping \
         kmod \

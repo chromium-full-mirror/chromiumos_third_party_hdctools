@@ -18,11 +18,11 @@ _DUT_USB3_ON_DATA_GLOB = '/usr/share/servo/dut_usb3.yes.*'
 class servoV4(hw_driver.HwDriver):
   """Class to access drv=servo_v4 controls."""
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Initializer.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: servo_server.Servod
       params: {str: str} - Driver parameters from XML config.  Must include:
         'usb_reset_ms': str(int) e.g. '500' - How long in milliseconds to hold
             the DUT-facing USB hub in reset for triggering DUT re-enumeration of
@@ -30,7 +30,6 @@ class servoV4(hw_driver.HwDriver):
         'automatic_default': 'off' or 'on' - The default value for the automatic
             USB3-to-DUT choice setting when the current Servo v4 is not present
             in either the default-enable or default-disable lists.
-      servod: Servod that is used for cross-servo-device communication
     """
     usb_reset_ms = int(params['usb_reset_ms'])
     if usb_reset_ms < 0:
@@ -41,7 +40,7 @@ class servoV4(hw_driver.HwDriver):
     if default not in ('off', 'on'):
       raise ValueError('invalid automatic_default param value: %r' % (default,))
 
-    super(servoV4, self).__init__(interface, params, servod)
+    super(servoV4, self).__init__(interface, params)
     # float for time.sleep()
     self._usb_reset_seconds = usb_reset_ms / 1000.0
     # 'off' or 'on'
@@ -91,7 +90,7 @@ class servoV4(hw_driver.HwDriver):
 
     Returns: int - 0 for off, 1 for on
     """
-    name = self._servod_get('dut_usb3_en')
+    name = self._interface_get('dut_usb3_en')
     if name == 'off':
       return 0
     if name == 'on':
@@ -119,28 +118,28 @@ class servoV4(hw_driver.HwDriver):
     elif value == 1:
       new = 'on'
     elif value == 2:  # automatic
-      serialnum = self._servod_get('serialname')
+      serialnum = self._interface_get('serialname')
       new = self._dut_usb3_servos.get(serialnum, self._dut_usb3_default)
     else:
       raise ValueError('invalid reinit_dut_usb3_en map value: %r' % (value,))
 
-    if new == self._servod_get('dut_usb3_en'):
+    if new == self._interface_get('dut_usb3_en'):
       # No change to dut_usb3_en.
       return
 
-    dut_hub_usb_reset = self._servod_get('dut_hub_usb_reset')
+    dut_hub_usb_reset = self._interface_get('dut_hub_usb_reset')
     if dut_hub_usb_reset == 'on':
       # DUT USB hub is already in reset, just change dut_usb3_en.
-      self._servod_set('dut_usb3_en', new)
+      self._interface_set('dut_usb3_en', new)
     elif dut_hub_usb_reset == 'off':
       # DUT USB hub is active, hold it in reset briefly while changing
       # dut_usb3_en to force re-enumeration.
-      self._servod_set('dut_hub_usb_reset', 'on')
+      self._interface_set('dut_hub_usb_reset', 'on')
       try:
-        self._servod_set('dut_usb3_en', new)
+        self._interface_set('dut_usb3_en', new)
         time.sleep(self._usb_reset_seconds)
       finally:
-        self._servod_set('dut_hub_usb_reset', 'off')
+        self._interface_set('dut_hub_usb_reset', 'off')
     else:
       raise ValueError('unexpected dut_hub_usb_reset value: %r' %
                        (dut_hub_usb_reset,))

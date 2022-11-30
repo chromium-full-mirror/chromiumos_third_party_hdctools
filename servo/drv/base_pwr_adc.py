@@ -46,13 +46,12 @@ class basePWRADC(hw_driver.HwDriver):
   # offset of the bus voltage reading, in case some bits are unused.
   BUSV_MV_OFFSET = 0
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
-      interface: hardware interface for low-level communication; ignored here
+      interface: servod object to handle reading low-level i2c information
       params: params passed for the servod control through config
-      servod: Servod that is used for cross-servo-device communication
 
     Mandatory Params:
       base_name: the symbolic name for this INA e.g. pp3300_wlan_dx
@@ -68,7 +67,7 @@ class basePWRADC(hw_driver.HwDriver):
     Raises:
       BasePWRADCError: if needed params are absent
     """
-    super(basePWRADC, self).__init__(interface, params, servod)
+    super(basePWRADC, self).__init__(interface, params)
     self._logger.debug('')
     self._base_name = self._params['base_name']
     # Single channel ADCs can be thought of as running on channel 0.
@@ -114,7 +113,7 @@ class basePWRADC(hw_driver.HwDriver):
       a register control for |reg|, False otherwise
     """
     # pylint: disable=protected-access
-    return self._servod.has_control(self._reg_control_name(reg))
+    return self._interface._has_control(self._reg_control_name(reg))
 
   def _read_reg(self, reg):
     """Retrieve output for |reg|.
@@ -135,7 +134,7 @@ class basePWRADC(hw_driver.HwDriver):
       raise BasePWRADCError('Register %s for control %s unknown' %
                             (reg, self._base_name))
     ctrl_name = self._reg_control_name(reg)
-    return int(self._servod_get( ctrl_name), 16)
+    return int(self._interface_get(ctrl_name), 16)
 
   def _write_reg(self, reg, value):
     """Write |value| to |reg|.
@@ -151,7 +150,7 @@ class basePWRADC(hw_driver.HwDriver):
       raise BasePWRADCError('Register %s for control %s unknown' %
                             (reg, self._base_name))
     ctrl_name = self._reg_control_name(reg)
-    self._servod_set(ctrl_name, value)
+    self._interface_set(ctrl_name, value)
 
   def _set_ctrl(self, suffix, value):
     """Set the control |suffix| for |self._base_name| to |value|.
@@ -165,9 +164,9 @@ class basePWRADC(hw_driver.HwDriver):
     """
     ctrl_name = '%s_%s' % (self._base_name, suffix)
     # pylint: disable=protected-access
-    if not self._servod.has_control(ctrl_name):
+    if not self._interface._has_control(ctrl_name):
       raise BasePWRADCError('Control %r unknown.' % ctrl_name)
-    self._servod_set(ctrl_name, value)
+    self._interface_set(ctrl_name, value)
 
   @property
   def millivolts_per_lsb(self):

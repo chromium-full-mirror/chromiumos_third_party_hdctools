@@ -22,10 +22,6 @@ message ServoDevice {
   string DEFAULT_CONFIG = 4;
   // The type string of a servo device
   string TYPE = 5;
-  // Whether a ServoDevice has a built-in USB hub for connectting other ServoDevices and DUT. Default to False.
-  bool HUB_SERVO = 6;
-  // Whether a ServoDevice can access DUTs consoles (EC, AP, etc). Default to False.
-  bool DUT_CONTROLLER = 7;
 }
 
 // Additional data structure necessary to list multiple devices in .textproto files

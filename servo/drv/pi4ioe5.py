@@ -23,6 +23,7 @@ class pi4Ioe5(hw_driver.HwDriver):
 
   PORT_CNT = 5
   PORT_VALID_ERR_STR = '0 .. 4'
+  PINS_PER_PORT = 8
   PULLUP_VALID_ERR_STR = '-1, 0 or 1'
 
   def __init__(self, interface, params):
@@ -93,13 +94,13 @@ class pi4Ioe5(hw_driver.HwDriver):
     4. For output check push-pull vs open drain
 
     Returns:
-      string of format "<gpio_state> <I | O> <N/PU/PD | PP/OD>"
+      string of format "<gpio_state>,<I | O>,<N/PU/PD | PP/OD>"
     """
 
     state = self._read_logical_from_reg(self.REG_INP)
 
     direction = 'I' if self._read_logical_from_reg(self.REG_DIR) == 1 else 'O'
-    flags = str(state) + ' ' + direction + ' '
+    flags = str(state) + ',' + direction + ','
     if direction == 'I': # Input pin
       pull_en = self._read_logical_from_reg(self.REG_PULL_EN)
       pullup = self._read_logical_from_reg(self.REG_PULL_SEL)
@@ -134,6 +135,10 @@ class pi4Ioe5(hw_driver.HwDriver):
         1 for pullup resistor
     """
 
+    _, mask = self._get_offset_mask()
+    if mask is None:
+      raise Pi4Ioe5Error('Unable to determine mask. Is offset declared?')
+
     # Set pin direction to input
     current_dir_reg = self._i2c_obj._read_reg(self.REG_DIR + self._port)
     new_dir_reg = current_dir_reg | mask
@@ -150,7 +155,7 @@ class pi4Ioe5(hw_driver.HwDriver):
         new_pull_sel_reg = current_pull_sel_reg | mask
 
       if new_pull_sel_reg != current_pull_sel_reg:
-        self._i2c_obj._write_reg(self.REG_PULL_SEL + self._port)
+        self._i2c_obj._write_reg(self.REG_PULL_SEL + self._port, new_pull_sel_reg)
 
     # Enable pullup or pulldown
     current_pull_en_reg = self._i2c_obj._read_reg(self.REG_PULL_EN + self._port)
@@ -160,7 +165,7 @@ class pi4Ioe5(hw_driver.HwDriver):
       new_pull_en_reg = current_pull_en_reg | mask
 
     if new_pull_en_reg != current_pull_en_reg:
-      self._i2c_obj._write_reg(self.REG_PULL_EN + self._port)
+      self._i2c_obj._write_reg(self.REG_PULL_EN + self._port, new_pull_en_reg)
 
   def _set_pin_to_output(self, value, opendrain):
     """Configure particular ioex pin to output
@@ -195,15 +200,15 @@ class pi4Ioe5(hw_driver.HwDriver):
     # Open drain/push pull is configured on per-port basis via Output Port
     # Configuration Register and can be modified by settings in Individual
     # Pin Output Configuration Register.
-    port_oden = self._i2c_obj._read_reg(self.REG_OPCR) >> self._port
+    port_oden = self._i2c_obj._read_reg(self.REG_OUT_PORT_CONFIG) >> self._port
     hw_value = port_oden ^ opendrain
     if hw_value:
       hw_value = self._create_hw_value(hw_value)
 
-    current_ipoc_reg = self._i2c_obj._read_reg(self.REG_IPOC + self._port)
+    current_ipoc_reg = self._i2c_obj._read_reg(self.REG_OUT_PIN_CONFIG + self._port)
     new_ipoc_reg = hw_value | (current_ipoc_reg & ~mask)
     if new_ipoc_reg != current_ipoc_reg:
-      self._i2c_obj._write_reg(self.REG_IPOC + self._port, new_ipoc_reg)
+      self._i2c_obj._write_reg(self.REG_OUT_PIN_CONFIG + self._port, new_ipoc_reg)
 
     # TODO(b/254521543): Add a knob for modifying output drive strength
 
@@ -230,8 +235,10 @@ class pi4Ioe5(hw_driver.HwDriver):
   # Handler for a subclass controls - see 'get()' description in hw_driver.py
   def _Get_whole_ioex(self):
     """Get levels of all pins in particular ioex"""
-    for port in range(PORT_CNT):
-      value = self._i2c_obj._read_reg(self._REG_INP + port)
+    output = ''
+
+    for port in range(self.PORT_CNT):
+      value = self._i2c_obj._read_reg(self.REG_INP + port)
       output += "P" + str(port) + ":" + str(value) + "\n"
 
     return output
@@ -258,7 +265,7 @@ class pi4Ioe5(hw_driver.HwDriver):
         0 for pulldown resistor
         1 for pullup resistor
     """
-    for port in range(PORT_CNT):
+    for port in range(self.PORT_CNT):
       self._i2c_obj._write_reg(self.REG_DIR + port, 0xFF)
 
       if pullup == -1:
@@ -305,6 +312,9 @@ class pi4Ioe5(hw_driver.HwDriver):
       if not 'O' in args or (not 'PP' in args and not 'OD' in args) or not digit:
         raise Pi4Ioe5Error(self._help_msg_for_set())
 
+      if int(args[int_idx]) not in (0,1):
+        raise Pi4Ioe5Error(self._help_msg_for_set())
+
       if 'PP' in args:
         flags = 0
       else:
@@ -332,6 +342,8 @@ class pi4Ioe5(hw_driver.HwDriver):
       pullup = -1 # Neither PU nor PD
 
     if digit:
+      if int(args[int_idx]) not in (0,1):
+        raise Pi4Ioe5Error(self._help_msg_for_set())
       set_output(int(args[int_idx]), 0) # Default is push-pull
     else:
       set_input(pullup)

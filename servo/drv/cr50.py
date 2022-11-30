@@ -16,6 +16,7 @@ import time
 
 from servo.drv import pty_driver
 
+
 def restricted_command(func):
   """Decorator for methods which use restricted console command."""
 
@@ -52,9 +53,10 @@ class cr50(pty_driver.ptyDriver):
   PROMPT_DETECTION_TRIES = 3
   PROMPT_DETECTION_INTERVAL = 1
 
-  RDD_RE = r'Rdd:\s+(?P<rdd>\S+)[\r\n]+(KeepAlive: (?P<keepalive>\S+)\s)?'
+  RDD_RE = re.compile(
+          r'Rdd:\s+(?P<rdd>\S+)[\r\n]+(KeepAlive:\s+(?P<keepalive>\S+)\s)?')
 
-  def __init__(self, interface, params, servod=None):
+  def __init__(self, interface, params):
     """Constructor.
 
     Args:
@@ -64,9 +66,8 @@ class cr50(pty_driver.ptyDriver):
         devices. The only params used now is 'subtype', which is used
         by get/set method of base class to decide how to dispatch
         request.
-      servod: Servod that is used for cross-servo-device communication
     """
-    super(cr50, self).__init__(interface, params, servod)
+    super(cr50, self).__init__(interface, params)
     self._logger.debug('')
     self._interface = interface
     if not hasattr(self._interface, '_ec_uart_bitbang_props'):
@@ -173,7 +174,7 @@ class cr50(pty_driver.ptyDriver):
       1: keepalive enabled.
     """
     result = self._issue_cmd_get_results('ccdstate', ['ccdstate.*>'])[0]
-    rddstate = re.search(self.RDD_RE, result)
+    rddstate = self.RDD_RE.search(result)
     if not rddstate:
       raise cr50Error('Unable to get rdd output %r', result)
     # Older versions of cr50 don't have a devoted KeepAlive field. Use the

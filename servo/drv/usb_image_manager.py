@@ -49,9 +49,9 @@ class usbImageManager(hw_driver.HwDriver):
 
   _DEFAULT_ERROR_MSG = 'No USB storage device found for image transfer.'
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params):
     """Initialize driver by initializing HwDriver."""
-    super(usbImageManager, self).__init__(interface, params, servod)
+    super(usbImageManager, self).__init__(interface, params)
     # This delay is required to safely switch the usb image mux direction
     self._poweroff_delay = params.get('usb_power_off_delay', 0)
     if self._poweroff_delay:
@@ -75,7 +75,7 @@ class usbImageManager(hw_driver.HwDriver):
 
   def _Get_image_usbkey_direction(self):
     """Return direction of image usbkey mux."""
-    return self._servod_get(self._IMAGE_USB_MUX)
+    return self._interface_get(self._IMAGE_USB_MUX)
 
   def _Set_image_usbkey_direction(self, mux_direction):
     """Connect USB flash stick to either servo or DUT.
@@ -87,11 +87,11 @@ class usbImageManager(hw_driver.HwDriver):
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
     self._SafelySwitchMux(mux_direction)
-    if self._servod_get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
+    if self._interface_get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
       # This will ensure that we make a best-effort attempt to only
       # return when the block device of the attached usb stick fully
       # enumerates.
-      self._servod_get(self._IMAGE_DEV)
+      self._interface_get(self._IMAGE_DEV)
 
   def _SafelySwitchMux(self, mux_direction):
     """Helper to switch the usb mux.
@@ -103,14 +103,14 @@ class usbImageManager(hw_driver.HwDriver):
     Args:
       mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
-    if self._servod_get(self._IMAGE_USB_MUX) != mux_direction:
-      self._servod_set(self._IMAGE_USB_PWR, 'off')
+    if self._interface_get(self._IMAGE_USB_MUX) != mux_direction:
+      self._interface_set(self._IMAGE_USB_PWR, 'off')
       time.sleep(self._poweroff_delay)
-      self._servod_set(self._IMAGE_USB_MUX, mux_direction)
+      self._interface_set(self._IMAGE_USB_MUX, mux_direction)
       time.sleep(self._poweroff_delay)
-    if self._servod_get(self._IMAGE_USB_PWR) != 'on':
+    if self._interface_get(self._IMAGE_USB_PWR) != 'on':
       # Enforce that power is supplied.
-      self._servod_set(self._IMAGE_USB_PWR, 'on')
+      self._interface_set(self._IMAGE_USB_PWR, 'on')
 
   def _PathIsHub(self, usb_sysfs_path):
     """Return whether |usb_sysfs_path| is a usb hub."""
@@ -131,17 +131,16 @@ class usbImageManager(hw_driver.HwDriver):
     """
     if self._image_usbkey_hub_ports is None:
       raise UsbImageManagerError('hub_ports need to be defined in params.')
-    servod = self._servod
+    servod = self._interface
     # When the user is requesting the usb_dev they most likely intend for the
     # usb to the facing the servo, and be powered. Enforce that.
     self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
     # Look for own servod usb device
     # pylint: disable=protected-access
     # Need servod information to find own servod instance.
-    hub_device = servod.get_root_device()
-    if not hub_device:
-      raise UsbImageManagerError('There is no USB hub device connected.')
-    hub_on_servo = hub_device.dev_entry.hub_stub
+    usb_id = (servod._vendor, servod._product, servod._serialnames['main'])
+    self_usb = usb_hierarchy.Hierarchy.GetUsbDeviceSysfsPath(*usb_id)
+    hub_on_servo = usb_hierarchy.Hierarchy.GetSysfsParentHubStub(self_usb)
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
                                  self._image_usbkey_hub_ports]
@@ -177,7 +176,7 @@ class usbImageManager(hw_driver.HwDriver):
         if self._PathIsHub(active_storage_candidate):
           # Do not check the hub, only devices.
           continue
-        # Use /sys/block/ entries to see which block device is the |hub_device|.
+        # Use /sys/block/ entries to see which block device is the |self_usb|.
         # Use sd* to avoid querying any non-external block devices.
         for candidate in glob.glob('/sys/block/sd*'):
           # |candidate| is a link to a sys hw device file
