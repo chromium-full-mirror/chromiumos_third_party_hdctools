@@ -16,13 +16,13 @@ PORT=${PORT:-9999}
 mkdir -p /var/lib/servod
 . /hdctools/chromeos/servod_utils.sh
 
-echo "Pre-start PORT=$PORT BOARD=$BOARD MODEL=$MODEL SERIAL=$SERIAL."
+log_output "Pre-start PORT=$PORT BOARD=$BOARD MODEL=$MODEL SERIAL=$SERIAL."
 
 for CMD in iptables-legacy ip6tables-legacy ; do
-    $CMD -A INPUT -p tcp --dport $PORT -j ACCEPT || echo "Failed to configure $CMD."
+    $CMD -A INPUT -p tcp --dport $PORT -j ACCEPT || log_output "Failed to configure $CMD."
 done
 
-echo "Update config. PORT=$PORT BOARD=$BOARD MODEL=$MODEL SERIAL=$SERIAL."
+log_output "Update config. PORT=$PORT BOARD=$BOARD MODEL=$MODEL SERIAL=$SERIAL."
 
 # We'll want to update the config file with all the args passed in.
 update_config $CONFIG_FILE BOARD $BOARD
@@ -31,22 +31,22 @@ update_config $CONFIG_FILE SERIAL $SERIAL
 update_config $CONFIG_FILE CONFIG $CONFIG
 update_config $CONFIG_FILE DUAL_V4 $DUAL_V4
 
-echo "Store servo hub location and servo micro serial if presents. "\
+log_output "Store servo hub location and servo micro serial if presents. "\
     "$CONFIG_FILE $SERIAL"
 cache_servov4_hub_and_servo_micro $CONFIG_FILE $SERIAL
-echo "Pre-start complete."
+log_output "Pre-start complete."
 
 SERVO_MICRO_VIDPID="18d1:501a"
 SERVO_V4_VIDPID="18d1:501b"
 
 if [ ! -f $CONFIG_FILE ]; then
-    echo "No configuration file ($CONFIG_FILE); terminating"
+    log_output "No configuration file ($CONFIG_FILE); terminating"
     stop
     exit 0
 fi
 
 if [ -z "$BOARD" ]; then
-    echo "No board specified; terminating"
+    log_output "No board specified; terminating"
     stop
     exit 0
 fi
@@ -97,7 +97,7 @@ if [ -n "$SERIAL" ]; then
     sleep 5
 fi
 
-echo "Launching servod for $BOARD $MODEL_MSG on port $PORT $SERIAL_MSG"
+log_output "Launching servod for $BOARD $MODEL_MSG on port $PORT $SERIAL_MSG"
 
 servod \
     --host 0.0.0.0 \
