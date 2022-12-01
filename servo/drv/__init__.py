@@ -63,6 +63,7 @@ from servo.drv import pca95xx
 from servo.drv import power_kb
 from servo.drv import ps8742
 from servo.drv import pty_driver
+from servo.drv import sarien_power
 from servo.drv import select_control
 from servo.drv import servo_firmware_checker
 from servo.drv import servo_metadata
