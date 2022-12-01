@@ -126,7 +126,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
       if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
         # Need to retrieve ec_feat before warm_reset to avoid doing that while
         # EC is jumping to RW with EFS2.
-        efs2 = bool(int(self._interface_get('ec_feat'), 16) &
+        efs2 = bool(int(self._servod_get('ec_feat'), 16) &
                     crosEcSoftrecPower._EC_FEATURE_EFS2)
         if self._warm_reset_can_hold_ap:
           # Hold warm reset so the AP doesn't boot when EC reboots.

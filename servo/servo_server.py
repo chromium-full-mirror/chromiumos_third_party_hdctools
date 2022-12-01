@@ -141,7 +141,9 @@ class Servod(object):
     """
     prefix, processed_name = Servod._get_control_prefix_and_name(name)
     if prefix not in self._devices:
-      raise ServodError('No servo device registered for prefix %s' % prefix)
+      error_msg = ("No control named '%s' registerd. "
+        "No servo device registered for prefix %s.") % (name, prefix)
+      raise ServodError(error_msg)
     dev = self._devices[prefix]
 
     # Controls routed to main that are not covered by main are covered by their
