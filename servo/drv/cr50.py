@@ -71,8 +71,8 @@ class cr50(pty_driver.ptyDriver):
     super(cr50, self).__init__(interface, params, servod)
     self._logger.debug('')
     self._interface = interface
-    if not hasattr(self._interface, '_ec_uart_bitbang_props'):
-      self._interface._ec_uart_bitbang_props = {
+    if not hasattr(self._interface, 'ccd_uart_bitbang_settings'):
+      self._interface.ccd_uart_bitbang_settings = {
           'enabled': 0,
           'parity': None,
           'baudrate': None
@@ -105,12 +105,12 @@ class cr50(pty_driver.ptyDriver):
           super(cr50, self)._issue_cmd_get_results('\n\n',
                                                    [r'([^-=]>|Console is enabled)'])
           break
-        except pty_driver.ptyError:
+        except pty_driver.ptyError as e:
           logging.debug("cr50 prompt detection failed, %d attempts left.", trys_left)
           if trys_left <= 0:
               self._logger.warning('Consider checking whether the servo device has '
                                 'read/write access to the Cr50 UART console.')
-              raise cr50Error('cr50 uart is unresponsive')
+              raise cr50Error('cr50 uart is unresponsive') from e
           time.sleep(self.PROMPT_DETECTION_INTERVAL)
 
     return super(cr50, self)._issue_cmd_get_results(cmds, regex_list,
@@ -143,7 +143,7 @@ class cr50(pty_driver.ptyDriver):
     """CCD doesn't support pwr_button. Tell user about pwr_button_hold"""
     raise cr50Error('pwr_button not supported use pwr_button_hold')
 
-  def _Set_cr50_reboot(self, value):
+  def _Set_cr50_reboot(self, _):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd('reboot')
 
@@ -162,16 +162,16 @@ class cr50(pty_driver.ptyDriver):
     result = self._issue_cmd_get_results('ccdstate', ['ccdstate.*>'])[0]
     rddstate = self.RDD_RE.search(result)
     if not rddstate:
-      raise cr50Error('Unable to get rdd output %r', result)
+      raise cr50Error('Unable to get rdd output %r' % result)
     # Older versions of cr50 don't have a devoted KeepAlive field. Use the
     # keepalive output where possible.
     # Check for shorter strings in case servo drops output.
     keepalive = rddstate.group('keepalive')
     if keepalive:
-      rv = 'ena' in keepalive
+      state = 'ena' in keepalive
     else:
-      rv = 'keep' in rddstate.group('rdd')
-    return int(rv)
+      state = 'keep' in rddstate.group('rdd')
+    return int(state)
 
   def _Set_ccd_keepalive_en(self, value):
     """Setter of ccd_keepalive_en.
@@ -182,48 +182,48 @@ class cr50(pty_driver.ptyDriver):
     self._issue_cmd('rddkeepalive %s' % ('on' if value else 'off'))
 
   def _Get_ec_uart_bitbang_en(self):
-    return int(self._interface._ec_uart_bitbang_props['enabled'])
+    return int(self._interface.ccd_uart_bitbang_settings['enabled'])
 
   def _Set_ec_uart_bitbang_en(self, value):
     if value:
       # We need parity and baudrate settings in order to enable bit banging.
-      if not self._interface._ec_uart_bitbang_props['parity']:
+      if not self._interface.ccd_uart_bitbang_settings['parity']:
         raise ValueError("No parity set.  Try setting 'ec_uart_parity' first.")
 
-      if not self._interface._ec_uart_bitbang_props['baudrate']:
+      if not self._interface.ccd_uart_bitbang_settings['baudrate']:
         raise ValueError(
             "No baud rate set.  Try setting 'ec_uart_baudrate' first.")
 
       # The EC UART index is 2.
       cmd = '%s %s %s' % ('bitbang 2',
-                          self._interface._ec_uart_bitbang_props['baudrate'],
-                          self._interface._ec_uart_bitbang_props['parity'])
+                          self._interface.ccd_uart_bitbang_settings['baudrate'],
+                          self._interface.ccd_uart_bitbang_settings['parity'])
       try:
         result = self._issue_cmd_get_results(cmd, ['Bit bang enabled'])
         if result is None:
           raise cr50Error('Unable to enable bit bang mode!')
-      except pty_driver.ptyError:
-        raise cr50Error('Unable to enable bit bang mode!')
+      except pty_driver.ptyError as e:
+        raise cr50Error('Unable to enable bit bang mode!') from e
 
-      self._interface._ec_uart_bitbang_props['enabled'] = 1
+      self._interface.ccd_uart_bitbang_settings['enabled'] = 1
 
     else:
       self._issue_cmd('bitbang 2 disable')
-      self._interface._ec_uart_bitbang_props['enabled'] = 0
+      self._interface.ccd_uart_bitbang_settings['enabled'] = 0
 
   def _Get_ccd_ec_uart_parity(self):
-    self._logger.debug('%r', self._interface._ec_uart_bitbang_props)
-    return self._interface._ec_uart_bitbang_props['parity']
+    self._logger.debug('%r', self._interface.ccd_uart_bitbang_settings)
+    return self._interface.ccd_uart_bitbang_settings['parity']
 
   def _Set_ccd_ec_uart_parity(self, value):
     if value.lower() not in ['odd', 'even', 'none']:
       raise ValueError("Bad parity (%s). Try 'odd', 'even', or 'none'." % value)
 
-    self._interface._ec_uart_bitbang_props['parity'] = value
-    self._logger.debug('%r', self._interface._ec_uart_bitbang_props)
+    self._interface.ccd_uart_bitbang_settings['parity'] = value
+    self._logger.debug('%r', self._interface.ccd_uart_bitbang_settings)
 
   def _Get_ccd_ec_uart_baudrate(self):
-    return self._interface._ec_uart_bitbang_props['baudrate']
+    return self._interface.ccd_uart_bitbang_settings['baudrate']
 
   def _Set_ccd_ec_uart_baudrate(self, value):
     if value is not None and value.lower() not in [
@@ -235,7 +235,7 @@ class cr50(pty_driver.ptyDriver):
 
     if value.lower() == 'none':
       value = None
-    self._interface._ec_uart_bitbang_props['baudrate'] = value
+    self._interface.ccd_uart_bitbang_settings['baudrate'] = value
 
   def _Get_ec_boot_mode(self):
     """Return 1 if EC_FLASH_SELECT is asserted. 0 if it's deasserted"""
@@ -307,8 +307,8 @@ class cr50(pty_driver.ptyDriver):
               'recbtnforce disable', ['not pressed'])
       if result is None:
         raise cr50Error('recbtnforce failed, Check GscFullConsole perm.')
-    except pty_driver.ptyError:
-      raise cr50Error('Unable to change recbtnforce status!')
+    except pty_driver.ptyError as e:
+      raise cr50Error('Unable to change recbtnforce status!') from e
 
   def _Get_rec_mode(self):
     """Return 1 if rec_mode is asserted. 0 if it's deasserted"""
