@@ -68,8 +68,8 @@
   <control>
     <name>ccd_state</name>
     <doc>ccd_state</doc>
-    <params cmd="get" subtype="ccd_state" interface="9" drv="cr50" map="onoff"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="ccd_state" interface="servo" drv="servo_watchdog"
+    map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>warm_reset</name>
