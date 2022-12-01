@@ -61,6 +61,7 @@ class Hierarchy(object):
     cls.SYSFS_PATH = cls.DEFAULT_SYSFS_PATH
 
   def __init__(self):
+    """Initialize UsbHierarchy by refreshing the hierarchy once."""
     # Get the current USB sysfs hierarchy.
     self.RefreshHierarchy()
 
@@ -540,3 +541,29 @@ class Hierarchy(object):
       return True
 
     return False
+
+  @staticmethod
+  def DevDirectOnHubPortFromSysfs(hub_stub, dev_port_path):
+    """Static helper to see if |hub_stub| is a direct ancestor to |dev_port_path|.
+
+    |hub_stub| is not a valid /sys/bus/usb/devices path but rather
+    the parent hub stub of a device i.e. the port path of the hub that the
+    device is connected on. For static configurations like v4's internal hub
+    this can be used to determine if |dev_port_path| hangs directly on that
+    internal hub.
+
+    Args:
+      hub_stub: /dev/bus/usb/devices sysfs hub stub
+      dev_port_path: /dev/bus/usb/devices sysfs path for device of interest
+
+    Returns:
+      True if |dev_port_path| hangs directly on |hub_stub|; False otherwise.
+    """
+
+    if hub_stub is None or dev_port_path is None:
+      # This means at least one of them either is directly attached to a bus,
+      # or has an invalid path.
+      return False
+
+    dev_port_hub = Hierarchy.GetSysfsParentHubStub(dev_port_path)
+    return hub_stub == dev_port_hub

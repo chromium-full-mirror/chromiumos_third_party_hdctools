@@ -15,16 +15,17 @@ class servoUpdaterReader(hw_driver.HwDriver):
 
   REQUIRED_GET_PARAMS = ['board', 'channel']
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: servod instance (though unused)
+      interface: shardware interface for low-level communication; ignored here
       params: control params, of which we actively care about:
         - board: the servo board name
         - channel: the servo firmware channel in question
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(servoUpdaterReader, self).__init__(interface, params)
+    super(servoUpdaterReader, self).__init__(interface, params, servod)
 
     self._board = self._params['board']
     self._channel = self._params['channel']

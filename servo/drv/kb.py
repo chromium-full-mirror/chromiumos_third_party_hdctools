@@ -16,17 +16,18 @@ class KbError(hw_driver.HwDriverError):
 class kb(hw_driver.HwDriver):
   """HwDriver wrapper around servod's keyboard functions."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object; servod in this case.
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params;
         'key' attribute indicates what key should be pressed with each instance.
         'handler' optional, indicate if default or usb keyboard handler should
                   be used for key press execution.
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(kb, self).__init__(interface, params.copy())
+    super(kb, self).__init__(interface, params.copy(), servod)
     # pylint: disable=protected-access
     self._handler = self._params.get('handler', 'default')
     if self._handler not in ['default', 'usb']:
@@ -46,9 +47,9 @@ class kb(hw_driver.HwDriver):
       KbError: if key is not a member of kb_precanned map.
     """
     turn_off_needed = False
-    keyboard = self._interface._keyboard
+    keyboard = self._servod._keyboard
     if self._handler == 'usb':
-      keyboard = self._interface._usb_keyboard
+      keyboard = self._servod._usb_keyboard
     if not keyboard:
       raise KbError('Keyboard handler not setup.')
     if not keyboard.is_open():
@@ -71,4 +72,4 @@ class kb(hw_driver.HwDriver):
     Args:
       key: the key to press when arb_key is called
     """
-    self._interface._keyboard.arb_key_config(key)
+    self._servod._keyboard.arb_key_config(key)

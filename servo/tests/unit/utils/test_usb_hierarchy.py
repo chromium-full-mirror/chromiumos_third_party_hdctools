@@ -62,44 +62,10 @@ class TestUsbHierarchy(unittest.TestCase):
     Hierarchy.RestoreDefaultUsbSysfsPathForTest()
     unittest.TestCase.tearDown(self)
 
-  @staticmethod
-  def AddFakeUsbEntry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
-                      busnum=None, serial=None, vid=None, pid=None):
-    """Helper to add a fake sysfs-like device file for a usb device.
-
-    Args:
-      usb_devices_dir: directory mocking /sys/bus/usb/devices
-      hub_port_path: the 'x.x.x' port path of the device on the root hub
-      root_hub: the usb root hub number
-      devnum: content for the dev-num file. File not created if ommited
-      busnum: content for the bus-num file. File not created if ommited
-      serial: content for the serial file. File not created if ommited
-      vid: content for the idVendor file. File not created if ommited
-      pid: content for the idProduct file. File not created if ommited
-
-    Returns:
-      devdir: directory in |usb_devices_dir| that was created
-    """
-    dev_dir_path = '%d-%s' % (root_hub, hub_port_path)
-    dev_dir_path_full = os.path.join(usb_devices_dir, dev_dir_path)
-    # Create the fake device path entry
-    os.mkdir(dev_dir_path_full)
-    # Create a file for each attribute that is present
-    for attr, attr_file, fmt in [(devnum, Hierarchy.DEV_FILE, 'd'),
-                                 (busnum, Hierarchy.BUS_FILE, 'd'),
-                                 (vid, Hierarchy.VID_FILE, 'x'),
-                                 (pid, Hierarchy.PID_FILE, 'x'),
-                                 (serial, Hierarchy.SERIAL_FILE, 's')]:
-      if attr:
-        attr_path = os.path.join(dev_dir_path_full, attr_file)
-        with open(attr_path, 'w') as f:
-          f.write(format(attr, fmt))
-    return dev_dir_path_full
-
   def test_FindConformingUsbDevice(self):
     """Find a conforming usb device in the UsbHierarchy."""
     # Add a fake entry with all attributes
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
                                      busnum=self._busnum,
@@ -118,7 +84,7 @@ class TestUsbHierarchy(unittest.TestCase):
   def test_SkipUsbDeviceMissingBusnum(self):
     """A device missing a busnum file is skipped in the UsbHierarchy."""
     # Add a fake entry with all attributes, expect busnum
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
                                      serial=self._serial,
@@ -132,7 +98,7 @@ class TestUsbHierarchy(unittest.TestCase):
   def test_SkipUsbDeviceMissingDevnum(self):
     """A device missing a devnum file is skipped in the UsbHierarchy."""
     # Add a fake entry with all attributes, expect devnum
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      busnum=self._busnum,
                                      serial=self._serial,
@@ -146,7 +112,7 @@ class TestUsbHierarchy(unittest.TestCase):
   def test_NoSkipUsbDeviceMissingOtherDescriptors(self):
     """A device with bus/devnum is added even when lacking other descriptors."""
     # Add a fake entry with no attributes, expect devnum and busnum
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
                                      busnum=self._busnum)
@@ -168,7 +134,7 @@ class TestUsbHierarchy(unittest.TestCase):
       port_path = self._hub_port_path + '.%s' % str(extra)
       serial = self._serial + str(extra)
       devnum = self._devnum + extra
-      TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+      AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                        hub_port_path=port_path,
                                        busnum=self._busnum,
                                        devnum=devnum, serial=serial,
@@ -189,7 +155,7 @@ class TestUsbHierarchy(unittest.TestCase):
       devnum = self._devnum + extra
       vid = self._vid + extra
       pid = self._pid + extra
-      TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+      AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                        hub_port_path=port_path,
                                        busnum=self._busnum,
                                        devnum=devnum, serial=serial,
@@ -211,7 +177,7 @@ class TestUsbHierarchy(unittest.TestCase):
       serial = self._serial + str(extra)
       devnum = self._devnum + extra
       pid = self._pid + extra
-      TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+      AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                        hub_port_path=port_path,
                                        busnum=self._busnum,
                                        devnum=devnum, serial=serial,
@@ -226,7 +192,7 @@ class TestUsbHierarchy(unittest.TestCase):
 
   def test_GetUsbDeviceSysfsPath(self):
     """Verify retrieving the sysfs directory path works as expected."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
                                      busnum=self._busnum,
@@ -244,7 +210,7 @@ class TestUsbHierarchy(unittest.TestCase):
   def test_GetUsbDeviceSysfsPathNoSerialNoError(self):
     """Verify missing 'serial' file does not throw error."""
     # Skip adding serial file.
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
                                      busnum=self._busnum,
@@ -256,7 +222,7 @@ class TestUsbHierarchy(unittest.TestCase):
 
   def test_GetUsbDeviceSysfsPathMultipleVidPidSerialFails(self):
     """Verify that more than one vid:pid serial pair throws an error."""
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
                                      busnum=self._busnum,
@@ -264,7 +230,7 @@ class TestUsbHierarchy(unittest.TestCase):
                                      pid=self._pid,
                                      serial=self._serial)
     # Edit the dev-port path and the dev-num so that two entries are added.
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      hub_port_path='1.1.2',
                                      devnum=self._devnum + 1,
                                      busnum=self._busnum,
@@ -280,7 +246,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # Define own root hub number instead of using default to verify path name.
     root_hub = 3
     # Add a fake entry with minimum necessary attributes to be a valid entry
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      root_hub=root_hub,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
@@ -315,7 +281,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # Define own root hub number instead of using default to verify path name.
     root_hub = 3
     # Add a fake entry with minimum necessary attributes to be a valid entry
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      root_hub=root_hub,
                                      hub_port_path=self._hub_port_path,
                                      devnum=self._devnum,
@@ -337,7 +303,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # attached to the root hub
     hub_port_path = '1'
     # Add a fake entry with minimum necessary attributes to be a valid entry
-    TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                      root_hub=root_hub,
                                      hub_port_path=hub_port_path,
                                      devnum=self._devnum,
@@ -387,11 +353,32 @@ class TestUsbHierarchy(unittest.TestCase):
     dev_port_path = '3-1.2.3'
     assert not Hierarchy.DevOnHubPortFromSysfs(hub_port_stub, dev_port_path)
 
+  def test_DevDirectOnHubPort(self):
+    """DevDirectOnHubPort is True when the device is a direct child of the hub stub."""
+    hub_port_stub = '2-1.2'
+    dev_port_path = '2-1.2.3'
+    assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+
+  def test_DevDirectOnRootHubPort(self):
+    """DevDirectOnHubPort is True when the device is a direct child of the root hub stub."""
+    hub_port_stub = '2'
+    dev_port_path = '2-1'
+    assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+
+  def test_DevNotDirectOnHubPort(self):
+    """DevDirectOnHubPort is False when the root hub is different."""
+    # To test the hub-port logic as above you really only need the port path
+    # string. This test is to make sure that while that is true, the entire
+    # path i.e. the root-hub is also taken into consideration
+    hub_port_stub = '2-1'
+    dev_port_path = '2-1.2.3'
+    assert not Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+
   def test_DevNumFromSysfsNoFile(self):
     """HierarchyError is raised on missing devnum file."""
     # Note: as all the *FromSysfs methods use the same underlying method,
     # this one test is a proxy for all of them failing due to missing file.
-    devd = TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    devd = AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                             hub_port_path=self._hub_port_path,
                                             # Note the omission of devnum  here
                                             busnum=self._busnum,
@@ -399,8 +386,8 @@ class TestUsbHierarchy(unittest.TestCase):
                                             vid=self._vid,
                                             pid=self._pid)
     with self.assertRaisesRegex(HierarchyError, 'Requested sysfs attribute '
-                                 '.* cannot be read because the file cannot '
-                                 'be found.'):
+                                '.* cannot be read because the file cannot '
+                                'be found.'):
       Hierarchy.DevNumFromSysfs(devd)
 
   def test_DevNumFromSysfs(self):
@@ -408,7 +395,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # Note: this test is a proxy for all *FromSysfs methods that cast to int:
     # - DevNum
     # - BusNum
-    devd = TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    devd = AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                             hub_port_path=self._hub_port_path,
                                             devnum=self._devnum,
                                             busnum=self._busnum,
@@ -424,7 +411,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # Note: this test is a proxy for all *FromSysfs methods that cast to int:
     # - DevNum
     # - BusNum
-    devd = TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    devd = AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                             hub_port_path=self._hub_port_path,
                                             busnum=self._busnum,
                                             serial=self._serial,
@@ -437,7 +424,7 @@ class TestUsbHierarchy(unittest.TestCase):
     with open(devnum_f, 'w') as f:
       f.write(content)
     with self.assertRaisesRegex(HierarchyError, 'Unexpected content %r at '
-                                 'sysfs file %r' % (content, devnum_f)):
+                                'sysfs file %r' % (content, devnum_f)):
       _ = Hierarchy.DevNumFromSysfs(devd)
 
   def test_VendorIDFromSysfs(self):
@@ -445,7 +432,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # Note: this test is a proxy for all *FromSysfs methods that cast to int:
     # - VendorID
     # - ProductID
-    devd = TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    devd = AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                             hub_port_path=self._hub_port_path,
                                             devnum=self._devnum,
                                             busnum=self._busnum,
@@ -467,7 +454,7 @@ class TestUsbHierarchy(unittest.TestCase):
     # Note: this test is a proxy for all *FromSysfs methods that cast to int:
     # - VendorID
     # - ProductID
-    devd = TestUsbHierarchy.AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
+    devd = AddFakeUsbEntry(usb_devices_dir=self._usb_dir,
                                             hub_port_path=self._hub_port_path,
                                             devnum=self._devnum,
                                             busnum=self._busnum,
@@ -483,6 +470,41 @@ class TestUsbHierarchy(unittest.TestCase):
                                  'sysfs file %r' % (bad_vid, vid_f)):
       _ = Hierarchy.VendorIDFromSysfs(devd)
 
+def AddFakeUsbEntry(usb_devices_dir, hub_port_path, root_hub=2, devnum=None,
+                    busnum=None, serial=None, vid=None, pid=None):
+  """Helper to add a fake sysfs-like device file for a usb device.
+
+  Args:
+    usb_devices_dir: directory mocking /sys/bus/usb/devices
+    hub_port_path: the 'x.x.x' port path of the device on the root hub
+    root_hub: the usb root hub number
+    devnum: content for the dev-num file. File not created if ommited
+    busnum: content for the bus-num file. File not created if ommited
+    serial: content for the serial file. File not created if ommited
+    vid: content for the idVendor file. File not created if ommited
+    pid: content for the idProduct file. File not created if ommited
+
+  Returns:
+    devdir: directory in |usb_devices_dir| that was created
+  """
+  dev_dir_path = '%d-%s' % (root_hub, hub_port_path)
+  dev_dir_path_full = os.path.join(usb_devices_dir, dev_dir_path)
+  # Create the fake device path entry
+  os.mkdir(dev_dir_path_full)
+  # Create a file for each attribute that is present
+  for attr, attr_file, fmt in [(devnum, Hierarchy.DEV_FILE, 'd'),
+                               (busnum, Hierarchy.BUS_FILE, 'd'),
+                               (vid, Hierarchy.VID_FILE, 'x'),
+                               (pid, Hierarchy.PID_FILE, 'x'),
+                               (serial, Hierarchy.SERIAL_FILE, 's')]:
+    if attr:
+      attr_path = os.path.join(dev_dir_path_full, attr_file)
+      with open(attr_path, 'w') as f:
+        f.write(format(attr, fmt))
+  return dev_dir_path_full
+
+if __name__ == '__main__':
+  unittest.main()
 
 class TestUsbHierarchyPyTest:
   def test_GetUsbDevice(self, mock_v4p1_usb_device, mock_pyusb):

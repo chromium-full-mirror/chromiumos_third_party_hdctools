@@ -28,11 +28,11 @@ class crosEcHardrecPbinitidlePower(cros_ec_hardrec_power.crosEcHardrecPower):
 
     """
     try:
-      dut_was_off = self._interface_get('ec_system_powerstate') != 'S0'
+      dut_was_off = self._servod_get('ec_system_powerstate') != 'S0'
     except Exception:
       dut_was_off = True
     finally:
-      self._interface_set('ec_uart_regexp', 'None')
+      self._servod_set('ec_uart_regexp', 'None')
 
     if dut_was_off:
       self._power_on(self.REC_OFF)

@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-SECONDARY_SERVOS_NAMES = ( 'servo_micro', 'ccd_cr50', 'ccd_ti50', 'c2d2')
-
 SERVO_DEVICE_DATA = {
   'miniservo_v1':
   ( (0x18d1, 0x5000),
