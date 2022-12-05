@@ -11,7 +11,9 @@ import socket
 
 import servo.client as client
 
-SERVO_SCRATCH_DIR = '/tmp/servoscratch'
+# ChromeOS needs to use /usr/local/tmp, allow other environments to set
+# TMPDIR to override.
+SERVO_SCRATCH_DIR = os.environ.get('TMPDIR', '/usr/local/tmp') + '/servoscratch'
 
 
 # Key used to store whether the instance is active yet or still coming up.
@@ -229,4 +231,3 @@ class Scratch(object):
         pass
       finally:
         testsock.close()
-
