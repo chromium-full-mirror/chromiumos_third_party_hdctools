@@ -482,8 +482,22 @@ class Servod(object):
         sys.exit(-1)
 
   def get_version(self):
-    """DEPRECATED. Please use 'devices' control instead.
-    Gets the type of the servo device setups.
+    """Gets the type of the servo device setups.
+
+    DEPRECATED. External clients (e.g. autotest) should not directly call this method
+    of servo_server as it is an implementation detail. They should migrate to using
+    'servo_type' control.
+
+    TODO(konmari): remove this public method after all clients move away from directly
+    calling methods.
+    """
+    return self._get_version()
+
+  def _get_version(self):
+    """Gets the type of the servo device setups.
+
+    NOTE: please avoid assuming the format of servo type string and parsing it. 
+    Use 'devices' control to fetch all servo devices of this servod instance instead.
     """
     main_device = self.get_main_device()
     root_device = self.get_root_device()
