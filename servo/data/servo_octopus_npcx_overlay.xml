@@ -12,7 +12,7 @@
   </control>
   <control>
     <name>pch_disable</name>
-    <alias>cr50_reset_odl</alias>
+    <alias>cr50_reset_odl,gsc_reset</alias>
     <doc>Force cr50 power-on reset</doc>
     <params clobber_ok=""></params>
   </control>

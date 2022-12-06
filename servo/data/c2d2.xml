@@ -55,7 +55,8 @@
     map="onoff" init="on" />
   </control>
   <control>
-    <name>cr50_reset_odl</name>
+    <name>gsc_reset</name>
+    <alias>cr50_reset_odl</alias>
     <doc>Hold DUT in reset via H1 reset</doc>
     <params subtype="h1_reset" interface="6" drv="ec3po_c2d2" clobber_ok=""
     map="onoff" init="off" />
