@@ -128,8 +128,8 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
-RUN make utils-host BOARD=host \
-    && make -C extra/usb_updater usb_updater2
+# RUN make utils-host BOARD=host \
+RUN make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
 RUN PACKAGE="ec3po" python3 setup_ec.py bdist_wheel
@@ -141,10 +141,10 @@ RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
 
 RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shflags
 
-RUN strip /ec/extra/usb_updater/usb_updater2 \
-          /ec/build/host/util/stm32mon \
-          /ec/build/host/util/uartupdatetool \
-          /ec/build/host/util/iteflash
+RUN strip /ec/extra/usb_updater/usb_updater2
+        #   /ec/build/host/util/stm32mon \
+        #   /ec/build/host/util/uartupdatetool \
+        #   /ec/build/host/util/iteflash
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
@@ -156,7 +156,7 @@ RUN wget  https://github.com/protocolbuffers/protobuf/releases/download/v3.19.3/
 # Version is set to match version of protoc in the chroot
 # When updating package versions, also update protoc to x.y.z in:
 # chromium/src/third_party/portage-stable/dev-libs/protobuf/protobuf-x.y.z.ebuild
-RUN cd /protobuf-3.19.3/ && ./configure && make && make check && make install && ldconfig
+RUN cd /protobuf-3.19.3/ && ./configure && make -j $(grep -c   "^processor" /proc/cpuinfo) && make check && make install && ldconfig
 
 ######################################################################
 FROM libftdi as hdctools-builder
@@ -296,15 +296,15 @@ COPY --from=chromiumos_overlays \
 
 # Install ec tools
 COPY --from=ec-builder \
-    /ec/build/host/util/ectool \
-    /ec/build/host/util/ec_parse_panicinfo \
-    /ec/build/host/util/ec_sb_firmware_update \
+    # /ec/build/host/util/ectool \
+    # /ec/build/host/util/ec_parse_panicinfo \
+    # /ec/build/host/util/ec_sb_firmware_update \
     /ec/extra/usb_updater/usb_updater2 \
-    /ec/build/host/util/stm32mon \
-    /ec/build/host/util/uartupdatetool \
-    /ec/build/host/util/iteflash \
-    /ec/util/flash_ec \
-    /ec/util/uart_stress_tester.py \
+    # /ec/build/host/util/stm32mon \
+    # /ec/build/host/util/uartupdatetool \
+    # /ec/build/host/util/iteflash \
+    # /ec/util/flash_ec \
+    # /ec/util/uart_stress_tester.py \
     /usr/sbin/
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 
