@@ -43,10 +43,6 @@ class macro(hw_driver.HwDriver):
                                 for name in map(lambda x: x[0], rule)))
     self._get_list = self._params.get('get_value', all_controls).split()
 
-  def _has_control(self, control):
-    """Returns True if control is available in current interface."""
-    return self._interface._syscfg.is_control(control)
-
   def _set(self, new_state):
     """Transit to a new state."""
     state_name = str(new_state)
@@ -55,7 +51,7 @@ class macro(hw_driver.HwDriver):
                                     % (state_name, self._states.keys()))
 
     for control, state in self._states[state_name]:
-      if not self._has_control(control):
+      if not self._interface.has(control):
         logging.info("Ignore setting non-exist control '%s' to '%s'.",
                      control, state)
         continue
@@ -80,7 +76,7 @@ class macro(hw_driver.HwDriver):
       # To match, at least one control must be in self._get_list.
       matched = 0
       for control, state in rules:
-        if control not in self._get_list or not self._has_control(control):
+        if control not in self._get_list or not self._interface.has(control):
           continue
         if get_value(control) == 'not_applicable':
           continue

@@ -366,10 +366,6 @@ class Servod(object):
     # Run the method again, as it will find the entries now in the cache.
     return self._get_param_drv(control_name, is_get)
 
-  def _has_control(self, control):
-    """Returns True if control is available in servod."""
-    return self._syscfg.is_control(control)
-
   def doc_all(self):
     """Return all documenation for controls.
 
@@ -451,6 +447,10 @@ class Servod(object):
     except KeyError:
       self._logger.debug("'%s_serialname' not found!", name)
       return 'unknown'
+
+  def has(self, name):
+    """Returns True if control is available in servod."""
+    return self._syscfg.is_control(name)
 
   def get(self, name):
     """Get control value.
