@@ -99,11 +99,6 @@
     drv="ec" map="yesno" clobber_ok=""></params>
   </control>
   <control>
-    <name>ccd_keepalive_en</name>
-    <doc>Enable/disable keepalive on CCD</doc>
-    <params clobber_ok="" init="on"></params>
-  </control>
-  <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="9" drv="fw_wp_ccd" input_type="str"
