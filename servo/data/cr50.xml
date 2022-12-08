@@ -182,7 +182,7 @@
     interface="9" drv="cr50" map="enabled_re"
     clobber_ok="" ></params>
     <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="9"
-    drv="cr50" input_type="str" clobber_ok="" init="on" ></params>
+    drv="cr50" input_type="str" clobber_ok="" init="open" ></params>
   </control>
   <control>
     <name>gsc_reset_count</name>
