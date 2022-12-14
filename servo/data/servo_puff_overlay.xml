@@ -15,6 +15,9 @@
   <include>
     <name>warm_reset_reconf.xml</name>
   </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>
@@ -52,11 +55,5 @@
   <control>
     <name>jtag_vref_sel1</name>
     <params clobber_ok="" init="off"></params>
-  </control>
-  <control>
-    <name>pch_disable</name>
-    <alias>cr50_reset_odl,gsc_reset</alias>
-    <doc>Force cr50 power-on reset</doc>
-    <params clobber_ok=""></params>
   </control>
 </root>
