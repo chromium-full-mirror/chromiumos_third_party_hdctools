@@ -41,36 +41,40 @@ class selectControl(hw_driver.HwDriver):
 
   def _Set_select(self, val):
     """Set the control to use."""
+    if not val:
+        return
     control_key = self._get_control_key()
-    self._interface.selected_controls[control_key] = val
+    self._logger.info('%s -> %s', control_key, val)
+    self._interface.selected_controls[control_key] = self._prefix + val
 
   def _Get_select(self):
     """Get the control value."""
-    if not self._get_selected_control():
+    control_key = self._get_control_key()
+    if control_key not in self._interface.selected_controls:
       self._Set_select(self._params['init'])
-    return self._get_selected_control()
+    rv = self._interface.selected_controls.get(control_key, '')
+    if rv:
+      self._logger.info('using %r for %r', rv, control_key)
+    return rv
 
   def _Get_control(self):
     """Get the value from the selected control."""
     selected_control = self._get_selected_control()
-    return self._interface_get(selected_control)
+    return self._interface.get(selected_control)
 
   def _Set_control(self, value):
     """Set the selected control to value."""
     selected_control = self._get_selected_control()
-    return self._interface_set(selected_control, value)
+    return self._interface.set(selected_control, value)
 
   def _get_control_key(self):
     """Get the base control name."""
     control_name = self._params.get('control_name', '')
     if not control_name:
       raise selectControlError('control_name not found')
-    return self._prefix + control_name.partition(self.SELECT_SUFFIX)[0]
+    return control_name.partition(self.SELECT_SUFFIX)[0]
 
   def _get_selected_control(self):
     """Return the control being used."""
-    control_key = self._get_control_key()
-    rv = self._interface.selected_controls.get(control_key, '')
-    if rv:
-      self._logger.debug('using %r for %r', rv, control_key)
-    return rv
+    control_name = self._params.get('control_name', '')
+    return self._interface.get(control_name + self.SELECT_SUFFIX)
