@@ -9,7 +9,7 @@ Presently this is used for the following purposes:
   - set-only controls:
     - pwr_button_hold
     - uart_multicmd
-    - cr50_reboot
+    - gsc_reboot
 """
 from servo.drv import hw_driver
 

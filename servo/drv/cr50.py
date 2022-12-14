@@ -142,7 +142,7 @@ class cr50(pty_driver.ptyDriver):
     """CCD doesn't support pwr_button. Tell user about pwr_button_hold"""
     raise cr50Error('pwr_button not supported use pwr_button_hold')
 
-  def _Set_cr50_reboot(self, _):
+  def _Set_gsc_reboot(self, _):
     """Reboot cr50 ignoring the value."""
     self._issue_cmd('reboot')
 
