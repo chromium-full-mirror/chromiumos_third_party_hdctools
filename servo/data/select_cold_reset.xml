@@ -1,15 +1,20 @@
 <?xml version="1.0"?>
 <root>
   <control>
+    <name>cold_reset</name>
+    <clone>cold_reset_default</clone>
+    <params clobber_ok=""></params>
+  </control>
+  <control>
     <name>cold_reset_select</name>
     <doc>Set the control used for cold reset</doc>
-    <params interface="servo" drv="select_control" input_type="str"
-    clobber_ok=""/>
+    <params interface="servo" drv="select_control" subtype="select"
+    input_type="str" init="cold_reset_default" clobber_ok=""/>
   </control>
   <control>
     <name>cold_reset</name>
     <doc>Use EC reset or GSC reset to hold the device in reset</doc>
-    <params interface="servo" drv="select_control" map="onoff_i"
-    clobber_ok=""/>
+    <params interface="servo" drv="select_control" subtype="control"
+    clobber_ok="" input_type="str"/>
   </control>
 </root>
