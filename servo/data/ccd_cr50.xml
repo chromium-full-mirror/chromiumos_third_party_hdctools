@@ -57,13 +57,10 @@
   </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
-    <name>cold_reset</name>
+    <name>gsc_ec_reset</name>
+    <clone>cold_reset</clone>
     <doc>cold_reset (active low).</doc>
-    <params cmd="get" uart_cmd="ecrst"
-    regex="EC_RST_L is (asserted|deasserted)" group="1" 
-    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
-    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    <params init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>ccd_state</name>
