@@ -94,8 +94,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     Args:
       value: 1 to hold H1 in reset, 0 to release H1 from reset.
     """
-    # The signal is active low, so value has to be inverted.
-    self._issue_cmd('h1_reset %s' % int(value == 0))
+    self._issue_cmd('h1_reset %s' % value)
 
   def _Get_pwr_button(self):
     """Gets the current power button state for DUT.
