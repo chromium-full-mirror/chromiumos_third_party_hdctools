@@ -4,9 +4,6 @@
 """Driver for c2d2 specific controls through ec3po.
 """
 
-import logging
-import time
-
 from servo.drv import ec3po_servo
 from servo.drv import pty_driver
 
@@ -44,7 +41,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
   def _Get_ec_uart_en(self):
     """Returns '1' if the EC UART output is enabled. '0' if it's disabled."""
     rv = self._issue_cmd_get_results('gpioget EN_CLK_CSN_EC_UART',
-                                     ['\s+([01])\*?\s+EN_CLK_CSN_EC_UART'])
+                                     [r'\s+([01])\*?\s+EN_CLK_CSN_EC_UART'])
     return rv[0][1]
 
   def _Set_ec_uart_en(self, value):
@@ -64,7 +61,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     """
     # EC UART is connected to USART1
     result = self._issue_cmd_get_results('hold_usart usart1',
-      ['status: (\w+)'])[0][1]
+      [r'status: (\w+)'])[0][1]
     if result == 'normal':
         return 'off'
     return 'on'
@@ -85,7 +82,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
       1 if H1 is being held in reset. 0 if H1 can run normally.
     """
     result = self._issue_cmd_get_results('h1_reset',
-      ['H1 reset held: (\w+)'])[0][1]
+      [r'H1 reset held: (\w+)'])[0][1]
     return int(result == 'yes')
 
   def _Set_h1_reset(self, value):
@@ -104,7 +101,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
       'off' if power button is released
     """
     result = self._issue_cmd_get_results('pwr_button',
-      ['Power button held: (\w+)'])[0][1]
+      [r'Power button held: (\w+)'])[0][1]
     return result
 
   def _Set_pwr_button(self, value):
@@ -122,7 +119,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
       Rail voltage in mV
     """
     result = self._issue_cmd_get_results('enable_spi',
-      ['SPI Vref: (\d+)'])[0][1]
+      [r'SPI Vref: (\d+)'])[0][1]
     return result
 
   def _Set_spi_vref(self, value):
@@ -142,7 +139,7 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     bus = self._params['bus']
     result = self._issue_cmd_get_results('enable_i2c %s' % bus,
       # The original C2D2 Console responded with kpbs instead of kbps :(
-      ['I2C speed k[bp]+s: (\d+)'])[0][1]
+      [r'I2C speed k[bp]+s: (\d+)'])[0][1]
     return result
 
   def _Set_i2c_speed(self, value):
@@ -161,5 +158,5 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
       1 if H1 vref is present, otherwise 0
     """
     result = self._issue_cmd_get_results('h1_vref',
-      ['H1 Vref: (\w+)'])[0][1]
+      [r'H1 Vref: (\w+)'])[0][1]
     return int(result == 'on')
