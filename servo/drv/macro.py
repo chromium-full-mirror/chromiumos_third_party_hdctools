@@ -14,9 +14,9 @@ class macro(hw_driver.HwDriver):
   'set_value_on'. Its value should be a list of controls to set, in
   `${control}:${state}` format. For example, 'spi2_verf:pp1800 spi_buf_en:on'.
 
-  If parameter 'get_value' is set, the value must be a list of controls that
+  If parameter 'get_controls' is set, the value must be a list of controls that
   will be evaluated to decide final state. This can be useful if you must ignore
-  few write-only controls. If 'get_value' is not set, it will default to the
+  few write-only controls. If 'get_controls' is not set, it will default to the
   list of all controls in 'set_value_*' parameters.
   """
 
@@ -38,9 +38,8 @@ class macro(hw_driver.HwDriver):
         macro_val = key[len(str_prefix):]
         self._states[macro_val] = [item.split(':', 1) for item in value.split()]
 
-    all_controls = ' '.join(set(name for rule in self._states.values()
-                                for name in map(lambda x: x[0], rule)))
-    self._get_list = self._params.get('get_value', all_controls).split()
+    get_ctrls = self._params.get('get_controls')
+    self._get_controls = None if get_ctrls is None else set(get_ctrls.split())
 
   def _set(self, new_state):
     """Transit to a new state."""
@@ -59,7 +58,7 @@ class macro(hw_driver.HwDriver):
 
   def _get(self):
     """Checks and returns current state."""
-    if not self._get_list:
+    if self._get_controls is not None and not self._get_controls:
       return self._STATE_UNKNOWN
 
     cached = {}
@@ -72,10 +71,12 @@ class macro(hw_driver.HwDriver):
 
     for name, rules in self._states.items():
       # 'rules' is a list of (control, state) tuples.
-      # To match, at least one control must be in self._get_list.
+      # To match, at least one control must be in self._get_controls.
       matched = 0
       for control, state in rules:
-        if control not in self._get_list or not self._interface.has(control):
+        if self._get_controls is not None and control not in self._get_controls:
+          continue
+        if not self._interface.has(control):
           continue
         if get_value(control) == 'not_applicable':
           continue

@@ -10,15 +10,15 @@
     cold_reset. servos should give a cold_reset_efs2 alias to the signal
     they should use with EC-EFS2.
       - ccd: gsc_ec_reset
-	 - req: open ccd
+         - req: open ccd
          - use the gsc ec_reset command to reset the system.
          - the gsc will reset the efs boot_mode when it resets the EC.
       - c2d2: gsc_reset
-	 - gsc_reset resets the GSC. GSC resets boot_mode when its reset
+         - gsc_reset resets the GSC. GSC resets boot_mode when its reset
       - 50pin servo: pch_disable (gsc_reset)
-	 - req: connect the GSC_RST_L signal to the servo pch_disable
-	   pin. This is already a requirement for new boards.
-	 - gsc_reset resets the GSC. GSC resets boot_mode when its reset.
+         - req: connect the GSC_RST_L signal to the servo pch_disable
+           pin. This is already a requirement for new boards.
+         - gsc_reset resets the GSC. GSC resets boot_mode when its reset.
   -->
   <include>
     <name>select_cold_reset.xml</name>
