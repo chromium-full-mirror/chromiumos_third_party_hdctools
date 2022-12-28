@@ -32,13 +32,12 @@ class macro(hw_driver.HwDriver):
     super(macro, self).__init__(interface, params)
     str_prefix = 'set_value_'
 
-    def build_sequence(value):
-      """Parse a string with multiple ${control}:${state} into list of tuple."""
-      return list(k.split(':', 1) for k in value.split())
+    self._states = {}
+    for key, value in self._params.items():
+      if key.startswith(str_prefix):
+        macro_val = key[len(str_prefix):]
+        self._states[macro_val] = [item.split(':', 1) for item in value.split()]
 
-    self._states = dict((k[len(str_prefix):], build_sequence(v))
-                        for k, v in self._params.items()
-                        if k.startswith(str_prefix))
     all_controls = ' '.join(set(name for rule in self._states.values()
                                 for name in map(lambda x: x[0], rule)))
     self._get_list = self._params.get('get_value', all_controls).split()
