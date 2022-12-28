@@ -251,17 +251,16 @@ class SystemConfig(object):
         clobber_ok = False
         params_list = element.findall('params')
 
-        # Modify the interface attributes.
-        for params in params_list:
-          if 'interface' in params.attrib:
-            if params.attrib['interface'] != 'servo':
-              interface_id = int(params.attrib['interface'])
-              params.attrib['interface'] = interface_id + interface_increment
-
-        # Make sure that if |cmd| is defined, it is correctly defined as either
-        # set or get.
         for p in params_list:
-          if 'cmd' in p.attrib and p.attrib['cmd'] not in ['set', 'get']:
+          # Modify the interface attributes.
+          if 'interface' in p.attrib:
+            if p.attrib['interface'] != 'servo':
+              interface_id = int(p.attrib['interface'])
+              p.attrib['interface'] = interface_id + interface_increment
+
+          # Make sure that if |cmd| is defined, it is correctly defined as
+          # either set or get.
+          if 'cmd' in p.attrib and p.attrib['cmd'] not in ('set', 'get'):
             raise SystemConfigError('%s %s cmd has to be set|get, not %r' %
                                     (tag, name, p.attrib['cmd']))
 
