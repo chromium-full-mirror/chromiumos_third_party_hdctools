@@ -248,21 +248,20 @@ class SystemConfig(object):
 
         get_dict = None
         set_dict = None
-        clobber_ok = False
         params_list = element.findall('params')
 
         for p in params_list:
-          # Modify the interface attributes.
-          if 'interface' in p.attrib:
-            if p.attrib['interface'] != 'servo':
-              interface_id = int(p.attrib['interface'])
-              p.attrib['interface'] = interface_id + interface_increment
-
           # Make sure that if |cmd| is defined, it is correctly defined as
           # either set or get.
           if 'cmd' in p.attrib and p.attrib['cmd'] not in ('set', 'get'):
             raise SystemConfigError('%s %s cmd has to be set|get, not %r' %
                                     (tag, name, p.attrib['cmd']))
+
+          # Modify the interface attributes.
+          if 'interface' in p.attrib:
+            if p.attrib['interface'] != 'servo':
+              interface_id = int(p.attrib['interface'])
+              p.attrib['interface'] = interface_id + interface_increment
 
         if len(params_list) == 2:
           assert tag != MAP_TAG, 'maps have only one params entry'
@@ -327,18 +326,19 @@ class SystemConfig(object):
           get_dict['control_name'] = name
           set_dict['control_name'] = name
 
-        clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
-        if (tag == CONTROL_TAG and name in self.syscfg_dict[tag] and
-            not clobber_ok):
-          raise SystemConfigError(
-              "Duplicate %s %s without 'clobber_ok' key\n%s" % (tag, name,
-                                                                element_str))
-
         if tag == MAP_TAG:
           self.syscfg_dict[tag][name] = {'doc': doc, 'map_params': get_dict}
           if alias:
             raise SystemConfigError('No aliases for maps allowed')
           continue
+
+        assert tag == CONTROL_TAG
+
+        clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
+        if name in self.syscfg_dict[tag] and not clobber_ok:
+          raise SystemConfigError(
+              "Duplicate %s %s without 'clobber_ok' key\n%s" % (tag, name,
+                                                                element_str))
 
         if 'init' in set_dict:
           hwinit_found = False
