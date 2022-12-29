@@ -72,6 +72,13 @@
     input_type="float" map="keypress_duration" clobber_ok="" />
   </control>
   <control>
+    <name>usb_keyboard_enter_key</name>
+    <doc>Send enter key via USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="enter_key" interface="servo" drv="kb"
+      input_type="float" handler="usb" map="keypress_duration" clobber_ok="">
+    </params>
+  </control>
+  <control>
     <name>refresh_key</name>
     <doc>Send refresh key either by servoflex or USB KB emulation</doc>
     <params cmd="set" subtype="key" key="refresh_key" interface="servo" drv="kb"
@@ -88,13 +95,6 @@
     <doc>Send sysrq x either by servoflex or USB KB emulation</doc>
     <params cmd="set" subtype="key" key="sysrq_x" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok="" />
-  </control>
-  <control>
-    <name>usb_keyboard_enter_key</name>
-    <doc>Send enter key via USB KB emulation</doc>
-    <params cmd="set" subtype="key" key="enter_key" interface="servo" drv="kb"
-      input_type="float" handler="usb" map="keypress_duration" clobber_ok="">
-    </params>
   </control>
   <control>
     <name>arb_key</name>
