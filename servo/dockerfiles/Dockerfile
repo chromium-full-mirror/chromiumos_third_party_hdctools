@@ -150,8 +150,19 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
           /ec/build/host/util/uartupdatetool \
           /ec/build/host/util/iteflash
 
-
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
+
+######################################################################
+FROM libftdi as gcstool-builder
+
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
+
+WORKDIR /ec
+
+RUN git checkout cr50_stab && git pull && \
+    make -C extra/usb_updater gsctool
+
+RUN strip  /ec/extra/usb_updater/gsctool
 
 ######################################################################
 FROM clang-builder as protoc-builder
@@ -310,6 +321,11 @@ COPY --from=ec-builder \
     /ec/util/flash_ec \
     /ec/util/uart_stress_tester.py \
     /usr/sbin/
+
+COPY --from=gcstool-builder \
+    /ec/extra/usb_updater/gsctool \
+    /usr/sbin/
+
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 
 COPY --from=ec-builder \
