@@ -56,7 +56,7 @@ class SystemConfig(object):
   <map>
     <name>onoff_i</name>
     <doc>assertive low map for on/off</doc>
-    <params on="0" off="1"></params>
+    <params on="0" off="1" />
   </map>
 
   2. Control : Bulk of the system file.  These elements are
@@ -67,32 +67,18 @@ class SystemConfig(object):
   <control>
     <name>warm_reset</name>
     <doc>Reset the device warmly</doc>
-    <params interface="1" drv="gpio" offset="5" map="onoff_i"></params>
+    <params interface="1" drv="gpio" offset="5" map="onoff_i" />
   </control>
-
-
-  TODO(tbroch) Implement sequence or deprecate
-  3. Sequence : List of control calls to create a desired
-  configuration of h/w.  These could certainly be done by writing
-  simple scripts to send individual control calls to the server but
-  encapsulating them into the system file should allow for tighter
-  control of the sequence ... especially if timing of the sequence
-  is paramount.
-
-  <sequence>
-    <name>i2c_mux_seq</name>
-    <cmdlist>i2c_mux_en:off i2c_mux_add:__arg0__ i2c_mux_en:on</cmdlist>
-  </sequence>
 
   Public Attributes:
     control_tags: a dictionary of each base control and their tags if any
     aliases: a dictionary of an alias mapped to its base control name
     syscfg_dict: 3-deep dictionary created when parsing system files.  Its
         organized as [tag][name][type] where:
-        tag: map | control | sequence
+        tag: map | control
         name: string name of tag element
         type: data type of payload either, doc | get | set presently
-          doc: string describing the map,control or sequence
+          doc: string describing the map or control
           get: a dictionary for getting values from named control
           set: a dictionary for setting values to named control
     hwinit: list of control tuples (name, value) to be initialized in order
@@ -655,11 +641,11 @@ class SystemConfig(object):
     return reformat_value
 
   def display_config(self, tag=None, prefix=None):
-    """Display human-readable values of map, control, or sequence.
+    """Display human-readable values of a map or control
 
     Args:
-      tag  : string of either 'map' | 'control' | 'sequence' or None for all
-      prefix: prefix string to print infront of control tags
+      tag: 'map' or 'control' or None for all
+      prefix: prefix string to print in front of control tags
 
     Returns:
       string to be displayed.
