@@ -103,9 +103,21 @@
     input_type="float" map="keypress_duration" clobber_ok="" />
   </control>
   <control>
+    <name>usb_arb_key</name>
+    <doc>Send an arbitrary key by USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="arb_key" interface="servo" drv="kb"
+    input_type="float" handler="usb" map="keypress_duration" clobber_ok="" />
+  </control>
+  <control>
     <name>arb_key_config</name>
-    <doc>Send an arbitrary key either by servoflex or USB KB emulation</doc>
+    <doc>Set the arbitrary key that arb_key control will send (if USB KB emulation is the default keyboard then this will affect usb_arb_key control too)</doc>
     <params cmd="set" subtype="arb_key_config" interface="servo" drv="kb"
     input_type="str" clobber_ok="" key="" />
+  </control>
+  <control>
+    <name>usb_arb_key_config</name>
+    <doc>Set the arbitrary key that usb_arb_key control will send</doc>
+    <params cmd="set" subtype="arb_key_config" interface="servo" drv="kb"
+    input_type="str" handler="usb" clobber_ok="" key="" />
   </control>
 </root>

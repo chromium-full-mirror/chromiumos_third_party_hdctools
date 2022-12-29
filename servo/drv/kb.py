@@ -33,6 +33,14 @@ class kb(hw_driver.HwDriver):
       raise KbError('Unknown keyboard handler requested: %s' % self._handler)
     self._key = params['key']
 
+  def _GetKeyboard(self):
+    """Get the correct keyboard to use."""
+    keyboard = (self._interface._usb_keyboard if self._handler == 'usb' else
+                self._interface._keyboard)
+    if not keyboard:
+      raise KbError('Keyboard %s handler not setup.' % (self._handler,))
+    return keyboard
+
   def _Set_key(self, duration):
     """Press key combo for |duration| seconds.
 
@@ -46,20 +54,15 @@ class kb(hw_driver.HwDriver):
       KbError: if key is not a member of kb_precanned map.
     """
     turn_off_needed = False
-    keyboard = self._interface._keyboard
-    if self._handler == 'usb':
-      keyboard = self._interface._usb_keyboard
-    if not keyboard:
-      raise KbError('Keyboard handler not setup.')
+    keyboard = self._GetKeyboard()
     if not keyboard.is_open():
       turn_off_needed = True
       self._logger.info('Keyboard %s handler not setup. Turning on now.',
                         self._handler)
       keyboard.open()
-    try:
-      func = getattr(keyboard, self._key)
-    except AttributeError:
-      raise KbError('Key %s not found.' % self._key)
+    func = getattr(keyboard, self._key, None)
+    if func is None:
+      raise KbError('Key %r not found.' % (self._key,))
     func(press_secs=duration)
     if turn_off_needed:
       self._logger.info('Keyboard was not on for call. Turning it off again.')
@@ -71,4 +74,4 @@ class kb(hw_driver.HwDriver):
     Args:
       key: the key to press when arb_key is called
     """
-    self._interface._keyboard.arb_key_config(key)
+    self._GetKeyboard().arb_key_config(key)
