@@ -13,6 +13,8 @@ import xml.etree.ElementTree
 # valid tags in system config xml.  Any others will be ignored
 MAP_TAG = 'map'
 CONTROL_TAG = 'control'
+CLOBBER_ATTR = 'clobber_ok'
+CLOBBER_FULL = 'full'
 SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG]
 ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
 
@@ -168,7 +170,9 @@ class SystemConfig(object):
 
     Special key parameters in config files:
       clobber_ok: signifies this control may _clobber_ an existing definition
-        of the same name.  Note, its value is ignored ( clobber_ok='' )
+        of the same name.  If its value is "full" then parameters from the
+        clobbered control are completely thrown away, otherwise only those
+        which are also specified in this control will be replaced.
 
     NOTE, method is recursive when parsing 'include' elements from XML.
 
@@ -334,16 +338,18 @@ class SystemConfig(object):
 
         assert tag == CONTROL_TAG
 
-        clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
-        if name in self.syscfg_dict[tag] and not clobber_ok:
-          raise SystemConfigError(
-              "Duplicate %s %s without 'clobber_ok' key\n%s" % (tag, name,
-                                                                element_str))
+        clobber_ok = set_dict.get(CLOBBER_ATTR)
+        if clobber_ok != CLOBBER_FULL:
+          clobber_ok = get_dict.get(CLOBBER_ATTR, clobber_ok)
+
+        if name in self.syscfg_dict[tag] and clobber_ok is None:
+          raise SystemConfigError("Duplicate %s %s without %r key\n%s" % (
+              tag, name, CLOBBER_ATTR, element_str))
 
         if 'init' in set_dict:
           hwinit_found = False
           # only allow one hwinit per control
-          if clobber_ok:
+          if clobber_ok is not None:
             for i, (hwinit_name, _) in enumerate(self.hwinit):
               if hwinit_name == name:
                 self.hwinit[i] = (name, set_dict['init'])
@@ -353,22 +359,23 @@ class SystemConfig(object):
           if not hwinit_found:
             self.hwinit.append((name, set_dict['init']))
 
-        if clobber_ok and name in self.syscfg_dict[tag]:
-          # it's an existing control
+        if patch and name not in self.syscfg_dict[tag]:
+          self._logger.debug('Cannot patch nonexistent control %s.' % name)
+          continue
+
+        if (clobber_ok is not None and clobber_ok != CLOBBER_FULL and
+            name in self.syscfg_dict[tag]):
           self.syscfg_dict[tag][name]['get_params'].update(get_dict)
           self.syscfg_dict[tag][name]['set_params'].update(set_dict)
           if doc != 'undocumented':
             self.syscfg_dict[tag][name]['doc'] = doc
         else:
-          if patch:
-            self._logger.debug('Cannot patch nonexistent control %s.' % name)
-            continue
-          # it's a new control
           self.syscfg_dict[tag][name] = {
               'doc': doc,
               'get_params': get_dict,
               'set_params': set_dict
           }
+
         if alias:
           for aliasname in (elem.strip() for elem in alias.split(',')):
             if name_prefix:
