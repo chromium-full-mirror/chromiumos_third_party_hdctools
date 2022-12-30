@@ -4,7 +4,7 @@
     <!-- This is the same as cpu_fw_spi_pp1800.xml, except with
          spi2_vref changed from pp1800 to pp3300. -->
     <name>cpu_fw_spi</name>
-    <params clobber_ok="full" interface="servo" drv="macro" map="onoff">
+    <params interface="servo" drv="macro" map="onoff">
       <content>
         <item key="macro_map">
           <item key="1">

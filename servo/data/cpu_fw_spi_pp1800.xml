@@ -5,7 +5,7 @@
          spi2_vref changed from pp3300 to pp1800. -->
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over servo</doc>
-    <params clobber_ok="full" interface="servo" drv="macro" map="onoff">
+    <params interface="servo" drv="macro" map="onoff">
       <content>
         <item key="macro_map">
           <item key="1">
