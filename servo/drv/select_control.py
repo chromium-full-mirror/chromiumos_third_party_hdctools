@@ -32,60 +32,46 @@ class selectControl(hw_driver.HwDriver):
       params: dictionary of params
       servod: Servod that is used for cross-servo-device communication
     """
+    # Maps don't translate correctly when the selected control changes. Ignore
+    # the maps. servo.get(selected_control) will handle the mapping.
+    if 'map' in params:
+        del params['map']
     super(selectControl, self).__init__(interface, params, servod)
     if not hasattr(self._servod, 'selected_controls'):
       self._servod.selected_controls = {}
 
-  def _get(self):
+  def _Set_select(self, val):
+    """Set the control to use."""
+    control_key = self._get_control_key()
+    self._servod.selected_controls[control_key] = val
+
+  def _Get_select(self):
     """Get the control value."""
-    control_name = self._params.get('control_name', None)
-    if not control_name:
-      raise selectControlError('Need control_name to modify control')
+    if not self._get_selected_control():
+      self._Set_select(self._params['init'])
+    return self._get_selected_control()
 
-    # Return the selected control
-    select, control_key = self._get_control_key_info(control_name)
-    if select:
-      return self._servod.selected_controls.get(control_key, '')
-
-    # Return the value from the selected control
-    selected_control = self._get_selected_control(control_key)
+  def _Get_control(self):
+    """Get the value from the selected control."""
+    selected_control = self._get_selected_control()
     return self._servod_get(selected_control)
 
-  def _get_control_key_info(self, control_name):
-    """Get the base control information
+  def _Set_control(self, value):
+    """Set the selected control to value."""
+    selected_control = self._get_selected_control()
+    return self._servod_set(selected_control, value)
 
-    Returns:
-        A tuple (True if control_name ends with '_select', The key string used
-                 in the selected_controls dictionary)
-    """
-    select = control_name.endswith(self.SELECT_SUFFIX)
-    if select:
-        return (True, control_name.rsplit(self.SELECT_SUFFIX, 1)[0])
-    return (False, control_name)
-
-  def _get_selected_control(self, control_key):
-    """Return the control being used."""
-    selected_control = self._servod.selected_controls.get(control_key, None)
-    if not selected_control:
-      raise selectControlError('%r not set' % control_key)
-    return selected_control
-
-  def _set(self, logical_value):
-    """Set the control to |logical_value|.
-
-    Args:
-      logical_value: Integer value to write to hardware.
-    """
-    control_name = self._params.get('control_name', None)
+  def _get_control_key(self):
+    """Get the base control name."""
+    control_name = self._params.get('control_name', '')
     if not control_name:
-      raise selectControlError('Need control_name to modify control')
+      raise selectControlError('control_name not found')
+    return self._prefix + control_name.partition(self.SELECT_SUFFIX)[0]
 
-    select, control_key = self._get_control_key_info(control_name)
-    if select:
-      # Change the selected control
-      self._logger.info('%s -> %s', control_key, logical_value)
-      self._servod.selected_controls[control_key] = logical_value
-      return
-    # Set the value of the selected control
-    selected_control = self._get_selected_control(control_key)
-    self._servod_set(selected_control, logical_value)
+  def _get_selected_control(self):
+    """Return the control being used."""
+    control_key = self._get_control_key()
+    rv = self._servod.selected_controls.get(control_key, '')
+    if rv:
+      self._logger.debug('using %r for %r', rv, control_key)
+    return rv

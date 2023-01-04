@@ -819,58 +819,50 @@
   <control>
     <name>STUD_EVB_BASE_BANK_A</name>
     <doc>All pins on BASE_BANK_A, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="0" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="1" end_offset="1" bank_type="BASE" bank_str="A"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BASE" bank_str="A"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_BANK_B</name>
     <doc>All pins on BASE_BANK_B, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="2" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="2" end_offset="3" bank_type="BASE" bank_str="B"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BASE" bank_str="B"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_BANK_C</name>
     <doc>All pins on BASE_BANK_C, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="4" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="3" end_offset="5" bank_type="BASE" bank_str="C"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BASE" bank_str="C"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_BANK_D</name>
     <doc>All pins on BASE_BANK_D, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x23" port="0"
-    offset="0" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="1" end_offset="1" bank_type="BASE" bank_str="D"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BASE" bank_str="D"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_BANK_A</name>
     <doc>All pins on BRICK_BANK_A, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="0" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="1" end_offset="1" bank_type="BRICK" bank_str="A"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BRICK" bank_str="A"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_BANK_B</name>
     <doc>All pins on BRICK_BANK_B, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x22" port="1"
-    offset="2" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="2" end_offset="3" bank_type="BRICK" bank_str="B"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BRICK" bank_str="B"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_BANK_C</name>
     <doc>All pins on BRICK_BANK_C, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="4" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="3" end_offset="5" bank_type="BRICK" bank_str="C"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BRICK" bank_str="C"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_BANK_D</name>
     <doc>All pins on BRICK_BANK_D, see EVB schematics.</doc>
-    <params interface="2" drv="stud_evb" child="0x23" port="1"
-    offset="2" input_type="str" mux_chan="0" subtype="whole_bank"
-    end_port="2" end_offset="3" bank_type="BRICK" bank_str="D"/>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="whole_bank" bank_type="BRICK" bank_str="D"/>
   </control>
 
 

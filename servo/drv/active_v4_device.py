@@ -111,7 +111,7 @@ class activeV4Device(hw_driver.HwDriver):
     if self._servod._can_control_cr50:
       # Cr50 can't detect servo if CCD EC uart is enabled. Enable cr50 servo
       # detection just in case ccd is blocking it.
-      if self._servod_get('cr50_servo') == 'undetectable' and use_servo:
+      if self._servod_get('cr50_servo') in ['undetectable', 'ignored'] and use_servo:
         self._servod_set('cr50_force_servo_detect', 'on')
 
       # Give Cr50 enough time to detect the new state.

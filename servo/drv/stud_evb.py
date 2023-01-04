@@ -36,7 +36,7 @@ class studEvb(hw_driver.HwDriver):
 
     Args:
       interface: FTDI interface object to handle low-level communication to
-          control
+          control or the servo_server.Servod for a whole_bank subtype
       params: dictionary of params (k=v pairs) needed to perform operations on a driver
 
     Attributes:
@@ -44,6 +44,12 @@ class studEvb(hw_driver.HwDriver):
       ioex: Pi4Ioe5 instance to talk to on-board ioexpander
     """
     super(studEvb, self).__init__(interface, params)
+    if 'subtype' in self._params:
+      # Whole bank use control names, so no direct access to i2c interface required
+      if self._params['subtype'] == 'whole_bank':
+          self.i2c_mux = None
+          self.ioex = None
+          return
     self.i2c_mux = pi4msd.pi4Msd(interface, params)
     self.ioex = pi4ioe5.pi4Ioe5(interface, params)
 
@@ -383,99 +389,58 @@ class studEvb(hw_driver.HwDriver):
     return retval
 
   def _get_bank_params(self):
-    """Helper to get bank information from params. It returns credentials of
-    start pin and end pin of particular bank.
+    """Helper to get bank information from params. It returns bank type and name
 
     Return:
-      bank_data: Tuple (start_port, start_pin, end_port, end_pin)
+      bank_data: Tuple (bank_type, bank_str)
     """
-    if 'port' not in self._params or 'offset' not in self._params or \
-       'end_port' not in self._params or 'end_offset' not in self._params:
-      raise StudEvbError('getting bank pins credentials')
-
-    start_port = int(self._params['port'])
-    start_pin = int(self._params['offset'])
-    end_port = int(self._params['end_port'])
-    end_pin = int(self._params['end_offset'])
-
-    return (start_port, start_pin, end_port, end_pin)
-
-  def _get_bank_pins(self):
-    """Helper to go through all pins in particular bank
-
-    Returns:
-      Pins: list of strings with pins configuration, one line for each pin:
-        <BASE|BRICK><_BANK_><A..D><0..9>:<gpio_state>,<I | O>,<N/PU/PD | PP/OD>
-    """
-    bank_pins = self._get_bank_params()
-
     if 'bank_type' not in self._params or 'bank_str' not in self._params:
       raise StudEvbError('gettin bank_type and bank_str')
 
     bank_type = self._params['bank_type']
     bank_str = self._params['bank_str']
 
-    retval = ''
+    return (bank_type, bank_str)
 
-    pin_cnt = 0
-    for port in range(self.ioex.PORT_CNT):
-      for pin in range(self.ioex.PINS_PER_PORT):
-        if (port == bank_pins[0] and pin >= bank_pins[1]) or \
-           (port == bank_pins[2] and pin <= bank_pins[3]):
-          pin_params = copy.copy(self._params)
-          retval += ("%s_BANK_%s%d:" % (bank_type, bank_str, pin_cnt))
-          pin_params = copy.copy(self._params)
-          pin_params['port'] = str(port)
-          pin_params['offset'] = str(pin)
-          pin_ioex = pi4ioe5.pi4Ioe5(self._interface,pin_params)
-          retval += pin_ioex._get()
-          retval += '\n'
-          pin_cnt += 1
+  def _get_bank_pin_controls(self, bank_type, bank_str):
+    """Helper to get all pin control names in particular bank
 
-    return retval
+    Args:
+      bank_type: Bank type string (BASE or BRICK)
+      bank_str: Bank name string (A, B, C or D)
+
+    Returns:
+      Pins: list of strings which pin controls names:
+        ["STUD_EVB_<bank_type>_IO_<bank_str>0", "STUD_EVB_<bank_type>_IO_<bank_str>1",
+        ..., "STUD_EVB_<bank_type>_IO_<bank_str>9"]
+    """
+    return ["STUD_EVB_" + bank_type + "_IO_" + bank_str + str(i) for i in range(10)]
 
   def _Get_whole_bank(self):
     """Subtype function to handle get() invocation on BANK controls. Each bank
     consist of 10 pins grouped together in 1 ioex on Lego EVB.
 
     Returns:
-      Pins: See _get_bank_pins() for details
+      Pins: list of strings with pins configuration, one line for each pin:
+        <BASE|BRICK><_BANK_><A..D><0..9>:<gpio_state>,<I | O>,<N/PU/PD | PP/OD>
     """
-    mux_reg = self.i2c_mux._get()
-    self.i2c_mux._set(1)
-    retval = self._get_bank_pins()
-    self.i2c_mux._set(1, mux_reg)
+    bank_type, bank_str = self._get_bank_params()
+    pin_controls = self._get_bank_pin_controls(bank_type, bank_str)
+    retval = ''
+    for control in pin_controls:
+      # Get pin number from last char in control name
+      pin = control[-1]
+      retval += ("%s_BANK_%s%s:" % (bank_type, bank_str, pin))
+      retval += self._servod_get(control)
+      retval += '\n'
+
     return retval
 
-  def _set_bank(self, fn_name, *fn_args):
-    """Helper function to iterate through all pins in bank and invoke set() on
-    each of them.
-
-    Args:
-      fn_name: string with either "_set_pin_to_input" or "_set_pin_to_output"
-      fn_args: Arguments to be provided to fn_name()
-    """
-    bank_pins = self._get_bank_params()
-
-    for port in range(self.ioex.PORT_CNT):
-      for pin in range(self.ioex.PINS_PER_PORT):
-        if (port == bank_pins[0] and pin >= bank_pins[1]) or \
-           (port == bank_pins[2] and pin <= bank_pins[3]):
-          pin_params = copy.copy(self._params)
-          pin_params['port'] = str(port)
-          pin_params['offset'] = str(pin)
-          pin_ioex = pi4ioe5.pi4Ioe5(self._interface,pin_params)
-          getattr(pin_ioex, fn_name)(*fn_args)
-
-  def _set_bank_to_input(self, pullup):
-    self._set_bank('_set_pin_to_input', pullup)
-
-  def _set_bank_to_output(self, value, opendrain):
-    self._set_bank('_set_pin_to_output', value, opendrain)
-
   def _Set_whole_bank(self, fmt_value):
-    """Subtype function to handle get() invocation on BANK controls. Each bank
+    """Subtype function to handle set() invocation on BANK controls. Each bank
     consist of 10 pins grouped together in 1 ioex on Lego EVB.
     """
-    self.i2c_mux._set(1)
-    self.ioex._check_set_args_and_call(fmt_value, self._set_bank_to_input, self._set_bank_to_output)
+    bank_type, bank_str = self._get_bank_params()
+    pin_controls = self._get_bank_pin_controls(bank_type, bank_str)
+    for control in pin_controls:
+        self._servod_set(control, fmt_value)

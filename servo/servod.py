@@ -448,48 +448,45 @@ class ServodStarter(object):
     self.cleanup()
     sys.exit(self._exit_status)
 
+# Disable Genesys USB3 hubs that come without serial number: Genesys USB
+# hubs are used on Servo v4.1. servod needs to be able to find USB devices
+# attached to servo's ports and due to the way USB3 works, this needs a
+# common identifier. USB has the Container ID property for that but despite
+# the spec stating that it should be unique, we had hubs with identical IDs,
+# and we had IDs changing on firmware updates.
+# Since we know how to set the serial number, we set the hub's serial
+# number to follow servo's (on the STM32) and work from that. Devices without
+# a serial number are out of luck though and we're doing best by disabling
+# USB3 there entirely.
+# Note that the DUT can still access a USB3 device at USB3 speeds: This
+# only affects the host-facing hub.
 def disable_unusable_usb3_hubs():
-  """Disable Genesys USB3 hubs that come without serial number.
+    # The Product ID matches the USB3 side of the hub.
+    hubs = list(usb.core.find(find_all = True,
+                              idVendor = 0x05e3,
+                              idProduct = 0x0625,
+                              serial_number = None))
+    for hub in hubs:
+            hub.detach_kernel_driver(0)
+            hub.set_configuration()
+            # This request resets the hub, leading to new enumeration of the
+            # servo. This won't have detrimental effects on other servod's
+            # servos because they underwent this treatment already and have
+            # no USB3 side that would respond to this.
+            # The setting remains active until servo is powered off (including
+            # the separate USB-C power supply).
+            hub.ctrl_transfer(
+                    bmRequestType = usb.util.build_request_type(
+                            usb.util.CTRL_OUT,
+                            usb.util.CTRL_TYPE_VENDOR,
+                            usb.util.CTRL_RECIPIENT_DEVICE),
+                    bRequest = 0x81,
+                    wValue = 0x5, # USB2-only. USB2/3 operation is 0x6
+                    wIndex = 0,
+                    data_or_wLength = 0)
 
-  Genesys USB
-  hubs are used on Servo v4.1. servod needs to be able to find USB devices
-  attached to servo's ports and due to the way USB3 works, this needs a
-  common identifier. USB has the Container ID property for that but despite
-  the spec stating that it should be unique, we had hubs with identical IDs,
-  and we had IDs changing on firmware updates.
-  Since we know how to set the serial number, we set the hub's serial
-  number to follow servo's (on the STM32) and work from that. Devices without
-  a serial number are out of luck though and we're doing best by disabling
-  USB3 there entirely.
-  Note that the DUT can still access a USB3 device at USB3 speeds: This
-  only affects the host-facing hub.
-  """
-  # The Product ID matches the USB3 side of the hub.
-  hubs = list(usb.core.find(find_all = True,
-                            idVendor = 0x05e3,
-                            idProduct = 0x0625,
-                            serial_number = None))
-  for hub in hubs:
-    hub.detach_kernel_driver(0)
-    hub.set_configuration()
-    # This request resets the hub, leading to new enumeration of the
-    # servo. This won't have detrimental effects on other servod's
-    # servos because they underwent this treatment already and have
-    # no USB3 side that would respond to this.
-    # The setting remains active until servo is powered off (including
-    # the separate USB-C power supply).
-    hub.ctrl_transfer(
-      bmRequestType = usb.util.build_request_type(
-                      usb.util.CTRL_OUT,
-                      usb.util.CTRL_TYPE_VENDOR,
-                      usb.util.CTRL_RECIPIENT_DEVICE),
-      bRequest = 0x81,
-      wValue = 0x5, # USB2-only. USB2/3 operation is 0x6
-      wIndex = 0,
-      data_or_wLength = 0)
-
-  if len(hubs) > 0:
-    time.sleep(2)
+    if len(hubs) > 0:
+        time.sleep(2)
 
 # pylint: disable=dangerous-default-value
 # Ability to pass an arbitrary or artificial cmdline for testing is desirable.

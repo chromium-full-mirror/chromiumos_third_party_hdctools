@@ -62,3 +62,21 @@ class servoWatchdog(hw_driver.HwDriver):
   def _Set_watchdog_remove(self, val):
     """Signal a device may be disconnected."""
     self._update_device_disconnect_ok(val, True)
+
+  def _get_device_from_name(self, name):
+    """Returns the device with the given name."""
+    if name:
+        for device in self._servod.get_devices():
+          if name in device.get_name():
+            return device
+    return None
+
+  def _Get_ccd_state(self):
+    """Check the watchdog to see if ccd is enabled.
+
+    Returns:
+      0: ccd is off.
+      1: ccd is on.
+    """
+    ccd_device = self._get_device_from_name('ccd')
+    return int(ccd_device.is_connected()) if ccd_device else 0

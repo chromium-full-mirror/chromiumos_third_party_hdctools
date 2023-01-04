@@ -37,7 +37,9 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_REC_MODE = 'rec'
   _STATE_FASTBOOT = 'fastboot'
   _STATE_RESET_CYCLE = 'reset'
+  # TODO(b/232990406): remove cr50_reset once all scripts have been updated.
   _STATE_CR50_RESET = 'cr50_reset'
+  _STATE_GSC_RESET = 'gsc_reset'
   _STATE_REC_FORCE_MRC = 'rec_force_mrc'
   _STATE_WARM_RESET = 'warm_reset'
 
@@ -130,16 +132,16 @@ class PowerStateDriver(hw_driver.HwDriver):
     """
     self._cold_reset()
 
-  def _reset_cr50(self):
-    """Reboot cr50 and reset CCD.
+  def _reset_gsc(self):
+    """Reboot GSC and reset CCD.
 
-    Reboot cr50 and reset ccd to recover from the usb reset.
+    Reboot GSC and reset ccd to recover from the usb reset.
     """
-    self._servod_set('cr50_reboot', 'on')
-    # Wait long enough for cr50 to reboot and for usb to have dropped out,
-    # and ServoWatchdog to have reinitialized cr50 interfaces.
+    self._servod_set('gsc_reboot', 'on')
+    # Wait long enough for gsc to reboot and for usb to have dropped out,
+    # and ServoWatchdog to have reinitialized gsc interfaces.
     time.sleep(0.3)
-    # Attempt to reinitialize the device in case the cr50 reenumerated quicker
+    # Attempt to reinitialize the device in case the gsc reenumerated quicker
     # than the polling resolution. By now, if the device did not reenumerate,
     # the Watchdog should be attempting to catch & reinitalize it.
     self._servod.reinitialize()
@@ -157,15 +159,18 @@ class PowerStateDriver(hw_driver.HwDriver):
     elif statename == self._STATE_RESET_CYCLE:
       self._reset_cycle()
     elif statename == self._STATE_CR50_RESET:
-      self._reset_cr50()
+      self._logger.warn('%r is deprecated. Change to gsc_reset', statename)
+      self._reset_gsc()
+    elif statename == self._STATE_GSC_RESET:
+      self._reset_gsc()
     elif statename == self._STATE_WARM_RESET:
       self._warm_reset()
     elif statename == self._STATE_REC_FORCE_MRC:
       self._power_on(self.REC_ON_FORCE_MRC)
     else:
       raise ValueError("Invalid power_state setting: %r. Try one of "
-                       "%r, %r, %r, %r, %r, %r, or %r." %
+                       "%r, %r, %r, %r, %r, %r, %r, or %r." %
                        (statename, self._STATE_ON, self._STATE_OFF,
                         self._STATE_REC_MODE, self._STATE_FASTBOOT,
                         self._STATE_RESET_CYCLE, self._STATE_REC_FORCE_MRC,
-                        self._STATE_WARM_RESET))
+                        self._STATE_WARM_RESET, self._STATE_GSC_RESET))

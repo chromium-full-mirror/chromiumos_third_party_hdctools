@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 import time
 
-from servo.drv import cros_ec_power, ec
+from servo.drv import cros_ec_power
+from servo.drv import ec
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):
@@ -216,15 +217,14 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         #
         # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
         # this will be a no-op.
-        try:
-          if self._servod_get('root.dut_connection_type') == 'type-c':
-              self._servod_set('dut_pd_data_role', 'DFP')
-        except NameError as e:
-          self._logger.debug('Servo is not Type-C')
-          pass
-        except Exception as e:
-          self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
-          pass
+        if (self._servod.has_control('root.dut_connection_type') and
+            self._servod_get('root.dut_connection_type') == 'type-c' and
+            self._servod.has_control('dut_pd_data_role')):
+          try:
+            self._servod_set('dut_pd_data_role', 'DFP')
+          except ec.ecError:
+            self._logger.debug('Failed to set DUT\'s role to DFP',
+                               exc_info=True)
     finally:
       ec_driver._restore_channel()
 
