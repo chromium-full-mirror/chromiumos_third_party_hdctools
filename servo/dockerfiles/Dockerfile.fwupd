@@ -6,7 +6,7 @@ FROM alpine/curl as downloader
 
 WORKDIR /usr/share/hub/
 RUN curl --create-dirs -O --output-dir /usr/share/hub/ \
-    https://fwupd.org/downloads/c6fc09dab559e56a562bc90703c647a0e807b6565eb71237ab7154bac5c13c5f-GenesysLogic_GL3590_64.16.cab
+    https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab
 
 ########################################################################
 FROM debian:bookworm-slim
@@ -18,4 +18,4 @@ WORKDIR /usr/share/hub/
 COPY --from=downloader /usr/share/hub/* /usr/share/hub/
 
 CMD ["fwupdtool", "install", \
-    "/usr/share/hub/c6fc09dab559e56a562bc90703c647a0e807b6565eb71237ab7154bac5c13c5f-GenesysLogic_GL3590_64.16.cab"]
+    "/usr/share/hub/e2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab"]
