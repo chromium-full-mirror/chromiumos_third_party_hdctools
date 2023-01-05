@@ -245,7 +245,7 @@ class Servod(object):
     elif len(candidates) == 1:
       return candidates.pop()._serial
     else:
-      self._logger.info("'%s' is ambiguous as there are multiple matching devices %s", candidates)
+      self._logger.info("'%s' is ambiguous as there are multiple matching devices %s", control_name, candidates)
       return 'unknown'
 
   def set(self, name, wr_val_str):
