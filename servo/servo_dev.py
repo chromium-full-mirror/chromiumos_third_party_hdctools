@@ -43,6 +43,8 @@ class ServoDevice(object):
                                      serialname))
     self._vendor = vid
     self._product = pid
+    template = servo_dev_templates.GetTemplateClass(vid, pid)
+    self._type = template.TYPE if template else ''
     self._serialname = serialname
     self._ifaces_available = threading.Event()
     self._reinit_capable = (vid, pid) in self.REINIT_CAPABLE
@@ -112,6 +114,10 @@ class ServoDevice(object):
   def set_name(self, name):
     """Set the name."""
     self._name = name
+
+  def get_type(self):
+    """Get the type."""
+    return self._type
 
   def usb_devnum(self):
     """Return the current usb devnum."""

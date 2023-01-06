@@ -12,6 +12,15 @@ class servoWatchdogError(hw_driver.HwDriverError):
 
 class servoWatchdog(hw_driver.HwDriver):
   """Class to control the watchdog."""
+  def __init__(self, interface, params):
+    """Initialize all information needed by servo watchdog."""
+    super(servoWatchdog, self).__init__(interface, params)
+
+    # The serial names and devices may be initialized in different orders.
+    # The name may not be set. Set it if it isn't set.
+    for device in self._interface.get_devices():
+      if not device.get_name():
+        self._set_device_name(device)
 
   def _update_device_disconnect_ok(self, name, disconnect_ok):
     """Update if it's ok for the device to disconnect.
@@ -41,10 +50,6 @@ class servoWatchdog(hw_driver.HwDriver):
 
   def _get_device_state(self, device):
     """String of the current device state."""
-    # The serial names and devices may be initialized in different orders.
-    # The name may not be set. Set it if it isn't set.
-    if not device.get_name():
-      self._set_device_name(device)
     connected_str = '' if device.is_connected() else 'dis'
     disconnect_ok_str = ' (disconnect ok)' if device.disconnect_is_ok() else ''
     name = device.get_name()
@@ -74,12 +79,12 @@ class servoWatchdog(hw_driver.HwDriver):
     """Signal a device may be disconnected."""
     self._update_device_disconnect_ok(val, True)
 
-  def _get_device_from_name(self, name):
-    """Returns the device with the given name."""
-    if name:
-        for device in self._interface.get_devices():
-          if name in device.get_name():
-            return device
+  def _get_device_from_type(self, type):
+    """Returns the device with the given type."""
+    if type:
+      for device in self._interface.get_devices():
+        if type in device.get_type():
+          return device
     return None
 
   def _Get_ccd_state(self):
@@ -89,5 +94,6 @@ class servoWatchdog(hw_driver.HwDriver):
       0: ccd is off.
       1: ccd is on.
     """
-    ccd_device = self._get_device_from_name('ccd')
+    ccd_device = self._get_device_from_type('ccd')
+    logging.info(ccd_device)
     return int(ccd_device.is_connected()) if ccd_device else 0
