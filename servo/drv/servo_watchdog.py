@@ -10,7 +10,6 @@ from servo import servo_dev_templates
 class servoWatchdogError(hw_driver.HwDriverError):
   """Exception class for servo watchdog."""
 
-
 class servoWatchdog(hw_driver.HwDriver):
   """Class to control the watchdog."""
 
@@ -63,12 +62,23 @@ class servoWatchdog(hw_driver.HwDriver):
     """Signal a device may be disconnected."""
     self._update_device_disconnect_ok(val, True)
 
-  def _get_device_from_name(self, name):
-    """Returns the device with the given name."""
-    if name:
-        for device in self._servod.get_devices():
-          if name in device.get_name():
-            return device
+  def _get_device_from_type(self, type):
+    """Returns the device with the given type."""
+    if type:
+      # Check main device before checking other devices
+      main_device = self._servod.get_main_device()
+      if type in self._servod.get_main_device().template.TYPE:
+        return main_device
+
+      # If the name matches with multiple devices, error out.
+      candidates = []
+      for device in self._servod.get_devices():
+        if type in device.template.TYPE:
+          candidates.append(device)
+      if len(candidates) == 1:
+        return candidates[0]
+      if len(candidates) > 1:
+        raise servoWatchdogError('Multiple devices %s matching with type %s' % (candidates, name))
     return None
 
   def _Get_ccd_state(self):
@@ -78,5 +88,5 @@ class servoWatchdog(hw_driver.HwDriver):
       0: ccd is off.
       1: ccd is on.
     """
-    ccd_device = self._get_device_from_name('ccd')
+    ccd_device = self._get_device_from_type('ccd')
     return int(ccd_device.is_connected()) if ccd_device else 0
