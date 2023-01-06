@@ -27,7 +27,7 @@ class GenesysHubProgrammer(programmer.Programmer):
   PROGRAMMER_BIN = 'hubFwUpdaterCLI'
 
   # This is the file to program.
-  FW_BIN = 'GL3590-OV7S1_Google_Servo_FW6414.bin'
+  FW_BIN = 'GL3590-OV7S1_Google_Servo_FW6417.bin'
 
   READ_CMD = [PROGRAMMER_BIN, 'version']
 
@@ -35,7 +35,7 @@ class GenesysHubProgrammer(programmer.Programmer):
 
   VERSION_REGEX = re.compile(r'version:(\d+)$')
 
-  FW_VERSION = 6414
+  FW_VERSION = 6417
 
   def __init__(self, force):
     """Initialize the programmer.
