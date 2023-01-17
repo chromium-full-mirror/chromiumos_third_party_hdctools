@@ -65,8 +65,8 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
-            assert (servo_host.starter._servod.get("cold_reset") == "on")
-            assert (servo_host.starter._servod.get("warm_reset") == "on")
+            assert (servo_host.starter._servod.get("cold_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "off")
             assert servo_host.starter._servod.set("warm_reset", "off")
@@ -100,8 +100,8 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
-            assert (servo_host.starter._servod.get("cold_reset") == "on")
-            assert (servo_host.starter._servod.get("warm_reset") == "on")
+            assert (servo_host.starter._servod.get("cold_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "off")
             assert servo_host.starter._servod.set("warm_reset", "off")
@@ -138,11 +138,7 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
             assert (servo_host.starter._servod.get("cold_reset") == "off")
-            # herobrine has special handling for warm_reset
-            if board == 'herobrine':
-                assert (servo_host.starter._servod.get("warm_reset") == "on")
-            else:
-                assert (servo_host.starter._servod.get("warm_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "on")
             assert servo_host.starter._servod.set("warm_reset", "on")
@@ -177,11 +173,7 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
             assert (servo_host.starter._servod.get("cold_reset") == "off")
-            # herobrine has special handling for warm_reset
-            if board == 'herobrine':
-                assert (servo_host.starter._servod.get("warm_reset") == "on")
-            else:
-                assert (servo_host.starter._servod.get("warm_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "on")
             assert servo_host.starter._servod.set("warm_reset", "on")

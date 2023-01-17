@@ -4,7 +4,9 @@
 
 from array import array
 
-
+# Currently all the pty data are collected manually from physical hardware tools
+# by intercepting and logging the pty data of servod.
+# We plan to automate it and collecting it with a script in the lab.
 MOCKED_CR50_AP_DATA = {
     b"": b"\r\n>",
 }
@@ -224,8 +226,8 @@ MOCKED_SERVO_MICRO_SERVO41_CONSOLE_DATA = {
 }
 
 MOCKED_SERVO_MICRO_I2C_DATA = {
-    b"[0, 32, 1, 1, 0]": [array("B", [0, 0, 0, 0, 3])],
-    b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 0])],
+    b"[0, 32, 1, 1, 0]": [array("B", [0, 0, 0, 0, 255])],
+    b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 255])],
     b"[0, 32, 1, 1, 2]": [array("B", [0, 0, 0, 0, 255])],
     b"[0, 32, 1, 1, 6]": [array("B", [0, 0, 0, 0, 252])],
     b"[0, 32, 1, 1, 7]": [array("B", [0, 0, 0, 0, 255])],
@@ -242,7 +244,7 @@ MOCKED_SERVO_MICRO_EC_DATA = {
     b"chan save": b"",
     b"gpioget LID_OPEN": b"",
     b"lidstate": b"",
-    b"powerinfo": b"",
+    b"powerinfo": b"powerinfo\r\n[424278.745078 power state 3 = S0, in 0x000f]\r\n> ",
     b"power on": b"",
     b"version": b"",
 }
@@ -295,7 +297,7 @@ MOCKED_C2D2_EC_DATA = {
     b"chan save": b"",
     b"gpioget LID_OPEN": b"",
     b"lidstate": b"",
-    b"powerinfo": b"",
+    b"powerinfo": b"powerinfo\r\n[424278.745078 power state 3 = S0, in 0x000f]\r\n> ",
     b"power off": b"",
     b"version": b"",
 }
