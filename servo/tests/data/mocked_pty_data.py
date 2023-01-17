@@ -55,7 +55,6 @@ MOCKED_SERVO41_CONSOLE_DATA = {
     b"gpioget FASTBOOT_DUTHUB_MUX_SEL": b"gpioget FASTBOOT_DUTHUB_MUX_SEL\r\n  1* O H FASTBOOT_DUTHUB_MUX_SEL\r\n> ",
     b"gpioget SBU_MUX_EN": b"gpioget SBU_MUX_EN\r\n  1* O H SBU_MUX_EN\r\n> ",
     b"gpioget USB_FAULT_L": b"gpioget USB_FAULT_L\r\nParameter 1 invalid\r\n> ",
-    b"gpioget USERVO_FAULT_L": b"gpioget USERVO_FAULT_L\r\nParameter 1 invalid\r\n> ",
     b"gpioget USERVO_FAULT_L": b"gpioget USERVO_FAULT_L\r\nParameter 1 invalid\r\n>\r\n> ",
     b"gpioset ATMEL_HWB_L 1": b"gpioset ATMEL_HWB_L 1\r\n> ",
     b"macaddr": b"macaddr\r\nMAC address: 88:54:1f:0f:6a:95\r\n> ",
@@ -120,7 +119,6 @@ MOCKED_SERVO41_I2C_DATA = {
     b"[0, 64, 3, 2, 5, 127, 255]": [array("B", [0, 0, 0, 0, 127, 255])],
     b"[0, 65, 1, 2, 0]": [array("B", [0, 0, 0, 0, 65, 39])],
     b"[0, 65, 1, 2, 1]": [array("B", [0, 0, 0, 0, 2, 142]), array("B", [0, 0, 0, 0, 2, 178])],
-    b"[0, 65, 1, 2, 2]": [array("B", [0, 0, 0, 0, 47, 0])],
     b"[0, 65, 1, 2, 2]": [array("B", [0, 0, 0, 0, 47, 7])],
     b"[0, 65, 1, 2, 3]": [array("B", [0, 0, 0, 0, 15, 241]), array("B", [0, 0, 0, 0, 25, 249])],
     b"[0, 65, 1, 2, 4]": [array("B", [0, 0, 0, 0, 27, 48]), array("B", [0, 0, 0, 0, 35, 176])],
@@ -141,7 +139,6 @@ MOCKED_SERVO41_I2C_DATA = {
 
 MOCKED_CR50_I2C_DATA = {
     b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 158])],
-    b"[0, 38, 1, 1, 0]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 38, 1, 1, 1]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 38, 1, 1, 3]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 38, 2, 1, 1, 150]": [array("B", [0, 0, 0, 0, 150])],
