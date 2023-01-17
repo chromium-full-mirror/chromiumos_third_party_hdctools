@@ -12,4 +12,11 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_uut"/>
   </control>
+  <!-- Kingler GSC_RST_L is not connected to pch_disable. It has to use GSC
+       ecrst for servo cold_reset. There's not other option.
+  -->
+  <control>
+    <name>cold_reset_select</name>
+    <params servo_init="gsc_ec_reset" clobber_ok=""/>
+  </control>
 </root>

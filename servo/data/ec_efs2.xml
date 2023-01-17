@@ -6,18 +6,26 @@
     if it is reset with the servo EC_RST_L signal. This interferes with
     entering recovery since GSC doesn't know the EC is in RO.
 
-    For now keep the default behavior. Select gsc_ec_reset for cold_reset
-    use cold_reset_select, so users can manually switch to gsc_reset if
-    they want.
-
-    TODO(mruthven): select gsc_reset for servo_micro and c2d2. select
-    gsc_ec_reset for ccd devices.
+    Let each servo type decide which reset to use for ec efs2
+    cold_reset. servos should give a cold_reset_efs2 alias to the signal
+    they should use with EC-EFS2.
+      - ccd: gsc_ec_reset
+	 - req: open ccd
+         - use the gsc ec_reset command to reset the system.
+         - the gsc will reset the efs boot_mode when it resets the EC.
+      - c2d2: gsc_reset
+	 - gsc_reset resets the GSC. GSC resets boot_mode when its reset
+      - 50pin servo: pch_disable (gsc_reset)
+	 - req: connect the GSC_RST_L signal to the servo pch_disable
+	   pin. This is already a requirement for new boards.
+	 - gsc_reset resets the GSC. GSC resets boot_mode when its reset.
   -->
   <include>
     <name>select_cold_reset.xml</name>
   </include>
   <control>
     <name>cold_reset_select</name>
-    <params init="gsc_ec_reset" clobber_ok=""/>
+    <params init="servo_specific" servo_init="gsc_reset"
+    ccd_init="gsc_ec_reset" clobber_ok=""/>
   </control>
 </root>

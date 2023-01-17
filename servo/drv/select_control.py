@@ -43,6 +43,13 @@ class selectControl(hw_driver.HwDriver):
     """Set the control to use."""
     if not val:
         return
+    # Look up the servo specific init. 'servo_init' is used to
+    # initialize flex devices.
+    # 'ccd_init' is used to initialize ccd devices.
+    if val == 'servo_specific':
+      control_type = self._params.get('type', 'servo')
+      servo_init = '%s_init' % control_type
+      val = self._params[servo_init]
     control_key = self._get_control_key()
     self._logger.info('%s -> %s', control_key, val)
     self._interface.selected_controls[control_key] = self._prefix + val
