@@ -1,22 +1,16 @@
-# Copyright 2022 The ChromiumOS Authors.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import logging
 
-import pytest
 from mock import call
+import pytest
 from servo import servod as sd
-
 from servo.tests.fixtures import common
-from servo.tests.fixtures.mock_pyusb import clear_interfaces, dump_interfaces
-import servo.servo_dev_templates as tmpl
+from servo.tests.fixtures.mock_pyusb import clear_interfaces
+from servo.tests.fixtures.mock_pyusb import dump_interfaces
 
-import re
-import os
-import copy
-
-import random
 
 _logger = logging.getLogger("mock_servod")
 
