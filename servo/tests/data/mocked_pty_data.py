@@ -4,10 +4,12 @@
 
 from array import array
 
+
 MOCKED_CR50_AP_DATA = {
     b"": b"\r\n>",
 }
 
+# pylint: disable=line-too-long
 MOCKED_CR50_CONSOLE_DATA = {
     b"": b"\r\n>",
     b"brdprop": b"brdprop\r\nproperties = 0x1242\r\ntpm board cfg = 0x0\r\n> ",
