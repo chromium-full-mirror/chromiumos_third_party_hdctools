@@ -51,6 +51,29 @@ def get_servo_serial(device_type):
     )
 
 
+def board_supports_servo_type(board, servo_type):
+    """Check if the servo type is relevant for the given board.
+
+    Args:
+        board: board name
+        servo_type: servo type string
+
+    Returns:
+        True if the servo type is valid for the given board.
+    """
+    c2d2_boards = [
+        'brya',
+        'cherry',
+        'dedede',
+        'guybrush',
+        'nissa',
+        'skyrim',
+    ]
+    # C2D2 servos are only usable on C2D2 boards. All other boards use the
+    # 50 pin servo header (servo micro).
+    return ('c2d2' in servo_type) == (board in c2d2_boards)
+
+
 def get_board_model_pairs(board_exclude_list=[]):
     """Get a list of board, model tuples that can have tests scheduled.
 

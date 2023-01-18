@@ -58,10 +58,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_servo_micro"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, servo_micro_device) = mock_host_with_4p1_servo_and_servo_micro(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_servo_micro")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
@@ -93,10 +96,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_servo_micro_and_ccd_cr50"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, servo_micro_device, ccd_device) = mock_host_with_4p1_servo_and_servo_micro_and_ccd(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_servo_micro_and_ccd_cr50")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
@@ -130,10 +136,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_c2d2"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, c2d2_device) = mock_host_with_4p1_servo_and_c2d2(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_c2d2")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
@@ -165,10 +174,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_c2d2_and_ccd_cr50"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, c2d2_device, ccd_device) = mock_host_with_4p1_servo_and_c2d2_and_ccd(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_c2d2_and_ccd_cr50")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             assert (servo_host.starter._servod.get("serialname") == servo_v4p1_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
