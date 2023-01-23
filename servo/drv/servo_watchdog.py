@@ -81,11 +81,11 @@ class servoWatchdog(hw_driver.HwDriver):
     """Signal a device may be disconnected."""
     self._update_device_disconnect_ok(val, True)
 
-  def _get_device_from_type(self, type):
-    """Returns the device with the given type."""
-    if type:
+  def _get_device_from_type(self, servo_type):
+    """Returns the device with the given servo_type."""
+    if servo_type:
       for device in self._interface.get_devices():
-        if type in device.get_type():
+        if servo_type in device.get_type():
           return device
     return None
 
