@@ -51,7 +51,7 @@ class selectControl(hw_driver.HwDriver):
       servo_init = '%s_init' % control_type
       val = self._params[servo_init]
     control_key = self._get_control_key()
-    self._logger.info('%s -> %s', control_key, val)
+    self._logger.info('%r -> %r', control_key, val)
     self._interface.selected_controls[control_key] = self._prefix + val
 
   def _Get_select(self):
@@ -61,7 +61,7 @@ class selectControl(hw_driver.HwDriver):
       self._Set_select(self._params['init'])
     rv = self._interface.selected_controls.get(control_key, '')
     if rv:
-      self._logger.info('using %r for %r', rv, control_key)
+      self._logger.debug('using %r for %r', rv, control_key)
     return rv
 
   def _Get_control(self):
