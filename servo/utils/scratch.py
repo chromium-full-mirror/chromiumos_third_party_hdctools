@@ -11,9 +11,9 @@ import socket
 
 import servo.client as client
 
-# ChromeOS needs to use /usr/local/tmp, allow other environments to set
-# TMPDIR to override.
-SERVO_SCRATCH_DIR = os.environ.get('TMPDIR', '/usr/local/tmp') + '/servoscratch'
+# This is a well-known path that should be consistent for every servod instance
+# and client in a given runtime environment.
+SERVO_SCRATCH_DIR = '/run/servoscratch'
 
 
 # Key used to store whether the instance is active yet or still coming up.
