@@ -57,6 +57,7 @@ FROM clang-builder as libusb-builder
 
 RUN git clone https://github.com/libusb/libusb
 WORKDIR /libusb
+RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
 
 # Disable udev to avoid issues of libusb thinking the device is still attached
 # after a software reboot.
@@ -128,6 +129,10 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
+ENV CFLAGS=" -Wno-deprecated-declarations"
+RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations ${CFLAGS}/' extra/usb_updater/Makefile
+RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations /' Makefile.toolchain
+RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations /' Makefile.toolchain
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
@@ -150,8 +155,20 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
           /ec/build/host/util/uartupdatetool \
           /ec/build/host/util/iteflash
 
-
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
+
+######################################################################
+FROM libftdi as gcstool-builder
+
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
+
+WORKDIR /ec
+
+RUN git checkout cr50_stab && git pull
+RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations ${CFLAGS}/' extra/usb_updater/Makefile
+RUN CFLAGS="-Wno-deprecated-declarations" make -C extra/usb_updater gsctool
+
+RUN strip  /ec/extra/usb_updater/gsctool
 
 ######################################################################
 FROM clang-builder as protoc-builder
@@ -196,6 +213,8 @@ FROM clang-builder as uhubctl-builder
 
 RUN git clone https://github.com/mvp/uhubctl
 WORKDIR /uhubctl
+RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
+
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
@@ -233,6 +252,7 @@ RUN apt-get update \
 	    libpci-dev
 
 WORKDIR /flashrom
+ENV CFLAGS=" -Wno-incompatible-function-pointer-types -Wno-error-int-conversion -Wno-deprecated-declarations"
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
 
@@ -310,6 +330,11 @@ COPY --from=ec-builder \
     /ec/util/flash_ec \
     /ec/util/uart_stress_tester.py \
     /usr/sbin/
+
+COPY --from=gcstool-builder \
+    /ec/extra/usb_updater/gsctool \
+    /usr/sbin/
+
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 
 COPY --from=ec-builder \

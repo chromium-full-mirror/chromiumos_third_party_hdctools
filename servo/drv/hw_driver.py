@@ -55,10 +55,6 @@ class HwDriver(object):
   REQUIRED_GET_PARAMS = []
   REQUIRED_SET_PARAMS = []
 
-  def __init__(self, interface, params):
-    """Driver constructor."""
-    self.__init__(interface, params)
-
   def __init__(self, interface, params, servod=None):
     """Driver constructor.
 

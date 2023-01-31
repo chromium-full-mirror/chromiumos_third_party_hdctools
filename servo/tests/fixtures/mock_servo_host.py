@@ -4,13 +4,15 @@
 
 import logging
 
-import pytest
 from mock import call
+import pytest
 from servo import servod as sd
-
 from servo.tests.fixtures import common
-from servo.tests.fixtures.mock_pyusb import clear_interfaces, dump_interfaces
-import servo.servo_dev_templates as tmpl
+from servo.tests.fixtures.mock_pyusb import clear_interfaces
+from servo.tests.fixtures.mock_pyusb import dump_interfaces
+
+
+_logger = logging.getLogger("mock_servod")
 
 
 @pytest.fixture(scope="function")

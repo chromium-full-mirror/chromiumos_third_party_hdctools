@@ -1,18 +1,29 @@
 # Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """System configuration module."""
+
 import collections
 import copy
+import functools
 import glob
 import logging
 import os
 import re
 import xml.etree.ElementTree
 
+
 # valid tags in system config xml.  Any others will be ignored
 MAP_TAG = 'map'
 CONTROL_TAG = 'control'
+CLOBBER_ATTR = 'clobber_ok'
+CLOBBER_FULL = 'full'
+CONTENT_TAG = 'content'
+CONTENT_ITEM_TAG = 'item'
+CONTENT_ITEM_KEY_ATTR = 'key'
+CONTENT_ITEM_TYPE_ATTR = 'type'
+CONTENT_PARAM = 'CONTENT'
 SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG]
 ALLOWABLE_INPUT_TYPES = {'float': float, 'int': int, 'str': str}
 
@@ -56,7 +67,7 @@ class SystemConfig(object):
   <map>
     <name>onoff_i</name>
     <doc>assertive low map for on/off</doc>
-    <params on="0" off="1"></params>
+    <params on="0" off="1" />
   </map>
 
   2. Control : Bulk of the system file.  These elements are
@@ -67,32 +78,86 @@ class SystemConfig(object):
   <control>
     <name>warm_reset</name>
     <doc>Reset the device warmly</doc>
-    <params interface="1" drv="gpio" offset="5" map="onoff_i"></params>
+    <params interface="1" drv="gpio" offset="5" map="onoff_i" />
   </control>
 
+  Some controls also use the a <content> element inside the <params> element as
+  input.  This text, when present, is interpreted into an arbitrarily nested
+  structure of Python dict and list objects, ultimately containing str and None
+  values.  For example:
 
-  TODO(tbroch) Implement sequence or deprecate
-  3. Sequence : List of control calls to create a desired
-  configuration of h/w.  These could certainly be done by writing
-  simple scripts to send individual control calls to the server but
-  encapsulating them into the system file should allow for tighter
-  control of the sequence ... especially if timing of the sequence
-  is paramount.
+  <control>
+    <name>my_control</name>
+    <doc>Does cool stuff!</doc>
+    <params drv="mydriver">
+      <content>
+        <item key="somefield">5</item>
+        <item key="list_field">
+          <item>one two three</item>
+          <item></item>
+          <item>foobar</item>
+        </item>
+      </content>
+    </params>
+  </control>
 
-  <sequence>
-    <name>i2c_mux_seq</name>
-    <cmdlist>i2c_mux_en:off i2c_mux_add:__arg0__ i2c_mux_en:on</cmdlist>
-  </sequence>
+  That content would get parsed into:
+    {'somefield': '5',
+     'list_field': ['one two three', None, 'foobar']}
+
+  Or:
+    {'somefield': '5',
+     'list_field': ['one two three', '', 'foobar']}
+
+  It is not guaranteed whether empty <item> text results in None or '' (empty
+  string).  Drivers should handle either case and not discriminate between them.
+
+  The <content> element is allowed to directly contain text instead of nested
+  elements.  For example:
+
+  <control>
+    <name>my_control</name>
+    <doc>Does cool stuff!</doc>
+    <params drv="mydriver">
+      <content>-29.5</content>
+    </params>
+  </control>
+
+  That content would get parsed into:
+    '-29.5'
+
+  Rules for <content> sections:
+    * <item> is the only element permitted within <content> or <item>.
+    * If one <item> in a section uses key= attribute, then all must.
+    * Use of key= attribute in <item> indicates a map entry, which gets placed
+      into a Python dict.
+    * The behavior with duplicate keys in a map is undefined (and could be or
+      become an error).
+    * Use of <item> without key= attribute indicates a list.
+    * The behavior if map and list <item> are mixed together in one parent
+      element is undefined (and could be or become an error).
+    * The behavior if any attributes not described above are used is undefined
+      (and could be or become an error).
+    * When <content> or <item> contains nested elements then any text content
+      directly in the parent element should be whitespace-only, and is ignored.
+    * The behavior with non-whitespace text alongside nested <item> elements is
+      undefined (and could be or become an error).
+    * There is no policy limit to how deep <item> can be nested, however there
+      may be practical implementation limits, don't go nuts.
+
+  The structure enforced by <content> / <item> is designed to be easily ported
+  to other possible config file formats besides XML, and it avoids exposing
+  drivers to XML.
 
   Public Attributes:
     control_tags: a dictionary of each base control and their tags if any
     aliases: a dictionary of an alias mapped to its base control name
     syscfg_dict: 3-deep dictionary created when parsing system files.  Its
         organized as [tag][name][type] where:
-        tag: map | control | sequence
+        tag: map | control
         name: string name of tag element
         type: data type of payload either, doc | get | set presently
-          doc: string describing the map,control or sequence
+          doc: string describing the map or control
           get: a dictionary for getting values from named control
           set: a dictionary for setting values to named control
     hwinit: list of control tuples (name, value) to be initialized in order
@@ -166,6 +231,48 @@ class SystemConfig(object):
     """Return the board filename."""
     return self._board_cfg
 
+  @staticmethod
+  def _parse_content(content):
+    """Parse a <content> structure from a control's params element.
+
+    Args:
+      content: xml.etree.ElementTree.Element - the <content> XML element
+      stack: [(element, callback)] - list of 2-item tuples, each containing:
+        element: xml.etree.ElementTree.Element - <content> or <item> XML element
+        callback: callable(object) - This will be called exactly once, in order
+
+    Returns:
+      None or str or list or dict
+    """
+    if content is None:
+      return None
+
+    retval_list = []
+    # [(element, callback)] - list of 2-item tuples of:
+    # element: xml.etree.ElementTree.Element - <content> or <item> XML element
+    # callback: callable(object) - This will be called exactly once, with the
+    #     value to use for this element.
+    stack = [(content, retval_list.append)]
+
+    while stack:
+      element, callback = stack.pop()
+      nested = element.findall(CONTENT_ITEM_TAG)
+      if not nested:
+        this = element.text
+      elif CONTENT_ITEM_KEY_ATTR in nested[0].attrib:
+        this = {}
+        for item in nested:
+          key = item.attrib[CONTENT_ITEM_KEY_ATTR]
+          stack.append((item, functools.partial(this.setdefault, key)))
+      else:
+        this = []
+        for item in reversed(nested):
+          stack.append((item, this.append))
+      callback(this)
+
+    assert len(retval_list) == 1
+    return retval_list[0]
+
   def add_cfg_file(self, filename, name_prefix=None, interface_increment=0):
     """Add system config file to the system config object.
 
@@ -182,7 +289,9 @@ class SystemConfig(object):
 
     Special key parameters in config files:
       clobber_ok: signifies this control may _clobber_ an existing definition
-        of the same name.  Note, its value is ignored ( clobber_ok='' )
+        of the same name.  If its value is "full" then parameters from the
+        clobbered control are completely thrown away, otherwise only those
+        which are also specified in this control will be replaced.
 
     NOTE, method is recursive when parsing 'include' elements from XML.
 
@@ -262,22 +371,27 @@ class SystemConfig(object):
 
         get_dict = None
         set_dict = None
-        clobber_ok = False
         params_list = element.findall('params')
 
-        # Modify the interface attributes.
-        for params in params_list:
-          if 'interface' in params.attrib:
-            if params.attrib['interface'] != 'servo':
-              interface_id = int(params.attrib['interface'])
-              params.attrib['interface'] = interface_id + interface_increment
+        if tag == CONTROL_TAG:
+          for p in params_list:
+            if CONTENT_PARAM in p:
+              raise SystemConfigError('file %r %s element %r specifies '
+                                      'reserved params attribute name %r' %
+                                      (filename, tag, name, CONTENT_PARAM))
+            p.attrib[CONTENT_PARAM] = self._parse_content(p.find(CONTENT_TAG))
 
-        # Make sure that if |cmd| is defined, it is correctly defined as either
-        # set or get.
-        for p in params_list:
-          if 'cmd' in p.attrib and p.attrib['cmd'] not in ['set', 'get']:
-            raise SystemConfigError('%s %s cmd has to be set|get, not %r' %
-                                    (tag, name, p.attrib['cmd']))
+            # Make sure that if |cmd| is defined, it is correctly defined as
+            # either set or get.
+            if 'cmd' in p.attrib and p.attrib['cmd'] not in ('set', 'get'):
+              raise SystemConfigError('%s %s cmd has to be set|get, not %r' %
+                                      (tag, name, p.attrib['cmd']))
+
+            # Modify the interface attributes.
+            if 'interface' in p.attrib:
+              if p.attrib['interface'] != 'servo':
+                interface_id = int(p.attrib['interface'])
+                p.attrib['interface'] = interface_id + interface_increment
 
         if len(params_list) == 2:
           assert tag != MAP_TAG, 'maps have only one params entry'
@@ -342,23 +456,26 @@ class SystemConfig(object):
           get_dict['control_name'] = name
           set_dict['control_name'] = name
 
-        clobber_ok = ('clobber_ok' in set_dict or 'clobber_ok' in get_dict)
-        if (tag == CONTROL_TAG and name in self.syscfg_dict[tag] and
-            not clobber_ok):
-          raise SystemConfigError(
-              "Duplicate %s %s without 'clobber_ok' key\n%s" % (tag, name,
-                                                                element_str))
-
         if tag == MAP_TAG:
           self.syscfg_dict[tag][name] = {'doc': doc, 'map_params': get_dict}
           if alias:
             raise SystemConfigError('No aliases for maps allowed')
           continue
 
+        assert tag == CONTROL_TAG
+
+        clobber_ok = set_dict.get(CLOBBER_ATTR)
+        if clobber_ok != CLOBBER_FULL:
+          clobber_ok = get_dict.get(CLOBBER_ATTR, clobber_ok)
+
+        if name in self.syscfg_dict[tag] and clobber_ok is None:
+          raise SystemConfigError("Duplicate %s %s without %r key\n%s" % (
+              tag, name, CLOBBER_ATTR, element_str))
+
         if 'init' in set_dict:
           hwinit_found = False
           # only allow one hwinit per control
-          if clobber_ok:
+          if clobber_ok is not None:
             for i, (hwinit_name, _) in enumerate(self.hwinit):
               if hwinit_name == name:
                 self.hwinit[i] = (name, set_dict['init'])
@@ -368,22 +485,23 @@ class SystemConfig(object):
           if not hwinit_found:
             self.hwinit.append((name, set_dict['init']))
 
-        if clobber_ok and name in self.syscfg_dict[tag]:
-          # it's an existing control
+        if patch and name not in self.syscfg_dict[tag]:
+          self._logger.debug('Cannot patch nonexistent control %s.' % name)
+          continue
+
+        if (clobber_ok is not None and clobber_ok != CLOBBER_FULL and
+            name in self.syscfg_dict[tag]):
           self.syscfg_dict[tag][name]['get_params'].update(get_dict)
           self.syscfg_dict[tag][name]['set_params'].update(set_dict)
           if doc != 'undocumented':
             self.syscfg_dict[tag][name]['doc'] = doc
         else:
-          if patch:
-            self._logger.debug('Cannot patch nonexistent control %s.' % name)
-            continue
-          # it's a new control
           self.syscfg_dict[tag][name] = {
               'doc': doc,
               'get_params': get_dict,
               'set_params': set_dict
           }
+
         if alias:
           for aliasname in (elem.strip() for elem in alias.split(',')):
             if name_prefix:
@@ -487,24 +605,6 @@ class SystemConfig(object):
       boolean, True if name is control, False otherwise
     """
     return name in self.syscfg_dict[CONTROL_TAG]
-
-  def get_control_str(self, name):
-    """Generate a string that describes all information of the control.
-
-    Args:
-      name: string of control name to lookup
-
-    Returns:
-      A string representing the control
-    """
-    ctrl_dict = self.syscfg_dict[CONTROL_TAG]
-    max_len = max(len(name) for name in ctrl_dict)
-    dashes = '-' * max_len
-    padded_name = '%-*s' % (max_len, '%s' % name)
-    doc = '%s DOC: %s' % (padded_name, ctrl_dict[name]['doc'])
-    get = '%s GET: %s' % (dashes, str(ctrl_dict[name]['get_params']))
-    set = '%s SET: %s' % (dashes, str(ctrl_dict[name]['set_params']))
-    return '%s\n%s\n%s' % (doc, get, set)
 
   def is_map(self, name):
     """Determine if name is a map or not.
@@ -681,11 +781,11 @@ class SystemConfig(object):
     return reformat_value
 
   def display_config(self, tag=None, prefix=None):
-    """Display human-readable values of map, control, or sequence.
+    """Display human-readable values of a map or control
 
     Args:
-      tag  : string of either 'map' | 'control' | 'sequence' or None for all
-      prefix: prefix string to print infront of control tags
+      tag: 'map' or 'control' or None for all
+      prefix: prefix string to print in front of control tags
 
     Returns:
       string to be displayed.

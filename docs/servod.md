@@ -232,7 +232,7 @@ their info (e.g., what port they run on, what the main process' PID is, what the
 serial numbers of the attached servo devices are), and gracefully stopping an
 instance.
 
-It works by writing all the information into a file at `/tmp/servoscratch` on
+It works by writing all the information into a file at `/run/servoscratch` on
 invocation and clearing out the entry when `servod` turns off. This flow is
 supported for almost all methods of turning off `servod`: `Ctrl-C`, `servodtool
 instance stop`, or sending a `SIGTERM` to the main process.
@@ -243,7 +243,7 @@ of `servodtool instance`, or invocation of `servod`, the system attempts to
 clean out stale entries.
 
 The inverse is also problematic: should it for some reason become necessary to
-delete `/tmp/servoscratch`, then existing instances are not tracked. For this,
+delete `/run/servoscratch`, then existing instances are not tracked. For this,
 `servodtool instance rebuild` provides a way to try and rebuild lost entries.
 
 ## ServoDeviceWatchdog {#servo-device-watchdog}

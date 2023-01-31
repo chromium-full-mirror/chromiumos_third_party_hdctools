@@ -65,10 +65,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_servo_micro"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, servo_micro_device) = mock_host_with_4p1_servo_and_servo_micro(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_servo_micro")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
             assert (serial_json["root"] == servo_v4p1_device.iSerial)
             assert (serial_json["main"] == servo_micro_device.iSerial)
@@ -76,8 +79,8 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("servo_micro_serialname") == servo_micro_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1.servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro.servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
-            assert (servo_host.starter._servod.get("cold_reset") == "on")
-            assert (servo_host.starter._servod.get("warm_reset") == "on")
+            assert (servo_host.starter._servod.get("cold_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "off")
             assert servo_host.starter._servod.set("warm_reset", "off")
@@ -104,10 +107,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_servo_micro_and_ccd_cr50"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, servo_micro_device, ccd_device) = mock_host_with_4p1_servo_and_servo_micro_and_ccd(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_servo_micro_and_ccd_cr50")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
             assert (serial_json["root"] == servo_v4p1_device.iSerial)
             assert (serial_json["main"] == servo_micro_device.iSerial)
@@ -118,8 +124,8 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("servo_micro_serialname") == servo_micro_device.iSerial)
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("servo_micro_version") == "servo_micro_v2.4.57-ce329f64f")
-            assert (servo_host.starter._servod.get("cold_reset") == "on")
-            assert (servo_host.starter._servod.get("warm_reset") == "on")
+            assert (servo_host.starter._servod.get("cold_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "off")
             assert servo_host.starter._servod.set("warm_reset", "off")
@@ -148,10 +154,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_c2d2"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, c2d2_device) = mock_host_with_4p1_servo_and_c2d2(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_c2d2")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
             assert (serial_json["root"] == servo_v4p1_device.iSerial)
             assert (serial_json["main"] == c2d2_device.iSerial)
@@ -161,11 +170,7 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
             assert (servo_host.starter._servod.get("cold_reset") == "off")
-            # herobrine has special handling for warm_reset
-            if board == 'herobrine':
-                assert (servo_host.starter._servod.get("warm_reset") == "on")
-            else:
-                assert (servo_host.starter._servod.get("warm_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "on")
             assert servo_host.starter._servod.set("warm_reset", "on")
@@ -192,10 +197,13 @@ class TestMetadata:
             board (_type_): _description_
             model (_type_): _description_
         """
+        test_servo_type = "servo_v4p1_with_c2d2_and_ccd_cr50"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
         (servo_host, servo_v4p1_device, c2d2_device, ccd_device) = mock_host_with_4p1_servo_and_c2d2_and_ccd(board, model)
         servo_host.clear_all_interfaces()
         try:
-            assert (servo_host.starter._servod.get("servo_type") == "servo_v4p1_with_c2d2_and_ccd_cr50")
+            assert (servo_host.starter._servod.get("servo_type") == test_servo_type)
             serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
             assert (serial_json["root"] == servo_v4p1_device.iSerial)
             assert (serial_json["main"] == c2d2_device.iSerial)
@@ -207,11 +215,7 @@ class TestMetadata:
             assert (servo_host.starter._servod.get("servo_v4p1_version") == "servo_v4p1_v2.0.8584+1a7e7e64c")
             assert (servo_host.starter._servod.get("c2d2_version") == "c2d2_v2.4.35-f1113c92b")
             assert (servo_host.starter._servod.get("cold_reset") == "off")
-            # herobrine has special handling for warm_reset
-            if board == 'herobrine':
-                assert (servo_host.starter._servod.get("warm_reset") == "on")
-            else:
-                assert (servo_host.starter._servod.get("warm_reset") == "off")
+            assert (servo_host.starter._servod.get("warm_reset") == "off")
             # there is no effective way of checking state change yet
             assert servo_host.starter._servod.set("cold_reset", "on")
             assert servo_host.starter._servod.set("warm_reset", "on")

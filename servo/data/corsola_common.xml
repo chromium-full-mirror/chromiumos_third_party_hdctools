@@ -4,6 +4,9 @@
     <name>ti50.xml</name>
   </include>
   <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
     <name>ec_efs2.xml</name>
   </include>
   <include>

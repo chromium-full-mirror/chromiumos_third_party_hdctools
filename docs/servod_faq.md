@@ -122,6 +122,13 @@ exists.
 Board overlays are some of the last configs to be pulled in, so you redefine
 there.
 
+IMPORTANT: With `clobber_ok=""` only individual attributes of `<params>` are
+clobbered! Any `<params>` attributes of the clobbered control that are not
+specified by the control doing the clobbering will remain in the final `params`
+dict.  To avoid this and *fully* clobber, use `clobber_ok="full"`, which will
+cause the entire `<params>` of the clobbered control to get thrown out, in favor
+of only those specified in the control doing the clobbering.
+
 ## How do I add a new control?
 
 ### tl;dr:

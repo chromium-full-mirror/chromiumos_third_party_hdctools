@@ -42,14 +42,28 @@ class selectControl(hw_driver.HwDriver):
 
   def _Set_select(self, val):
     """Set the control to use."""
+    if not val:
+        return
+    # Look up the servo specific init. 'servo_init' is used to
+    # initialize flex devices.
+    # 'ccd_init' is used to initialize ccd devices.
+    if val == 'servo_specific':
+      control_type = self._params.get('type', 'servo')
+      servo_init = '%s_init' % control_type
+      val = self._params[servo_init]
     control_key = self._get_control_key()
-    self._servod.selected_controls[control_key] = val
+    self._logger.info('%r -> %r', control_key, val)
+    self._servod.selected_controls[control_key] = self._prefix + val
 
   def _Get_select(self):
     """Get the control value."""
-    if not self._get_selected_control():
+    control_key = self._get_control_key()
+    if control_key not in self._servod.selected_controls:
       self._Set_select(self._params['init'])
-    return self._get_selected_control()
+    rv = self._servod.selected_controls.get(control_key, '')
+    if rv:
+      self._logger.debug('using %r for %r', rv, control_key)
+    return rv
 
   def _Get_control(self):
     """Get the value from the selected control."""
@@ -66,12 +80,9 @@ class selectControl(hw_driver.HwDriver):
     control_name = self._params.get('control_name', '')
     if not control_name:
       raise selectControlError('control_name not found')
-    return self._prefix + control_name.partition(self.SELECT_SUFFIX)[0]
+    return control_name.partition(self.SELECT_SUFFIX)[0]
 
   def _get_selected_control(self):
     """Return the control being used."""
-    control_key = self._get_control_key()
-    rv = self._servod.selected_controls.get(control_key, '')
-    if rv:
-      self._logger.debug('using %r for %r', rv, control_key)
-    return rv
+    control_name = self._params.get('control_name', '')
+    return self._servod.get(control_name + self.SELECT_SUFFIX)

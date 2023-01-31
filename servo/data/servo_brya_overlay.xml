@@ -1,13 +1,49 @@
 <root>
   <include>
-    <name>cpu_fw_spi_pp3300.xml</name>
-  </include>
-  <include>
     <name>cr50.xml</name>
   </include>
   <include>
     <name>x86_ec_common.xml</name>
   </include>
+ <!-- FW flashing config -->
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:5</item>
+            <item>ec_uart_cmd:gpioset en_s5_rails 1</item>
+          </item>
+          <item key="0">
+            <item>power_state:reset</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over C2D2</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:5</item>
+            <item>ec_uart_cmd:gpioset en_s5_rails 1</item>
+            <item>ap_flash_select:off</item>
+            <item>spi2_vref:pp3300</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>

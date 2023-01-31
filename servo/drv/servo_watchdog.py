@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 """Driver for controlling the watchdog."""
 
+import logging
+
 from servo.drv import hw_driver
 from servo import servo_dev_templates
 
@@ -12,6 +14,15 @@ class servoWatchdogError(hw_driver.HwDriverError):
 
 class servoWatchdog(hw_driver.HwDriver):
   """Class to control the watchdog."""
+  def __init__(self, interface, params, servod):
+    """Initialize all information needed by servo watchdog."""
+    super(servoWatchdog, self).__init__(interface, params, servod)
+
+    # The serial names and devices may be initialized in different orders.
+    # The name may not be set. Set it if it isn't set.
+    for device in self._servod.get_devices():
+      if not device.get_name():
+        self._set_device_name(device)
 
   def _update_device_disconnect_ok(self, name, disconnect_ok):
     """Update if it's ok for the device to disconnect.
