@@ -16,14 +16,15 @@ class sarienPower(power_state.PowerStateDriver):
   # Time in seconds to wait before taking action after cold reset.
   _COLD_RESET_DELAY = 5
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor
 
     Args:
       interface: driver interface object
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(sarienPower, self).__init__(interface, params)
+    super(sarienPower, self).__init__(interface, params, servod)
     # Delay to allow boot into recovery before passing back control.
     self._boot_to_rec_screen_delay = float(
       self._params.get('boot_to_rec_screen_delay', 5.0))
@@ -31,15 +32,15 @@ class sarienPower(power_state.PowerStateDriver):
   def _reset_cycle(self):
     """Force a power cycle using cold reset."""
     self._power_off()
-    self._interface_set('power_key', 'short_press')
+    self._servod_set('power_key', 'short_press')
 
   def _power_on_rec(self):
     """Power on in recovery mode."""
     self._power_off()
-    self._interface_set('rec_mode', self.REC_ON)
-    self._interface_set('power_key', 'short_press')
+    self._servod_set('rec_mode', self.REC_ON)
+    self._servod_set('power_key', 'short_press')
     time.sleep(self._RECOVERY_DETECTION_DELAY)
-    self._interface_set('rec_mode', self.REC_OFF)
+    self._servod_set('rec_mode', self.REC_OFF)
     time.sleep(self._boot_to_rec_screen_delay)
 
   def _power_on_normal(self):

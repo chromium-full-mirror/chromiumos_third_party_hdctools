@@ -95,11 +95,7 @@ class _BaseHandler(_HandlerTemplate):
                            the host running servod.
         """
     super(_BaseHandler, self).__init__()
-    # TODO(fdeng): crbug.com/298379
-    # We should move servo object out of servo object
-    # to minimize the dependencies on the rest of Autotest.
     self._servo = servo
-    board = self._servo.get_board()
 
   def power_long_press(self):
     """Simulate a long power button press."""

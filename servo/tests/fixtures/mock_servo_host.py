@@ -1,4 +1,4 @@
-# Copyright 2022 The ChromiumOS Authors
+# Copyright 2022 The ChromiumOS Authors.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -100,7 +100,7 @@ def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_us
                     result[device.iSerial] = dump_interfaces(device)
                 return result
 
-            def start(self, serial, board, model, dual_v4=False):
+            def start(self, serial, board, model):
                 opts = [
                     "-s",
                     serial,
@@ -109,8 +109,6 @@ def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_us
                     "-m",
                     model,
                 ]
-                if dual_v4:
-                    opts = opts + ['--allow-dual-v4']
                 self.starter = sd.ServodStarter(opts)
 
             def stop(self):
@@ -198,7 +196,7 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
         servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
         servo_micro_device = servo_host.add_device('servo_micro', 1, 57, "2.3")
         ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
-        servo_host.start(servo_v4p1_device.iSerial, board, model, True)
+        servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, servo_micro_device, ccd_device)
 
     return generate_host
@@ -251,7 +249,7 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
         c2d2_device = servo_host.add_device('c2d2', 1, 57, "2.3")
         ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
-        servo_host.start(servo_v4p1_device.iSerial, board, model, True)
+        servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, c2d2_device, ccd_device)
 
     return generate_host

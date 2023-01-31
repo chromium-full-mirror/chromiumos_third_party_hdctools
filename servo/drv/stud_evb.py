@@ -31,19 +31,20 @@ class studEvb(hw_driver.HwDriver):
   LEGO_RST_PIN_PORT = 2
   LEGO_RST_PIN_IOEX_I2C_ADDR = 0x21
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor
 
     Args:
       interface: FTDI interface object to handle low-level communication to
           control or the servo_server.Servod for a whole_bank subtype
       params: dictionary of params (k=v pairs) needed to perform operations on a driver
+      servod: Servod that is used for cross-servo-device communication
 
     Attributes:
       i2c_mux: Pi4Msd instance to talk to on-board i2c muxer
       ioex: Pi4Ioe5 instance to talk to on-board ioexpander
     """
-    super(studEvb, self).__init__(interface, params)
+    super(studEvb, self).__init__(interface, params, servod)
     if 'subtype' in self._params:
       # Whole bank use control names, so no direct access to i2c interface required
       if self._params['subtype'] == 'whole_bank':
@@ -431,7 +432,7 @@ class studEvb(hw_driver.HwDriver):
       # Get pin number from last char in control name
       pin = control[-1]
       retval += ("%s_BANK_%s%s:" % (bank_type, bank_str, pin))
-      retval += self._interface_get(control)
+      retval += self._servod_get(control)
       retval += '\n'
 
     return retval
@@ -443,4 +444,4 @@ class studEvb(hw_driver.HwDriver):
     bank_type, bank_str = self._get_bank_params()
     pin_controls = self._get_bank_pin_controls(bank_type, bank_str)
     for control in pin_controls:
-        self._interface_set(control, fmt_value)
+      self._servod_set(control, fmt_value)

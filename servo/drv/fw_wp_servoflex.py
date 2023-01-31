@@ -8,14 +8,15 @@ from servo.drv import fw_wp_state
 class fwWpServoflex(fw_wp_state.FwWpStateDriver):
   """Driver for fw_wp_state for boards connecting servoflex's."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(fwWpServoflex, self).__init__(interface, params)
+    super(fwWpServoflex, self).__init__(interface, params, servod)
     self._fw_wp_vref = self._params.get('fw_wp_vref', 'pp1800')
     self._is_open_drain = self._params.get('open_drain', 'no') == 'yes'
     if self._is_open_drain:
@@ -29,38 +30,38 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
   def _force_on(self):
     """Force the firmware to write-protected."""
     if self._is_open_drain:
-      self._interface_set('fw_wp_od', 'on')
+      self._servod_set('fw_wp_od', 'on')
     else:
-      self._interface_set('fw_wp_vref', self._fw_wp_vref)
-      self._interface_set('fw_wp_en', 'on')
-      self._interface_set('fw_wp', 'on')
+      self._servod_set('fw_wp_vref', self._fw_wp_vref)
+      self._servod_set('fw_wp_en', 'on')
+      self._servod_set('fw_wp', 'on')
 
   def _force_off(self):
     """Force the firmware to not write-protected."""
     if self._is_open_drain:
-      self._interface_set('fw_wp_od', 'off')
+      self._servod_set('fw_wp_od', 'off')
     else:
-      self._interface_set('fw_wp_vref', self._fw_wp_vref)
-      self._interface_set('fw_wp_en', 'on')
-      self._interface_set('fw_wp', 'off')
+      self._servod_set('fw_wp_vref', self._fw_wp_vref)
+      self._servod_set('fw_wp_en', 'on')
+      self._servod_set('fw_wp', 'off')
 
   def _reset(self):
     """Reset the firmware write-protection state to the system value."""
     if self._is_open_drain:
-      self._interface_set('fw_wp_od', 'off')
+      self._servod_set('fw_wp_od', 'off')
     else:
-      self._interface_set('fw_wp_en', 'off')
+      self._servod_set('fw_wp_en', 'off')
 
   def _get_state(self):
     """Get the firmware write-protection state."""
     if self._is_open_drain:
-      fw_wp_od = (self._interface_get('fw_wp_od') == 'on')
+      fw_wp_od = (self._servod_get('fw_wp_od') == 'on')
       # Can't differentiate between a forced value or an original value;
       # return it a forced value which is more compliant with the tests.
       return self._STATE_FORCE_ON if fw_wp_od else self._STATE_FORCE_OFF
     else:
-      fw_wp_en = (self._interface_get('fw_wp_en') == 'on')
-      fw_wp = (self._interface_get('fw_wp') == 'on')
+      fw_wp_en = (self._servod_get('fw_wp_en') == 'on')
+      fw_wp = (self._servod_get('fw_wp') == 'on')
       if fw_wp_en:
         return self._STATE_FORCE_ON if fw_wp else self._STATE_FORCE_OFF
       else:

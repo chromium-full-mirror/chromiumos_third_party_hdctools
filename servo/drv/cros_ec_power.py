@@ -13,14 +13,15 @@ POWER_OFF_POLLING_INTERVAL_S = 0.5
 class CrosECPower(power_state.PowerStateDriver):
   """Driver for power_state for boards support EC command."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(CrosECPower, self).__init__(interface, params)
+    super(CrosECPower, self).__init__(interface, params, servod)
     self._apreset_ec_command = self._params.get('apreset_ec_command', '')
     self._shutdown_ec_command = self._params.get('shutdown_ec_command',
                                                  'apshutdown')
@@ -32,20 +33,20 @@ class CrosECPower(power_state.PowerStateDriver):
       # Fallback to the default sequence, which is defined in the superclass
       super(CrosECPower, self)._warm_reset()
     else:
-      self._interface_set('ec_uart_regexp', 'None')
-      self._interface_set('ec_uart_cmd', self._apreset_ec_command)
+      self._servod_set('ec_uart_regexp', 'None')
+      self._servod_set('ec_uart_cmd', self._apreset_ec_command)
       # After the reset, give the EC the time it needs to
       # re-initialize.
       time.sleep(self._reset_recovery_time)
 
   def _power_off(self, manage_delay=True):
     """Power off the DUT."""
-    self._interface_set('ec_uart_regexp', 'None')
-    self._interface_set('ec_uart_cmd', self._shutdown_ec_command)
+    self._servod_set('ec_uart_regexp', 'None')
+    self._servod_set('ec_uart_cmd', self._shutdown_ec_command)
 
     if manage_delay:
       if not polling_control.PollingControl().poll(
-          self._interface,
+          self._servod,
           CONTROL_COMMAND,
           CONTROL_OUTPUT_EXPECTED,
           logger=self._logger,

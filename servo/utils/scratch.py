@@ -19,6 +19,11 @@ SERVO_SCRATCH_DIR = '/run/servoscratch'
 # Key used to store whether the instance is active yet or still coming up.
 ACTIVE_ENTRY_KEY = 'active'
 
+# Key name for device serial, port, and pid in the Scratch entry
+SERIAL_KEY = 'serials'
+PORT_KEY = 'port'
+PID_KEY = 'pid'
+
 
 class ScratchError(Exception):
   """Error class for servo scratch utility."""
@@ -51,7 +56,7 @@ class Scratch(object):
 
   def _EntryF(self, entry):
     """Generate a filename for |entry|."""
-    return os.path.join(self._dir, str(entry['port']))
+    return os.path.join(self._dir, str(entry[PORT_KEY]))
 
   def AddEntry(self, port, serials, pid):
     """Register information about servod instance.
@@ -71,9 +76,9 @@ class Scratch(object):
     # identifier is printed
     try:
       serials = [str(s) for s in serials]
-      entry = {'port': int(port),
-               'serials': list(serials),
-               'pid': int(pid),
+      entry = {PORT_KEY: int(port),
+               SERIAL_KEY: list(serials),
+               PID_KEY: int(pid),
                ACTIVE_ENTRY_KEY: False}
     except (ValueError, TypeError) as e:
       raise ScratchError('Entry arguments malformed. %s: %s'
@@ -84,7 +89,7 @@ class Scratch(object):
       self._logger.error(msg)
       raise ScratchError(msg)
     serialfs = []
-    for serial in entry['serials']:
+    for serial in entry[SERIAL_KEY]:
       serialf = os.path.join(self._dir, str(serial))
       if os.path.exists(serialf):
         # Add a symlink for each serial pointing back at the original file
@@ -220,7 +225,7 @@ class Scratch(object):
     """Verify that all known servod ports are still in use, delete otherwise."""
     for entry in self.GetAllEntries():
       testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      port = entry['port']
+      port = entry[PORT_KEY]
       try:
         testsock.bind(('localhost', port))
         self._logger.warning('Port %r still registered but not bound to a '

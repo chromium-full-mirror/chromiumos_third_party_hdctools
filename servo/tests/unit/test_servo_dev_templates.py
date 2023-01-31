@@ -1,4 +1,4 @@
-# Copyright 2022 The Chromium OS Authors. All rights reserved.
+# Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import unittest
 import random
 
 from servo import servo_dev_templates
-from servo.tests.data.device_info import SERVO_DEVICE_DATA, SECONDARY_SERVOS_NAMES
+from servo.tests.data.device_info import SERVO_DEVICE_DATA
 
 
 class TestServoDevTemplates(unittest.TestCase):
@@ -88,15 +88,6 @@ class TestServoDevTemplates(unittest.TestCase):
     # only check for for the id values that existed at the time this unit test was written
     output_ids &= expected_ids
     self.assertEqual(expected_ids, output_ids)
-
-  def test_GetSecondaryServos(self):
-    """Tests that the SecondaryServos set returned by this function is what is expected."""
-    expected = set()
-    for name in SECONDARY_SERVOS_NAMES:
-      expected.add(SERVO_DEVICE_DATA[name][0])
-    output = servo_dev_templates.GetSecondaryServos()
-    self.assertEqual(expected, output)
-
 
 if __name__ == "__main__":
   unittest.main()

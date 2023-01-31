@@ -15,7 +15,17 @@ _TEXTPROTO_PATH = (
   str(pathlib.Path(__file__).parent.resolve()) + "/proto/servo_dev_info.textproto"
 )
 
+# Main devices have an empty prefix. This constant here is to make those checks
+# uniform.
+MAIN_DEV_PREFIX = 'main'
+# This alias is used for the main device on servo_server (the device without a
+# prefix) to allow for precise routing and server controls that need to indicate
+# which device they want things to happen on.
+MAIN_DEV_PREFIX_ALIAS = ''
+MAIN_DEV_PREFIXES = [MAIN_DEV_PREFIX, MAIN_DEV_PREFIX_ALIAS]
 
+# The root hub device of the main device gets the prefix 'root'
+ROOT_DEV_PREFIX = 'root'
 
 
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP, SERVO_ID_DEFAULTS,
@@ -23,15 +33,15 @@ _TEXTPROTO_PATH = (
 # source of truth about the device information - their template classes.
 #
 # A 2d map to fetch a servo device template given a vendor id and a product id.
-_SERVO_VID_PID_TEMPLATE_MAP = collections.defaultdict(
+SERVO_VID_PID_TEMPLATE_MAP = collections.defaultdict(
   lambda: collections.defaultdict(set)
 )
 # A dict to fetch a servo device template given a lot id.
-_SERVO_LOTID_TEMPLATE_MAP = collections.defaultdict(set)
+SERVO_LOTID_TEMPLATE_MAP = collections.defaultdict(set)
 # A set of tuples of the vid/pid pairs of all known servo devices.
-_SERVO_ID_DEFAULTS = set()
+SERVO_ID_DEFAULTS = set()
 # A map from name to template.
-_SERVO_NAME_TEMPLATE_MAP = {}
+SERVO_NAME_TEMPLATE_MAP = {}
 
 # Lot IDs are used to distinguish between servo v2 and servo v2 r0. If a device
 # has a lot-id that is not known, it gets assigned a fake lot id to ensure that
@@ -41,8 +51,6 @@ _FORCE_V2_LOTID = "force-v2-lotid"
 
 class DeviceTemplateError(Exception):
   """Error class for device templates."""
-  pass
-
 
 def GetTemplateClassByName(name):
   """Get the ServoDevTemplate protobuf message class associated with |name|.
@@ -56,9 +64,9 @@ def GetTemplateClassByName(name):
   Raises:
     DeviceTemplateError if template message class not found
   """
-  if name not in _SERVO_NAME_TEMPLATE_MAP:
+  if name not in SERVO_NAME_TEMPLATE_MAP:
     raise DeviceTemplateError("Unknown servo device %r type" % name)
-  return _SERVO_NAME_TEMPLATE_MAP[name]
+  return SERVO_NAME_TEMPLATE_MAP[name]
 
 
 def GetTemplateClass(vid, pid, serial=None):
@@ -78,7 +86,7 @@ def GetTemplateClass(vid, pid, serial=None):
   Raises:
     DeviceTemplateError if template message class not found, or not uniquely identified
   """
-  dev_class_candidates = _SERVO_VID_PID_TEMPLATE_MAP[vid][pid].copy()
+  dev_class_candidates = SERVO_VID_PID_TEMPLATE_MAP[vid][pid].copy()
   if len(dev_class_candidates) > 1:
     # Might need the lotid to distinguish what device is used.
     if serial:
@@ -88,7 +96,7 @@ def GetTemplateClass(vid, pid, serial=None):
       except ValueError:
         logging.debug("Could not retrieve lot-id for sid: %r.", serial)
         lotid = ""
-      if lotid not in _SERVO_LOTID_TEMPLATE_MAP:
+      if lotid not in SERVO_LOTID_TEMPLATE_MAP:
         # This usually means that it's a servo-v2 and not servo-v2-r0, so
         # assign a fake lot-id to force servo-v2.
         logging.info(
@@ -97,7 +105,7 @@ def GetTemplateClass(vid, pid, serial=None):
           lotid,
         )
         lotid = _FORCE_V2_LOTID
-      dev_class_candidates &= _SERVO_LOTID_TEMPLATE_MAP[lotid]
+      dev_class_candidates &= SERVO_LOTID_TEMPLATE_MAP[lotid]
   dev_str = "[%04x:%04x%s]" % (vid, pid, " " + serial if serial else "")
   if not dev_class_candidates:
     logging.error("Could not find a ServoDev class for %s.", dev_str)
@@ -126,9 +134,9 @@ def GetID(name):
   Raises:
     DeviceTemplateError if ID not found for |name|
   """
-  if name not in _SERVO_NAME_TEMPLATE_MAP:
+  if name not in SERVO_NAME_TEMPLATE_MAP:
     raise DeviceTemplateError("Unknown servo device %r type" % name)
-  dev = _SERVO_NAME_TEMPLATE_MAP[name]
+  dev = SERVO_NAME_TEMPLATE_MAP[name]
   return (dev.VID, dev.PID)
 
 
@@ -144,9 +152,9 @@ def GetVID(name):
   Raises:
     DeviceTemplateError if VID not found for |name|
   """
-  if name not in _SERVO_NAME_TEMPLATE_MAP:
+  if name not in SERVO_NAME_TEMPLATE_MAP:
     raise DeviceTemplateError("Unknown servo device %r type" % name)
-  dev = _SERVO_NAME_TEMPLATE_MAP[name]
+  dev = SERVO_NAME_TEMPLATE_MAP[name]
   return dev.VID
 
 
@@ -162,33 +170,19 @@ def GetPID(name):
   Raises:
     DeviceTemplateError if PID not found for |name|
   """
-  if name not in _SERVO_NAME_TEMPLATE_MAP:
+  if name not in SERVO_NAME_TEMPLATE_MAP:
     raise DeviceTemplateError("Unknown servo device %r type" % name)
-  dev = _SERVO_NAME_TEMPLATE_MAP[name]
+  dev = SERVO_NAME_TEMPLATE_MAP[name]
   return dev.PID
 
 
 def GetAllServoIDs():
-  """Get a set of typles of the vid/pid pairs of all known servo devices.
+  """Get a set of types of the vid/pid pairs of all known servo devices.
 
   Returns:
     all_servo_ids: set((int vid1, int pid1), (int vid2, int pid2)...)
   """
-  return _SERVO_ID_DEFAULTS
-
-
-def GetSecondaryServos():
-  """Get a collection of secondary servos that usually require a support device (v4 or v4p1) to
-  offer full servo functionality.
-
-  Returns:
-    secondary_servos: set((int vid1, int pid1), (int vid2, int pid2)...)
-  """
-  # Collection of secondary servos that usually require a support device (v4 or v4p1) to
-  # offer full servo functionality.
-  return set(
-    [GetID("servo_micro"), GetID("ccd_cr50"), GetID("ccd_ti50"), GetID("c2d2")]
-  )
+  return SERVO_ID_DEFAULTS
 
 
 def _InitMaps(device_list):
@@ -197,22 +191,22 @@ def _InitMaps(device_list):
   maps with the right classes, to facilitate retrieval of the template class.
 
   Args:
-    device_list: list of protobuf messages conaining servo device info
+    device_list: list of protobuf messages containing servo device info
   """
   for device in device_list.servo_devices:
     # Link to the name
-    _SERVO_NAME_TEMPLATE_MAP[device.TYPE] = device
+    SERVO_NAME_TEMPLATE_MAP[device.TYPE] = device
     if device.VID and device.PID:
       # This means the device refers to a physical servo device.
       # Generate the servo device ID - (vid, pid)
       device_id = (device.VID, device.PID)
       # Populate the SERVO_ID_DEFAULTS set
-      _SERVO_ID_DEFAULTS.add(device_id)
+      SERVO_ID_DEFAULTS.add(device_id)
       # Populate the lookup maps to allow for retrieval.
-      _SERVO_VID_PID_TEMPLATE_MAP[device.VID][device.PID].add(device.TYPE)
+      SERVO_VID_PID_TEMPLATE_MAP[device.VID][device.PID].add(device.TYPE)
       if device.LOTIDS:
         for lotid in device.LOTIDS:
-          _SERVO_LOTID_TEMPLATE_MAP[lotid].add(device.TYPE)
+          SERVO_LOTID_TEMPLATE_MAP[lotid].add(device.TYPE)
 
 
 def _ReadTextProto(file_path):
@@ -231,3 +225,6 @@ def _ReadTextProto(file_path):
 # Import servo device info and initialize maps
 device_templates = _ReadTextProto(_TEXTPROTO_PATH)
 _InitMaps(device_templates)
+# Servo types used to categorize servo devices
+DEBUG_HEADER_SERVO_TYPES = set(['servo_micro', 'servo_v2', 'c2d2'])
+CCD_SERVO_TYPES = set(['ccd_cr50', 'ccd_ti50'])
