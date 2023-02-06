@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<root>
-  <control>
-  <!-- Set ccd keepalive on during init. -->
-    <name>ccd_keepalive_en</name>
-    <params clobber_ok="" init="on"/>
-  </control>
-</root>
