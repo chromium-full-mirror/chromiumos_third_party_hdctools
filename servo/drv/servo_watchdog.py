@@ -18,12 +18,6 @@ class servoWatchdog(hw_driver.HwDriver):
     """Initialize all information needed by servo watchdog."""
     super(servoWatchdog, self).__init__(interface, params, servod)
 
-    # The serial names and devices may be initialized in different orders.
-    # The name may not be set. Set it if it isn't set.
-    for device in self._servod.get_devices():
-      if not device.get_name():
-        self._set_device_name(device)
-
   def _update_device_disconnect_ok(self, name, disconnect_ok):
     """Update if it's ok for the device to disconnect.
 
@@ -39,22 +33,29 @@ class servoWatchdog(hw_driver.HwDriver):
       servoWatchdogError: if the device isn't found.
     """
     serialnames = self._servod.get_servo_serials()
-    # If the name isn't a key, then it might be the serialname
-    serial = serialnames.get(name, name)
-    if serial not in serialnames.values():
-      raise servoWatchdogError('Invalid device %s' % name)
+    devices = self._servod.get_devices()
+    if name in devices:
+      device = devices.get(name)
+    # If the name isn't a device prefix, then it might be the serialname
+    elif name in serialnames.values():
+      for dev in devices:
+        if name in dev.get_id():
+          device = dev
+          break
+    # If the name isn't a device prefix or serialname, it could be
+    # just the device type
+    else:
+      device = self._get_device_from_type(name)
+      if device is None:
+        raise servoWatchdogError('Invalid device %s' % name)
 
-    for device in self._servod.get_devices():
-      if serial in device.get_id():
-        device.set_disconnect_ok(disconnect_ok)
-        return
-    raise servoWatchdogError('%s is not being tracked' % serial)
+    device.set_disconnect_ok(disconnect_ok)
 
   def _get_device_state(self, device):
     """String of the current device state."""
     connected_str = '' if device.is_connected() else 'dis'
     disconnect_ok_str = ' (disconnect ok)' if device.disconnect_is_ok() else ''
-    name = '/'.join(device.get_prefixes())
+    name = ', '.join(device.get_prefixes())
     return '%s: %sconnected%s' % (name, connected_str, disconnect_ok_str)
 
   def _Get_watchdog(self):
@@ -89,7 +90,7 @@ class servoWatchdog(hw_driver.HwDriver):
       if len(candidates) == 1:
         return candidates[0]
       if len(candidates) > 1:
-        raise servoWatchdogError('Multiple devices %s matching with type %s' % (candidates, name))
+        raise servoWatchdogError('Multiple devices %s matching with type %s' % (candidates, type))
     return None
 
   def _Get_ccd_state(self):
