@@ -429,6 +429,11 @@ class ServoDevice(object):
       if None in [drv_prefix, interface_id]:
         raise ServoDeviceError('No drv/interface for control %r found' %
                           control_name)
+      # Store map params in params
+      map_name = params.get('map')
+      if map_name != None:
+        map_params = self.syscfg.lookup_map_params(map_name)
+        params['map_params'] = map_params
 
       # this control only needs cross-servo-device communication and does not
       # need hardware interface for low-level communication

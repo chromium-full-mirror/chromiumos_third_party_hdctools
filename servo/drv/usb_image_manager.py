@@ -73,8 +73,15 @@ class usbImageManager(hw_driver.HwDriver):
     if 'error_amendment' in params:
       self._error_msg += ' ' + params['error_amendment']
 
+    # Retrieve map_params(if exists) and create a reversed dict to allow reverse lookup
+    self._MAP_DICT = self._params.get('map_params')
+    if isinstance(self._MAP_DICT, dict):
+      self._MAP_DICT_REVERSED = {val: key for key, val in self._MAP_DICT.items()}
+    else:
+      self._MAP_DICT_REVERSED = None
+
   def _Get_image_usbkey_direction(self):
-    """Return direction of image usbkey mux."""
+    """Return direction of image usbkey mux (as a usbkey string)."""
     return self._servod_get(self._IMAGE_USB_MUX)
 
   def _Set_image_usbkey_direction(self, mux_direction):
@@ -84,8 +91,17 @@ class usbImageManager(hw_driver.HwDriver):
     connection between the USB port J3 and either servo or DUT side.
 
     Args:
-      mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
+      mux_direction: string/int values of "servo_sees_usbkey" or "dut_sees_usbkey".
+    Raises:
+      UsbImageManagerError: if an invalid usbkey int is passed in
     """
+    # If mux_direction is an int, change it to its corresponding string
+    if isinstance(mux_direction, int) and self._MAP_DICT_REVERSED is not None:
+      try:
+        mux_direction = self._MAP_DICT_REVERSED[str(mux_direction)]
+      except KeyError as e:
+        raise UsbImageManagerError('Invalid usbkey value. Try one of these values: ' +
+                                     str(self._MAP_DICT)) from e
     self._SafelySwitchMux(mux_direction)
     if self._servod_get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
       # This will ensure that we make a best-effort attempt to only
@@ -101,7 +117,7 @@ class usbImageManager(hw_driver.HwDriver):
     is switched while the stick power is on.
 
     Args:
-      mux_direction: map values of "servo_sees_usbkey" or "dut_sees_usbkey".
+      mux_direction: string values of "servo_sees_usbkey" or "dut_sees_usbkey".
     """
     if self._servod_get(self._IMAGE_USB_MUX) != mux_direction:
       self._servod_set(self._IMAGE_USB_PWR, 'off')

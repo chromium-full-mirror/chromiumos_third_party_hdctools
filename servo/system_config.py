@@ -788,10 +788,12 @@ class SystemConfig(object):
               reformat_value = keyname
               break
           # try matching it as a simple string
-          else:
-            if val == reformat_value:
-              reformat_value = keyname
-              break
+          elif val == reformat_value:
+            reformat_value = keyname
+            break
+          # check for the possibility that there's need to reformat
+          elif keyname == reformat_value:
+            break
         else:
           if reformat_value and reformat_value != 'not_applicable':
             control = params['control_name']
