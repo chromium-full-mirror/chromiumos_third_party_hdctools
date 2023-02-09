@@ -284,6 +284,25 @@
     <params map="onoff" init="off" drv="kb_handler_init" interface="servo"
       subtype="init_usb_keyboard"></params>
   </control>
+  <control>
+    <name>servo_v4p1_dut_usb3_en</name>
+    <doc>Enable/disable USB3 to DUT on servo_v4p1.
+    USB3 is disabled on servo_v4p1 by default due to incompatibility
+    with some models. This control allows to manipulate USB3 state.
+    Also it automatically enables USB3 during servod initialization.
+    If specific DUT does not work well with servo_v4p1 and USB3,
+    its config should include this control with 'patch' element inside.
+    Also it should include 'clobber_ok' and overwrite 'init' value to 'disable'.
+    Note: need to use servo FW with dut_usb3 console command available.
+    Note: servo_v4p1_dut_usb3_en:enable forces USB3 once after issuing.
+    It also resets USB DUT hub, to make USB devices enumerate again
+    as super speed. Then USB3 is only ALLOWED, which means that other
+    parts of servo FW can change it to USB2, eg. PD stack. </doc>
+    <params cmd="get" uart_cmd="dut_usb3" regex="(allowed/enabled|disabled)"
+    group="0" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="dut_usb3" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(enable|disable)$" init="enable"/>
+  </control>
 
   <!-- UART and CONSOLE settings -->
   <control>
