@@ -468,9 +468,16 @@ class SystemConfig(object):
         if clobber_ok != CLOBBER_FULL:
           clobber_ok = get_dict.get(CLOBBER_ATTR, clobber_ok)
 
-        if name in self.syscfg_dict[tag] and clobber_ok is None:
-          raise SystemConfigError("Duplicate %s %s without %r key\n%s" % (
-              tag, name, CLOBBER_ATTR, element_str))
+        if name in self.syscfg_dict[tag]:
+          if patch:
+            self._logger.debug('Applying patch to %s %r' % (tag, name))
+          elif clobber_ok is None:
+            raise SystemConfigError("Duplicate %s %r without %r key\n%s" %
+                (tag, name, CLOBBER_ATTR, element_str))
+        elif patch:
+          self._logger.debug('Ignoring patch for nonexistent %s %r' %
+                             (tag, name))
+          continue
 
         if 'init' in set_dict:
           hwinit_found = False
@@ -484,10 +491,6 @@ class SystemConfig(object):
 
           if not hwinit_found:
             self.hwinit.append((name, set_dict['init']))
-
-        if patch and name not in self.syscfg_dict[tag]:
-          self._logger.debug('Cannot patch nonexistent control %s.' % name)
-          continue
 
         if (clobber_ok is not None and clobber_ok != CLOBBER_FULL and
             name in self.syscfg_dict[tag]):
