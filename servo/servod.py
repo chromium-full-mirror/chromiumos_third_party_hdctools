@@ -363,9 +363,6 @@ class ServodStarter(object):
       for cfg_file in all_configs:
         scfg.add_cfg_file(cfg_file)
 
-      self._logger.debug('System configs for device %s\n%s', dev_entry,
-        scfg.display_config())
-
       servo_device = servo_dev.ServoDevice(dev_entry=dev_entry, config=scfg,
         interfaces=devopts.interfaces, servod=weakref.proxy(self._servod))
 
@@ -387,7 +384,11 @@ class ServodStarter(object):
           self._logger.warn('Cannot set up board %s for device %s. '
             'Start device without board specific config.',
             devopts.board, servo_device)
+
       servo_device.syscfg.finalize()
+      self._logger.debug('System configs for device %s\n%s', dev_entry,
+        servo_device.syscfg.display_config())
+
       for prefix in dev_entry.devopts.prefix:
         self._servod.add_device(servo_device, prefix)
 
