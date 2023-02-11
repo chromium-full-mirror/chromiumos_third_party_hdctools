@@ -18,6 +18,7 @@ import xml.etree.ElementTree
 MAP_TAG = 'map'
 CONTROL_TAG = 'control'
 CLOBBER_ATTR = 'clobber_ok'
+CLOBBER_PATCH = 'patch'
 CLOBBER_FULL = 'full'
 CONTENT_TAG = 'content'
 CONTENT_ITEM_TAG = 'item'
@@ -347,9 +348,6 @@ class SystemConfig(object):
         alias = element.findtext('alias')
         remap = element.findtext('remap')
         clone = element.findtext('clone')
-        # only patch existing controls, otherwise ignore
-        # TODO: can be cleaned up with a single source of control xmls
-        patch = element.findtext('patch')
 
         if remap:
           if name_prefix:
@@ -464,20 +462,28 @@ class SystemConfig(object):
 
         assert tag == CONTROL_TAG
 
+        # Prioritize CLOBBER_FULL, over clobber update, over CLOBBER_PATCH,
+        # regardless of whether they came from set_dict or get_dict.
+        #
+        # This looks very strange because "clobber update" has long been the
+        # behavior for any clobber value (including empty string).  This will
+        # be cleaned up by requiring a specific value for "update" behavior,
+        # and making unrecognized values an error (including empty string).
         clobber_ok = set_dict.get(CLOBBER_ATTR)
         if clobber_ok != CLOBBER_FULL:
           clobber_ok = get_dict.get(CLOBBER_ATTR, clobber_ok)
+          if clobber_ok == CLOBBER_PATCH:
+            clobber_ok = set_dict.get(CLOBBER_ATTR, clobber_ok)
 
-        if name in self.syscfg_dict[tag]:
-          if patch:
-            self._logger.debug('Applying patch to %s %r' % (tag, name))
-          elif clobber_ok is None:
-            raise SystemConfigError("Duplicate %s %r without %r key\n%s" %
-                (tag, name, CLOBBER_ATTR, element_str))
-        elif patch:
-          self._logger.debug('Ignoring patch for nonexistent %s %r' %
-                             (tag, name))
-          continue
+        if clobber_ok == CLOBBER_PATCH:
+          if name not in self.syscfg_dict[tag]:
+            self._logger.debug('Ignoring clobber patch for nonexistent %s %r' %
+                               (tag, name))
+            continue
+          self._logger.debug('Applying clobber patch to %s %r' % (tag, name))
+        elif clobber_ok is None and name in self.syscfg_dict[tag]:
+          raise SystemConfigError('Duplicate %s %r without %r key\n%s' %
+                                  (tag, name, CLOBBER_ATTR, element_str))
 
         if 'init' in set_dict:
           hwinit_found = False

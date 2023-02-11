@@ -23,7 +23,6 @@
   -->
   <control>
     <name>servo_v4p1_dut_usb3_en</name>
-    <patch>servo_v4p1_dut_usb3_en</patch>
-    <params init="disable" clobber_ok=""></params>
+    <params clobber_ok="patch" init="disable"></params>
   </control>
 </root>
