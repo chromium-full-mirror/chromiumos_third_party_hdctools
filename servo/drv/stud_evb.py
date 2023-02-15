@@ -31,7 +31,7 @@ class studEvb(hw_driver.HwDriver):
   LEGO_RST_PIN_PORT = 2
   LEGO_RST_PIN_IOEX_I2C_ADDR = 0x21
 
-  def __init__(self, interface, params, servod):
+  def __init__(self, interface, params, servod=None):
     """Constructor
 
     Args:
