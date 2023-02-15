@@ -4,181 +4,181 @@
     <name>STUD_EVB_BASE_IO_A0</name>
     <doc>STUD_EVB_BASE_IO_A0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A1</name>
     <doc>STUD_EVB_BASE_IO_A1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A2</name>
     <doc>STUD_EVB_BASE_IO_A2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A3</name>
     <doc>STUD_EVB_BASE_IO_A3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A4</name>
     <doc>STUD_EVB_BASE_IO_A4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A5</name>
     <doc>STUD_EVB_BASE_IO_A5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A6</name>
     <doc>STUD_EVB_BASE_IO_A6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A7</name>
     <doc>STUD_EVB_BASE_IO_A7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A8</name>
     <doc>STUD_EVB_BASE_IO_A8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_A9</name>
     <doc>STUD_EVB_BASE_IO_A9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="0"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B0</name>
     <doc>STUD_EVB_BASE_IO_B0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B1</name>
     <doc>STUD_EVB_BASE_IO_B1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B2</name>
     <doc>STUD_EVB_BASE_IO_B2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B3</name>
     <doc>STUD_EVB_BASE_IO_B3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B4</name>
     <doc>STUD_EVB_BASE_IO_B4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B5</name>
     <doc>STUD_EVB_BASE_IO_B5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="1"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B6</name>
     <doc>STUD_EVB_BASE_IO_B6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B7</name>
     <doc>STUD_EVB_BASE_IO_B7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B8</name>
     <doc>STUD_EVB_BASE_IO_B8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_B9</name>
     <doc>STUD_EVB_BASE_IO_B9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C0</name>
     <doc>STUD_EVB_BASE_IO_C0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="3"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C1</name>
     <doc>STUD_EVB_BASE_IO_C1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="3"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C2</name>
     <doc>STUD_EVB_BASE_IO_C2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="3"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C3</name>
     <doc>STUD_EVB_BASE_IO_C3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="3"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C4</name>
     <doc>STUD_EVB_BASE_IO_C4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="3"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C5</name>
     <doc>STUD_EVB_BASE_IO_C5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="3"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C6</name>
     <doc>STUD_EVB_BASE_IO_C6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C7</name>
     <doc>STUD_EVB_BASE_IO_C7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C8</name>
     <doc>STUD_EVB_BASE_IO_C8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_C9</name>
     <doc>STUD_EVB_BASE_IO_C9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x21" port="2"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
 
   <!--Ioex U9-->
@@ -186,121 +186,121 @@
     <name>STUD_EVB_BASE_IO_D0</name>
     <doc>STUD_EVB_BASE_IO_D0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="1"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D1</name>
     <doc>STUD_EVB_BASE_IO_D1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="1"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D2</name>
     <doc>STUD_EVB_BASE_IO_D2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="1"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D3</name>
     <doc>STUD_EVB_BASE_IO_D3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D4</name>
     <doc>STUD_EVB_BASE_IO_D4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D5</name>
     <doc>STUD_EVB_BASE_IO_D5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D6</name>
     <doc>STUD_EVB_BASE_IO_D6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D7</name>
     <doc>STUD_EVB_BASE_IO_D7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D8</name>
     <doc>STUD_EVB_BASE_IO_D8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_IO_D9</name>
     <doc>STUD_EVB_BASE_IO_D9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="2"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D0</name>
     <doc>STUD_EVB_BRICK_IO_D0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="0"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D1</name>
     <doc>STUD_EVB_BRICK_IO_D1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="4"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D2</name>
     <doc>STUD_EVB_BRICK_IO_D2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="4"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D3</name>
     <doc>STUD_EVB_BRICK_IO_D3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D4</name>
     <doc>STUD_EVB_BRICK_IO_D4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D5</name>
     <doc>STUD_EVB_BRICK_IO_D5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D6</name>
     <doc>STUD_EVB_BRICK_IO_D6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D7</name>
     <doc>STUD_EVB_BRICK_IO_D7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D8</name>
     <doc>STUD_EVB_BRICK_IO_D8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_D9</name>
     <doc>STUD_EVB_BRICK_IO_D9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x23" port="3"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BASE_SCL4</name>
@@ -356,181 +356,181 @@
     <name>STUD_EVB_BRICK_IO_A0</name>
     <doc>STUD_EVB_BRICK_IO_A0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="1"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A1</name>
     <doc>STUD_EVB_BRICK_IO_A1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="1"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A2</name>
     <doc>STUD_EVB_BRICK_IO_A2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="1"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A3</name>
     <doc>STUD_EVB_BRICK_IO_A3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A4</name>
     <doc>STUD_EVB_BRICK_IO_A4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A5</name>
     <doc>STUD_EVB_BRICK_IO_A5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A6</name>
     <doc>STUD_EVB_BRICK_IO_A6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A7</name>
     <doc>STUD_EVB_BRICK_IO_A7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A8</name>
     <doc>STUD_EVB_BRICK_IO_A8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_A9</name>
     <doc>STUD_EVB_BRICK_IO_A9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B0</name>
     <doc>STUD_EVB_BRICK_IO_B0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="0"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B1</name>
     <doc>STUD_EVB_BRICK_IO_B1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="4"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B2</name>
     <doc>STUD_EVB_BRICK_IO_B2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="4"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B3</name>
     <doc>STUD_EVB_BRICK_IO_B3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B4</name>
     <doc>STUD_EVB_BRICK_IO_B4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B5</name>
     <doc>STUD_EVB_BRICK_IO_B5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B6</name>
     <doc>STUD_EVB_BRICK_IO_B6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B7</name>
     <doc>STUD_EVB_BRICK_IO_B7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B8</name>
     <doc>STUD_EVB_BRICK_IO_B8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_B9</name>
     <doc>STUD_EVB_BRICK_IO_B9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C0</name>
     <doc>STUD_EVB_BRICK_IO_C0 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="4" input_type="str" mux_chan="0"/>
+    offset="4" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C1</name>
     <doc>STUD_EVB_BRICK_IO_C1 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="5" input_type="str" mux_chan="0"/>
+    offset="5" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C2</name>
     <doc>STUD_EVB_BRICK_IO_C2 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="6" input_type="str" mux_chan="0"/>
+    offset="6" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C3</name>
     <doc>STUD_EVB_BRICK_IO_C3 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C4</name>
     <doc>STUD_EVB_BRICK_IO_C4 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="3"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C5</name>
     <doc>STUD_EVB_BRICK_IO_C5 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="3" input_type="str" mux_chan="0"/>
+    offset="3" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C6</name>
     <doc>STUD_EVB_BRICK_IO_C6 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="2" input_type="str" mux_chan="0"/>
+    offset="2" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C7</name>
     <doc>STUD_EVB_BRICK_IO_C7 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="1" input_type="str" mux_chan="0"/>
+    offset="1" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C8</name>
     <doc>STUD_EVB_BRICK_IO_C8 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="2"
-    offset="0" input_type="str" mux_chan="0"/>
+    offset="0" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
   <control>
     <name>STUD_EVB_BRICK_IO_C9</name>
     <doc>STUD_EVB_BRICK_IO_C9 pin, see EVB schematics.</doc>
     <params interface="2" drv="stud_evb" child="0x22" port="1"
-    offset="7" input_type="str" mux_chan="0"/>
+    offset="7" input_type="str" mux_chan="0" tags="stud_evb_io"/>
   </control>
 
   <!--Ioex U11-->
@@ -865,5 +865,18 @@
     subtype="whole_bank" bank_type="BRICK" bank_str="D"/>
   </control>
 
+  <!--Accessors to all brick/base pins-->
+  <control>
+    <name>STUD_EVB_BASE_PINS</name>
+    <doc>List of all BASE pins, see EVB schematics.</doc>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="all_base_pins"/>
+  </control>
+  <control>
+    <name>STUD_EVB_BRICK_PINS</name>
+    <doc>List of all BRICK pins, see EVB schematics.</doc>
+    <params interface="servo" drv="stud_evb" input_type="str"
+    subtype="all_brick_pins"/>
+  </control>
 
 </root>

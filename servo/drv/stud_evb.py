@@ -4,6 +4,7 @@
 """Driver for board config controls stud_evb board (i2c mux & ioexes)."""
 
 import copy
+import re
 import time
 
 from servo.drv import hw_driver
@@ -46,10 +47,12 @@ class studEvb(hw_driver.HwDriver):
     """
     super(studEvb, self).__init__(interface, params, servod)
     if 'subtype' in self._params:
-      # Whole bank use control names, so no direct access to i2c interface required
-      if self._params['subtype'] == 'whole_bank':
+      # Below controls only use control names, so no direct access to i2c
+      # interface required
+      if self._params['subtype'] in ['whole_bank', 'all_base_pins', 'all_brick_pins']:
           self.i2c_mux = None
           self.ioex = None
+          self.servod = servod
           return
     self.i2c_mux = pi4msd.pi4Msd(interface, params)
     self.ioex = pi4ioe5.pi4Ioe5(interface, params)
@@ -445,3 +448,107 @@ class studEvb(hw_driver.HwDriver):
     pin_controls = self._get_bank_pin_controls(bank_type, bank_str)
     for control in pin_controls:
       self._servod_set(control, fmt_value)
+
+  def _find_matching_pin(self, port, pin, ioex_addr, base_pins=True):
+    """Iterate through controls marked with 'stud_evb_io' tag and return name of
+    the pin with matching ioex i2c address, ioex port and pin within this port.
+
+    Args:
+      port: Number of IOEX port to be mapped
+      pin: Number of pin within IOEX port to be mapped
+      ioex_addr: i2c address of IOEX where particular pin should be found
+      base_pins: If True check only BASE controls, BRICK controls otherwise
+
+    Returns:
+      pin_name: String with letter of bank and pin number within this bank, None
+      if not found
+      """
+    for control_name in self.servod.get_controls_for_tag("stud_evb_io"):
+      if base_pins:
+        matching_str = 'STUD_EVB_BASE_IO_[A-D][0-9]'
+      else:
+        matching_str = 'STUD_EVB_BRICK_IO_[A-D][0-9]'
+      if not re.match(matching_str, control_name):
+        continue
+
+      # Find a control with particular pin/port/i2c_addr
+      params, _, _ = (self.servod.get_main_device()._get_param_drv(control_name))
+      if (int(params.get('child'), base=16) != ioex_addr):
+        continue
+
+      if ((int(params.get('offset')) == pin) and
+          (int(params.get('port')) == port)):
+        return re.findall('STUD_EVB_.*_IO_(.*)', control_name)[0]
+
+  def _io_name_to_index(self, io_name):
+    """Convert name of IO pin into index of BASE/BRICK list of pins
+
+    Args:
+      io_name: Expect string in format <BANK_LETTER><PIN_NUMBER>
+
+    Returns:
+      index: Linear index of particular IO within BASE or BRICK pins table
+    """
+    return 10 * (ord(io_name[0]) - ord('A')) + int(io_name[1])
+
+  def _fill_io_table_from_ioex(self, ioex_pins_table, ioex_str, ioex_addr, base_pins):
+    """Fill linear list of BASE/BRICK pins levels based on the IOEX readings remapped
+    to proper index from controls' params.
+
+    Args:
+      ioex_pins_table: List of pins' levels to be filled
+      ioex_str: Return value from whole IOEX controls
+      ioex_addr: i2c address of IOEX which is being read
+      base_pins: If True check only BASE controls, BRICK controls otherwise
+    """
+    # Port value strings have format of "P<number>:Value\n"
+    ioex_ports_str = ioex_str.splitlines()
+
+    for port, port_str in enumerate(ioex_ports_str):
+      port_value = int(re.search(':(.+)$', port_str).group(1))
+      for pin in range(8):
+        io_name = self._find_matching_pin(port, pin, ioex_addr, base_pins)
+        if io_name:
+          ioex_pins_table[self._io_name_to_index(io_name)] = (port_value & (1 << pin)) >> pin
+
+  def _Get_all_base_pins(self):
+    """Get all BASE_IO_* pins from stud EVB. Return them in form of a list with
+    level of each pin.
+    """
+    ioex_pins_table = [0] * 40
+    ioex_control = "STUD_EVB_IOEX_0"
+    ioex_string = self._servod_get(ioex_control)
+    self._fill_io_table_from_ioex(ioex_pins_table, ioex_string, 0x21, base_pins=True)
+
+    ioex_control = "STUD_EVB_IOEX_1"
+    ioex_string = self._servod_get(ioex_control)
+    self._fill_io_table_from_ioex(ioex_pins_table, ioex_string, 0x23, base_pins=True)
+    return ' '.join(str(e) for e in ioex_pins_table)
+
+  def _Set_all_base_pins(self, fmt_value):
+    """Set all BASE_IO_* pins from stud EVB."""
+    control_name = "STUD_EVB_IOEX_0"
+    self._servod_set(control_name, fmt_value)
+    control_name = "STUD_EVB_BASE_BANK_D"
+    self._servod_set(control_name, fmt_value)
+
+  def _Get_all_brick_pins(self):
+    """Get all BRICK_IO_* pins from stud EVB. Return them in form of a list with
+    level of each pin.
+    """
+    ioex_pins_table = [0] * 40
+    ioex_control = "STUD_EVB_IOEX_2"
+    ioex_string = self._servod_get(ioex_control)
+    self._fill_io_table_from_ioex(ioex_pins_table, ioex_string, 0x22, base_pins=False)
+
+    ioex_control = "STUD_EVB_IOEX_1"
+    ioex_string = self._servod_get(ioex_control)
+    self._fill_io_table_from_ioex(ioex_pins_table, ioex_string, 0x23, base_pins=False)
+    return ' '.join(str(e) for e in ioex_pins_table)
+
+  def _Set_all_brick_pins(self, fmt_value):
+    """Set all BRICK_IO_* pins from stud EVB."""
+    control_name = "STUD_EVB_IOEX_2"
+    self._servod_set(control_name, fmt_value)
+    control_name = "STUD_EVB_BRICK_BANK_D"
+    self._servod_set(control_name, fmt_value)
