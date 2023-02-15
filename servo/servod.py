@@ -156,24 +156,23 @@ class ServodStarter(object):
                              'files get rotated on new instance, by user '
                              'request or when they grow past %d bytes.' %
                              servo_logging.MAX_LOG_BYTES)
-    server_pars.add_argument('--allow-dual-v4',
-                             help='Deprecated flag. '
-                            'Double DUT controllor is always allowed now.')
+    server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
+                             action='store_true',
+                             help='DEPRECATED.  Backwards compatible way to set '
+                             '--device-discovery=full')
     server_pars.add_argument('--recovery_mode', default=False,
                              action='store_true',
                              help='Start servod through issues to allow for '
                              'inspection and recovery mechanisms.')
-    server_pars.add_argument('--no-device-discovery', default=False,
-                             action='store_true',
-                             help='Only use devices included in the command '
-                             'line and rc file to start servod. Disallow auto-'
-                             'discovering any other devices.')
-    server_pars.add_argument('--min-device-discovery', default=False,
-                             action='store_true',
-                             help='Only perform minimum auto-discovering of '
-                             'devices based on the deviced provided through'
-                             'command line and rc file. i.e. pull in the necessary'
-                             'root hub and child devices.')
+    # In the long term we might want to enable pulling in all servo devices
+    # including all DUT controllers by default. Currently we default to pull
+    # the minimum to be backwards compatible.
+    server_pars.add_argument('--device-discovery', default='min',
+                             const='min', nargs='?',
+                             choices=('none', 'min', 'full'),
+                             help='Level of auto-discovering devices based '
+                             'on the deviced provided through command line and '
+                             'rc file. Default to minimum discovery.')
     # This is included in server_pars because it is shared across all devices
     server_pars.add_argument('-u', '--usbkm232', type=str,
                           help='path to USB-KM232 device which allow for '
@@ -314,12 +313,12 @@ class ServodStarter(object):
       a tuple of all the ServoDeviceEntry's, the main device's ServoDeviceEntry
     """
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
-    if sopts.no_device_discovery:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
-    elif sopts.min_device_discovery:
+    if sopts.device_discovery == 'full' or sopts.dual_v4:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
+    elif sopts.device_discovery == 'min':
       discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO
     else:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
     finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
                                                 devopts_generator=self.devopts_generator,
                                                 dev_hierarchy=dev_hierarchy,

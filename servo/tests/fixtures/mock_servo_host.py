@@ -100,7 +100,7 @@ def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_us
                     result[device.iSerial] = dump_interfaces(device)
                 return result
 
-            def start(self, serial, board, model):
+            def start(self, serial, board, model, device_discovery='min'):
                 opts = [
                     "-s",
                     serial,
@@ -108,6 +108,8 @@ def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_us
                     board,
                     "-m",
                     model,
+                    "--device-discovery",
+                    device_discovery
                 ]
                 self.starter = sd.ServodStarter(opts)
 
@@ -196,7 +198,7 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
         servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
         servo_micro_device = servo_host.add_device('servo_micro', 1, 57, "2.3")
         ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
-        servo_host.start(servo_v4p1_device.iSerial, board, model)
+        servo_host.start(servo_v4p1_device.iSerial, board, model, 'full')
         return (servo_host, servo_v4p1_device, servo_micro_device, ccd_device)
 
     return generate_host
@@ -249,7 +251,7 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
         c2d2_device = servo_host.add_device('c2d2', 1, 57, "2.3")
         ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
-        servo_host.start(servo_v4p1_device.iSerial, board, model)
+        servo_host.start(servo_v4p1_device.iSerial, board, model, 'full')
         return (servo_host, servo_v4p1_device, c2d2_device, ccd_device)
 
     return generate_host

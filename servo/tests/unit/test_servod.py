@@ -272,7 +272,8 @@ class TestServoStarter(unittest.TestCase):
     starter.devopts_generator = None
     starter._scratchutil = None
     sopts = argparse.Namespace()
-    sopts.no_device_discovery = sopts.min_device_discovery = False
+    sopts.device_discovery = 'full'
+    sopts.dual_v4 = False
 
     res = starter._discover_servos(sopts, None)
 
@@ -297,7 +298,8 @@ class TestServoStarter(unittest.TestCase):
     starter._logger = unittest.mock.MagicMock()
     starter._logger.fatal = unittest.mock.MagicMock()
     sopts = argparse.Namespace()
-    sopts.no_device_discovery = sopts.min_device_discovery = False
+    sopts.device_discovery = 'full'
+    sopts.dual_v4 = False
 
     with self.assertRaises(SystemExit) as exit:
       starter._discover_servos(sopts, None)
