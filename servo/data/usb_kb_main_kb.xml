@@ -12,6 +12,7 @@
        when the goal was to have servod come up with the keyboard.-->
   <control>
     <name>init_usb_keyboard</name>
-    <params clobber_ok="" init="on"/>
+    <params clobber_ok="" map="onoff" init="on" drv="kb_handler_init"
+    subtype="init_usb_keyboard" interface="servo"/>
   </control>
 </root>
