@@ -474,7 +474,8 @@ class RegexFilter(object):
     Returns:
       filtered controls: a list (potentially empty) after filtering
     """
-    controls = control_names.copy()
+    # Only use ctrls from the main device for now
+    controls = [ctrl for ctrl in control_names if '.' not in ctrl]
     if self.rgx_to_remove is not None:
       controls = []
       for c in control_names:
