@@ -86,7 +86,8 @@ class ServodPowerTracker(threading.Thread):
       title = '%s (%s)' % (title, suffix)
     self.title = title
     self._stats = timelined_stats_manager.TimelinedStatsManager(smid=tag,
-                                                                title=title)
+                                                                title=title,
+                                                                rate=sample_rate)
     self._logger = logging.getLogger(type(self).__name__)
     # Flag to indicate whether to skip the first reading. This is used
     # for trackers that run averaging, and the first reading is used to reset
