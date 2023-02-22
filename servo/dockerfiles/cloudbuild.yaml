@@ -22,7 +22,7 @@ steps:
     - --forked
     - --cov-report=html
     - --cov-report=xml
-    - --cov=/usr/local/lib/python3.10/site-packages/servo
+    - --cov=/usr/local/lib/python3.11/dist-packages/servo
     - /hdctools/servo/tests/
   waitFor: ['build']
 

@@ -14,7 +14,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:bullseye as clang-builder
+FROM debian:bookworm as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -29,15 +29,11 @@ RUN apt-get update \
         python3 \
         python3-distutils \
         python3-setuptools \
+        python3-wheel \
         uuid-dev \
         wget
-
 RUN update-alternatives --auto c++
 RUN update-alternatives --auto cc
-
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3 ./get-pip.py
-RUN pip3 install --upgrade pip && pip3 install wheel
 
 ENV CC=clang
 ENV CXX=clang++
@@ -195,7 +191,9 @@ COPY --from=protoc-builder /usr/local/bin/protoc /usr/bin
 COPY --from=protoc-builder /usr/local/lib/libproto* /usr/local/lib/
 RUN ldconfig
 
-RUN pip3 install pytest
+RUN apt-get update \
+    && apt-get install -y \
+        python3-pytest
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
@@ -223,11 +221,17 @@ RUN make
 RUN strip  /uhubctl/uhubctl
 
 ######################################################################
-FROM python:3.10-bullseye as firmware-installer
+FROM debian:bookworm-slim as firmware-installer
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
-         apt-transport-https ca-certificates gnupg sudo \
+         apt-transport-https \
+         ca-certificates \
+         curl \
+         gnupg \
+         python3 \
+         sudo \
+         xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
@@ -237,13 +241,18 @@ RUN sudo apt-get update && sudo apt-get install google-cloud-cli
 RUN mkdir -p /usr/share/servo_updater/firmware/
 WORKDIR /usr/share/servo_updater/firmware/
 COPY /servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
-RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
+RUN python3 servo_firmware_provision.py && rm servo_firmware_provision.py
 
 ######################################################################
 FROM libftdi as flashrom-builder
 
 WORKDIR /
-RUN pip3 install meson ninja
+
+RUN apt-get update \
+    && apt-get install -y \
+        meson \
+        ninja-build
+
 RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 
 RUN apt-get update \
@@ -252,7 +261,7 @@ RUN apt-get update \
 	    libpci-dev
 
 WORKDIR /flashrom
-ENV CFLAGS=" -Wno-incompatible-function-pointer-types -Wno-error-int-conversion -Wno-deprecated-declarations"
+ENV CFLAGS=" -Wno-incompatible-function-pointer-types -Wno-deprecated-declarations"
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
 
@@ -269,7 +278,7 @@ RUN make && make install
 RUN strip /usr/bin/futility
 
 ######################################################################
-FROM python:3.10-slim-bullseye
+FROM debian:bookworm-slim
 
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
@@ -280,6 +289,7 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         dnsutils \
+        fwupd \
         iptables \
         iputils-ping \
         kmod \
@@ -294,19 +304,32 @@ RUN apt-get update --no-install-recommends \
         build-essential \
         make \
         gcc \
+        python3 \
+        python3-mock \
+        python3-numpy \
+        python3-pexpect \
+        python3-protobuf \
+        python3-serial \
+        python3-pytest \
+        python3-pytest-cov \
+        python3-pytest-forked \
+        python3-pytest-mock \
+        python3-pytest-xdist \
+        python3-usb \
+        python3-requests \
+        python3-six \
+        python3-pip \
+        wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
-# Install python packages.
-COPY /servo/dockerfiles/requirements.txt /opt/requirements.txt
-RUN pip install --upgrade pip && pip3 --no-cache-dir install -r /opt/requirements.txt
 
 WORKDIR /hdctools/chromeos/
 COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --from=hdctools-builder /hdctools/dist/* ./
 COPY --from=ec-builder /ec/dist/*.whl ./
-RUN pip install *.whl
+RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
 
@@ -318,6 +341,11 @@ RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
 COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
+
+# Install genesys hub firmware
+RUN mkdir -p /usr/local/genesys
+RUN wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab \
+    -O /usr/local/genesys/GenesysLogic_GL3590_64.17.cab
 
 # Install ec tools
 COPY --from=ec-builder \
@@ -389,10 +417,11 @@ RUN apt-get remove --purge -y \
         build-essential \
         make \
         gcc \
+        python3-pip \
+        wget \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /usr/local/lib/python3.10/site-packages/numpy/core/tests \
-    && python -m pip uninstall -y pip \
+    && rm -rf /usr/local/lib/python*/site-packages/numpy/core/tests \
     && rm -rf /var/cache/debconf \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
