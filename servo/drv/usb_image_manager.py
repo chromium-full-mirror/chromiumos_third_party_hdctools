@@ -137,10 +137,18 @@ class usbImageManager(hw_driver.HwDriver):
     self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
     # Look for own servod usb device
     # pylint: disable=protected-access
+
     # Need servod information to find own servod instance.
+    # hub device can be the cluster root device, or the main device if there
+    # is only 1 device on this servod instance
     hub_device = servod.get_root_device()
     if not hub_device:
+      main_device = servod.get_main_device()
+      if main_device.template.HUB_SERVO:
+        hub_device = main_device
+    if not hub_device:
       raise UsbImageManagerError('There is no USB hub device connected.')
+
     hub_on_servo = hub_device.dev_entry.hub_stub
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in
