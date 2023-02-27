@@ -80,11 +80,6 @@ class ec(pty_driver.ptyDriver):
 
   def _restore_channel(self):
     """Load saved channel setting"""
-    # To improve backward compatibility on EC images that do not have save/
-    # restore, set channel mask to power-on default before running restore.
-    # TODO(shawnn): Remove this line once all test units have new EC image.
-    self._issue_cmd('chan 0xffffffff')
-
     self._issue_cmd('chan restore')
 
   def _set_key_pressed(self, key_rc, pressed):
