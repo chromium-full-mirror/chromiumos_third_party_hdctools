@@ -9,7 +9,7 @@ Presently this is used for the following purposes:
   - set-only controls:
     - pwr_button_hold
     - uart_multicmd
-    - cr50_reboot
+    - gsc_reboot
 """
 from servo.drv import hw_driver
 
@@ -17,9 +17,9 @@ from servo.drv import hw_driver
 class na(hw_driver.HwDriver):
   """Object to access drv=na controls."""
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod=None):
     """Constructor."""
-    super(na, self).__init__(interface, params)
+    super(na, self).__init__(interface, params, servod)
 
   def get(self):
     """Return not_applicate"""

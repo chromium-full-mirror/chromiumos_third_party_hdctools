@@ -59,6 +59,8 @@ class Tool(object):
     The tool is of course free to overwrite run() to have a custom invocation
     logic.
     """
+    if args.command is None:
+      self.error('Command is missing. Please check with --help.')
     cmd = args.command.replace('-', '_')
     if not hasattr(self, cmd):
       self.error('Tool does not recognize command %r. It should be implemented '

@@ -4,10 +4,14 @@
 
 from array import array
 
+# Currently all the pty data are collected manually from physical hardware tools
+# by intercepting and logging the pty data of servod.
+# We plan to automate it and collecting it with a script in the lab.
 MOCKED_CR50_AP_DATA = {
     b"": b"\r\n>",
 }
 
+# pylint: disable=line-too-long
 MOCKED_CR50_CONSOLE_DATA = {
     b"": b"\r\n>",
     b"brdprop": b"brdprop\r\nproperties = 0x1242\r\ntpm board cfg = 0x0\r\n> ",
@@ -53,7 +57,6 @@ MOCKED_SERVO41_CONSOLE_DATA = {
     b"gpioget FASTBOOT_DUTHUB_MUX_SEL": b"gpioget FASTBOOT_DUTHUB_MUX_SEL\r\n  1* O H FASTBOOT_DUTHUB_MUX_SEL\r\n> ",
     b"gpioget SBU_MUX_EN": b"gpioget SBU_MUX_EN\r\n  1* O H SBU_MUX_EN\r\n> ",
     b"gpioget USB_FAULT_L": b"gpioget USB_FAULT_L\r\nParameter 1 invalid\r\n> ",
-    b"gpioget USERVO_FAULT_L": b"gpioget USERVO_FAULT_L\r\nParameter 1 invalid\r\n> ",
     b"gpioget USERVO_FAULT_L": b"gpioget USERVO_FAULT_L\r\nParameter 1 invalid\r\n>\r\n> ",
     b"gpioset ATMEL_HWB_L 1": b"gpioset ATMEL_HWB_L 1\r\n> ",
     b"macaddr": b"macaddr\r\nMAC address: 88:54:1f:0f:6a:95\r\n> ",
@@ -118,7 +121,6 @@ MOCKED_SERVO41_I2C_DATA = {
     b"[0, 64, 3, 2, 5, 127, 255]": [array("B", [0, 0, 0, 0, 127, 255])],
     b"[0, 65, 1, 2, 0]": [array("B", [0, 0, 0, 0, 65, 39])],
     b"[0, 65, 1, 2, 1]": [array("B", [0, 0, 0, 0, 2, 142]), array("B", [0, 0, 0, 0, 2, 178])],
-    b"[0, 65, 1, 2, 2]": [array("B", [0, 0, 0, 0, 47, 0])],
     b"[0, 65, 1, 2, 2]": [array("B", [0, 0, 0, 0, 47, 7])],
     b"[0, 65, 1, 2, 3]": [array("B", [0, 0, 0, 0, 15, 241]), array("B", [0, 0, 0, 0, 25, 249])],
     b"[0, 65, 1, 2, 4]": [array("B", [0, 0, 0, 0, 27, 48]), array("B", [0, 0, 0, 0, 35, 176])],
@@ -139,7 +141,6 @@ MOCKED_SERVO41_I2C_DATA = {
 
 MOCKED_CR50_I2C_DATA = {
     b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 158])],
-    b"[0, 38, 1, 1, 0]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 38, 1, 1, 1]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 38, 1, 1, 3]": [array("B", [0, 0, 0, 0, 158])],
     b"[0, 38, 2, 1, 1, 150]": [array("B", [0, 0, 0, 0, 150])],
@@ -162,17 +163,26 @@ MOCKED_SERVO41_ATMEGA_DATA = {b"a": b"a"}
 
 MOCKED_SERVO_MICRO_PD_CR50_CONSOLE_DATA = {
     b"": b"\r\n> ",
+    b"brdprop": b"brdprop\r\nproperties = 0x1242\r\ntpm board cfg = 0x0\r\n> ",
     b"cc": b"cc\r\ncc: on\r\ndts mode: on\r\nchg mode: off\r\nchg allowed: on\r\ndrp enabled: off\r\ncc polarity: cc1\r\npd enabled: on\r\nemca: emarked\r\n> ",
+    # This is different from the standard CR50_CONSOLE_DATA. The State Flags show Servo micro is enabled.
+    b"ccdstate": b"ccdstate\r\nAP:      on\r\nAP UART: on\r\nEC:      on\r\nServo:   connected\r\nRdd:       connected\r\nKeepAlive: enabled\r\nCCD_MODE:  asserted\r\nState flags: UARTAP UARTEC I2C USBEC+TX\r\nCCD ports blocked: (none)\r\n> ",
     b"chan 0xffffffff": b"chan 0xffffffff\r\n> ",
     b"chan 1": b"chan 1\r\n> ",
     b"chan restore": b"chan restore\r\n> ",
     b"chan save": b"chan save\r\n> ",
+    b"ecrst": b"EC_RST_L is deasserted\r\n> ",
+    b"ecrst off": b"ecrst off\r\nEC_RST_L is deasserted\r\n> ",
+    b"ecrst on": b"ecrst on\r\nEC_RST_L is asserted\r\n> ",
     b"gpioget ATMEL_HWB_L": b"gpioget ATMEL_HWB_L\r\n  1  O H ATMEL_HWB_L\r\n> ",
     b"gpioset ATMEL_HWB_L 1": b"gpioset ATMEL_HWB_L 1\r\n> ",
     b"gpioget DUT_HUB_USB_RESET_L": b"gpioget DUT_HUB_USB_RESET_L\r\n  1  O H ODR DUT_HUB_USB_RESET_L\r\n> ",
     b"gpioget FASTBOOT_DUTHUB_MUX_EN_L": b"gpioget FASTBOOT_DUTHUB_MUX_EN_L\r\n  0  O L FASTBOOT_DUTHUB_MUX_EN_L\r\n> ",
     b"gpioget FASTBOOT_DUTHUB_MUX_SEL": b"gpioget FASTBOOT_DUTHUB_MUX_SEL\r\n  1  O H FASTBOOT_DUTHUB_MUX_SEL\r\n> ",
     b"version": b"version\r\nChip:    stm stm32f07x \r\nBoard:   3\r\nRO:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nRW:      servo_v4p1_v2.0.8584+1a7e7e64c\r\nBuild:   servo_v4p1_v2.0.8584+1a7e7e64c\r\n         2021-04-30 23:54:40 dabros@dabros-l\r\n> ",
+    b"wp": b"wp\r\nFlash WP: forced disabled\r\n at boot: forced disabled\r\n> ",
+    b"ccd testlab open": b"\r\n> ",
+    b"ccd testlab": b"ccd testlab\r\nCCD test lab mode enabled\r\n> ",
 }
 
 MOCKED_SERVO_MICRO_SERVO41_CONSOLE_DATA = {
@@ -225,8 +235,8 @@ MOCKED_SERVO_MICRO_SERVO41_CONSOLE_DATA = {
 }
 
 MOCKED_SERVO_MICRO_I2C_DATA = {
-    b"[0, 32, 1, 1, 0]": [array("B", [0, 0, 0, 0, 3])],
-    b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 0])],
+    b"[0, 32, 1, 1, 0]": [array("B", [0, 0, 0, 0, 255])],
+    b"[0, 32, 1, 1, 1]": [array("B", [0, 0, 0, 0, 255])],
     b"[0, 32, 1, 1, 2]": [array("B", [0, 0, 0, 0, 255])],
     b"[0, 32, 1, 1, 6]": [array("B", [0, 0, 0, 0, 252])],
     b"[0, 32, 1, 1, 7]": [array("B", [0, 0, 0, 0, 255])],
@@ -243,9 +253,9 @@ MOCKED_SERVO_MICRO_EC_DATA = {
     b"chan save": b"",
     b"gpioget LID_OPEN": b"",
     b"lidstate": b"",
-    b"powerinfo": b"",
+    b"powerinfo": b"powerinfo\r\n[424278.745078 power state 3 = S0, in 0x000f]\r\n> ",
     b"power on": b"",
-    b"version": b"",
+    b"version": b"version\r\nChip:    Nuvoton NPCX796F A.07\r\nboard:   6\r\nRO:      aleena_v2.1.333-a6ea0bc7f\r\nRW:      aleena_v2.1.333-a6ea0bc7f\r\nbuild:   aleena_v2.1.333-a6ea0bc7f\r\n         2021-02-04 04:05:36 @chromeos-ci-factory-us-central1-b-x32-0-9ql5\r\n> ",
 }
 
 MOCKED_C2D2_H1_CONSOLE_DATA = {
@@ -296,7 +306,7 @@ MOCKED_C2D2_EC_DATA = {
     b"chan save": b"",
     b"gpioget LID_OPEN": b"",
     b"lidstate": b"",
-    b"powerinfo": b"",
+    b"powerinfo": b"powerinfo\r\n[424278.745078 power state 3 = S0, in 0x000f]\r\n> ",
     b"power off": b"",
-    b"version": b"",
+    b"version": b"version\r\nChip:    Nuvoton NPCX796F A.07\r\nboard:   6\r\nRO:      aleena_v2.1.333-a6ea0bc7f\r\nRW:      aleena_v2.1.333-a6ea0bc7f\r\nbuild:   aleena_v2.1.333-a6ea0bc7f\r\n         2021-02-04 04:05:36 @chromeos-ci-factory-us-central1-b-x32-0-9ql5\r\n> ",
 }

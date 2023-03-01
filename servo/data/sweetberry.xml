@@ -16,7 +16,7 @@
   <!-- firmware version introspection controls -->
   <control>
     <name>sweetberry_version</name>
-    <alias>support.servo_fw_version</alias>
+    <alias>servo_fw_version</alias>
     <doc>current fw version</doc>
     <params cmd="get" interface="7" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S*_v?[\d.\w\+-]+)[\n\r]" group="1" formatting="strip"/>

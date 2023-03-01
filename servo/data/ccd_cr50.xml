@@ -57,19 +57,21 @@
   </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
-    <name>cold_reset</name>
+    <name>gsc_ec_reset</name>
+    <clone>cold_reset</clone>
     <doc>cold_reset (active low).</doc>
-    <params cmd="get" uart_cmd="ecrst"
-    regex="EC_RST_L is (asserted|deasserted)" group="1" 
-    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
-    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    <params init="off" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>cold_reset_select</name>
+    <doc>Use ccd controls for cold reset</doc>
+    <params type="ccd" clobber_ok=""/>
   </control>
   <control>
     <name>ccd_state</name>
     <doc>ccd_state</doc>
-    <params cmd="get" subtype="ccd_state" interface="9" drv="cr50" map="onoff"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="ccd_state" interface="servo" drv="servo_watchdog"
+    map="onoff" clobber_ok=""></params>
   </control>
   <control>
     <name>warm_reset</name>
@@ -117,10 +119,20 @@
   <control>
     <name>ccd_cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over CCD</doc>
-    <params clobber_ok="" interface="servo" drv="macro" map="onoff"
-      set_value_1="ap_flash_select:on cold_reset:on"
-      set_value_0="ap_flash_select:off cold_reset:off"
-      />
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>ap_flash_select:on</item>
+            <item>cold_reset:on</item>
+          </item>
+          <item key="0">
+            <item>ap_flash_select:off</item>
+            <item>cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>

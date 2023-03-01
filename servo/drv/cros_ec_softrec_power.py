@@ -3,7 +3,8 @@
 # found in the LICENSE file.
 import time
 
-from servo.drv import cros_ec_power, ec
+from servo.drv import cros_ec_power
+from servo.drv import ec
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):
@@ -47,14 +48,15 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   # EC console mask for enabling only command channel
   COMMAND_CHANNEL_MASK = 0x1
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(crosEcSoftrecPower, self).__init__(interface, params)
+    super(crosEcSoftrecPower, self).__init__(interface, params, servod)
     # Delay to allow boot into recovery before passing back control.
     self._boot_to_rec_screen_delay = float(
         self._params.get('boot_to_rec_screen_delay', 5.0))
@@ -74,7 +76,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     self._power_key = self._params.get('power_key', 'short_press')
     self._usb_power_restore = (
         ('yes' == self._params.get('usb_power_restore', 'no'))
-        and interface._syscfg.is_control(self._USB3_PWR_EN))
+        and servod.has_control(self._USB3_PWR_EN))
+    self._warm_reset_ec_jump_to_rw_delay = float(self._params.get(
+        'warm_reset_ec_jump_to_rw_delay', 1.2))
     self._ec_reboot_wait_ext_delay = float(self._params.get(
         'ec_reboot_wait_ext_delay', 0.1))
     self._on = 'on'
@@ -92,53 +96,55 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     # Some FAFT tests (e.g, platform_ServoPowerStateController*) will set
     # usb3_pwr_en to off to test booting system into recovery mode (without
     # booting from USB) so we want to reset only when usb3_pwr_en is turned on.
-    state = self._interface_get(self._USB3_PWR_EN)
+    state = self._servod_get(self._USB3_PWR_EN)
     self._logger.debug('%s state: %s', self._USB3_PWR_EN, state);
     if state != self._on:
       return False
 
     self._logger.debug('Reset %s to %s', self._USB3_PWR_EN, self._off)
-    self._interface_set(self._USB3_PWR_EN, self._off)
+    self._servod_set(self._USB3_PWR_EN, self._off)
     return True
 
   def _usb3_pwr_restore(self):
     """Returns (turns on) USB3 power."""
     self._logger.debug('Set %s to %s', self._USB3_PWR_EN, self._on)
-    self._interface_set(self._USB3_PWR_EN, self._on)
+    self._servod_set(self._USB3_PWR_EN, self._on)
 
   def _power_on_ap(self):
     """Power on the AP after initializing recovery state."""
     need_to_restore = self._usb3_pwr_disable()
 
-    self._interface_set('power_key', self._power_key)
+    self._servod_set('power_key', self._power_key)
 
     if need_to_restore:
       self._usb3_pwr_restore()
 
   def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
     # ec_gpio is known to use the ec drv
-    _, ec_driver, _ = self._interface._get_param_drv('ec_gpio')
+    _, ec_driver, _ = self._servod.get_main_device()._get_param_drv('ec_gpio')
     ec_driver._limit_channel()
     try:
       if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
+        # Need to retrieve ec_feat before warm_reset to avoid doing that while
+        # EC is jumping to RW with EFS2.
+        efs2 = bool(int(self._servod_get('ec_feat'), 16) &
+                    crosEcSoftrecPower._EC_FEATURE_EFS2)
         if self._warm_reset_can_hold_ap:
           # Hold warm reset so the AP doesn't boot when EC reboots.
           # Note that this only seems to work reliably for ARM devices.
-          self._interface_set('warm_reset', 'on')
-        try:
-          efs2 = bool(int(self._interface_get('ec_feat'), 16) &
-                      crosEcSoftrecPower._EC_FEATURE_EFS2)
-        except ec.ecError:
-          # Assume EFS2 is unsupported if the EC doesn't support the feat
-          # command.
-          efs2 = False
-        ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
+          self._servod_set('warm_reset', 'on')
+          if efs2:
+            self._logger.debug(
+                'Delay %s after warm_reset for EC to jump to RW (EFS2)',
+                self._warm_reset_ec_jump_to_rw_delay)
+            time.sleep(self._warm_reset_ec_jump_to_rw_delay)
         try:
           if self._wait_ext_is_fake:
             raise Exception("wait-ext isn't supported")
           # Before proceeding, we should really check that the EC has reset from
           # our command.  Pexpect is minimally greedy so we won't be able to match
           # the exact reset cause string.  But, this should be good enough.
+          ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
           ec_driver._issue_cmd_get_results(
               'reboot wait-ext %s' %
               ap_off_option, ["Waiting"], flush=True, timeout=6)
@@ -176,7 +182,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
         if self._warm_reset_can_hold_ap:
           # Release warm reset after a potential cold reset settles.
-          self._interface_set('warm_reset', 'off')
+          self._servod_set('warm_reset', 'off')
       else:
         # Need to clear the flag in secondary (B) copy of the host events if
         # we're in non-recovery mode.
@@ -211,15 +217,14 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         #
         # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
         # this will be a no-op.
-        try:
-          if self._interface_get('root.dut_connection_type') == 'type-c':
-              self._interface_set('dut_pd_data_role', 'DFP')
-        except NameError as e:
-          self._logger.debug('Servo is not Type-C')
-          pass
-        except Exception as e:
-          self._logger.debug('Failed to set DUT\'s role to DFP', exc_info=True)
-          pass
+        if (self._servod.has_control('root.dut_connection_type') and
+            self._servod_get('root.dut_connection_type') == 'type-c' and
+            self._servod.has_control('dut_pd_data_role')):
+          try:
+            self._servod_set('dut_pd_data_role', 'DFP')
+          except ec.ecError:
+            self._logger.debug('Failed to set DUT\'s role to DFP',
+                               exc_info=True)
     finally:
       ec_driver._restore_channel()
 
@@ -239,13 +244,11 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
   def _reset_cycle(self):
     if self._pb_init_idle:
       try:
-        self._interface_set('ec_uart_regexp', '["power state 3 = S0"]')
-        self._interface_set('ec_uart_cmd', 'powerinfo')
-        dut_was_off = False
+        dut_was_off = self._servod_get('ec_system_powerstate') != 'S0'
       except Exception:
         dut_was_off = True
       finally:
-        self._interface_set('ec_uart_regexp', 'None')
+        self._servod_set('ec_uart_regexp', 'None')
 
       if dut_was_off:
         # Boot the AP so the EC will boot the AP again after it reboots.

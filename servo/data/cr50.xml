@@ -154,7 +154,7 @@
     <alias>cr50_reboot</alias>
     <doc>reboot the gsc</doc>
     <params cmd="get" interface="9" drv="na" clobber_ok=""></params>
-    <params cmd="set" subtype="cr50_reboot" interface="9" drv="cr50"
+    <params cmd="set" subtype="gsc_reboot" interface="9" drv="cr50"
     map="onoff" clobber_ok="" ></params>
   </control>
   <control>
@@ -182,7 +182,16 @@
     interface="9" drv="cr50" map="enabled_re"
     clobber_ok="" ></params>
     <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="9"
-    drv="cr50" input_type="str" clobber_ok="" ></params>
+    drv="cr50" input_type="str" clobber_ok="" init="open" ></params>
+  </control>
+  <control>
+    <name>gsc_ec_reset</name>
+    <doc>send the gsc ec_reset command to reset the EC.</doc>
+    <params cmd="get" uart_cmd="ecrst"
+    regex="EC_RST_L is (asserted|deasserted)" group="1"
+    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok="" init="off"></params>
   </control>
   <control>
     <name>gsc_reset_count</name>

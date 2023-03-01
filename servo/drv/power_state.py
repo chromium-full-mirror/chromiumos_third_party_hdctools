@@ -37,7 +37,9 @@ class PowerStateDriver(hw_driver.HwDriver):
   _STATE_REC_MODE = 'rec'
   _STATE_FASTBOOT = 'fastboot'
   _STATE_RESET_CYCLE = 'reset'
+  # TODO(b/232990406): remove cr50_reset once all scripts have been updated.
   _STATE_CR50_RESET = 'cr50_reset'
+  _STATE_GSC_RESET = 'gsc_reset'
   _STATE_REC_FORCE_MRC = 'rec_force_mrc'
   _STATE_WARM_RESET = 'warm_reset'
 
@@ -45,14 +47,15 @@ class PowerStateDriver(hw_driver.HwDriver):
   REC_OFF = 'off'
   REC_ON_FORCE_MRC = 'force_mrc'
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(PowerStateDriver, self).__init__(interface, params)
+    super(PowerStateDriver, self).__init__(interface, params, servod)
     self._reset_hold_time = float(self._params.get('reset_hold', 0.5))
     self._reset_recovery_time = float(self._params.get('reset_recovery', 5.0))
 
@@ -63,9 +66,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     exact affect on the hardware varies depending on the board type.
 
     """
-    self._interface_set('cold_reset', 'on')
+    self._servod_set('cold_reset', 'on')
     time.sleep(self._reset_hold_time)
-    self._interface_set('cold_reset', 'off')
+    self._servod_set('cold_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -77,9 +80,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     exact affect on the hardware varies depending on the board type.
 
     """
-    self._interface_set('warm_reset', 'on')
+    self._servod_set('warm_reset', 'on')
     time.sleep(self._reset_hold_time)
-    self._interface_set('warm_reset', 'off')
+    self._servod_set('warm_reset', 'off')
     # After the reset, give the EC the time it needs to
     # re-initialize.
     time.sleep(self._reset_recovery_time)
@@ -129,19 +132,19 @@ class PowerStateDriver(hw_driver.HwDriver):
     """
     self._cold_reset()
 
-  def _reset_cr50(self):
-    """Reboot cr50 and reset CCD.
+  def _reset_gsc(self):
+    """Reboot GSC and reset CCD.
 
-    Reboot cr50 and reset ccd to recover from the usb reset.
+    Reboot GSC and reset ccd to recover from the usb reset.
     """
-    self._interface_set('cr50_reboot', 'on')
-    # Wait long enough for cr50 to reboot and for usb to have dropped out,
-    # and ServoWatchdog to have reinitialized cr50 interfaces.
+    self._servod_set('gsc_reboot', 'on')
+    # Wait long enough for gsc to reboot and for usb to have dropped out,
+    # and ServoWatchdog to have reinitialized gsc interfaces.
     time.sleep(0.3)
-    # Attempt to reinitialize the device in case the cr50 reenumerated quicker
+    # Attempt to reinitialize the device in case the gsc reenumerated quicker
     # than the polling resolution. By now, if the device did not reenumerate,
     # the Watchdog should be attempting to catch & reinitalize it.
-    self._interface.reinitialize()
+    self._servod.reinitialize()
 
   def _set(self, statename):
     """Set power state according to `statename`."""
@@ -156,15 +159,18 @@ class PowerStateDriver(hw_driver.HwDriver):
     elif statename == self._STATE_RESET_CYCLE:
       self._reset_cycle()
     elif statename == self._STATE_CR50_RESET:
-      self._reset_cr50()
+      self._logger.warn('%r is deprecated. Change to gsc_reset', statename)
+      self._reset_gsc()
+    elif statename == self._STATE_GSC_RESET:
+      self._reset_gsc()
     elif statename == self._STATE_WARM_RESET:
       self._warm_reset()
     elif statename == self._STATE_REC_FORCE_MRC:
       self._power_on(self.REC_ON_FORCE_MRC)
     else:
       raise ValueError("Invalid power_state setting: %r. Try one of "
-                       "%r, %r, %r, %r, %r, %r, or %r." %
+                       "%r, %r, %r, %r, %r, %r, %r, or %r." %
                        (statename, self._STATE_ON, self._STATE_OFF,
                         self._STATE_REC_MODE, self._STATE_FASTBOOT,
                         self._STATE_RESET_CYCLE, self._STATE_REC_FORCE_MRC,
-                        self._STATE_WARM_RESET))
+                        self._STATE_WARM_RESET, self._STATE_GSC_RESET))

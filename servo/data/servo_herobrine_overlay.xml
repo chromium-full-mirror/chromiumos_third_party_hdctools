@@ -14,7 +14,9 @@
   <include>
     <name>gsc_lid_open.xml</name>
   </include>
-
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>fw_wp_state</name>
@@ -26,12 +28,6 @@
     <doc>Used to turn the DUT off and on</doc>
     <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"
     apreset_ec_command="apreset"/>
-  </control>
-  <control>
-    <name>pch_disable</name>
-    <alias>h1_reset</alias>
-    <doc>Force H1 power-on reset</doc>
-    <params clobber_ok=""></params>
   </control>
   <!--
     Simple property indicating what model of EC we have.  We use a Nuvoton EC

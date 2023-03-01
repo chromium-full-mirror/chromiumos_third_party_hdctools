@@ -170,6 +170,17 @@
     subtype="single" map="onoff_i" init="off"></params>
   </control>
   <!-- GPIO on expander settings -->
+  <!-- hwinit order does not change. Make sure to initialize usbpd uart routing
+       before other controls, so the gsc console can get enabled first.
+       usbpd_console sets the GPIOS that are defined above this, so this is the
+       earliest usbpd_uart_routing can get defined. -->
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params interface="6" drv="ec3po_servo_micro"
+    subtype="usbpd_console" map="usbpd_uart_map" clobber_ok="" init="off">
+    </params>
+  </control>
   <control>
     <name>fw_wp_en</name>
     <doc>Enables forwarding of write-protect gpio. Must assert this
@@ -278,7 +289,7 @@
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="servo" drv="fw_wp_servoflex" input_type="str"
-    fw_wp_vref="pp1800" clobber_ok=""/>
+    fw_wp_vref="pp1800" clobber_ok="" init="force_off"/>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
@@ -472,13 +483,6 @@
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" clobber_ok=""></params>
-  </control>
-  <control>
-    <name>usbpd_uart_routing</name>
-    <doc>enable pd uart routing</doc>
-    <params interface="6" drv="ec3po_servo_micro"
-    subtype="usbpd_console" map="usbpd_uart_map" clobber_ok="">
-    </params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>

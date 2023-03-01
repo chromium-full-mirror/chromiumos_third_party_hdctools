@@ -122,6 +122,13 @@ exists.
 Board overlays are some of the last configs to be pulled in, so you redefine
 there.
 
+IMPORTANT: With `clobber_ok=""` only individual attributes of `<params>` are
+clobbered! Any `<params>` attributes of the clobbered control that are not
+specified by the control doing the clobbering will remain in the final `params`
+dict.  To avoid this and *fully* clobber, use `clobber_ok="full"`, which will
+cause the entire `<params>` of the clobbered control to get thrown out, in favor
+of only those specified in the control doing the clobbering.
+
 ## How do I add a new control?
 
 ### tl;dr:
@@ -186,10 +193,42 @@ Alternatively, you can create your own XMLRPC proxy and execute the exposed rpc
 functions (the `Servod` class' methods) through that proxy.
 [Example code using proxy][3].
 
+## How do I add a new device to servod?
+
+### tl;dir:
+
+*   Consult ChromeOS Hardware Tools team whether the new device should be supported through servod
+*   Develop on a development branch of /third-party/hdctools
+*   Read servod code to understand how it supports other devices
+
+### the longer read
+
+Servod is a daemon process that supports servo devices. Not every hardware tool should be supported through servod. If you are not sure, it is ideal to consult ChromeOS Hardware Tools team before implementing.
+
+Since servod is baked into the chroot environment, any commits checked into the main branch of /third-party/hdctools are visible to all servod users. Therefore, any major changes, including adding a new device, should be done in a development branch, in order to minimize the risk of introducing breaking changes. Please contact ChromeOS Hardware Tools team if you need to open a new development branch.
+
+If the new device is similar to any device supported by servod right now, above, you can read servod code to understand how it is supported. Servod currently supports the following devices
+*   Open case debuggers (Servo Micro, C2D2(deprecated), Servo V2(deprecated))
+*   Close case debuggers (CCD)
+*   Hub servos (Servo V4p1, Servo V4)
+*   Other devices (Sweetberry, Fluffy, etc)
+
+In general, there are several key changes to support a device
+*   Add the device's vendor id, product id, default config to [servo_dev_template.py][7]
+*   Add the device's interfaces to [servo_interfaces.py][8]
+*   Add the device's default config to [/hdctools/servo/data][9]. The config defines the controls of this device. A config can include other configs.
+*   Add some drvs to [/hdctools/servo/drv][10]. A drv is the actual executor of a control and can communicate with the hardware interfaces as well as the servod daemon. The device config dictates which control is handled by which drv.
+*   If special setup instructions are needed for the device (e.g. the device can only work with servo v4p1), take a look of [servo_dev_finder.py][11] and define the setup policies there.
+
 [1]: ../servo/servo_server.py#519
 [2]: ../servo/dut_control.py#354
 [3]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/HEAD/server/hosts/servo_host.py#177
 [4]: ../servo/system_config.py#134
 [5]: ./servod.md#servod-tool
 [6]: ./servod.md#servo-device-watchdog
+[7]: ../servo/servo_dev_templates.py
+[8]: ../servo/servo_interfaces.py
+[9]: ../servo/data/
+[10]: ../servo/drv/
+[11]: ../servo/servo_dev_finder.py
 [`servod` docs]: ./servod.md

@@ -5,8 +5,8 @@
 SERVO_MICRO_PID='501a'
 
 log_output() {
-  logger -t "${UPSTART_JOB}" $@
-  echo $@
+  echo "$(date -Iseconds)" "$@"
+  logger -t "${UPSTART_JOB}" "$@"
 }
 
 update_config() {
@@ -104,7 +104,7 @@ cache_servov4_hub_and_servo_micro() {
 # For testing:
 test_servo_utils () {
   logger() {
-    echo $@
+    echo "${PS4}logger" "$@"
   }
   cache_servov4_hub_and_servo_micro "test.config"
   cache_servov4_hub_and_servo_micro "test.config" "Uninitialized"

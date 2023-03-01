@@ -6,6 +6,7 @@ import ast
 import contextlib
 import errno
 import os
+import re
 import time
 import pexpect
 from pexpect import fdpexpect
@@ -36,9 +37,9 @@ class ptyDriver(hw_driver.HwDriver):
   # the control has actually finished executing on the console.
   SET_RE_DEFAULT = '>'
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod=None):
     """."""
-    super(ptyDriver, self).__init__(interface, params)
+    super(ptyDriver, self).__init__(interface, params, servod)
     self._child = None
     self._fd = None
     self._cmd_iface = False
@@ -437,12 +438,30 @@ class ptyDriver(hw_driver.HwDriver):
   def _Set_uart_regexp(self, regexp):
     """Set the list of regular expressions which matches the command response.
 
+    Example usage:
+    dut-control cr50_uart_regexp:'[r"Chip:\s+(\S+)\s"]'
+    dut-control cr50_uart_cmd:'version'
+    dut-control cr50_uart_cmd
+
     Args:
-      regexp: A string which contains a list of regular expressions.
+      regexp: A string which contains a list of regular expressions. It can be None.
     """
+    err_msg = '%s is not a string that contains a list of regular expressions.' % str(regexp)
+    sample_usage = '\nExample valid input: \'[r"Chip:\s+(\S+)\s", r"Board:\s+(\S+)\s"]\''
     if not isinstance(regexp, str):
-      raise ecError('The argument regexp should be a string.')
-    self._interface._uart_state['uart_regexp'] = ast.literal_eval(regexp)
+      raise ptyError(err_msg + sample_usage)
+
+    regex_list = ast.literal_eval(regexp)
+    # If regex_list is not None, do type check
+    if regex_list is not None:
+      if not isinstance(regex_list, list):
+        raise ptyError(err_msg + sample_usage)
+      for regex in regex_list:
+        try:
+          re.compile(regex)
+        except:
+          raise ptyError(err_msg + "\n%s is not a valid regex." % regex + sample_usage)
+    self._interface._uart_state['uart_regexp'] = regex_list
 
   def _Get_uart_regexp(self):
     """Get the list of regular expressions which matches the command response.

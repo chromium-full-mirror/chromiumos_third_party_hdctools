@@ -39,9 +39,9 @@ from servo.drv import hw_driver
 from servo.drv import i2c_pseudo
 from servo.drv import i2c_reg
 from servo.drv import i2c_reg_drv
+from servo.drv import ina2xx
 from servo.drv import ina219
 from servo.drv import ina231
-from servo.drv import ina2xx
 from servo.drv import ina3221
 from servo.drv import kb
 from servo.drv import kb_handler_init
@@ -56,13 +56,16 @@ from servo.drv import na
 from servo.drv import pac1934
 from servo.drv import pac1954
 from servo.drv import pac1954_gpio
+from servo.drv import pca95xx
 from servo.drv import pca9500
 from servo.drv import pca9537
 from servo.drv import pca9546
-from servo.drv import pca95xx
+from servo.drv import pi4ioe5
+from servo.drv import pi4msd
 from servo.drv import power_kb
 from servo.drv import ps8742
 from servo.drv import pty_driver
+from servo.drv import sarien_power
 from servo.drv import select_control
 from servo.drv import servo_firmware_checker
 from servo.drv import servo_metadata
@@ -73,6 +76,7 @@ from servo.drv import servo_watchdog
 from servo.drv import sflag
 from servo.drv import simple_ec
 from servo.drv import sleep
+from servo.drv import stud_evb
 from servo.drv import sx1505
 from servo.drv import sx1506
 from servo.drv import sx1506_v4

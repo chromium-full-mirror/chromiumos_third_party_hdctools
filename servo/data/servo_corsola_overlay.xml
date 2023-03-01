@@ -1,0 +1,16 @@
+<root>
+  <include>
+    <name>corsola_common.xml</name>
+  </include>
+  <map>
+    <name>ec_chip_map</name>
+    <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
+    <params npcx_uut="npcx" it8xxx2="it81202"></params>
+  </map>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" interface="10" drv="simple_ec" uart_cmd="version"
+      regex="Chip:\s+\S+\s+(npcx|it81202)\S*\s" group="1" map="ec_chip_map"/>
+  </control>
+</root>

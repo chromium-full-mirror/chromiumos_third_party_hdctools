@@ -24,67 +24,65 @@ class selectControl(hw_driver.HwDriver):
 
   SELECT_SUFFIX = '_select'
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servod):
     """Constructor.
 
     Args:
-      interface: driver interface object
+      interface: hardware interface for low-level communication; ignored here
       params: dictionary of params
+      servod: Servod that is used for cross-servo-device communication
     """
-    super(selectControl, self).__init__(interface, params)
-    if not hasattr(self._interface, 'selected_controls'):
-      self._interface.selected_controls = {}
+    # Maps don't translate correctly when the selected control changes. Ignore
+    # the maps. servo.get(selected_control) will handle the mapping.
+    if 'map' in params:
+        del params['map']
+    super(selectControl, self).__init__(interface, params, servod)
+    if not hasattr(self._servod, 'selected_controls'):
+      self._servod.selected_controls = {}
 
-  def _get(self):
+  def _Set_select(self, val):
+    """Set the control to use."""
+    if not val:
+        return
+    # Look up the servo specific init. 'servo_init' is used to
+    # initialize flex devices.
+    # 'ccd_init' is used to initialize ccd devices.
+    if val == 'servo_specific':
+      control_type = self._params.get('type', 'servo')
+      servo_init = '%s_init' % control_type
+      val = self._params[servo_init]
+    control_key = self._get_control_key()
+    self._logger.info('%r -> %r', control_key, val)
+    self._servod.selected_controls[control_key] = self._prefix + val
+
+  def _Get_select(self):
     """Get the control value."""
-    control_name = self._params.get('control_name', None)
+    control_key = self._get_control_key()
+    if control_key not in self._servod.selected_controls:
+      self._Set_select(self._params['init'])
+    rv = self._servod.selected_controls.get(control_key, '')
+    if rv:
+      self._logger.debug('using %r for %r', rv, control_key)
+    return rv
+
+  def _Get_control(self):
+    """Get the value from the selected control."""
+    selected_control = self._get_selected_control()
+    return self._servod_get(selected_control)
+
+  def _Set_control(self, value):
+    """Set the selected control to value."""
+    selected_control = self._get_selected_control()
+    return self._servod_set(selected_control, value)
+
+  def _get_control_key(self):
+    """Get the base control name."""
+    control_name = self._params.get('control_name', '')
     if not control_name:
-      raise selectControlError('Need control_name to modify control')
+      raise selectControlError('control_name not found')
+    return control_name.partition(self.SELECT_SUFFIX)[0]
 
-    # Return the selected control
-    select, control_key = self._get_control_key_info(control_name)
-    if select:
-      return self._interface.selected_controls.get(control_key, '')
-
-    # Return the value from the selected control
-    selected_control = self._get_selected_control(control_key)
-    return self._interface_get(selected_control)
-
-  def _get_control_key_info(self, control_name):
-    """Get the base control information
-
-    Returns:
-        A tuple (True if control_name ends with '_select', The key string used
-                 in the selected_controls dictionary)
-    """
-    select = control_name.endswith(self.SELECT_SUFFIX)
-    if select:
-        return (True, control_name.rsplit(self.SELECT_SUFFIX, 1)[0])
-    return (False, control_name)
-
-  def _get_selected_control(self, control_key):
+  def _get_selected_control(self):
     """Return the control being used."""
-    selected_control = self._interface.selected_controls.get(control_key, None)
-    if not selected_control:
-      raise selectControlError('%r not set' % control_key)
-    return selected_control
-
-  def _set(self, logical_value):
-    """Set the control to |logical_value|.
-
-    Args:
-      logical_value: Integer value to write to hardware.
-    """
-    control_name = self._params.get('control_name', None)
-    if not control_name:
-      raise selectControlError('Need control_name to modify control')
-
-    select, control_key = self._get_control_key_info(control_name)
-    if select:
-      # Change the selected control
-      self._logger.info('%s -> %s', control_key, logical_value)
-      self._interface.selected_controls[control_key] = logical_value
-      return
-    # Set the value of the selected control
-    selected_control = self._get_selected_control(control_key)
-    self._interface_set(selected_control, logical_value)
+    control_name = self._params.get('control_name', '')
+    return self._servod.get(control_name + self.SELECT_SUFFIX)

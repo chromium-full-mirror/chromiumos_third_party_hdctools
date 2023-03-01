@@ -138,6 +138,7 @@ class TestLogs(unittest.TestCase):
 
   @unittest.mock.patch('shutil.rmtree', unittest.mock.MagicMock())
   @unittest.mock.patch('os.makedirs', unittest.mock.MagicMock())
+  @unittest.mock.patch('os.path.exists', unittest.mock.MagicMock(return_value=True))
   def test_cleanup_output_dir(self):
     """Test _cleanup_output_dir()."""
     logs._cleanup_output_dir()

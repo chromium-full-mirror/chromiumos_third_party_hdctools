@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-SECONDARY_SERVOS_NAMES = ( 'servo_micro', 'ccd_cr50', 'ccd_ti50', 'c2d2')
-
 SERVO_DEVICE_DATA = {
   'miniservo_v1':
   ( (0x18d1, 0x5000),
@@ -69,24 +67,6 @@ SERVO_DEVICE_DATA = {
   ( (0x18d1, 0x5041),
     (),
     'c2d2.xml',
-  ),
-
- 'reston':
-  ( (0x18d1, 0x5007),
-    (),
-    'reston.xml',
-  ),
-
- 'fruitpie':
-  ( (0x18d1, 0x5009),
-    (),
-    'fruitpie.xml',
-  ),
-
- 'plankton':
-  ( (0x18d1, 0x500c),
-    (),
-    'plankton.xml',
   ),
 
  'fluffy':
