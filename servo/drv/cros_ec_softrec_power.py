@@ -138,13 +138,13 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 'Delay %s after warm_reset for EC to jump to RW (EFS2)',
                 self._warm_reset_ec_jump_to_rw_delay)
             time.sleep(self._warm_reset_ec_jump_to_rw_delay)
+        ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
         try:
           if self._wait_ext_is_fake:
             raise Exception("wait-ext isn't supported")
           # Before proceeding, we should really check that the EC has reset from
           # our command.  Pexpect is minimally greedy so we won't be able to match
           # the exact reset cause string.  But, this should be good enough.
-          ap_off_option = 'ap-off-in-ro' if efs2 else 'ap-off'
           ec_driver._issue_cmd_get_results(
               'reboot wait-ext %s' %
               ap_off_option, ["Waiting"], flush=True, timeout=6)
