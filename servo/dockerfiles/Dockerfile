@@ -125,10 +125,11 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
-ENV CFLAGS=" -Wno-deprecated-declarations"
-RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations ${CFLAGS}/' extra/usb_updater/Makefile
-RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations /' Makefile.toolchain
-RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations /' Makefile.toolchain
+ENV CFLAGS=" -Wno-deprecated-declarations -Wno-sign-compare"
+RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations -Wno-missing-declarations /' extra/usb_updater/Makefile
+RUN sed -i 's/-Wmissing-declarations/-Wsign-compare -Wno-sign-compare/' extra/usb_updater/Makefile
+RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
+RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
