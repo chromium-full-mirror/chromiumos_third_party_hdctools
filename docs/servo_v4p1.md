@@ -211,7 +211,7 @@ Connect to GSC Console:
 #### Switch USB3 to Host
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
+(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on
 ```
 
 #### Switch USB3 to DUT
