@@ -1,9 +1,22 @@
 
 steps:
 
-- name: gcr.io/cloud-builders/git
-  id: setup
-  args: ['fetch', '--unshallow']
+- name: 'gcr.io/cloud-builders/git'
+  id: 'src-prep'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - |
+    set -x
+    rm -rf /workspace
+    mkdir /workspace
+    cd /workspace
+    git clone $_REPO_URL .
+    git fetch $_REPO_URL $COMMIT_SHA
+    git checkout -b buildbranch FETCH_HEAD
+    git branch --set-upstream-to=origin/$BRANCH_NAME buildbranch
+    git config --global user.email "someone@example.com"
+    git rebase
 
 - name: 'gcr.io/kaniko-project/executor:latest'
   id: 'build'
@@ -12,7 +25,7 @@ steps:
   - --cache=true
   - --cache-ttl=96h
   - -f=/workspace/servo/dockerfiles/Dockerfile
-  waitFor: ['setup']
+  waitFor: ['src-prep']
 
 - name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
   id: 'test'
@@ -22,7 +35,7 @@ steps:
     - --forked
     - --cov-report=html
     - --cov-report=xml
-    - --cov=/usr/local/lib/python3.10/site-packages/servo
+    - --cov=/usr/local/lib/python3.11/dist-packages/servo
     - /hdctools/servo/tests/
   waitFor: ['build']
 

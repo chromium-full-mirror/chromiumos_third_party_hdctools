@@ -341,7 +341,8 @@ class studEvb(hw_driver.HwDriver):
       if int(args[int_idx]) != 0:
         raise StudEvbError(self._lego_rst_setter_help())
 
-    # Just return and continue with normal flow of operations (i.e. generic ioex driver)
+    self.i2c_mux._set(1)
+    self.ioex._set(','.join(args))
 
   def _apply_pins_restrictions(self, fmt_value):
     """Some pins' configurations on stud EVB are invalid and we need to protect
@@ -367,7 +368,7 @@ class studEvb(hw_driver.HwDriver):
       return True
     elif self._params['control_name'] in self.LEGO_RST_PIN:
       self._apply_lego_rst_pin_restrictions(args)
-      return False
+      return True
 
     # Warn user that force flag is being set even though it is not required.
     if 'force' in args:

@@ -6,6 +6,8 @@
 
 set -x
 
+/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
+
 CONFIG_FILE_DIR="/var/lib/servod"
 CONFIG_FILE=$CONFIG_FILE_DIR/config_$PORT
 LOG="/var/log/servod_$PORT.STARTUP.log"

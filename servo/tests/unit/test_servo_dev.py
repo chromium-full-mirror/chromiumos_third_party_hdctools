@@ -47,7 +47,7 @@ class TestServoDevice(unittest.TestCase):
     self.assertEqual(self.v4_dev.board, 'brya_default')
     self.assertEqual(self.v4_dev.base_board, '')
     self.assertEqual(self.v4_dev.model, 'default')
-    self.assertTrue(self.v4_dev._ifaces_available.isSet())
+    self.assertTrue(self.v4_dev._ifaces_available.is_set())
     self.assertEqual(self.v4_dev._reinit_attempts, self.v4_dev.REINIT_ATTEMPTS)
     self.assertFalse(self.v4_dev._reinit_capable)
     self.assertFalse(self.v4_dev._disconnect_ok)
@@ -384,7 +384,9 @@ class TestServoDevice(unittest.TestCase):
     get_params = {"cmd" : "get", "uart_cmd" : "ecrst", "regex" : "EC_RST_L is (asserted|deasserted)", "group" : "1",
     "interface" : "9", "drv" : "cr50", "map" : "asserted_re", "clobber_ok" : ""}
     set_params = {"cmd" : "set", "subtype" : "cold_reset", "interface" : "9", "drv" : "cr50", "map" : "onoff_i", "clobber_ok" : ""}
+    map_params = {"deasserted", "asserted"}
     self.v4_dev.syscfg.lookup_control_params = unittest.mock.MagicMock(return_value=(set_params, get_params))
+    self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(return_value=(map_params))
     self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True)[0], get_params)
 
   @unittest.mock.patch('servo.drv.cr50.cr50.__init__', unittest.mock.MagicMock(return_value=None))
@@ -394,7 +396,9 @@ class TestServoDevice(unittest.TestCase):
     get_params = {"cmd" : "get", "uart_cmd" : "ecrst", "regex" : "EC_RST_L is (asserted|deasserted)", "group" : "1",
     "interface" : "9", "drv" : "cr50", "map" : "asserted_re", "clobber_ok" : ""}
     set_params = {"cmd" : "set", "subtype" : "cold_reset", "interface" : "9", "drv" : "cr50", "map" : "onoff_i", "clobber_ok" : ""}
+    map_params = {"0", "1"}
     self.v4_dev.syscfg.lookup_control_params = unittest.mock.MagicMock(return_value=(set_params, get_params))
+    self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(return_value=(map_params))
     self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False)[0], set_params)
 
   def test_get_servo_specific_param(self):

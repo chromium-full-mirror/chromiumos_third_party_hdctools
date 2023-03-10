@@ -95,7 +95,7 @@ class TestServoClient(unittest.TestCase):
     self._client._server.set_get_all = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "dummy"))
 
     with self.assertRaisesRegex(client.ServoClientError,
-                                "Problem with \['dummy', 'dummy2'\]"):
+                                r"Problem with \['dummy', 'dummy2'\]"):
       self._client.set_get_all(["dummy", "dummy2"])
     self._client._server.set_get_all.assert_called_once_with(["dummy", "dummy2"])
 

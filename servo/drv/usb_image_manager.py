@@ -75,7 +75,7 @@ class usbImageManager(hw_driver.HwDriver):
 
     # Retrieve map_params(if exists) and create a reversed dict to allow reverse lookup
     self._MAP_DICT = self._params.get('map_params')
-    if type(self._MAP_DICT) is dict:
+    if isinstance(self._MAP_DICT, dict):
       self._MAP_DICT_REVERSED = {val: key for key, val in self._MAP_DICT.items()}
     else:
       self._MAP_DICT_REVERSED = None
@@ -96,11 +96,12 @@ class usbImageManager(hw_driver.HwDriver):
       UsbImageManagerError: if an invalid usbkey int is passed in
     """
     # If mux_direction is an int, change it to its corresponding string
-    if isinstance(mux_direction, int) and self._MAP_DICT_REVERSED != None:
+    if isinstance(mux_direction, int) and self._MAP_DICT_REVERSED is not None:
       try:
         mux_direction = self._MAP_DICT_REVERSED[str(mux_direction)]
-      except KeyError:
-          raise UsbImageManagerError('Invalid usbkey value. Try one of these values: ' + str(self._MAP_DICT))
+      except KeyError as e:
+        raise UsbImageManagerError('Invalid usbkey value. Try one of these values: ' +
+                                     str(self._MAP_DICT)) from e
     self._SafelySwitchMux(mux_direction)
     if self._servod_get(self._IMAGE_USB_MUX) == self._IMAGE_MUX_TO_SERVO:
       # This will ensure that we make a best-effort attempt to only
@@ -152,10 +153,18 @@ class usbImageManager(hw_driver.HwDriver):
     self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO)
     # Look for own servod usb device
     # pylint: disable=protected-access
+
     # Need servod information to find own servod instance.
+    # hub device can be the cluster root device, or the main device if there
+    # is only 1 device on this servod instance
     hub_device = servod.get_root_device()
     if not hub_device:
+      main_device = servod.get_main_device()
+      if main_device.template.HUB_SERVO:
+        hub_device = main_device
+    if not hub_device:
       raise UsbImageManagerError('There is no USB hub device connected.')
+
     hub_on_servo = hub_device.dev_entry.hub_stub
     # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
     image_location_candidates = ['%s.%s' % (hub_on_servo, p) for p in

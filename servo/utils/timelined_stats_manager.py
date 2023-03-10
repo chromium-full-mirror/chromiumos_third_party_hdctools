@@ -31,7 +31,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
 
   # pylint: disable=W0102
   def __init__(self, title='', smid='', hide_domains=[], order=[],
-               time_key=TIME_KEY, timeline_key=TLINE_KEY):
+               time_key=TIME_KEY, timeline_key=TLINE_KEY, rate=None):
     """Initialize by setting time key and setting it to hide in summaries.
 
     Note: for title, smid, hide_domains, and order see stats_manager.py for
@@ -44,6 +44,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
       order: domain order for formatted summary
       time_key: key used for timestamp column
       timeline_key: key used for relative timeline column (starts at 0)
+      rate: rate that the data is collected by dut-power (in seconds)
     """
     self._tkey = time_key
     self._tlkey = timeline_key
@@ -51,7 +52,8 @@ class TimelinedStatsManager(stats_manager.StatsManager):
                                                 smid=smid,
                                                 hide_domains=hide_domains,
                                                 order=order,
-                                                accept_nan=True)
+                                                accept_nan=True,
+                                                rate=rate)
     self._hide_domains.append(self._tkey)
     self._hide_domains.append(self._tlkey)
 
