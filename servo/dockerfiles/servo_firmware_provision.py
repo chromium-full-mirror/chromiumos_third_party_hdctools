@@ -28,7 +28,7 @@ SERVO_MICRO_NAME_DEV="servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-1276
 # Alpha channel firmware
 C2D2_NAME_ALPHA="c2d2_v2.0.18040-0fa6cb3063"                # R106-15042.0.0 build
 SERVO_MICRO_NAME_ALPHA="servo_micro_v2.0.18040-0fa6cb3063"  # R106-15042.0.0 build
-SERVO_V4P1_NAME_ALPHA="servo_v4p1_v2.0.13477-1c6bb5adb"     # R103-14703.0.0 build
+SERVO_V4P1_NAME_ALPHA="servo_v4p1_v2.0.20646-1fb66a343"     # EC ToT from 03/15/2023
 
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
 
