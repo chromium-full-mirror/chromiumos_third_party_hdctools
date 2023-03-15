@@ -133,7 +133,6 @@ RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations -Wno-si
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
-    make build/host/util/ec_parse_panicinfo BOARD=host && \
     make build/host/util/ec_sb_firmware_update BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
@@ -334,7 +333,6 @@ RUN wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785
 
 # Install ec tools
 COPY --from=ec-builder \
-    /ec/build/host/util/ec_parse_panicinfo \
     /ec/build/host/util/ec_sb_firmware_update \
     /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/stm32mon \
