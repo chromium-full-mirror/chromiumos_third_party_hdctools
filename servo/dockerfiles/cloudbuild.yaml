@@ -24,7 +24,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - --cache=true
   - --cache-ttl=96h
-  - -f=/workspace/servo/dockerfiles/Dockerfile
+  - -f=/workspace/servo/dockerfiles/Dockerfile.cq
   waitFor: ['src-prep']
 
 - name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
