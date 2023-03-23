@@ -125,6 +125,8 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
+# Pin the build to the commit before the breaking libec change.  http://b/274166678
+RUN git checkout 7b039ce808f49503e56a92f57e2482237bce6141^
 ENV CFLAGS=" -Wno-deprecated-declarations -Wno-sign-compare"
 RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations -Wno-missing-declarations /' extra/usb_updater/Makefile
 RUN sed -i 's/-Wmissing-declarations/-Wsign-compare -Wno-sign-compare/' extra/usb_updater/Makefile
