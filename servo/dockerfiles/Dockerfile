@@ -146,8 +146,6 @@ RUN PACKAGE="powerlog" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="console" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
 
-RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shflags
-
 RUN strip /ec/extra/usb_updater/usb_updater2 \
           /ec/build/host/util/stm32mon \
           /ec/build/host/util/uartupdatetool \
@@ -355,12 +353,10 @@ COPY --from=ec-builder \
         /usr/lib/libftdi* \
         /usr/lib/
 
-COPY --from=ec-builder /usr/share/misc/shflags /usr/share/misc/shflags
+RUN wget https://raw.githubusercontent.com/kward/shflags/master/shflags --output-document /usr/share/misc/shflags
 COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
 COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
-
-RUN mkdir -p /usr/share/ec-devutils
 
 # Install uhubctl
 COPY --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
