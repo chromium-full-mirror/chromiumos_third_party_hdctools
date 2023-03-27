@@ -11,7 +11,6 @@ from servo.drv import active_v4_device
 from servo.drv import ad5248
 from servo.drv import ap
 from servo.drv import cr50
-from servo.drv import cr50_i2c
 from servo.drv import cros_chip
 from servo.drv import cros_ec_hardrec_pbinitidle_power
 from servo.drv import cros_ec_hardrec_power
@@ -35,6 +34,7 @@ from servo.drv import fw_wp_ccd
 from servo.drv import fw_wp_servoflex
 from servo.drv import fw_wp_state
 from servo.drv import gpio
+from servo.drv import gsc_i2c
 from servo.drv import hw_driver
 from servo.drv import i2c_pseudo
 from servo.drv import i2c_reg

@@ -278,7 +278,7 @@
     <name>gsc_i2c_ctrl</name>
     <alias>cr50_i2c_ctrl</alias>
     <doc>Send a special command to GSC (write-only)</doc>
-    <params clobber_ok="" interface="2" drv="cr50_i2c" child="0x78" cmd="set"
+    <params clobber_ok="" interface="2" drv="gsc_i2c" child="0x78" cmd="set"
     map="gsc_i2c_cmds"  />
   </control>
   <control>
