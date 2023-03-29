@@ -51,6 +51,15 @@ for vid, pid in PACMAN_DEFAULTS:
      {'name': 'ftdi_i2c', 'interface': 1},  # 2: FTDI i2c 0/interface 1
     ]
 
+# ftdi generic 4232H
+FTDI4232H_MODULE_DEFAULTS = [(0x0403, 0x6011)]
+for vid, pid in FTDI4232H_MODULE_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    [
+     {'name': 'ftdi_i2c', 'interface': 1},  # 0: FTDI i2c 0/interface 0
+     {'name': 'ftdi_i2c', 'interface': 2},  # 1: FTDI i2c 1/interface 1
+    ]
+
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
 for vid, pid in RAIDEN_DEFAULTS:
