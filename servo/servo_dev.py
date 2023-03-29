@@ -29,7 +29,7 @@ class ServoDevice(object):
 
   # Reinit capable devices.
   REINIT_CAPABLE = set(
-    [servo_dev_templates.GetID("ccd_cr50"), servo_dev_templates.GetID("ccd_ti50")]
+      [servo_dev_templates.GetID("ccd_cr50"), servo_dev_templates.GetID("ccd_ti50")]
   )
 
   # Available attempts to reconnect a device
@@ -434,6 +434,12 @@ class ServoDevice(object):
       if map_name != None:
         map_params = self.syscfg.lookup_map_params(map_name)
         params['map_params'] = map_params
+
+      # Store this device name in params (necessary to scope control names when
+      # querying controls from a non-main servo device)
+      # TODO(b/275723447): remove this parameter once prefix string is no longer
+      # necessary in drivers
+      params['device_type'] = self.template.TYPE
 
       # this control only needs cross-servo-device communication and does not
       # need hardware interface for low-level communication

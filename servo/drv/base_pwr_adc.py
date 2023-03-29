@@ -101,7 +101,11 @@ class basePWRADC(hw_driver.HwDriver):
     Returns:
       str, [self._base_name]_[reg]_reg
     """
-    return '%s_%s_reg' % (self._base_name, reg)
+    reg_control_name = '%s_%s_reg' % (self._base_name, reg)
+    # TODO(b/275723447): remove this prefix string manipulation from driver
+    if '.' not in reg_control_name:
+        return self._params['device_type'] + '.' + reg_control_name
+    return reg_control_name
 
   def _has_reg(self, reg):
     """Determine whether |reg| has a servod control associated with it.
