@@ -96,6 +96,11 @@ else
     DEVICE_DISCOVERY_FLAG=""
 fi
 
+NAME_FLAG=""
+if [ ! -z "$NAME" ]; then
+    NAME_FLAG="--name $NAME"
+fi
+
 if [ -n "$SERIAL" ]; then
     servodtool device -s $SERIAL reboot
     sleep 5
@@ -113,4 +118,5 @@ servod \
     $DEBUG_FLAG \
     $REC_MODE_FLAG \
     $CONFIG_FLAG \
+    $NAME_FLAG \
     $DEVICE_DISCOVERY_FLAG

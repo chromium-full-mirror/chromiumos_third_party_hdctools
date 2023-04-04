@@ -402,3 +402,5 @@ RUN apt-get remove --purge -y \
     && rm -rf /var/cache/debconf \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
+
+ENV SUDO_USER=docker
