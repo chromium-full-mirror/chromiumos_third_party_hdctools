@@ -9,11 +9,12 @@ import shutil
 import tempfile
 import time
 
-import servo.utils.usb_hierarchy as usb_hierarchy
 from servo_mfg import device_util
 from servo_mfg import exec_util
 from servo_mfg import programmer
 from servo_mfg import util
+
+import servo.utils.usb_hierarchy as usb_hierarchy
 
 
 class RTKEthProgrammerError(programmer.ProgrammerError):
@@ -59,7 +60,7 @@ class RTKEthProgrammer(programmer.Programmer):
   DEV_GLOB = '/sys/bus/usb/devices/{0}/{0}:*/net/*/address'
 
   # Timeout for the networking path to be created after usb enumeration
-  GLOB_TIMEOUT_S = 5
+  GLOB_TIMEOUT_S = 10
 
   # Rate at which to poll for the path to exist
   GLOB_POLL_RATE_S = 0.1
