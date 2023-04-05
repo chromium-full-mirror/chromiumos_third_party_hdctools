@@ -57,19 +57,25 @@ class ServoProgrammer(programmer.Programmer):
         id_cmd = ["-d", "%04x:%04x" % (self._vid, self._pid)]
         file_cmd = ["-D", self._bin]
 
-        image_address = "0x%08x:%d" % (self.ADDR, self._size)
-        erase_address = "%s:force:unprotect" % image_address
+        base_address = "0x%08x:%d" % (self.ADDR, self._size)
+        image_address = "%s:leave" % base_address
+        erase_address = "%s:unprotect:force:leave" % base_address
 
         erase_cmd = self.BASE_CMD + id_cmd + ["-s", erase_address] + file_cmd
         write_cmd = self.BASE_CMD + id_cmd + ["-s", image_address] + file_cmd
-
-        ret, _unused, _unused = exec_util.exec_blocking(erase_cmd, hint="erasing")
+        time.sleep(2)
+        ret, _, _ = exec_util.exec_blocking(erase_cmd, hint="erasing")
         if ret:
-            self.throw_error("Failed to erase.")
-        time.sleep(1)
-        ret, _unused, _unused = exec_util.exec_blocking(write_cmd, hint="writing")
+            time.sleep(2)
+            ret, _unused, _unused = exec_util.exec_blocking(erase_cmd, hint="erasing")
+            if ret:
+                self.throw_error("Failed to erase.")
+            time.sleep(2)
+        ret, _, _ = exec_util.exec_blocking(write_cmd, hint="writing")
         if ret:
-            self.throw_error("Failed to write.")
+            ret, _unused, _unused = exec_util.exec_blocking(write_cmd, hint="writing")
+            if ret:
+                self.throw_error("Failed to write.")
 
     def _verify(self, **_):
         """Helper to verify that programming succeeded."""
