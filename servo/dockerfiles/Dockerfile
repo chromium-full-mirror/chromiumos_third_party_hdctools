@@ -127,11 +127,7 @@ ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 WORKDIR /ec
 # Pin the build to the commit before the breaking libec change.  http://b/274166678
 RUN git checkout 7b039ce808f49503e56a92f57e2482237bce6141^
-ENV CFLAGS=" -Wno-deprecated-declarations -Wno-sign-compare"
-RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations -Wno-missing-declarations /' extra/usb_updater/Makefile
-RUN sed -i 's/-Wmissing-declarations/-Wsign-compare -Wno-sign-compare/' extra/usb_updater/Makefile
-RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
-RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
+RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
@@ -161,8 +157,8 @@ RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 WORKDIR /ec
 
 RUN git checkout cr50_stab && git pull
-RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations ${CFLAGS}/' extra/usb_updater/Makefile
-RUN CFLAGS="-Wno-deprecated-declarations" make -C extra/usb_updater gsctool
+RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
+RUN make -C extra/usb_updater gsctool
 
 RUN strip  /ec/extra/usb_updater/gsctool
 
@@ -245,7 +241,7 @@ RUN apt-get update \
 	    libpci-dev
 
 WORKDIR /flashrom
-ENV CFLAGS=" -Wno-incompatible-function-pointer-types -Wno-deprecated-declarations"
+RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
 
