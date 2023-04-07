@@ -34,6 +34,7 @@ class activeV4Device(hw_driver.HwDriver):
   # the key. The value is True if it's a servo flex device.
   V4_DEVICES = {
     'ccd_cr50' : False,
+    'ccd_ti50' : False,
     'ccd_gsc': False,
     'servo_micro' : True,
     'c2d2': True
