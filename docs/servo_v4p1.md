@@ -244,6 +244,23 @@ Type-C Servo v4.1 only
 (chroot) $ dut-control servo_pd_role:snk [src]
 ```
 
+## Disable/Enable Ethernet
+
+<!-- mdformat off(b/139308852) -->
+*** note
+Type-C Servo v4.1 only
+***
+<!-- mdformat on -->
+
+If you have tests you need to run that require Ethernet to be disconnected and
+the DUT be connected to Wi-Fi instead you can connect to Wi-Fi and turn off
+Ethernet remotely. The Wi-Fi connection should persist through reboots.
+
+```bash
+(DUT) $ /usr/local/autotest/cros/scripts/wifi connect <ssid> <password>
+(chroot) $ dut-control dut_eth_pwr_en:off [on]
+```
+
 ## Flashrom
 
 <!-- mdformat off(b/139308852) -->
