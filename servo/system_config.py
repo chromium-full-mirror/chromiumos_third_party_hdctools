@@ -33,6 +33,8 @@ UNDEF_CONTROL_DICT = {'drv': 'undefined',
                       'interface': 'servo',
                       'input_type': 'str'}
 
+# Valid pattern for control names and aliases
+IDENTIFIER_RE = re.compile(r'[a-z][a-z0-9_]+')
 
 # pylint: disable=g-bad-exception-name
 # TODO(coconutruben): figure out if it's worth it to rename this so that it
@@ -513,6 +515,10 @@ class SystemConfig(object):
 
         if alias:
           for aliasname in (elem.strip() for elem in alias.split(',')):
+            if not IDENTIFIER_RE.fullmatch(aliasname):
+              raise SystemConfigError('file %r %s element %r invalid '
+                                      'alias "%s"' %
+                                      (filename, tag, name, aliasname))
             if name_prefix:
               aliasname = name_prefix + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
