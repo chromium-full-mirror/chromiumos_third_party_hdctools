@@ -8,7 +8,12 @@
   <include>
     <name>cr50.xml</name>
   </include>
-
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
+    <name>ec_efs2.xml</name>
+  </include>
   <!-- warm_reset is on pin 39, reconfigure -->
   <include>
     <name>warm_reset_reconf.xml</name>
