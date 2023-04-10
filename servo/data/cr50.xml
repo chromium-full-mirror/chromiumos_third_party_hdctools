@@ -59,8 +59,7 @@
   </control>
   <control>
     <name>ec3po_gsc_uart</name>
-    <alias>ec3po_cr50_uart,cr50_uart_pty,ec3po_usbpd_uart_pty,usbpd_uart_pty
-    gsc_uart_pty</alias>
+    <alias>ec3po_cr50_uart,cr50_uart_pty,ec3po_usbpd_uart_pty,usbpd_uart_pty,gsc_uart_pty</alias>
     <doc>gsc UART console provided via EC-3PO console interpreter.</doc>
     <params cmd="get" subtype="pty" interface="9" drv="uart" >
     </params>
@@ -241,8 +240,7 @@
   <!-- gsc UART Buffers & VREF Controls -->
   <control>
     <name>uart4_on_flex_en</name>
-    <alias>cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en
-    </alias>
+    <alias>cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
     <params interface="2" drv="pca95xx" subtype="gpio"
     child="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
