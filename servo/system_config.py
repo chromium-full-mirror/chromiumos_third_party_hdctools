@@ -514,7 +514,7 @@ class SystemConfig(object):
           }
 
         if alias:
-          for aliasname in (elem.strip() for elem in alias.split(',')):
+          for aliasname in alias.split(','):
             if not IDENTIFIER_RE.fullmatch(aliasname):
               raise SystemConfigError('file %r %s element %r invalid '
                                       'alias "%s"' %
