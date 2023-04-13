@@ -131,7 +131,6 @@ RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
-    make build/host/util/ec_sb_firmware_update BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
