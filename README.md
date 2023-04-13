@@ -22,6 +22,7 @@ boards. The tools in this repository are only supported in the
 ## Closed Case Debugging (CCD)
 
 *   [Closed Case Debugging (CCD) Overview](./docs/ccd.md)
+*   [C2D2: Case-Closed Debugging Debugger](./docs/c2d2.md)
 
 ## Power Measurement
 
