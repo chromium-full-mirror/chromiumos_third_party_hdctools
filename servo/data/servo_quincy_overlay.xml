@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <!-- See this file for documentation -->
+    <name>servo_fpmcu_dev_board_common_overlay.xml</name>
+  </include>
+  <include>
+    <name>fpmcu_dev_board_common_inas.xml</name>
+  </include>
+  <include>
+    <name>servo_fpmcu_dev_board_uart_common_overlay.xml</name>
+  </include>
+</root>
