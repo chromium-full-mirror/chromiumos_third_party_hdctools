@@ -53,17 +53,20 @@ class ServoDeviceEntry(object):
       serial: serial of the servo device
       dev_path: /sys/bus/usb/devices/... path of the servo device file
     """
-    self.vid = vid
-    self.pid = pid
-    self.serial = serial
-    self.dev_path = dev_path
-    # (vid, pid, serial) tuple is used throughout as unique id.
-    self.id = (self.vid, self.pid, self.serial)
-    self.dev_template = servo_dev_templates.GetTemplateClass(vid, pid, serial)
+    self.__vid = vid
+    self.__pid = pid
+    self.__serial = serial
+    self.__dev_path = dev_path
+    # (vid, pid, serial) tuple is used by users of these objects as unique id.
+    # This should be replaced with the (vid, pid, serial, dev_path) key.
+    self.__id = vid, pid, serial
+    self.__key = vid, pid, serial, dev_path
+    self.__dev_template = servo_dev_templates.GetTemplateClass(
+        vid, pid, serial)
     if not self.dev_template:
-      raise ServoDeviceHierarchyError('Cannot retrieve device template for device'
-                                      'vid %s pid %s serial %s dev_path %s'
-                                      % (vid, pid, serial, dev_path))
+      raise ServoDeviceHierarchyError(
+          'Cannot retrieve device template for device vid %r pid %r serial %r '
+          'dev_path %r' % (vid, pid, serial, dev_path))
     self.cluster_root = None
     if self.dev_template.HUB_SERVO:
       self.cluster_members = None
@@ -73,12 +76,55 @@ class ServoDeviceEntry(object):
     # This is used to hold a pointer to its own ServoDevice object
     self.servo_device = None
 
+  @property
+  def vid(self):
+    return self.__vid
+
+  @property
+  def pid(self):
+    return self.__pid
+
+  @property
+  def serial(self):
+    return self.__serial
+
+  @property
+  def dev_path(self):
+    return self.__dev_path
+
+  @property
+  def key(self):
+    return self.__key
+
+  # This should be renamed to avoid reusing a builtin name.
+  # Or delete in favor of using the newer "key" attribute.
+  @property
+  def id(self):
+    return self.__id
+
+  @property
+  def dev_template(self):
+    return self.__dev_template
+
   def __repr__(self):
     return str(self)
 
   def __str__(self):
     return '[%s (%04x:%04x) %s]' % (self.dev_template.TYPE, self.vid, self.pid,
       self.serial)
+
+  def __hash__(self):
+    return hash(self.key)
+
+  def __eq__(self, other):
+    if isinstance(other, ServoDeviceEntry):
+      return self.key == other.key
+    return NotImplemented
+
+  def __ne__(self, other):
+    if isinstance(other, ServoDeviceEntry):
+      return self.key != other.key
+    return NotImplemented
 
   def set_cluster_root(self, root_servo):
     """Set root_servo to be this device's cluster's root servo.
