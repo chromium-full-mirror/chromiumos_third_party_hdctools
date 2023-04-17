@@ -179,7 +179,9 @@ class ServoDeviceFinder(object):
       # when user does not provide enough information for picking a device (e.g. when
       # vid/pid/serial is None), try selecting a device based on each device's priority.
       if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
-        self._logger.info('Try to smartly select a device among device candidates: %s', candidates)
+        self._logger.info(
+            'Try to smartly select a device among device candidates:\n%s',
+            '\n'.join(repr(c) for c in candidates))
         prioritized_devs = servo_dev_hierarchy.ServoDeviceHierarchy.generate_device_priority(candidates)
         candidates = servo_dev_hierarchy.ServoDeviceHierarchy.most_prirotized_devices(prioritized_devs)
         candidate = candidates[0]
