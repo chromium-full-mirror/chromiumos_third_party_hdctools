@@ -167,9 +167,9 @@ class ServoDeviceFinder(object):
     """
     input_str = 'vid: %s pid: %s serial: %s' % (vid, pid, serial)
     if (not vid) and (not pid) and (not serial):
-      candidates = list(self._dev_hierarchy.get_all_entries().values())
+      candidates = sorted(self._dev_hierarchy.get_all_entries().values())
     else:
-      candidates = list(self._dev_hierarchy.get_entries(vid, pid, serial))
+      candidates = sorted(self._dev_hierarchy.get_entries(vid, pid, serial))
 
     if len(candidates) < 1:
       raise ServoDeviceFinderError('Cannot find a servo device with %s' % input_str)
