@@ -126,6 +126,26 @@ class ServoDeviceEntry(object):
       return self.key != other.key
     return NotImplemented
 
+  def __lt__(self, other):
+    if isinstance(other, ServoDeviceEntry):
+      return self.key < other.key
+    return NotImplemented
+
+  def __le__(self, other):
+    if isinstance(other, ServoDeviceEntry):
+      return self.key <= other.key
+    return NotImplemented
+
+  def __gt__(self, other):
+    if isinstance(other, ServoDeviceEntry):
+      return self.key > other.key
+    return NotImplemented
+
+  def __ge__(self, other):
+    if isinstance(other, ServoDeviceEntry):
+      return self.key >= other.key
+    return NotImplemented
+
   def set_cluster_root(self, root_servo):
     """Set root_servo to be this device's cluster's root servo.
 
