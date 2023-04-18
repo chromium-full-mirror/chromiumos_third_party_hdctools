@@ -8,11 +8,11 @@ from enum import Enum
 import collections
 import logging
 import os
+import pprint
 import select
 import sys
 
 from servo import servo_dev_templates
-from servo import servo_parsing
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 
@@ -22,6 +22,7 @@ INTERATIVE_MENU_TIMEOUT_SECONDS = 30
 
 class ServoDeviceFinderError(Exception):
   """ServoDeviceFinderError error class."""
+
 
 class ServoDeviceDiscoveryMode(Enum):
   """Indicates how much auto discovery can be performed by ServoDeviceFinder."""
@@ -50,8 +51,24 @@ class ServoDeviceDiscoveryMode(Enum):
   #    an interactive cmdline menu.
   NO_AUTO = 2
 
+
+def _ClusterSortKey(servo_dev_entry):
+  """Return a key for sorting servos in a cluster with the root servo first.
+
+  This function is intended for use as a sorting key.  There is no reason to
+  call this function directly, instead use servo_dev_entry.is_cluster_root().
+
+  Args:
+    servo_dev_entry: servo.utils.servo_dev_hierarchy.ServoDeviceEntry
+
+  Returns:
+    hashable object
+  """
+  return (not servo_dev_entry.is_cluster_root(),) + servo_dev_entry.key
+
+
 class ServoDeviceFinder(object):
-  """ Discover devices to be served by a servod instance."""
+  """Discover devices to be served by a servod instance."""
 
   def __init__(self, devopts, devopts_generator, dev_hierarchy, scratch, discover_mode,
     choose_device=None):
@@ -170,18 +187,31 @@ class ServoDeviceFinder(object):
       candidates = sorted(self._dev_hierarchy.get_all_entries().values())
     else:
       candidates = sorted(self._dev_hierarchy.get_entries(vid, pid, serial))
+    self._logger.info('Servo candidates:\n%s',
+                      '\n'.join(repr(c) for c in candidates))
+
+    # Determine the servo clusters represented by all of the candidate servos.
+    # Sets are used here for uniqueness.
+    clusters = {frozenset(self._dev_hierarchy.get_cluster(c.vid, c.pid, c.serial)) for c in candidates}
+    # Now replace the sets with sorted lists, for consistent logging output.
+    # Within each servo cluster, the root servo should be listed first.
+    clusters = sorted(sorted(clstr, key=_ClusterSortKey) for clstr in clusters)
+    self._logger.info('Servo clusters represented by the candidates:\n%s',
+                      pprint.pformat(clusters))
+    # The clusters list is currently only used for logging output, as requested
+    # in https://issuetracker.google.com/277768816 for ease of troubleshooting.
+    # It may in the future be useful for enhancing interactive servo selection.
 
     if len(candidates) < 1:
-      raise ServoDeviceFinderError('Cannot find a servo device with %s' % input_str)
+      raise ServoDeviceFinderError(
+          'Cannot find a servo device with %s' % (input_str,))
     candidate = candidates[0]
     if len(candidates) > 1:
       self._logger.info('Found > 1 servo devices with %s', input_str)
       # when user does not provide enough information for picking a device (e.g. when
       # vid/pid/serial is None), try selecting a device based on each device's priority.
       if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
-        self._logger.info(
-            'Try to smartly select a device among device candidates:\n%s',
-            '\n'.join(repr(c) for c in candidates))
+        self._logger.info('Selecting a servo device among the candidates...')
         prioritized_devs = servo_dev_hierarchy.ServoDeviceHierarchy.generate_device_priority(candidates)
         candidates = servo_dev_hierarchy.ServoDeviceHierarchy.most_prirotized_devices(prioritized_devs)
         candidate = candidates[0]
@@ -190,8 +220,9 @@ class ServoDeviceFinder(object):
         self._logger.info('We have found multiple devices that match args provided %s', input_str)
         candidate = self.choose_device(candidates)
         if not candidate:
-          raise ServoDeviceFinderError('User does not choose a valid device for %s. Device candidates: %s' %
-            (input_str, candidates))
+          raise ServoDeviceFinderError(
+              'User did not choose a valid device for %s from candidates %s' %
+              (input_str, candidates))
     self._logger.debug('Found device %s with %s', candidate, input_str)
     return candidate
 
