@@ -93,6 +93,7 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_dartmonkey_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_dragonclaw_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_dragontalon_overlay.xml",   # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_helipilot_overlay.xml",     # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_icetower_overlay.xml",      # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_quincy_overlay.xml",        # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_zerblebarn_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
