@@ -100,7 +100,7 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_elm_overlay.xml",   # Not working
         "servo_oak_overlay.xml",   # Not working
     ]
-    filenames = glob.glob("/usr/local/lib/*/site-packages/servo/data/servo_*_overlay.xml")
+    filenames = glob.glob("/usr/local/lib/*/*-packages/servo/data/servo_*_overlay.xml")
     board_model_list = []
     for filename in filenames:
         basename = os.path.basename(filename)
@@ -119,6 +119,9 @@ def get_board_model_pairs(board_exclude_list=[]):
             board_model_list.append((parts[1], parts[2]))
         else:
             raise Exception("Data file %s not in correct format - untested" % os.path.basename(filename))
+
+    if not board_model_list:
+        raise Exception("Failed to find ANY boards, likely there is a test bug.")
 
     return board_model_list
 
