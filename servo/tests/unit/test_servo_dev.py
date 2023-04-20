@@ -538,7 +538,7 @@ class TestServoDevice(unittest.TestCase):
     self.assertEqual(self.v4_dev.get_child_devices(), [])
 
     self.v4_dev.is_root_hub_device = unittest.mock.MagicMock(return_value=True)
-    self.v4_entry.cluster_members = [self.v4_entry, self.micro_entry]
+    self.v4_entry.cluster_members = {self.v4_entry, self.micro_entry}
     self.assertTrue(self.v4_dev.get_child_devices(), [self.micro_dev])
 
   def test_to_json(self):

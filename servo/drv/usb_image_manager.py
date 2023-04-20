@@ -158,11 +158,7 @@ class usbImageManager(hw_driver.HwDriver):
     # hub device can be the cluster root device, or the main device if there
     # is only 1 device on this servod instance
     hub_device = servod.get_root_device()
-    if not hub_device:
-      main_device = servod.get_main_device()
-      if main_device.template.HUB_SERVO:
-        hub_device = main_device
-    if not hub_device:
+    if not hub_device.template.HUB_SERVO:
       raise UsbImageManagerError('There is no USB hub device connected.')
 
     hub_on_servo = hub_device.dev_entry.hub_stub
