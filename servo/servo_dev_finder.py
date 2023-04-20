@@ -76,7 +76,7 @@ class ServoDeviceFinder(object):
 
     Args:
       devopts: a list of device opts parsed from the servod starting commandline
-      default_devopts_generator: a function that generates a default devopts
+      devopts_generator: a function that generates a default devopts
         for devices pulled in during device auto-discovery.
       dev_hierarchy: a ServoDeviceHierarchy generated when the servod starts
       scratch: ServoSratch that manages information across different servod instances.
@@ -130,7 +130,7 @@ class ServoDeviceFinder(object):
          one_dev_opts.serialname)
       dev_entry = self._find_one_device(vid, pid, serial)
       dev_entry.devopts = one_dev_opts
-      self._logger.info('Pull in device %s as it is included in invocation args.', dev_entry)
+      self._logger.info('Pulling in device %s as it is included in invocation args.', dev_entry)
       invocation_devs.add(dev_entry)
 
     # Then pull in all the devices connecting to the devices included in command
@@ -138,28 +138,20 @@ class ServoDeviceFinder(object):
     dev_list = invocation_devs.copy()
     if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
       for dev_entry in invocation_devs:
-        # for a root hub device, include all its cluster member
-        if dev_entry.is_cluster_root():
-          for member in dev_entry.cluster_members:
+        # For a root hub device, include all cluster members.
+        # Same if "full" discovery mode was requested.
+        if (dev_entry.is_cluster_root() or
+            self.discover_mode == ServoDeviceDiscoveryMode.FULL_AUTO):
+          for member in sorted(dev_entry.cluster_root.cluster_members):
             if member not in dev_list:
-              self._logger.info('Pull in device %s as it is a child of device %s.', member, dev_entry)
+              self._logger.info('Pulling in device %s as it is a member of the same cluster as %s.', member, dev_entry)
               self._complete_devopts(member, dev_entry)
               dev_list.add(member)
-        # for a non-root device in a cluster, include its root hub
-        elif dev_entry.is_in_cluster():
-          if dev_entry.cluster_root not in dev_list:
-            self._logger.info('Pull in device %s as it is the parent hub of device %s.',
-            dev_entry.cluster_root, dev_entry)
-            self._complete_devopts(dev_entry.cluster_root, dev_entry)
-            dev_list.add(dev_entry.cluster_root)
-          # also include the other cluster members if we would like complete clusters served
-          # by one servod instance
-          if  self.discover_mode == ServoDeviceDiscoveryMode.FULL_AUTO:
-            for member in dev_entry.cluster_root.cluster_members:
-              if member not in dev_list:
-                self._logger.info('Pull in device %s as it is a sibling of device %s.', member, dev_entry)
-                self._complete_devopts(member, dev_entry)
-                dev_list.add(member)
+        elif dev_entry.cluster_root not in dev_list:
+          self._logger.info('Pulling in device %s as it is the parent hub of device %s.',
+          dev_entry.cluster_root, dev_entry)
+          self._complete_devopts(dev_entry.cluster_root, dev_entry)
+          dev_list.add(dev_entry.cluster_root)
 
     dev_list = list(dev_list)
     self.validate_device_availability(dev_list)
@@ -234,7 +226,7 @@ class ServoDeviceFinder(object):
       old_dev: a ServoDeviceEntry which already has device options
     """
     new_dev.devopts = self._devopts_generator()
-    for arg in ['board', 'model', 'config', 'noautoconfig']:
+    for arg in 'board', 'model', 'config', 'noautoconfig':
       setattr(new_dev.devopts, arg, getattr(old_dev.devopts, arg))
 
   def choose_main_device(self, devs):
@@ -325,32 +317,24 @@ class ServoDeviceFinder(object):
     for dev in devs:
       dev_type_map[dev.dev_template.TYPE].append(dev)
       dev_prefix = set(dev.devopts.prefix) - known_prefixes
-      # handle main device's prefix
+
       if dev == main_dev:
+        self._logger.debug('Device %s is the main device and is given prefix '
+                           '%r', dev, servo_dev_templates.MAIN_DEV_PREFIXES)
         dev_prefix.update(servo_dev_templates.MAIN_DEV_PREFIXES)
-        dev.devopts.prefix = list(dev_prefix)
-        known_prefixes.update(dev_prefix)
-        self._logger.debug('Device %s is the main device and is given prefix %s',
-          dev, servo_dev_templates.MAIN_DEV_PREFIXES)
-        continue
+      else:
+        # prevent non-main device from having main device prefixes
+        dev_prefix.difference_update(servo_dev_templates.MAIN_DEV_PREFIXES)
 
-      # prevent non-main device to have main device's prefix
-      dev_prefix = dev_prefix - set(servo_dev_templates.MAIN_DEV_PREFIXES)
-
-      # handle root device's prefix
       if dev == main_dev.cluster_root:
+        self._logger.debug('Device %s is the root device and is given prefix '
+                           '%r', dev, servo_dev_templates.ROOT_DEV_PREFIX)
         dev_prefix.add(servo_dev_templates.ROOT_DEV_PREFIX)
-        dev.devopts.prefix = list(dev_prefix)
-        known_prefixes.update(dev_prefix)
-        self._logger.debug('Device %s is the root device and is given prefix %s',
-          dev, servo_dev_templates.ROOT_DEV_PREFIX)
-        continue
+      else:
+        # prevent non-root device from having root device prefix
+        dev_prefix.discard(servo_dev_templates.ROOT_DEV_PREFIX)
 
-      # prevent non-root device to have root device's prefix
-      dev_prefix = dev_prefix - set([servo_dev_templates.ROOT_DEV_PREFIX])
-
-      # handle all other device's prefix
-      dev.devopts.prefix = list(dev_prefix)
+      dev.devopts.prefix = sorted(dev_prefix)
       known_prefixes.update(dev_prefix)
       self._logger.debug('Device %s is given prefix %s during invocation',
         dev, dev_prefix)
