@@ -328,7 +328,6 @@ RUN wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785
 
 # Install ec tools
 COPY --from=ec-builder \
-    /ec/build/host/util/ec_sb_firmware_update \
     /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/stm32mon \
     /ec/build/host/util/uartupdatetool \
