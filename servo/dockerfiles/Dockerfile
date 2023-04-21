@@ -240,6 +240,7 @@ RUN apt-get update \
 	    libpci-dev
 
 WORKDIR /flashrom
+RUN git checkout 34c4d41638c4009420076e20f19d5ae1b275244b^
 RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
