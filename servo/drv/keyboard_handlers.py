@@ -204,6 +204,14 @@ class _BaseHandler(_HandlerTemplate):
     """Simulate Enter key button press."""
     NotImplementedError()
 
+  def alt_f5(self, press_secs=''):
+    """Simulate Alt-F5 simultaneous button presses."""
+    NotImplementedError()
+
+  def alt_f6(self, press_secs=''):
+    """Simulate Alt-F6 simultaneous button presses."""
+    NotImplementedError()
+
   def arrow_up(self, press_secs=''):
     """Simulate ArrowUp key button press."""
     NotImplementedError()
@@ -540,6 +548,14 @@ class ChromeECHandler(_BaseHandler):
   def ctrl_key(self, press_secs=''):
     """Simulate Enter key button press."""
     self._press_and_release_keys(['<ctrl_l>'], press_secs)
+
+  def alt_f5(self, press_secs=''):
+    """Simulate Alt-F5 simultaneous button presses."""
+    self._press_and_release_keys(['<alt_l>', '<f5>'], press_secs)
+
+  def alt_f6(self, press_secs=''):
+    """Simulate Alt-F6 simultaneous button presses."""
+    self._press_and_release_keys(['<alt_l>', '<f6>'], press_secs)
 
   def arrow_up(self, press_secs=''):
     """Simulate ArrowUp key button press."""
@@ -1272,6 +1288,14 @@ class USBkm232Handler(_BaseHandler):
   def ctrl_s(self, press_secs=''):
     """Press and release ctrl-s sequence."""
     self._write([self._press('<lctrl>'), self._press('s')])
+
+  def alt_f5(self, press_secs=''):
+    """Press and release alt-f5 sequence."""
+    self._write([self._press('<lalt>'), self._press('<f5>')])
+
+  def alt_f6(self, press_secs=''):
+    """Press and release alt-f6 sequence."""
+    self._write([self._press('<lalt>'), self._press('<f6>')])
 
   def arrow_up(self, press_secs=''):
     """Press and release ArrowUp key."""
