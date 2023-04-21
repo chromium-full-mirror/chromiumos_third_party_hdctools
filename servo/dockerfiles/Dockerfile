@@ -403,4 +403,10 @@ RUN apt-get remove --purge -y \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
 
+# Required for the name paramter for using .servorc.
 ENV SUDO_USER=docker
+# Required for the ftdi libraries to be found. ENV does not allow the
+# use of command to populate the results, to be less brittle it would
+# be nice if the path could be discovered with a command like:
+# find / -name libftdii2c.so -exec dirname {} \;
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages
