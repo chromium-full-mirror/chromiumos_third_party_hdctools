@@ -265,7 +265,7 @@ class Servod(object):
     """
     dev, name = self._get_dev_and_name(name)
     return dev.set(name, wr_val_str)
-  
+
   def update_known_ctrls(self):
     """Helper to generate a list of all accessible controls in servod."""
     known_ctrls = set()
@@ -273,7 +273,7 @@ class Servod(object):
       dev_ctrls = dev.syscfg.get_all_controls()
       # controls for root and main dev does not need to have prefixes
       new_ctrls = set('%s.%s' % (prefix, ctrl) for ctrl in dev_ctrls) \
-        if prefix else dev_ctrls 
+        if prefix else dev_ctrls
       if prefix == servo_dev_templates.ROOT_DEV_PREFIX:
         new_ctrls |= dev_ctrls
       known_ctrls |= new_ctrls
@@ -390,8 +390,20 @@ class Servod(object):
     return self.get_main_device().base_board
 
   def get_servo_serials(self):
-    """Return all the serials associated with this process."""
-    return self._serialnames
+    """Return all the serials associated with this process.
+
+    This gets passed directly to the xml rpc response to xmlrpc client request
+    get_servo_serials(). It needs to be in a basic type for Python to
+    correctly marshal.  See b/279006079
+
+    Returns:
+      {str: str} - Dict of control prefix mapped to servo serial number.
+      Multiple prefixes may be mapped to the same serial number.
+    
+    Each call to this function returns a new dict.  The returned dict may be
+    mutated without affecting any other state.
+    """
+    return dict(self._serialnames)
 
   def add_serial_number(self, key, serial_number):
     """Adds the serial number to the _serialnames dictionary.
@@ -496,7 +508,7 @@ class Servod(object):
   def _get_version(self):
     """Gets the type of the servo device setups.
 
-    NOTE: please avoid assuming the format of servo type string and parsing it. 
+    NOTE: please avoid assuming the format of servo type string and parsing it.
     Use 'devices' control to fetch all servo devices of this servod instance instead.
     """
     main_device = self.get_main_device()
