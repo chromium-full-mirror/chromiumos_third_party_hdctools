@@ -49,11 +49,26 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
-      set_value_1="spi2_vref:pp1800 spi2_buf_en:on spi2_buf_on_flex_en:on
-                   cold_reset:on servo_present:on"
-      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
-                   cold_reset:off servo_present:off"
-      />
+    <doc>Enable SPI mode for flashing CPU firmware over servo</doc>
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>spi2_vref:pp1800</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi2_buf_on_flex_en:on</item>
+            <item>cold_reset:on</item>
+            <item>servo_present:on</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>spi2_buf_en:off</item>
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>cold_reset:off</item>
+            <item>servo_present:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
 </root>
