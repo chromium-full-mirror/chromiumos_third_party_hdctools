@@ -32,7 +32,7 @@ boards. The tools in this repository are only supported in the
 ## Resources
 
 *   [hdctools Docker container]: Run common hardware debug tasks outside the chroot.
-*   [File a Bug](https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards)
+*   [File a Bug](https://issuetracker.google.com/issues/new?component=983411&template=1678684)
 *   [Contact](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/contact.md)
 
 [hdctools Docker container]: https://docs.google.com/document/d/e/2PACX-1vRGZ8yAfwzp6vlLZVGpJYQIFdv7_gR7yt6F6_Afk_2gWBlun5p-juZvOuHia9vfcOK88f4d6lIR1HqZ/pub

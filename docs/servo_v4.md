@@ -445,5 +445,5 @@ To set the Servo v4 serial number on the Servo console:
 [SuzyQ]: ./ccd.md#suzyq-suzyqable
 [CCD]: ./ccd.md
 [`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md#flashap
-[Bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards
+[Bug]: https://issuetracker.google.com/issues/new?component=983411&template=1678684
 [`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools
