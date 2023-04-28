@@ -14,6 +14,13 @@
     <name>warm_reset_reconf.xml</name>
   </include>
 
+  <map>
+    <name>ap_spi_mux_map</name>
+    <doc></doc>
+    <doc>Map for Myst ap_spi_mux_sel control. Picks whether the AP or GSC+Servo should have access to AP SPI flash.</doc>
+    <params ap="0" gsc_servo="1" />
+  </map>
+
  <!-- FW flashing config -->
   <control>
     <name>ccd_cpu_fw_spi</name>
@@ -43,12 +50,12 @@
           <item key="1">
             <item>ec_uart_cmd:apshutdown</item>
             <item>sleep:5</item>
-            <item>ap_flash_select:on</item>
+            <item>ap_spi_mux_sel:gsc_servo</item>
             <item>spi2_vref:pp1800</item>
           </item>
           <item key="0">
             <item>spi2_vref:off</item>
-            <item>ap_flash_select:off</item>
+            <item>ap_spi_mux_sel:ap</item>
             <item>power_state:reset</item>
           </item>
         </item>
@@ -75,5 +82,13 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"/>
+  </control>
+  <control>
+    <name>dev_mode</name>
+    <alias>ap_spi_mux_sel</alias>
+    <doc>Controls a mux on Myst that switches between AP or GSC+Servo access to AP SPI flash.</doc>
+    <!-- change type to push-pull
+    https://issuetracker.google.com/issues/276490145#comment11 -->
+    <params clobber_ok="patch" od="PP" map="ap_spi_mux_map" />
   </control>
 </root>
