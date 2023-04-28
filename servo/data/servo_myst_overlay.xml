@@ -24,8 +24,10 @@
           <item key="1">
             <item>ec_uart_cmd:apshutdown</item>
             <item>sleep:5</item>
+            <item>ap_flash_select:on</item>
           </item>
           <item key="0">
+            <item>ap_flash_select:off</item>
             <item>power_state:reset</item>
           </item>
         </item>
