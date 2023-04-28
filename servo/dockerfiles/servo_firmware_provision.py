@@ -11,14 +11,14 @@ import subprocess
 C2D2_NAME="c2d2_v2.4.73-d771c18ba9"                # servo-firmware-R81-12768.40.0
 SERVO_MICRO_NAME="servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.71.0
 SERVO_V4_NAME="servo_v4_v2.4.58-c37246f9c"         # servo-firmware-R81-12768.74.0
-SERVO_V4P1_NAME="servo_v4p1_v2.0.8584+1a7e7e64c"   # Local builds are temporary b/153464312
+SERVO_V4P1_NAME="servo_v4p1_v2.0.20646-1fb66a343"  # EC ToT from 03/15/2023
 SWEETBERRY_NAME="sweetberry_v2.3.7-096c7ee84"      # servo-firmware-R70-11011.14.0
 
 # Prev channel firmware
 C2D2_NAME_PREV="c2d2_v2.4.35-f1113c92b"                # servo-firmware-R81-12768.40.0
 SERVO_MICRO_NAME_PREV="servo_micro_v2.4.57-ce329f64f"  # servo-firmware-R81-12768.40.0
 SERVO_V4_NAME_PREV="servo_v4_v2.4.57-ce329f64f"        # servo-firmware-R81-12768.71.0
-SERVO_V4P1_NAME_PREV="servo_v4p1_v2.0.7721-8af602eee"  # Local builds are temporary b/153464312
+SERVO_V4P1_NAME_PREV="servo_v4p1_v2.0.8584+1a7e7e64c"  # servo fw used since april 2021
 
 # Dev channel firmware
 SERVO_V4P1_NAME_DEV="servo_v4p1_v2.0.18563-55348847f"  # EC ToT from 09/07/2022
@@ -28,6 +28,7 @@ SERVO_MICRO_NAME_DEV="servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-1276
 # Alpha channel firmware
 C2D2_NAME_ALPHA="c2d2_v2.0.18040-0fa6cb3063"                # R106-15042.0.0 build
 SERVO_MICRO_NAME_ALPHA="servo_micro_v2.0.18040-0fa6cb3063"  # R106-15042.0.0 build
+#channel is not needed for now, so stay with same version as stable to allow smooth transition in fleet
 SERVO_V4P1_NAME_ALPHA="servo_v4p1_v2.0.20646-1fb66a343"     # EC ToT from 03/15/2023
 
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
@@ -67,8 +68,12 @@ ALL_IMAGES = [
 
 def create_sym_link(src, dst):
     """ Creates the symbolic link. """
-    os.symlink(src, dst)
-
+    try:
+        os.symlink(src, dst)
+    except FileExistsError as e:
+        print(dst, "symlink already exists. Update it to ", src)
+        os.unlink(dst)
+        os.symlink(src, dst)
 
 def download_unpack(path, base_name):
     """Download the tarball from Google Cloud storage, untar, clean up.
