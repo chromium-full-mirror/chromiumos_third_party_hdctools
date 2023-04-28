@@ -101,7 +101,7 @@ if [ ! -z "$NAME" ]; then
     NAME_FLAG="--name $NAME"
 fi
 
-if [ -n "$SERIAL" ]; then
+if ([ -n "$SERVO_REBOOT" ] && [ -n "$SERIAL" ]); then
     servodtool device -s $SERIAL reboot
     sleep 5
 fi
