@@ -11,7 +11,6 @@
   Compatible with the following daughterboards:
     * icetower (dartmonkey)
     * dragonclaw (bloonchipper)
-    * quincy (helipilot)
 
   See http://go/cros-fingerprint-dev-boards
   and https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/fingerprint/fingerprint-dev-for-partners.md
