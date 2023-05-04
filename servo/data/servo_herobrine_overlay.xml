@@ -27,7 +27,7 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"
-    apreset_ec_command="apreset"/>
+    apreset_ec_commands="apreset"/>
   </control>
   <!--
     Simple property indicating what model of EC we have.  We use a Nuvoton EC
