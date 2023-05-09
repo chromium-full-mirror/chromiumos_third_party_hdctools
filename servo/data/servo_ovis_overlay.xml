@@ -1,0 +1,82 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>x86_ec_common.xml</name>
+  </include>
+  <include>
+    <name>ti50.xml</name>
+  </include>
+  <map>
+    <name>ap_spi_servo_access_map</name>
+    <doc></doc>
+    <doc>Map for Ovis ap_spi_mux_sel control. Picks whether the AP+GSC or Servo should have access to AP SPI flash.</doc>
+    <params ap_or_gsc="0" servo="1" />
+  </map>
+
+ <!-- FW flashing config -->
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>cold_reset:on</item>
+            <item>ap_flash_select:on</item>
+          </item>
+          <item key="0">
+            <item>ap_flash_select:off</item>
+            <item>cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over direct SPI connection</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>cold_reset:on</item>
+            <item>ap_spi_servo_access:servo</item>
+            <item>spi2_vref:pp1800</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>ap_spi_servo_access:ap_or_gsc</item>
+            <item>cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+
+ <!-- misc controls -->
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
+    device, and the AP SPI Flash is 1.8V, so set fw_wp_vref to
+    match. b/143319676 -->
+    <params clobber_ok="" fw_wp_vref="pp1800"/>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut" chip_for_ccd_cr50="npcx_uut"/>
+  </control>
+  <!-- TODO: confirm power_state settings before adding it here (b/279820760) -->
+  <control>
+    <name>dev_mode</name>
+    <alias>ap_spi_servo_access</alias>
+    <doc>Changes which of two AP SPI muxes on Ovis is enabled, in order to connect API SPI flash to Servo Header.</doc>
+    <!-- change type to push-pull
+    https://issuetracker.google.com/issues/276490145#comment11 -->
+    <params clobber_ok="patch" od="PP" map="ap_spi_servo_access_map" />
+  </control>
+</root>
