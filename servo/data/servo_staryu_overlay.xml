@@ -1,0 +1,19 @@
+<root>
+  <include>
+    <name>corsola_common.xml</name>
+  </include>
+  <include>
+    <name>detachable.xml</name>
+  </include>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params handler_type="usb" clobber_ok=""></params>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="it8xxx2"/>
+  </control>
+</root>
