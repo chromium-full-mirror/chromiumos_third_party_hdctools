@@ -23,13 +23,12 @@
       <content>
         <item key="macro_map">
           <item key="1">
-            <item>ec_uart_cmd:apshutdown</item>
-            <item>sleep:5</item>
+            <item>cold_reset:on</item>
             <item>ap_flash_select:on</item>
           </item>
           <item key="0">
             <item>ap_flash_select:off</item>
-            <item>power_state:reset</item>
+            <item>cold_reset:off</item>
           </item>
         </item>
       </content>
@@ -42,15 +41,14 @@
       <content>
         <item key="macro_map">
           <item key="1">
-            <item>ec_uart_cmd:apshutdown</item>
-            <item>sleep:5</item>
+            <item>cold_reset:on</item>
             <item>ap_spi_mux_sel:gsc_servo</item>
             <item>spi2_vref:pp1800</item>
           </item>
           <item key="0">
             <item>spi2_vref:off</item>
             <item>ap_spi_mux_sel:ap</item>
-            <item>power_state:reset</item>
+            <item>cold_reset:off</item>
           </item>
         </item>
       </content>
