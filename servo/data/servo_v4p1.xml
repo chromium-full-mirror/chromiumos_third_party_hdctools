@@ -333,7 +333,7 @@
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_v4p1_uart</name>
-    <alias>servo_v4p1_uart_pty</alias>
+    <alias>servo_v4p1_uart_pty,servo_v4_uart_pty</alias>
     <doc>Servo v4p1 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
