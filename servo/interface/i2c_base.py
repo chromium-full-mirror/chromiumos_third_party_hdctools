@@ -12,6 +12,7 @@ import threading
 import weakref
 
 from servo.interface import i2c_pseudo_v1
+from servo.interface import i2c_pseudo_v2
 from servo.interface import interface
 
 
@@ -88,7 +89,10 @@ class BaseI2CBus(interface.Interface):
         with self.__lock:
             if self.__pseudo_adap is not None:
                 self.__do_close()
-            for create_i2cp in (i2c_pseudo_v1.I2cPseudoV1Adapter,):
+            for create_i2cp in (
+                i2c_pseudo_v2.I2cPseudoV2Adapter,
+                i2c_pseudo_v1.I2cPseudoV1Adapter,
+            ):
                 if self.__try_i2cp(create_i2cp()):
                     break
             else:
