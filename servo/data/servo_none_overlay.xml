@@ -1,0 +1,9 @@
+<!-- Use this empty config as the board overlay to start servod without
+an actual board config. See https://issuetracker.google.com/283026439
+for background.
+
+Even when that bug is fixed this should stay, because servod should
+refuse to start by default without a board specified. No board would be
+a mistake for most users. In the cases where no board config is truly
+intended and desired, this empty config can be used. -->
+<root />
