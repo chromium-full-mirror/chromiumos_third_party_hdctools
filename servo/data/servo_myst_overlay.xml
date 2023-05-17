@@ -83,4 +83,8 @@
     https://issuetracker.google.com/issues/276490145#comment11 -->
     <params clobber_ok="patch" od="PP" map="ap_spi_mux_map" />
   </control>
+  <control>
+    <name>fw_up</name>
+    <params clobber_ok="" od="PP" map="onoff" init="off"></params>
+  </control>
 </root>
