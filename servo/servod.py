@@ -77,6 +77,8 @@ class ServodStarter(object):
     sopts, devopts_list = self._parse_args(cmdline)
     self._host = sopts.host
 
+    disable_unusable_usb3_hubs()
+
     # Turn on recovery mode if requested.
     if sopts.recovery_mode:
       recovery.set_recovery_active()
@@ -492,7 +494,6 @@ def disable_unusable_usb3_hubs():
 # Ability to pass an arbitrary or artificial cmdline for testing is desirable.
 def main(cmdline=sys.argv[1:]):
   """Main function for servod."""
-  disable_unusable_usb3_hubs()
   try:
     starter = ServodStarter(cmdline)
   except ServodError as error:
