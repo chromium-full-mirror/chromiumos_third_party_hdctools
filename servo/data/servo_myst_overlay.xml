@@ -8,6 +8,10 @@
   <include>
     <name>ti50.xml</name>
   </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+
   <map>
     <name>ap_spi_mux_map</name>
     <doc></doc>
