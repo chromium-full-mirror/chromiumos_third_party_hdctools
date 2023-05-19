@@ -57,6 +57,13 @@
 
  <!-- misc controls -->
   <control>
+    <!-- TODO(b/253349276): get ap_flash_select into cr50.xml / ti50.xml -->
+    <name>ap_flash_select</name>
+    <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
+    <params subtype="ap_flash_select" interface="9" drv="cr50"
+      map="onoff" init="off" clobber_ok=""/>
+  </control>
+  <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
