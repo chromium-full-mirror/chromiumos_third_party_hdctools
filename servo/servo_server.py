@@ -531,10 +531,10 @@ class Servod(object):
     """
     main_device = self.get_main_device()
     root_device = self.get_root_device()
-    type = main_device.template.TYPE
-    if root_device:
-      type = root_device.template.TYPE + '_with_' + type
+    type_ = main_device.template.TYPE
+    if root_device and root_device is not main_device:
+      type_ = root_device.template.TYPE + '_with_' + type_
       for dev in root_device.get_child_devices():
         if dev.template.DUT_CONTROLLER and dev != main_device:
-          type += '_and_' + dev.template.TYPE
-    return type
+          type_ += '_and_' + dev.template.TYPE
+    return type_
