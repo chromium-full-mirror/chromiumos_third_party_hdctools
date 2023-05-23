@@ -50,7 +50,9 @@ class TestRelaySwitch(unittest.TestCase):
   def test_pwrbtn_press_success(self, comports_mock, serial_mock, servod_set_mock):
     """Test that Set_relay_pwrbtn_press activates relay switch when it's present."""
     # Set up comport mock with a recognized vid and pid
-    comports_mock.return_value =  [self.generate_comport(vid=0x1a86, pid=0x7523)]
+    comport1 = self.generate_comport(vid=0x0000, pid=0x0000)
+    comport2 = self.generate_comport(vid=0x1a86, pid=0x7523)
+    comports_mock.return_value =  [comport1, comport2]
     # Set up mock serial object whose member functions are expected to be called
     serial_mock.return_value = mock.Mock(serial.Serial)
 

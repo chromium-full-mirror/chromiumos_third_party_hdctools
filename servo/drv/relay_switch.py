@@ -1,4 +1,4 @@
-# Copyright 2023 The Chromium OS Authors. All rights reserved.
+# Copyright 2023 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Driver to control relay switch."""
@@ -31,7 +31,7 @@ class relaySwitch(hw_driver.HwDriver):
       # https://www.amazon.com/dp/B01CN7E0RQ
       if (port.vid == 0x1a86 and port.pid == 0x7523):
           return port.device
-      return None
+    return None
 
   def _Set_relay_pwrbtn_press(self, press_secs, num_attempts=6):
     """Hold down power button for [press_secs] seconds.
