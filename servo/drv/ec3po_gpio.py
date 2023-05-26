@@ -7,11 +7,8 @@ Provides the following console controlled function:
   _Get_single, _Set_single, _Get_multi, _Set_multi
 """
 
-import logging
-
 from servo.drv import ec3po_servo
 from servo.drv import pty_driver
-import servo
 
 # servod numeric translation for GPIO state.
 GPIO_STATE = {0: '0', 1: '1', 2: 'IN', 3: 'A', 4: 'ALT'}
@@ -26,7 +23,7 @@ class ec3poGpio(ec3po_servo.ec3poServo):
 
   Note, instances of this object get dispatched via base class,
   HwDriver's get/set method. That method ultimately calls:
-    "_[GS]et_%s" % params['subtype'] below.
+    "_[GS]et_{}".format(params['subtype']) below.
 
   For example, a control to read kbd_en would be dispatched to
   call _Get_kbd_en.
@@ -41,6 +38,9 @@ class ec3poGpio(ec3po_servo.ec3poServo):
       params: dictionary of params needed to perform operations on
         devices. Must contain name:"GPIO_NAME" or names:"GPIO_b0,GPIO_b1"
         Must contain subtype=single or multi.
+        May contain ioex:"false" (default if absent) or ioex:"true" to indicate
+        whether the GPIO is on an I/O expander and therefore needs to be
+        accessed via ioexget/ioexset instead of gpioget/gpioset.
     Raises:
       ec3poGpioError: on init failure
     """
@@ -55,10 +55,20 @@ class ec3poGpio(ec3po_servo.ec3poServo):
     else:
       raise ec3poGpioError('No GPIO name specified')
 
+    ioex = params.get('ioex', 'false')
+    if ioex == 'false':
+      self._get_cmd = 'gpioget'
+      self._set_cmd = 'gpioset'
+    elif ioex == 'true':
+      self._get_cmd = 'ioexget'
+      self._set_cmd = 'ioexset'
+    else:
+      raise ec3poGpioError('invalid ioex parameter: {!r}'.format(ioex))
+
     self._logger.debug('')
 
   def set_gpio(self, name, value):
-    """Set the named GPIO to the specified value.
+    """Set the requested GPIO to the specified value.
 
     Uses the console gpioset command.
 
@@ -66,26 +76,26 @@ class ec3poGpio(ec3po_servo.ec3poServo):
       name: name of the GPIO to modify
       value: the state to set into the GPIO
     """
-    cmd = 'gpioset %s %s\r' % (name, GPIO_STATE[value])
+    cmd = '{} {} {}\r'.format(self._set_cmd, name, GPIO_STATE[value])
     self._issue_cmd(cmd)
 
   def get_gpio(self, name):
-    """Get gpio logical value.
+    """Get the requested GPIO logical value.
 
     Args:
       name: name of the GPIO to query
     Returns:
       0 or 1
     """
-    cmd = 'gpioget %s\r' % name
-    regex = '  ([01])[ *] .*%s' % name
+    cmd = '{} {}\r'.format(self._get_cmd, name)
+    regex = r'  ([01])[ *] .*{}'.format(name)
 
     results = self._issue_safe_cmd_get_results(cmd, [regex])[0]
     res_value = int(results[1])
     return res_value
 
   def _Set_single(self, value):
-    """Set GPIO through gpioset console command.
+    """Set the configured GPIO.
 
     Args:
       value: the state to set into the GPIO
@@ -93,7 +103,7 @@ class ec3poGpio(ec3po_servo.ec3poServo):
     self.set_gpio(self._gpio_name, value)
 
   def _Get_single(self):
-    """Get gpio logical value.
+    """Get the configured GPIO logical value.
 
     Returns:
       0 or 1
@@ -111,8 +121,8 @@ class ec3poGpio(ec3po_servo.ec3poServo):
       value: An integer value, where each bit will be assigned to a GPIO.
     """
     if value >> len(self._gpio_names):
-      raise ec3poGpioError('Extra bits left over in v:%d on %s' %
-                           (value, self._gpio_names))
+      raise ec3poGpioError('Extra bits left over in v:{:d} on {}'.format(
+          value, self._gpio_names))
     offset = len(self._gpio_names) - 1
     for gpio in self._gpio_names:
       bit = (value >> offset) & 0x1
