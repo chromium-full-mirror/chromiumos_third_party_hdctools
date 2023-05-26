@@ -476,10 +476,10 @@
   </control>
   <control>
     <name>servo_v4p1_type</name>
-    <alias>dut_connection_type</alias>
-    <!-- This is a hard-coded return string to be compatible with v4
-      code. v4p1 is always type-c-->
-    <params interface="servo" drv="echo" value="type-c"></params>
+    <alias>dut_connection_type,servo_v4_type</alias>
+    <doc>DONGLE_DET</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DONGLE_DET" ioex="true" map="servo_v4p1_type_map" />
   </control>
   <control>
     <name>usbc_polarity</name>
