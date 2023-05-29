@@ -249,6 +249,13 @@ class _BaseHandler(_HandlerTemplate):
         """
     NotImplementedError()
 
+  def sysrq_r(self, press_secs=''):
+    """Simulate Alt VolumeUp R simultaneous press.
+
+        This key combination is the kernel system request (sysrq) R.
+        """
+    NotImplementedError()
+
   def arb_key(self, press_secs=''):
     """Simulate an arbitrary key press.
         """
@@ -586,6 +593,13 @@ class ChromeECHandler(_BaseHandler):
         This key combination is the kernel system request (sysrq) x.
         """
     self._press_and_release_keys(['<alt_l>', '<f10>', 'x'], press_secs)
+
+  def sysrq_r(self, press_secs=''):
+    """Simulate Alt VolumeUp R simultaneous press.
+
+        This key combination is the kernel system request (sysrq) r.
+        """
+    self._press_and_release_keys(['<alt_l>', '<f10>', 'r'], press_secs)
 
   def arb_key(self, press_secs=''):
     """Simulate an arbitrary key press."""
@@ -1337,6 +1351,13 @@ class USBkm232Handler(_BaseHandler):
         This key combination is the kernel system request (sysrq) x.
         """
     self._write([self._press('<lalt>'), self._press('<f10>'), self._press('x')])
+
+  def sysrq_r(self, press_secs=''):
+    """Simulate Alt VolumeUp R simultaneous press.
+
+        This key combination is the kernel system request (sysrq) r.
+        """
+    self._write([self._press('<lalt>'), self._press('<f10>'), self._press('r')])
 
   def arb_key(self, press_secs=''):
     """Simulate an arbitrary key press."""
