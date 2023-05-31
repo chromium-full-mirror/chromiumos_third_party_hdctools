@@ -21,4 +21,9 @@
     <doc>Used to turn the DUT off and on</doc>
     <params cmd="set" interface="servo" drv="reven_power" input_type="str" reset_hold="0.1" reset_recovery="0.5"/>
   </control>
+  <control>
+    <name>power_off_time</name>
+    <doc>Amount of time to hold down power button to turn off the device.</doc>
+    <params cmd="get" drv="echo" interface="servo" value="13"/>
+  </control>
 </root>
