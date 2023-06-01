@@ -84,7 +84,7 @@ monitor `lsusb` for GSC device enumeration:
 # H1/Cr50
 (chroot) $ watch -n 1 "lsusb | grep 18d1:5014"
 # D2/Ti50
-(chroot) $ watch -n 1 "lsusb | grep 18d1:504A"
+(chroot) $ watch -n 1 "lsusb | grep 18d1:504a"
 ```
 ***
 <!-- mdformat on -->
