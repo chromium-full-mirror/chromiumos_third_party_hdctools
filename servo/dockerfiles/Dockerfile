@@ -125,7 +125,7 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
-# Pin the build to the commit before the breaking libec change.  http://b/274166678
+# TODO(b/285333691): Un-pin ec
 RUN git checkout 7b039ce808f49503e56a92f57e2482237bce6141^
 RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make build/host/util/iteflash BOARD=host && \
@@ -240,6 +240,7 @@ RUN apt-get update \
 	    libpci-dev
 
 WORKDIR /flashrom
+# TODO(b/285334398): un-pin flashrom
 RUN git checkout 34c4d41638c4009420076e20f19d5ae1b275244b^
 RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN meson builddir && cd builddir && meson install
