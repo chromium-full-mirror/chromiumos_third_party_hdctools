@@ -41,10 +41,10 @@
             <item>spi_hold:off</item>
           </item>
           <item key="0">
-            <item>spi2_vref:off</item>
-            <item>spi2_buf_en:off</item>
-            <item>spi2_buf_on_flex_en:off</item>
             <item>spi_hold:off</item>
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>spi2_buf_en:off</item>
+            <item>spi2_vref:off</item>
             <item>ec_uart_cmd:powerb</item>
           </item>
         </item>
