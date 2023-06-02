@@ -7,12 +7,70 @@ developers to quickly make additions, and improve the servo framework.
 
 ## Installation
 
-To make changes to `servod` (board overlays, python code, etc), you need to
-`cros_workon` before `emerge`'ing `hdctools`:
+To build your changes to `servod` (board overlays, python code, etc), run the
+following command:
 
 ```bash
-(chroot) $ cros_workon --host start hdctools
-(chroot) $ sudo emerge hdctools
+(chroot) $ ~/chromiumos/src/scripts/update_chroot
+```
+
+If you don't run `update_chroot` after every `repo sync`, then manually emerging
+hdctools will put your chroot into an unsupported state inconsistent with any
+tested or supported sync point. With this caveat in mind, manually emerging is
+faster than running `update_chroot`:
+
+```bash
+(chroot) $ cros_workon --host start dev-util/hdctools
+(chroot) $ sudo emerge dev-util/hdctools
+```
+
+## Testing Your Changes
+### Unit Tests
+To run unit tests on the hdctools currently installed in chroot:
+```bash
+(chroot) $ cd /usr/lib64/python3.6/site-packages # TODO(b/268735246): remove
+(chroot) $ sudo python3 -m pytest servo/tests/unit
+```
+
+### Running Servod Manually
+Make sure your host machine has a servo plugged in. The HOST port should have a
+usb connecting it to your dev machine, and the SERVO port should be connected
+to your DUT.
+
+If everything is connected correctly, then `lsusb` should have new additions.
+Something like `Google Inc. Servo V4` and `Google Cr50`.
+
+If those entries are missing, that might be beacuse of any of the following
+reasons:
+- The power cable isn't connected to DUT power
+- USB-C to DUT or HOST is flipped in the wrong direction
+- The servo is plugged into the wrong DUT port (even in the wrong port, ethernet
+and power works for the DUT)
+
+Then start servod via this command:
+```bash
+(chroot) $ sudo servod -b lulu
+```
+Adding a `-s` flag allows you to specify the serial number of your servo.
+
+Servod is typically controlled via various `dut-control` commands.
+In a separate chroot, while servod is running, try running the following:
+```bash
+(chroot) $ dut-control power_state:off
+(chroot) $ dut-control power_state:on
+```
+
+Most features of servod are accessed this way by the user.
+`dut-control` lets the user access servo features that are exposed via xml config files, in `servo/data`.
+Config files can be specified for various hardware components, features and DUTs.
+
+## Contributing changes
+
+Servo code is located in `src/third_party/hdctools` in the cros repo.
+
+After making your changes, to create a CL, run the following command:
+```bash
+(local) $ repo upload --cbr .
 ```
 
 ## Terminology
