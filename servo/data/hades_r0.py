@@ -16,7 +16,7 @@ inas = [
   ('pac1954',  '0x12:0',   'PP5000_S5',        5.000,      0.002,      'rem',True),#R436
   ('pac1954',  '0x12:1',   'PP3300_Z1',        3.300,      0.1,        'rem',True),#R656
   ('pac1954',  '0x12:2',   'PP3300_USB_Z1',    3.300,      0.1,        'rem',True),#R1071
-  ('pac1954',  '0x12:3',   'PP3300_GPU_X',     3.300,      0,          'rem',True),#R1159
+  ('pac1954',  '0x12:3',   'PP3300_GPU_X_UNUSED',     3.300,      0.01,          'rem',True),#R1159
   ('pac1954',  '0x13:0',   'PP1200_S5',        1.200,      0.02,       'rem',True),#R746
   ('pac1954',  '0x13:1',   'PPVAR_VCCIN_AUX',  1.000,      0.002,      'rem',True),#R471
   ('pac1954',  '0x13:2',   'PPVAR_GPU_FBVDDQ_IN',20.000,   0.005,      'rem',True),#R732
@@ -24,12 +24,12 @@ inas = [
   ('pac1954',  '0x14:0',   'PPVAR_GPUVDD_IN',20.000,     0.005,      'rem',True),#R731
   ('pac1954',  '0x14:1',   'PP3300_EDP_X',     3.300,      0.02,       'rem',True),#R670
   ('pac1954',  '0x14:2',   'PPVAR_BAT',        16.70,      0.005,      'rem',True),#R1277
-  ('pac1954',  '0x14:3',   'PP5000_GPU_X',     5.000,      0,          'rem',True),#R1162
+  ('pac1954',  '0x14:3',   'PP5000_GPU_X_UNUSED',     5.000,      0.1,          'rem',True),#R1162
   ('pac1954',  '0x15:0',   'PP1800_EC_Z1',     1.800,      2.2,        'rem',True),#R348
   ('pac1954',  '0x15:1',   'PP3300_EC_Z1',     3.300,      2.2,        'rem',True),#R339
   ('pac1954',  '0x15:2',   'PPVAR_SYS_KB_BL',  20.000,     0.02,       'rem',True),#R300
   ('pac1954',  '0x15:3',   'PP3300_GSC_Z2',    3.300,      0.2,        'rem',True),#R1008
-  ('pac1954',  '0x16:0',   'PP3300_EC_Z2',     3.300,      0,          'rem',True),#R330
+  ('pac1954',  '0x16:0',   'PP3300_EC_Z2_UNUSED',     3.300,      2.2,          'rem',True),#R330
   ('pac1954',  '0x16:1',   'PP1100_DRAM_S3',   1.100,      0.002,      'rem',True),#R1151
   ('pac1954',  '0x16:2',   'PP5000_VINB_DRAM', 5.000,      0.002,      'rem',True),#R1074
   ('pac1954',  '0x16:3',   'PP3300_HDMI_X',    3.300,      0.02,       'rem',True),#R768
