@@ -281,6 +281,19 @@ class SystemConfig(object):
     assert len(retval_list) == 1
     return retval_list[0]
 
+  def _check_controls_for_drv(self):
+    """Check that every control has a driver configured.
+
+    Raises:
+      SystemConfigError: A control is missing get or set driver configuration.
+    """
+    for name, control_dict in sorted(self.syscfg_dict[CONTROL_TAG].items()):
+      for cmd, key in ('get', 'get_params'), ('set', 'set_params'):
+        if 'drv' not in control_dict[key]:
+          raise SystemConfigError(
+              '%s %r cmd="%s" has no driver configured (drv= attribute)' %
+              (CONTROL_TAG, name, cmd))
+
   def add_cfg_file(self, filename, name_prefix=None, interface_increment=0):
     """Add system config file to the system config object.
 
@@ -517,6 +530,14 @@ class SystemConfig(object):
               'get_params': get_dict,
               'set_params': set_dict
           }
+        if 'drv' not in self.syscfg_dict[tag][name]['get_params']:
+          raise SystemConfigError(
+              'control %r cmd="get" has no driver configured (drv= attribute)'
+              % (name,))
+        if 'drv' not in self.syscfg_dict[tag][name]['set_params']:
+          raise SystemConfigError(
+              'control %r cmd="set" has no driver configured (drv= attribute)'
+              % (name,))
 
         if alias:
           # if we clobbered an alias, point our aliases to its real name
@@ -540,17 +561,17 @@ class SystemConfig(object):
 
     - Sets up tags for each control, if provided
     """
+    self._check_controls_for_drv()
     self.control_tags.clear()
-    # Tags are only stored for the primary control name, not their aliases.
-    base_controls = [control for control in self.syscfg_dict[CONTROL_TAG]
-                     if control not in self.aliases]
-    for control in base_controls:
-      # Tags can be in either params.
-      for params_dict in self.syscfg_dict[CONTROL_TAG][control].values():
-        if 'tags' in params_dict:
-          tags = SystemConfig.tag_string_to_tags(params_dict['tags'])
-          for tag in tags:
-            self.control_tags[tag].add(control)
+    for control in self.syscfg_dict[CONTROL_TAG]:
+      # Tags are only stored for the primary control name, not their aliases.
+      if control not in self.aliases:
+        # Tags can be in either params.
+        for params_dict in self.syscfg_dict[CONTROL_TAG][control].values():
+          if 'tags' in params_dict:
+            tags = SystemConfig.tag_string_to_tags(params_dict['tags'])
+            for tag in tags:
+              self.control_tags[tag].add(control)
 
   def get_controls_for_tag(self, tag):
     """Get list of controls for a given tag.
