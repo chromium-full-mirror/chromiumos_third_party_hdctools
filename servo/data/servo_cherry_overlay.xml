@@ -32,7 +32,7 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
+    <params interface="servo" drv="macro" map="onoff" clobber_ok="full"
       set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
       spi2_vref:pp1800"
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
