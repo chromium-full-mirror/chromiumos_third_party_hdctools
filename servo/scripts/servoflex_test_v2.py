@@ -96,8 +96,6 @@ def launch_servod(options):
   xml_files = '-c servoflex_test_v2.xml '
   if options.pins == 50:
     xml_files += '-c servoflex_v2_r0_p50.xml '
-  if options.legacy:
-    xml_files = '-c servoflex_test_v1.xml -c servoflex_v1.xml'
   pid = V2_PID
   cmd = 'sudo servod -p 0x%x %s' % (pid, xml_files)
   (retval, servod, _) = do_cmd(cmd, 5, plist=['Listening'], flist=['Errno'])
@@ -160,15 +158,7 @@ def test_jtag(options):
     Returns True if passes, Fail otherwise
     """
   errors = 0
-  ctrls = ['jtag_buf_en:{val}']
-  if options.legacy:
-    ctrls.extend(
-        ['bios_en:{val}', 'jtag_vref_sel1:{pwr}', 'jtag_vref_sel0:{pwr}'])
-    # warm_reset/pch_disable used to save a buffer on test pcb alternate
-    # between access to SPI vs JTAG
-    ctrls.extend(['warm_reset:off', 'pch_disable:on'])
-  else:
-    ctrls.extend(['spi2_vref:{pwr}', 'jtag_buf_on_flex_en:{val}'])
+  ctrls = ['jtag_buf_en:{val}', 'spi2_vref:{pwr}', 'jtag_buf_on_flex_en:{val}']
 
   openocd = OPENOCD_CFG % V2_PID
 
@@ -221,22 +211,11 @@ def test_spi(dev_id, options):
   assert dev_id >= 0 and dev_id <= 2, 'SPI dev_id should be 0 | 1 | 2'
   id_str = '%d' % dev_id
   errors = 0
-  ctrls = []
   cmd = 'sudo flashrom -V -p ft2232_spi:divisor=60,type=google-servo-v2'
-  if options.legacy:
-    cmd += '-legacy'
-    ctrls.extend([
-        'jtag_vref_sel1:{pwr}', 'jtag_vref_sel0:{pwr}', 'jtag_buf_en:{val}',
-        'bios_en:{val}'
-    ])
-    # warm_reset/pch_disable used to save a buffer on test pcb alternate
-    # between access to SPI vs JTAG
-    ctrls.extend(['warm_reset:on', 'pch_disable:off'])
-  else:
-    ctrls.extend([
-        'spi{id}_vref:{pwr}', 'spi{id}_buf_en:{val}',
-        'spi{id}_buf_on_flex_en:{val}', 'spi_hold:off'
-    ])
+  ctrls = [
+      'spi{id}_vref:{pwr}', 'spi{id}_buf_en:{val}',
+      'spi{id}_buf_on_flex_en:{val}', 'spi_hold:off'
+  ]
 
   if not set_ctrls(' '.join(ctrls).format(id=id_str, pwr='pp3300', val='on')):
     logging.error('enabling access to spi %s', id_str)
@@ -276,8 +255,6 @@ def test_uart(dev_id, options):
 
   id_str = '%d' % dev_id
   ctrls = ['uart{id}_en:{val}']
-  if options.legacy:
-    ctrls.extend(['spi1_vref:{pwr}', 'rx_en:{val}', 'tx_en:{val}'])
 
   if not set_ctrls(' '.join(ctrls).format(id=id_str, pwr='pp3300', val='on')):
     logging.error('Enabling access to UART %s', id_str)
@@ -435,7 +412,7 @@ def test_gpios(options):
 
       all_ctrls[set_name] = set_val
 
-  if pins == 50 or options.legacy:
+  if pins == 50:
     errors += test_kbd_gpios()
 
   if not set_ctrls(' '.join(cmd).format(pwr='pp3300', val='on')):
@@ -457,17 +434,13 @@ def parse_args():
       '\t\t50 -> 42 pin servoflex V2 cables (connector:DUT_CONN_V2) via:\n'
       '\t\t\tservoflex_test.py\n'
       '\t\t50 -> 50 pin servoflex V2 cables (connector:DUT_CONN_V2) via:\n'
-      '\t\t\tservoflex_test.py -p 50\n'
-      '\t\t40 -> 40 pin servoflex V1 cables (connector:DUT_CONN_V1) via:\n'
-      '\t\t\tservoflex_test.py --legacy\n')
+      '\t\t\tservoflex_test.py -p 50\n')
   parser = optparse.OptionParser(version='%prog ' + VERSION)
   parser.description = description
   parser.add_option('-d', '--debug', action='store_true', default=False,
                     help='enable debug messages')
   parser.add_option('-p', '--pins', type=int, default=42,
                     help='Pin width of flex on DUT side.  Either 42 | 50')
-  parser.add_option('-l', '--legacy', action='store_true', default=False,
-                    help='Test legacy 40pin connector')
   parser.add_option('-t', '--tests', type=str, default=None,
                     help='Tests to run.  Default is all')
   parser.set_usage(parser.get_usage() + examples)
@@ -475,7 +448,6 @@ def parse_args():
 
 
 V2_TESTS = ['jtag(', 'uart(1,', 'uart(2,', 'spi(1,', 'spi(2,', 'gpios(']
-LEGACY_TESTS = ['jtag(', 'uart(3,', 'spi(0,', 'gpios(']
 
 
 def main():
@@ -500,8 +472,6 @@ def main():
 
     if options.tests is None:
       tests = V2_TESTS
-      if options.legacy:
-        tests = LEGACY_TESTS
     else:
       tests = options.tests.split()
 
