@@ -157,16 +157,7 @@
   </control>
   <control>
     <name>pch_disable</name>
-    <doc>DUT specific. Note, is aliased to jtag_buf_on_flex_en
-    GPIO</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="2" map="onoff_i" init="off"></params>
-  </control>
-  <!-- bit overloaded for enabling flex cable buffers -->
-  <control>
-    <name>jtag_buf_on_flex_en</name>
-    <doc>Enables JTAG buffer on servo flex. Note, is aliased to
-    pch_disable GPIO</doc>
+    <doc>DUT specific GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
     offset="2" map="onoff_i" init="off"></params>
   </control>
@@ -184,18 +175,9 @@
   </control>
   <control>
     <name>dev_mode</name>
-    <doc>dev_mode GPIO. Note, is aliased to spi1_buf_on_flex_en
-    GPIO</doc>
+    <doc>dev_mode GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
     offset="5" map="onoff"></params>
-  </control>
-  <!-- bit overloaded for enabling flex cable buffers -->
-  <control>
-    <name>spi1_buf_on_flex_en</name>
-    <doc>Enables SPI1 buffers on servo flex. Note, is aliased to
-    dev_mode GPIO</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="5" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>tp78</name>
@@ -254,19 +236,11 @@
   </control>
   <control>
     <name>lid_open</name>
-    <doc>lid open GPIO. Note, is aliased to spi2_buf_on_flex_en
-    GPIO</doc>
+    <doc>lid open GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
     offset="5" map="yesno" init="yes"></params>
   </control>
   <!-- bit overloaded for enabling flex cable buffers -->
-  <control>
-    <name>spi2_buf_on_flex_en</name>
-    <doc>Enables SPI2 buffers on servo flex. Note, is aliased to
-    lid_open GPIO</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
-    offset="5" map="onoff_i" init="off"></params>
-  </control>
   <control>
     <name>rec_mode</name>
     <doc>Google recovery mode</doc>
