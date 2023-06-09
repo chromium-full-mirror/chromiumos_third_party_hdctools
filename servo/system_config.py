@@ -491,9 +491,11 @@ class SystemConfig(object):
           hwinit_found = False
           # only allow one hwinit per control
           if clobber_ok is not None:
+            # if we clobbered an alias, look for its hwinit under its real name
+            realname = self.aliases.get(name, name)
             for i, (hwinit_name, _) in enumerate(self.hwinit):
-              if hwinit_name == name:
-                self.hwinit[i] = (name, set_dict['init'])
+              if hwinit_name == realname:
+                self.hwinit[i] = (realname, set_dict['init'])
                 hwinit_found = True
                 break
 
@@ -519,6 +521,8 @@ class SystemConfig(object):
           }
 
         if alias:
+          # if we clobbered an alias, point our aliases to its real name
+          realname = self.aliases.get(name, name)
           for aliasname in alias.split(','):
             if not IDENTIFIER_RE.fullmatch(aliasname):
               raise SystemConfigError('file %r %s element %r invalid '
@@ -528,7 +532,7 @@ class SystemConfig(object):
               aliasname = name_prefix + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
             # Also store what the alias relationship
-            self.aliases[aliasname] = name
+            self.aliases[aliasname] = realname
 
   def finalize(self):
     """Finalize setup, Call this after no more config files will be added.
