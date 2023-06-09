@@ -500,11 +500,16 @@ class SystemConfig(object):
           if not hwinit_found:
             self.hwinit.append((name, set_dict['init']))
 
-        if (clobber_ok is not None and clobber_ok != CLOBBER_FULL and
-            name in self.syscfg_dict[tag]):
+        if name in self.syscfg_dict[tag]:
+          assert clobber_ok is not None
+          # Always update existing dicts when present, to avoid splitting
+          # aliases into separate controls.
+          if clobber_ok == CLOBBER_FULL:
+            self.syscfg_dict[tag][name]['get_params'].clear()
+            self.syscfg_dict[tag][name]['set_params'].clear()
           self.syscfg_dict[tag][name]['get_params'].update(get_dict)
           self.syscfg_dict[tag][name]['set_params'].update(set_dict)
-          if doc != 'undocumented':
+          if doc != 'undocumented' or clobber_ok == CLOBBER_FULL:
             self.syscfg_dict[tag][name]['doc'] = doc
         else:
           self.syscfg_dict[tag][name] = {
