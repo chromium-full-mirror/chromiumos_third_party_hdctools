@@ -95,27 +95,27 @@
   <control>
     <name>spi1_vref</name>
     <alias>usbpd_uart_vref</alias>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>spi1_buf_en</name>
     <alias>usbpd_uart_en</alias>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
     <name>spi1_buf_on_flex_en</name>
     <alias>usbpd_uart_buf_on_flex_en</alias>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <!-- Override from definition in servo_v2_r0.xml -->
   <control>
     <name>dev_mode</name>
     <alias>usbpd_boot_mode</alias>
-    <params clobber_ok="" od="PP"></params>
+    <params clobber_ok="patch" od="PP"></params>
   </control>
   <control>
     <name>pch_disable</name>
     <alias>usbpd_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

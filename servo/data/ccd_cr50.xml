@@ -52,7 +52,7 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" interface="servo" drv="na"
+    <params clobber_ok="patch" interface="servo" drv="na"
     init="not_applicable"></params>
   </control>
   <!-- Controls overwritten by Cr50 -->
@@ -60,7 +60,7 @@
     <name>gsc_ec_reset</name>
     <clone>cold_reset</clone>
     <doc>cold_reset (active low).</doc>
-    <params init="off" clobber_ok=""></params>
+    <params init="off" clobber_ok="patch"></params>
   </control>
   <control>
     <name>cold_reset_select</name>
@@ -140,13 +140,13 @@
     <alias>uart4_on_flex_en,cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Override control not needed for ccd.</doc>
     <params interface="servo" drv="na" input_type="str"
-    init="not_applicable" clobber_ok=""></params>
+    init="not_applicable" clobber_ok="patch"></params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1,fw_wp_vref</alias>
     <params interface="servo" drv="na" input_type="str"
-    init="not_applicable" clobber_ok=""></params>
+    init="not_applicable" clobber_ok="patch"></params>
   </control>
   <control>
     <name>ccd_ec_boot_mode_uut</name>
@@ -166,7 +166,7 @@
     <name>gsc_testlab</name>
     <alias>cr50_testlab</alias>
     <doc>GSC testlab state</doc>
-    <params clobber_ok="" init="open"></params>
+    <params clobber_ok="patch" init="open"></params>
   </control>
   <!-- I2C pseudo adapter controller -->
   <control>

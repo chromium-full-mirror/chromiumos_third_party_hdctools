@@ -18,7 +18,7 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" init="glados"></params>
+    <params clobber_ok="patch" init="glados"></params>
   </control>
   <!-- ******** Controls ******** -->
   <control>

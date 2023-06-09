@@ -19,7 +19,7 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" init="glados" c2d2_drv="na"></params>
+    <params clobber_ok="patch" init="glados" c2d2_drv="na"></params>
   </control>
   <control>
     <name>d2_loglevel</name>
@@ -57,32 +57,32 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <name>jtag_buf_on_flex_en</name>
     <alias>uart4_on_flex_en,d2_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params clobber_ok="" init="on" servo_micro_drv="na" c2d2_drv="na"></params>
+    <params clobber_ok="patch" init="on" servo_micro_drv="na" c2d2_drv="na"></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
     <alias>d2_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
     <params  ccd_d2_drv="na" servo_micro_drv="na"
-    clobber_ok="" init="on" c2d2_drv="na">
+    clobber_ok="patch" init="on" c2d2_drv="na">
     </params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>jtag_vref_sel1</name>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>dev_mode</name>
     <alias>d2_bootstrap</alias>
-    <params clobber_ok="" od="PU" map="onoff" init="off"></params>
+    <params clobber_ok="patch" od="PU" map="onoff" init="off"></params>
   </control>
   <control>
     <name>pch_disable</name>
     <alias>d2_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

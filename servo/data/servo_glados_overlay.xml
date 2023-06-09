@@ -17,30 +17,30 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" fw_wp_vref="pp3300" />
+    <params clobber_ok="patch" fw_wp_vref="pp3300" />
   </control>
   <control>
     <name>dev_mode</name>
     <alias>usbpd_boot_mode</alias>
-    <params clobber_ok="" od="PU" map="onoff_i"></params>
+    <params clobber_ok="patch" od="PU" map="onoff_i"></params>
   </control>
   <!-- TODO(tbroch) Implement dev mode via EC uart. -->
   <control>
     <name>pch_disable</name>
     <alias>usbpd_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <!-- UART 4, which is re-purposed atop the JTAG interface -->
   <!-- Need to enable jtag vref to get jtag_buf_en buffers on -->
   <control>
     <name>jtag_vref_sel0</name>
     <doc>usbpd_uart_vref_sel0</doc>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>jtag_vref_sel1</name>
     <doc>usbpd_uart_vref_sel1</doc>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>uart4_pty</name>
@@ -142,16 +142,16 @@
     <name>jtag_buf_en</name>
     <alias>usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
-    <name>uart4_on_flex_en</name>
-    <alias>usbpd_uart_on_flex_en</alias>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to
     uart4.</doc>
     <params interface="2" drv="pca95xx"
     subtype="gpio" child="0x26" offset="3" map="onoff_i" init="on"
-    clobber_ok=""></params>
+    clobber_ok="patch"></params>
   </control>
   <control>
     <name>ec_chip</name>

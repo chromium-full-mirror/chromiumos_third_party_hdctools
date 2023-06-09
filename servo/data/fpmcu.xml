@@ -109,26 +109,26 @@
     <name>jtag_buf_en</name>
     <alias>fpmcu_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
-    <name>uart4_on_flex_en</name>
-    <alias>fpmcu_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,fpmcu_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to
     uart4.</doc>
     <params interface="2" drv="pca95xx"
     subtype="gpio" child="0x26" offset="3" map="onoff_i" init="on"
-    clobber_ok=""></params>
+    clobber_ok="patch"></params>
   </control>
   <!-- Override from definition in servo_v2_r0.xml -->
   <control>
     <name>dev_mode</name>
     <alias>fpmcu_boot_mode,usbpd_boot_mode</alias>
-    <params clobber_ok="" od="PP" map="onoff"></params>
+    <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>
   <control>
     <name>pch_disable</name>
     <alias>fpmcu_reset,usbpd_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>
