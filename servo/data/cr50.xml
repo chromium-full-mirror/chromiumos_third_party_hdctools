@@ -33,7 +33,7 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="patch" init="glados" c2d2_drv="na"></params>
+    <params clobber_ok="patch" init="glados" />
   </control>
   <!-- EC-3PO console interpreter for gsc -->
   <control>
@@ -242,15 +242,13 @@
     <name>jtag_buf_on_flex_en</name>
     <alias>uart4_on_flex_en,cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params init="on" clobber_ok="patch" servo_micro_drv="na" c2d2_drv="na"></params>
+    <params clobber_ok="patch" init="on" />
   </control>
   <control>
     <name>jtag_buf_en</name>
     <alias>cr50_uart_en,gsc_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params  ccd_cr50_drv="na" servo_micro_drv="na"
-    clobber_ok="patch" init="on" c2d2_drv="na" ccd_ti50_drv="na" ccd_gsc_drv="na">
-    </params>
+    <params clobber_ok="patch" init="on" />
   </control>
   <control>
     <name>gsc_version</name>
