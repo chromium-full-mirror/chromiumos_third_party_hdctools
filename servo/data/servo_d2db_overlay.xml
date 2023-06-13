@@ -6,20 +6,9 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
 -->
 
 <root>
-  <control>
-    <name>spi1_buf_on_flex_en</name>
-    <doc>Enables SPI1 buffers on servo flex.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="7" map="onoff_i" ccd_d2_drv="na" servo_micro_drv="na"
-    clobber_ok=""></params>
-  </control>
-  <control>
-    <name>spi2_buf_on_flex_en</name>
-    <doc>Enables SPI2 buffers on servo flex.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="6" map="onoff_i" ccd_d2_drv="na" servo_micro_drv="na"
-    clobber_ok=""></params>
-  </control>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
   <control>
     <name>uart4_pty</name>
     <alias>raw_d2_uart_pty,raw_usbpd_uart_pty</alias>
@@ -68,9 +57,7 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <name>jtag_buf_on_flex_en</name>
     <alias>uart4_on_flex_en,d2_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
-    servo_micro_drv="na" c2d2_drv="na"></params>
+    <params clobber_ok="" init="on" servo_micro_drv="na" c2d2_drv="na"></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
