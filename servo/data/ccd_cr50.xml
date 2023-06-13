@@ -136,8 +136,8 @@
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
-    <name>uart4_on_flex_en</name>
-    <alias>cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Override control not needed for ccd.</doc>
     <params interface="servo" drv="na" input_type="str"
     init="not_applicable" clobber_ok=""></params>
