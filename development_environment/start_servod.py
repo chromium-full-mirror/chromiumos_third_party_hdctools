@@ -10,7 +10,7 @@ import argparse
 # hostname and port docker server is running on the lattice machine
 DOCKER_HOST_SERVER = "127.0.1.1:2375"
 
-IMAGE = "127.0.1.1:5000/servod:release"
+IMAGE = "127.0.1.1:5000/servod:dev"
 
 
 def setup():
