@@ -155,7 +155,7 @@ RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 
 WORKDIR /ec
 
-RUN git checkout cr50_stab && git pull
+RUN git checkout gsc_utils && git pull
 RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make -C extra/usb_updater gsctool
 
