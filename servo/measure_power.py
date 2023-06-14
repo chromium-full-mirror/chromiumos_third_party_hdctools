@@ -61,7 +61,7 @@ class ServodPowerTracker(threading.Thread):
   # - ?P<rail>: ensures we can access the group by name
   # - +?: ensures we do a non-greedy match so that we don't match 'avg' in the
   #       rail group
-  RAIL_RE = re.compile('(?:avg_)?(?P<rail>[\w_]+?)(?:_avg)?_mw')
+  RAIL_RE = re.compile(r'(?:avg_)?(?P<rail>[\w._]+?)(?:_avg)?_mw')
 
   def __init__(self, host, port, stop_signal, ctrls, sample_rate, tag='',
                title='unnamed', suffix='mw'):
