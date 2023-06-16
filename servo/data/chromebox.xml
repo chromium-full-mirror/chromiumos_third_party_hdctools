@@ -11,7 +11,7 @@
   </control>
   <control>
     <name>rec_mode</name>
-    <params subtype="rec_mode" ccd_cr50_interface="9" ccd_cr50_drv="cr50"
-    map="onoff_i" clobber_ok="" init="off"></params>
+    <params subtype="rec_mode" interface="9" drv="cr50"
+    map="onoff_i" clobber_ok="never" init="off"></params>
   </control>
 </root>
