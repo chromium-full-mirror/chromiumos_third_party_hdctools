@@ -26,7 +26,8 @@
     <doc>Used to turn the DUT off and on</doc>
     <params drv="cros_ec_softrec_power" clobber_ok=""
     shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
-    warm_reset_can_hold_ap="yes"/>
+    warm_reset_can_hold_ap="yes"
+    reset_hold="1" />
   </control>
   <control>
     <!-- Do not use PP1800 (SPI2_VREF) to control WP, because SPI2_VREF is
