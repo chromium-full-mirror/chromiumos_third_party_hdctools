@@ -18,8 +18,13 @@ import xml.etree.ElementTree
 MAP_TAG = 'map'
 CONTROL_TAG = 'control'
 CLOBBER_ATTR = 'clobber_ok'
+CLOBBER_NEVER = 'never'
 CLOBBER_PATCH = 'patch'
+CLOBBER_UPDATE = 'update'
 CLOBBER_FULL = 'full'
+# from low to high
+CLOBBER_RANK = {v: i for i, v in enumerate(
+    [None, CLOBBER_NEVER, CLOBBER_PATCH, CLOBBER_UPDATE, CLOBBER_FULL])}
 CONTENT_TAG = 'content'
 CONTENT_ITEM_TAG = 'item'
 CONTENT_ITEM_KEY_ATTR = 'key'
@@ -303,6 +308,9 @@ class SystemConfig(object):
             replace any existing control with the same name or alias
           "patch": This control will update the params of an existing control,
             but this will never define a new control.
+          "never": This control will be ignored if there is already a control
+            under the same name or alias.  Otherwise, this will define a new
+            control.
           "" (or any string not listed above): This control will update the
             params of an existing control if present, or if not, this will
             define a new control.
@@ -475,19 +483,18 @@ class SystemConfig(object):
 
         assert tag == CONTROL_TAG
 
-        # Prioritize CLOBBER_FULL, over clobber update, over CLOBBER_PATCH,
-        # regardless of whether they came from set_dict or get_dict.
-        #
-        # This looks very strange because "clobber update" has long been the
-        # behavior for any clobber value (including empty string).  This will
-        # be cleaned up by requiring a specific value for "update" behavior,
-        # and making unrecognized values an error (including empty string).
-        clobber_ok = set_dict.get(CLOBBER_ATTR)
-        if clobber_ok != CLOBBER_FULL:
-          clobber_ok = get_dict.get(CLOBBER_ATTR, clobber_ok)
-          if clobber_ok == CLOBBER_PATCH:
-            clobber_ok = set_dict.get(CLOBBER_ATTR, clobber_ok)
+        clobbers = []
+        for ctrl_dict in get_dict, set_dict:
+          clobbers.append(ctrl_dict.get(CLOBBER_ATTR))
+          if clobbers[-1] is not None and clobbers[-1] not in CLOBBER_RANK:
+            clobbers[-1] = CLOBBER_UPDATE
+        clobber_ok = max(clobbers, key=lambda k: CLOBBER_RANK[k])
 
+        if clobber_ok == CLOBBER_NEVER:
+          if name in self.syscfg_dict[tag]:
+            self._logger.debug('Quietly refusing to clobber existing %s %r' %
+                               (tag, name))
+            continue
         if clobber_ok == CLOBBER_PATCH:
           if name not in self.syscfg_dict[tag]:
             self._logger.debug('Ignoring clobber patch for nonexistent %s %r' %
