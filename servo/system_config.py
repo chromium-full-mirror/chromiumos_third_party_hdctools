@@ -295,6 +295,17 @@ class SystemConfig(object):
         of the same name.  If its value is "full" then parameters from the
         clobbered control are completely thrown away, otherwise only those
         which are also specified in this control will be replaced.
+      clobber_ok: Gives special instructions for how to reconcile an existing
+        control definition with the same name or alias.  By default, if this
+        is not specified, attempting to redefine a control is an error.
+        Supported values:
+          "full": This control will always be defined, and will completely
+            replace any existing control with the same name or alias
+          "patch": This control will update the params of an existing control,
+            but this will never define a new control.
+          "" (or any string not listed above): This control will update the
+            params of an existing control if present, or if not, this will
+            define a new control.
 
     NOTE, method is recursive when parsing 'include' elements from XML.
 
