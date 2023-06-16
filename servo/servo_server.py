@@ -143,7 +143,7 @@ class Servod(object):
     """
     prefix, processed_name = Servod._get_control_prefix_and_name(name)
     if prefix not in self._devices:
-      error_msg = ("No control named '%s' registerd. "
+      error_msg = ("No control named '%s' registered. "
         "No servo device registered for prefix %s.") % (name, prefix)
       raise ServodError(error_msg)
     dev = self._devices[prefix]
@@ -155,7 +155,7 @@ class Servod(object):
         dev = self.get_root_device()
 
     if not dev.syscfg.is_control(processed_name):
-      error_msg = ("No control named '%s' registerd with any connected servo device.\n"
+      error_msg = ("No control named '%s' registered with any connected servo device.\n"
       "Servo device %s (prefix: %s) is picked as the targed device for the control.\n"
       ) % (name, dev, dev.get_prefixes())
       candidates = [ctrl for ctrl in self._controls if name in ctrl]

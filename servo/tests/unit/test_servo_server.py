@@ -139,7 +139,7 @@ class TestServod(unittest.TestCase):
     dev2.syscfg.is_control = unittest.mock.MagicMock(return_value=False)
     servod._controls = ['main.cold_reset', 'root.cold_reset', 'ccd_cr50.cold_reset']
 
-    with self.assertRaisesRegex(servo_server.ServodError, "No control named 'cold_reset' registerd with any connected servo device."):
+    with self.assertRaisesRegex(servo_server.ServodError, "No control named 'cold_reset' registered with any connected servo device."):
       servod._get_dev_and_name("cold_reset")
 
   def test_get(self):
