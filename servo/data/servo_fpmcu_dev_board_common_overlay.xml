@@ -33,62 +33,62 @@
     <name>spi1_vref</name>
     <alias>fpmcu_pp3300</alias>
     <doc>3.3V rail that powers the MCU.</doc>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>spi2_vref</name>
     <alias>fpmcu_pp1800</alias>
     <doc>1.8V rail that powers the sensor.</doc>
-    <params clobber_ok="" init="pp1800"></params>
+    <params clobber_ok="patch" init="pp1800"></params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>jtag_vref_sel1</name>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="stm32"/>
   </control>
   <!-- Override from definition in servo_v2_r0.xml -->
   <control>
     <name>dev_mode</name>
     <alias>fpmcu_boot_mode</alias>
-    <params clobber_ok="" od="PP" map="onoff"></params>
+    <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>
   <control>
     <name>cold_reset</name>
     <alias>fpmcu_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>hpd</name>
     <alias>fpmcu_slp</alias>
-    <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
+    <params clobber_ok="patch" od="PP" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>fw_up</name>
     <alias>fpmcu_slp_alt</alias>
-    <params clobber_ok="" od="PP" map="onoff_i" init="off"></params>
+    <params clobber_ok="patch" od="PP" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>warm_reset</name>
     <alias>fp_sensor_sel</alias>
-    <params clobber_ok="" od="PU" map="onoff" init="on"></params>
+    <params clobber_ok="patch" od="PU" map="onoff" init="on"></params>
   </control>
   <control>
     <name>rec_mode</name>
     <alias>transport_sel</alias>
-    <params clobber_ok="" od="PU" map="onoff" init="on"></params>
+    <params clobber_ok="patch" od="PU" map="onoff" init="on"></params>
   </control>
   <control>
     <!-- For FPMCU, WP set to 1 means that it is active -->
     <name>fw_wp</name>
-    <params clobber_ok="" map="onoff"></params>
+    <params clobber_ok="patch" map="onoff"></params>
   </control>
 </root>

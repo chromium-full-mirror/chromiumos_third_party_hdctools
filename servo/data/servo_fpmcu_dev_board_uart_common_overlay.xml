@@ -23,14 +23,14 @@
       console
     </doc>
     <params cmd="get" subtype="pty" interface="7" drv="uart"
-        clobber_ok=""></params>
+        clobber_ok="full"></params>
   </control>
   <control>
     <name>uart2_pty</name>
     <alias>raw_fpmcu_platform_uart_pty</alias>
     <doc>Pseudo-terminal (pty) that's connected to FP MCU's AP UART</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart"
-        clobber_ok=""></params>
+        clobber_ok="full"></params>
   </control>
   <!-- EC-3PO console interpreter for FP MCU -->
   <control>
@@ -55,45 +55,45 @@
     <name>fpmcu_ec3po_interp_connect</name>
     <doc>State indicating if interpreter is listening to the EC UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="off"
-        subtype="interp_connect" clobber_ok=""></params>
+        subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
     <name>fpmcu_ec3po_interp_connect_1</name>
     <doc>State indicating if interpreter is listening to the EC UART.</doc>
     <params interface="10" drv="ec3po_driver" map="onoff" init="off"
-        subtype="interp_connect" clobber_ok=""></params>
+        subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
     <name>cpu_ec3po_interp_connect</name>
     <doc>Turn off the cpu ec3po interpreter</doc>
-    <params map="alwaysoff" init="off" clobber_ok=""></params>
+    <params map="alwaysoff" init="off" clobber_ok="patch"></params>
   </control>
   <control>
     <name>uart1_baudrate</name>
     <alias>fpmcu_console_uart_baudrate</alias>
     <doc>Baudrate for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-        clobber_ok="" interface="7"></params>
+        clobber_ok="full" interface="7"></params>
   </control>
   <control>
     <name>uart1_parity</name>
     <alias>fpmcu_console_uart_parity</alias>
     <doc>Parity for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-        clobber_ok="" interface="7" map="uart_parity"></params>
+        clobber_ok="full" interface="7" map="uart_parity"></params>
   </control>
   <control>
     <name>uart1_sbits</name>
     <alias>fpmcu_console_uart_sbits</alias>
     <doc>Number of stop bits for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-        clobber_ok="" interface="7" map="uart_sbits"></params>
+        clobber_ok="full" interface="7" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart1_bits</name>
     <alias>fpmcu_console_uart_bits</alias>
     <doc>Number of data bits for FP MCU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok="full"
         interface="7" map="uart_bits"></params>
   </control>
   <control>
@@ -101,27 +101,27 @@
     <alias>fpmcu_platform_uart_baudrate</alias>
     <doc>Baudrate for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-        clobber_ok="" interface="8"></params>
+        clobber_ok="full" interface="8"></params>
   </control>
   <control>
     <name>uart2_parity</name>
     <alias>fpmcu_platform_uart_parity</alias>
     <doc>Parity for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-        clobber_ok="" interface="8" map="uart_parity"></params>
+        clobber_ok="full" interface="8" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_sbits</name>
     <alias>fpmcu_platform_uart_sbits</alias>
     <doc>Number of stop bits for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-        clobber_ok="" interface="8" map="uart_sbits"></params>
+        clobber_ok="full" interface="8" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart2_bits</name>
     <alias>fpmcu_platform_uart_bits</alias>
     <doc>Number of data bits for FP MCU's uart to AP</doc>
-    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok="full"
         interface="8" map="uart_bits"></params>
   </control>
   <!-- FP MCU UART Automation Controls -->
@@ -173,12 +173,12 @@
     <name>uart1_en</name>
     <alias>fpmcu_console_uart_en</alias>
     <doc>Enable communication with FP MCU's console UART.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
     <name>uart2_en</name>
     <alias>fpmcu_platform_uart_en</alias>
     <doc>Enable communication with FP MCU's AP UART.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
 </root>
