@@ -167,10 +167,10 @@ for vid, pid in C2D2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: H1 console
-     {'name': 'stm32_i2c',  'interface': 4}, # 2: i2c
-     {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
      {'name': 'stm32_i2c',  'interface': 4,
-      'port': 1},                            # 4: i2c 2 // INAs etc
+      'port': 1},                            # 2: i2c 2 // INAs etc
+     {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
+     {'name': 'stm32_i2c',  'interface': 4}, # 4: i2c
      'empty',                                # 5: empty
      {'name': 'ec3po_uart',                  # 6: servo console
       'raw_pty': 'raw_c2d2_uart_pty', 'source': 'c2d2'},

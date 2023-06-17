@@ -277,8 +277,6 @@ class ADCTemplate(object):
     for reg in self.REG_IDX:
       p = self.base_params
       p['interface'] = interface
-      # c2d2 runs on interface |4| so add that as a special one as well.
-      p['c2d2_interface'] = 4
       # CPD runs on interface |0| so add that as a special one as well.
       p['ft4232h_generic_interface'] = 0
       p['offset'] = self.reg_offset(reg)
