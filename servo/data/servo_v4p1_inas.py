@@ -8,7 +8,4 @@ inas = [
         ('ina231', 0x42, 'ppservo5', 5.0, 0.005, 'rem', True),
        ]
 # TODO(b/197780517)
-params = dict(interface=23,
-              servo_v4p1_with_c2d2_interface=23,
-              servo_v4p1_with_c2d2_and_ccd_gsc_interface=23,
-              servo_v4p1_with_c2d2_and_ccd_cr50_interface=23)
+params = dict(interface=23)
