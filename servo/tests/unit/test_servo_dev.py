@@ -401,50 +401,6 @@ class TestServoDevice(unittest.TestCase):
     self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(return_value=(map_params))
     self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False)[0], set_params)
 
-  def test_get_servo_specific_param(self):
-    """Test _get_servo_specific_param()."""
-    self.v4_dev._logger.debug = unittest.mock.MagicMock()
-    self.v4_dev._logger.error = unittest.mock.MagicMock()
-    self.micro_dev._logger.debug = unittest.mock.MagicMock()
-    self.micro_dev._logger.error = unittest.mock.MagicMock()
-
-    v4_res = self.v4_dev._get_servo_specific_param(
-      {"servo_micro_interface" : "1", "servo_v4_interface" : "2"},
-      "interface", "cold_reset")
-    self.assertEqual(v4_res, "2")
-    self.v4_dev._logger.debug.assert_called_once_with('Using %s parameter.', 'servo_v4_interface')
-    self.v4_dev._logger.error.assert_not_called()
-
-    micro_res = self.micro_dev._get_servo_specific_param(
-      {"servo_micro_interface" : "1", "servo_v4_interface" : "2"},
-      "interface", "cold_reset")
-    self.assertEqual(micro_res, "1")
-    self.micro_dev._logger.debug.assert_called_once_with('Using %s parameter.', 'servo_micro_interface')
-    self.micro_dev._logger.error.assert_not_called()
-
-  def test_get_servo_specific_param_error(self):
-    """Test _get_servo_specific_param() in case of error."""
-    self.v4_dev._logger.debug = unittest.mock.MagicMock()
-    self.v4_dev._logger.error = unittest.mock.MagicMock()
-    self.micro_dev._logger.debug = unittest.mock.MagicMock()
-    self.micro_dev._logger.error = unittest.mock.MagicMock()
-
-    v4_res = self.v4_dev._get_servo_specific_param({},"interface", "cold_reset")
-    self.assertIsNone(v4_res)
-    self.v4_dev._logger.debug.assert_not_called()
-    self.v4_dev._logger.error.assert_has_calls([
-      unittest.mock.call('Unable to determine %s for %s', 'interface', 'cold_reset'),
-      unittest.mock.call('params: %r', {})
-    ])
-
-    micro_res = self.micro_dev._get_servo_specific_param({},"interface", "cold_reset")
-    self.assertIsNone(micro_res)
-    self.micro_dev._logger.debug.assert_not_called()
-    self.micro_dev._logger.error.assert_has_calls([
-      unittest.mock.call('Unable to determine %s for %s', 'interface', 'cold_reset'),
-      unittest.mock.call('params: %r', {})
-    ])
-
   def test_clear_cached_drv(self):
     """Test clear_cached_drv()."""
     self.v4_dev._drv_dict = {1 : 2}

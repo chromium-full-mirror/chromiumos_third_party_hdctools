@@ -423,8 +423,7 @@ class ServoDevice(object):
         # noop
         params.update({'input_type': 'str'})
 
-      interface_id = self._get_servo_specific_param(params, 'interface',
-                                                    control_name)
+      interface_id = params.get('interface')
       if None in [drv_prefix, interface_id]:
         raise ServoDeviceError('No drv/interface for control %r found' %
                           control_name)
@@ -471,35 +470,6 @@ class ServoDevice(object):
     set_drv.set_complement(get_drv)
     # Run the method again, as it will find the entries now in the cache.
     return self._get_param_drv(control_name, is_get)
-
-  def _get_servo_specific_param(self, params, param_key, control_name):
-    """Get |param_key| from params by looking for servo specific params first.
-
-    Find the candidate servos. First see if there's a more specific param_key
-    that applies to this servo dev's type, before checking for the generic
-    params key.
-
-    1. [servo_type]_[params_key]
-    2. [params_key]
-
-    Args:
-      params: params dictionary for a control
-      param_key: identifier in the params dictionary to look for
-      control_name: control name the params correspond to
-
-    Returns:
-      The best suited param value for param_key given the servo type or
-      None if even the default is not defined.
-    """
-    candidates = ['%s_%s' % (self.template.TYPE, param_key)]
-    candidates.append(param_key)
-    for candidate in candidates:
-      if candidate in params:
-        self._logger.debug('Using %s parameter.', candidate)
-        return params[candidate]
-    self._logger.error('Unable to determine %s for %s', param_key, control_name)
-    self._logger.error('params: %r', params)
-    return None
 
   def clear_cached_drv(self):
     """Clear the cached drivers.
