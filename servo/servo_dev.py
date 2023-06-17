@@ -411,8 +411,7 @@ class ServoDevice(object):
     for params in [get_params, set_params]:
       # |cmd| is guaranteed to be in each params.
       mode = params['cmd']
-      # Get the most suitable drv given the servo instance.
-      drv_prefix = self._get_servo_specific_param(params, 'drv', control_name)
+      drv_prefix = params.get('drv')
       if drv_prefix == 'na':
         # 'na' drv can be used to selectively turn controls into noops for
         # a given servo hardware. Ensure that there is an interface.
