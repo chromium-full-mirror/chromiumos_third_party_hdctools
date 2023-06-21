@@ -235,12 +235,10 @@ RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 RUN apt-get update \
     && apt-get install -y \
         cmake \
+        libcmocka-dev \
 	    libpci-dev
 
 WORKDIR /flashrom
-# TODO(b/285334398): un-pin flashrom
-RUN git checkout 34c4d41638c4009420076e20f19d5ae1b275244b^
-RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
 
