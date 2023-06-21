@@ -125,9 +125,7 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
-# TODO(b/285333691): Un-pin ec
-RUN git checkout 7b039ce808f49503e56a92f57e2482237bce6141^
-RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
+#RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
