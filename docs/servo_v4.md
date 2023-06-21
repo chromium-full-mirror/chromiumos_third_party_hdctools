@@ -252,16 +252,7 @@ Type-C Servo v4 only
 (chroot) $ dut-control servo_v4_role:snk [src]
 ```
 
-## Flashrom
-
-<!-- mdformat off(b/139308852) -->
-*** note
-For [CCD]: Flashrom doesn't need to specify voltage anymore, this is done
-within GSC. See the "care and feeding" for your specific device for the
-correct `flashrom` commands for [CCD], Servo Micro, and Servo v2, as they are
-each different.
-***
-<!-- mdformat on -->
+## Firmware flashing and reading
 
 <!-- mdformat off(b/139308852) -->
 *** note
@@ -270,10 +261,11 @@ capability is enabled in GSC.
 ***
 <!-- mdformat on -->
 
-Flash BIOS with CCD:
+Read and flash AP firmware (BIOS) with CCD or any other servo debug connection:
 
 ```bash
-(chroot) $ sudo flashrom -p raiden_debug_spi:target=AP -w bios.bin
+(chroot) $ sudo futility read --servo -v "$OUTFILE"
+(chroot) $ sudo futility update --servo -v -i "$INFILE"
 ```
 
 ## Updating Firmware {#updating-firmware}
