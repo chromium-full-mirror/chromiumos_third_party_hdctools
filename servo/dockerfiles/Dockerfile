@@ -228,15 +228,12 @@ WORKDIR /
 RUN apt-get update \
     && apt-get install -y \
         meson \
-        ninja-build
-
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
-
-RUN apt-get update \
-    && apt-get install -y \
+        ninja-build \
         cmake \
         libcmocka-dev \
-	    libpci-dev
+        libpci-dev
+
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 
 WORKDIR /flashrom
 RUN meson builddir && cd builddir && meson install
