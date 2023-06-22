@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <root>
   <control>
+    <!-- This is the same as cpu_fw_spi_pp3300.xml, except with
+         spi2_vref changed from pp3300 to pp1800. -->
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over servo</doc>
     <params clobber_ok="full" interface="servo" drv="macro" map="onoff">

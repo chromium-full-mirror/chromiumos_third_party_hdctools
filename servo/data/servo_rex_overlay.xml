@@ -1,6 +1,6 @@
 <root>
   <include>
-    <name>cpu_fw_spi.xml</name>
+    <name>cpu_fw_spi_pp1800.xml</name>
   </include>
   <include>
     <name>ti50.xml</name>
