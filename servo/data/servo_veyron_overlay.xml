@@ -3,9 +3,6 @@
     <name>servoflex_v2_r0_p50.xml</name>
   </include>
   <include>
-    <name>cpu_fw_spi_pp3300.xml</name>
-  </include>
-  <include>
     <name>stm32_ec_common.xml</name>
   </include>
   <!-- ******** Controls ******** -->
@@ -22,7 +19,7 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
       set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
                    spi2_vref:pp3300"
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off

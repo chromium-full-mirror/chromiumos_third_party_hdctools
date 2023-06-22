@@ -62,7 +62,7 @@
       set to active before any other configuration, so cr50 settings won't get
       cleared by a deep sleep reset.
     -->
-    <params clobber_ok="" interface="servo" drv="macro" map="onoff"
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
       set_value_1="cold_reset:on sleep:2 gsc_idle_level:active spi2_buf_en:on
                    spi2_buf_on_flex_en:on spi2_vref:off ap_flash_select:on
                    spi_hold:off"
