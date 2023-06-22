@@ -10,6 +10,8 @@ import sys
 from servo import recovery
 from servo import servo_dev_templates
 from servo.utils import diagnose
+from servo.utils import usb_hierarchy
+
 
 class ServodError(Exception):
   """Exception class for servod."""
@@ -80,7 +82,13 @@ class Servod(object):
   def reinitialize(self):
     """Reinitialize all devices that support reinitialization"""
     for device in self.get_devices():
-        device.reinitialize()
+        try:
+          device.reinitialize()
+        except usb_hierarchy.HierarchyError as e:
+          if not device.disconnect_is_ok():
+            raise
+          self._logger.info('Ignoring failed re-initilization of device that '
+                            'is ok to be disconnected. %s error(%s).', device, e)
 
   def close(self):
     """Servod turn down logic."""
