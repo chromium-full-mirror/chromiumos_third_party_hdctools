@@ -9,6 +9,13 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
   <include>
     <name>servoflex_v2_r0_p50.xml</name>
   </include>
+  <!-- cpu_fw_spi_pp1800.xml was previously included by default in servo_v2 and
+       servo_micro configs.  Since this board config lacks its own cpu_fw_spi
+       implementation, this include has been added as part of removing it from
+       servo configs. -->
+  <include>
+    <name>cpu_fw_spi_pp1800.xml</name>
+  </include>
   <control>
     <name>uart4_pty</name>
     <alias>raw_d2_uart_pty,raw_usbpd_uart_pty</alias>
