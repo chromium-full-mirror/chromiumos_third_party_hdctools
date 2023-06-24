@@ -35,7 +35,7 @@
     Use CCD to control WP instead. -->
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" interface="9" drv="fw_wp_ccd"/>
+    <params clobber_ok="patch" interface="9" drv="fw_wp_ccd"/>
   </control>
   <control>
     <name>cpu_fw_spi</name>

@@ -13,7 +13,8 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" interface="9" drv="fw_wp_ccd"/>
+    <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
+    init="force_off"/>
   </control>
   <!--
     Simple property indicating what model of EC we have.  We use a Nuvoton EC
