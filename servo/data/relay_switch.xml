@@ -8,7 +8,6 @@
   <control>
     <name>relay_serial_port</name>
     <doc>Returns the serial port connected to the relay switch</doc>
-    <!-- Note: First ensure that second_usbkey_direction is set to servo_sees_usbkey-->
     <params subtype="relay_serial_port" interface="servo" cmd="get" drv="relay_switch"></params>
   </control>
 </root>

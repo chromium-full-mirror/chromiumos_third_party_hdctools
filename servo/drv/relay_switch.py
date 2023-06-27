@@ -15,7 +15,12 @@ class RelaySwitchError(hw_driver.HwDriverError):
 
 
 class relaySwitch(hw_driver.HwDriver):
-  """Driver for Relay Switch that controls the DUT power button."""
+  """Driver for Relay Switch that controls the DUT power button.
+
+     This driver can only control relay switches the Servo Host sees.
+     The uServo port always faces the Servo Host.
+     The other USB ports might be muxed to the DUT or Servo Host.
+  """
 
   def __init__(self, interface, params, servod):
     """Initialize driver by initializing HwDriver."""
@@ -48,11 +53,6 @@ class relaySwitch(hw_driver.HwDriver):
     Raises:
       RelaySwitchError: if relay switch is not found
     """
-    # First ensure that that the relay switch is visible to the servo
-    # Note: Relay switch must be connected to the bottom usb port on servo 4.1.
-    # This is because by default, the image usb is attached to the top port.
-    self._servod_set('second_usbkey_direction', 'servo_sees_usbkey')
-
     delay_btwn_attempts = 0.5  # arbitrarily chosen number that seems right
 
     # Check if relay switch is connected, and get its port
