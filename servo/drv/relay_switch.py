@@ -9,8 +9,10 @@ from serial.tools import list_ports
 
 from servo.drv import hw_driver
 
+
 class RelaySwitchError(hw_driver.HwDriverError):
   """Error class for RelaySwitch errors."""
+
 
 class relaySwitch(hw_driver.HwDriver):
   """Driver for Relay Switch that controls the DUT power button."""
@@ -20,17 +22,17 @@ class relaySwitch(hw_driver.HwDriver):
     super(relaySwitch, self).__init__(interface, params, servod)
 
   def _Get_relay_serial_port(self):
-    """ Returns the url of the serial port connected to the relay
-        (for example, /dev/ttyUSB0)
+    """Returns the url of the serial port connected to the relay (/dev/ttyUSB0).
 
-        :returns:
+    Returns:
             Either url of serial port or None if nothing is found
     """
     for port in list_ports.comports():
-      # check if port is associated with ID 1a86:7523 QinHeng Electronics HL-340 USB-Serial adapter
+      # check if port is associated with:
+      # ID 1a86:7523 QinHeng Electronics HL-340 USB-Serial adapter
       # https://www.amazon.com/dp/B01CN7E0RQ
-      if (port.vid == 0x1a86 and port.pid == 0x7523):
-          return port.device
+      if port.vid == 0x1a86 and port.pid == 0x7523:
+        return port.device
     return None
 
   def _Set_relay_pwrbtn_press(self, press_secs, num_attempts=6):
@@ -57,21 +59,21 @@ class relaySwitch(hw_driver.HwDriver):
     serial_port = self._Get_relay_serial_port()
     num_attempts -= 1
     while serial_port is None:
-        if num_attempts <= 0:
-            raise RelaySwitchError('Unable to find relay switch')
-        time.sleep(delay_btwn_attempts)
-        serial_port = self._Get_relay_serial_port()
-        num_attempts -= 1
+      if num_attempts <= 0:
+        raise RelaySwitchError('Unable to find relay switch')
+      time.sleep(delay_btwn_attempts)
+      serial_port = self._Get_relay_serial_port()
+      num_attempts -= 1
 
     ser = serial.Serial(serial_port, '9600', timeout=2)
 
     # Activate the relay switch
 
     try:
-      ser.write(b"\xA0\x01\x01\xA2\r\n")
+      ser.write(b'\xA0\x01\x01\xA2\r\n')
       # Wait the delay
       time.sleep(press_secs)
       # De-activate the relay switch
-      ser.write(b"\xA0\x01\x00\xA1\r\n")
+      ser.write(b'\xA0\x01\x00\xA1\r\n')
     finally:
       ser.close()
