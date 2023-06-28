@@ -208,16 +208,28 @@ Connect to GSC Console:
 (chroot) $ usb_console -d 18d1:5014
 ```
 
-#### Switch USB3 to Host
+#### Switch USB3 to Host or DUT
+
+Both USB3 type A ports can be individually powered or routed to either host or DUT.
+
+To enable the mux:
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on
+(chroot) $ dut-control usb3_mux_en:on
 ```
 
-#### Switch USB3 to DUT
+To toggle the top and bottom ports:
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
+(chroot) $ dut-control top_usbkey_power:on # top port -> on
+(chroot) $ dut-control bottom_usbkey_pwr:off # bottom port -> off
+```
+
+To route them to host or DUT:
+
+```bash
+(chroot) $ dut-control top_usbkey_mux:servo_sees_usbkey # top port -> host
+(chroot) $ dut-control bottom_usbkey_mux:dut_sees_usbkey # bottom port -> DUT
 ```
 
 ### Disable/Enable [SuzyQ] wiring (debug accessory mode)
