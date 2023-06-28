@@ -175,14 +175,14 @@
   </control>
   <control>
     <name>aux_usbkey_pwr</name>
-    <doc>(bottom) muxable usb port mux.</doc>
+    <doc>(bottom) muxable usb port power enable.</doc>
     <alias>bottom_usbkey_pwr</alias>
     <params interface="23" drv="tca6416" child="0x21" port="1"
     offset="1" map="onoff" init="on"></params>
   </control>
   <control>
     <name>aux_usbkey_mux</name>
-    <doc>(bottom) muxable usb port power enable.</doc>
+    <doc>(bottom) muxable usb port mux.</doc>
     <alias>bottom_usbkey_mux</alias>
     <params interface="23" drv="tca6416" child="0x21" port="1"
     offset="2" map="usbkey" init="dut_sees_usbkey"></params>
