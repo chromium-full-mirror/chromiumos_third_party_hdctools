@@ -12,11 +12,11 @@ from servo.drv import hw_driver
 CMD_MASK = 0xFF
 
 
-class GscI2cError(hw_driver.HwDriverError):
-  """Error class for GscI2c"""
+class gscI2cError(hw_driver.HwDriverError):
+  """Error class for gscI2c"""
 
 
-class GscI2c(hw_driver.HwDriver):
+class gscI2c(hw_driver.HwDriver):
   """Object to access gsc via i2c."""
 
   def __init__(self, interface, params):
@@ -29,7 +29,7 @@ class GscI2c(hw_driver.HwDriver):
     Mandatory Params:
     child: integer, 7-bit i2c child address
     """
-    super(GscI2c, self).__init__(interface, params)
+    super(gscI2c, self).__init__(interface, params)
     self._logger.debug("")
     self._child = int(self._params["child"], 0)
 
@@ -40,10 +40,10 @@ class GscI2c(hw_driver.HwDriver):
     logical_value: a special command in 8-bit unsigned integer
 
     Raises:
-    GscI2cError: if logical_value is out of bounds
+    gscI2cError: if logical_value is out of bounds
     """
     if logical_value & ~CMD_MASK:
-      raise GscI2cError(
+      raise gscI2cError(
         f"command value 0x{logical_value:02X} does not match 0x{CMD_MASK:02X}"
       )
     self._interface.wr_rd(self._child, [logical_value], 0)
