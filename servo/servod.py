@@ -169,7 +169,7 @@ class ServodStarter(object):
     # In the long term we might want to enable pulling in all servo devices
     # including all DUT controllers by default. Currently we default to pull
     # the minimum to be backwards compatible.
-    server_pars.add_argument('--device-discovery', default='min',
+    server_pars.add_argument('-D', '--device-discovery', default='min',
                              const='min', nargs='?',
                              choices=('none', 'min', 'full'),
                              help='Level of auto-discovering devices based '
