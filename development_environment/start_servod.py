@@ -22,7 +22,7 @@ def setup():
     return client
 
 
-def start_servod(client, dut_hostname, board, model, serial_no, test=False):
+def start_servod(client, dut_hostname, board, model, serial_no, test=False, sleep=False):
     environment = [
         "BOARD=%s" % board,
         "MODEL=%s" % model,
@@ -34,6 +34,9 @@ def start_servod(client, dut_hostname, board, model, serial_no, test=False):
     logs_volume = "%s_log" % dut_hostname
 
     command = ["bash", "/start_servod.sh"]
+    if sleep:
+      command = ["sleep", "infinity"]
+
     if test:
         command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
 
@@ -91,6 +94,11 @@ if __name__ == "__main__":
         action=argparse.BooleanOptionalAction,
         help="Run the servod tests and exist.",
     )
+    parser.add_argument(
+        "-d",
+        "--sleep",
+        action=argparse.BooleanOptionalAction,
+        help="Run the continer but do not start servod - best for debug.",
     args = parser.parse_args()
     client = setup()
     start_servod(
