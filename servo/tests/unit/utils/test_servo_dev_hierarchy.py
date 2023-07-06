@@ -332,8 +332,8 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
                                     pid=dev_templates.GetPID("ccd_cr50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_ti50"),
-                                    pid=dev_templates.GetPID("ccd_ti50"),
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_gsc"),
+                                    pid=dev_templates.GetPID("ccd_gsc"),
                                     serial='z', dev_path='i-o-p')
     test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v2"),
                                     pid=dev_templates.GetPID("servo_v2"),
@@ -381,8 +381,8 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
                                     pid=dev_templates.GetPID("ccd_cr50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_ti50"),
-                                    pid=dev_templates.GetPID("ccd_ti50"),
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_gsc"),
+                                    pid=dev_templates.GetPID("ccd_gsc"),
                                     serial='z', dev_path='i-o-p')
     test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v2"),
                                     pid=dev_templates.GetPID("servo_v2"),
@@ -432,8 +432,8 @@ class TestServoDeviceHierarchy(unittest.TestCase):
     test_entry3 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_cr50"),
                                     pid=dev_templates.GetPID("ccd_cr50"),
                                     serial='z', dev_path='i-o-p')
-    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_ti50"),
-                                    pid=dev_templates.GetPID("ccd_ti50"),
+    test_entry4 = ServoDeviceEntry(vid=dev_templates.GetVID("ccd_gsc"),
+                                    pid=dev_templates.GetPID("ccd_gsc"),
                                     serial='z', dev_path='i-o-p')
     test_entry5 = ServoDeviceEntry(vid=dev_templates.GetVID("servo_v2"),
                                     pid=dev_templates.GetPID("servo_v2"),

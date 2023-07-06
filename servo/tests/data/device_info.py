@@ -51,7 +51,7 @@ SERVO_DEVICE_DATA = {
     'ccd_cr50.xml',
   ),
 
- 'ccd_ti50':
+ 'ccd_gsc':
   ( (0x18d1, 0x504a),
     (),
     'ccd_ti50.xml',
