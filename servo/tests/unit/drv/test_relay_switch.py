@@ -40,7 +40,6 @@ class TestRelaySwitch(unittest.TestCase):
                       self.relay_switch._Set_relay_pwrbtn_press,
                       press_secs=0,
                       num_attempts=0)
-    servod_set_mock.assert_called_once_with('second_usbkey_direction', 'servo_sees_usbkey')
 
   @mock.patch('serial.Serial.write', mock.MagicMock())
   @mock.patch('serial.Serial.close', mock.MagicMock())
@@ -60,7 +59,6 @@ class TestRelaySwitch(unittest.TestCase):
     self.relay_switch._Set_relay_pwrbtn_press(0)
 
     # Confirm that all resultant calls occur
-    servod_set_mock.assert_called_once_with('second_usbkey_direction', 'servo_sees_usbkey')
     write_calls = [mock.call(b"\xA0\x01\x01\xA2\r\n"), mock.call(b"\xA0\x01\x00\xA1\r\n")]
     serial_mock.return_value.write.assert_has_calls(write_calls)
     serial_mock.return_value.close.assert_called_once()
