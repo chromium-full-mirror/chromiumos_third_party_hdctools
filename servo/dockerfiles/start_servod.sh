@@ -106,6 +106,14 @@ if ([ -n "$SERVO_REBOOT" ] && [ -n "$SERIAL" ]); then
     sleep 5
 fi
 
+# Optionally update the servo firmware, if the firmware is already at the correct
+# version this is a no-op
+# SERVO_FW_CHANNEL should be one of - stable, beta, dev, prev (it is case sensitive)
+# SERVO_TYPE should be one of servo_v4 or servo_v4p1
+if ([ -n "$SERVO_FW_CHANNEL" ] && [ -n "$SERIAL" ] && [ -n "$SERVO_TYPE" ]); then
+    servo_updater -s $SERIAL -c $SERVO_FW_CHANNEL -b $SERVO_TYPE
+fi
+
 log_output "Launching servod for $BOARD $MODEL_MSG on port $PORT $SERIAL_MSG"
 
 servod \
