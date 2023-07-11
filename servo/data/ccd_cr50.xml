@@ -12,9 +12,6 @@
   <include>
     <name>uart_common.xml</name>
   </include>
-  <include>
-    <name>servo_adc_enabled_noop.xml</name>
-  </include>
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>
@@ -197,5 +194,11 @@
     <name>servo_class</name>
     <doc>servo type (flex or ccd)</doc>
     <params drv="echo" value="ccd" interface="servo" clobber_ok=""/>
+  </control>
+  <control>
+    <name>servo_adcs_enabled</name>
+    <doc>Configure the servod device to read ADCs.</doc>
+    <params interface="9" drv="ec3po_gpio" name="EN_PP3300_INA_L"
+    subtype="single" map="onoff_i" clobber_ok="full"></params>
   </control>
 </root>
