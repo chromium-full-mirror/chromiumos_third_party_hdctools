@@ -9,7 +9,7 @@
     <name>cold_reset_select</name>
     <doc>Set the control used for cold reset</doc>
     <params interface="servo" drv="select_control" subtype="select"
-    input_type="str" init="cold_reset_default" clobber_ok=""/>
+    input_type="str" init="cold_reset_default" clobber_ok="full"/>
   </control>
   <control>
     <name>cold_reset</name>

@@ -26,6 +26,6 @@
   <control>
     <name>cold_reset_select</name>
     <params init="servo_specific" servo_init="gsc_reset"
-    ccd_init="gsc_ec_reset" clobber_ok=""/>
+    ccd_init="gsc_ec_reset" clobber_ok="patch"/>
   </control>
 </root>
