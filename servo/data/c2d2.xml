@@ -91,7 +91,7 @@
   <control>
     <name>cold_reset_select</name>
     <doc>cold_reset (active low).</doc>
-    <params init="gsc_ec_reset" clobber_ok="patch"></params>
+    <params init="gsc_ec_reset" clobber_ok=""></params>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
