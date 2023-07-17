@@ -56,8 +56,6 @@
   <control>
     <name>gsc_ec_reset</name>
     <clone>cold_reset</clone>
-    <doc>cold_reset (active low).</doc>
-    <params init="off" clobber_ok="patch"></params>
   </control>
   <control>
     <name>cold_reset_select</name>
