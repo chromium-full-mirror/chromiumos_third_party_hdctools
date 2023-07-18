@@ -42,6 +42,7 @@
         <item key="macro_map">
           <item key="1">
             <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:2</item>
             <item>spi2_vref:pp3300</item>
             <item>spi2_buf_en:on</item>
             <item>spi2_buf_on_flex_en:on</item>
@@ -52,6 +53,7 @@
             <item>spi2_buf_en:off</item>
             <item>spi2_buf_on_flex_en:off</item>
             <item>spi_hold:off</item>
+            <item>sleep:2</item>
             <item>ec_uart_cmd:powerb</item>
           </item>
         </item>
