@@ -12,6 +12,9 @@
   <include>
     <name>servo_adc_enabled_noop.xml</name>
   </include>
+  <include>
+    <name>select_cold_reset.xml</name>
+  </include>
   <!-- Console GPIO interface -->
   <map>
     <name>onoff_vref_sel</name>
@@ -220,10 +223,10 @@
     offset="4" map="onoff_i"></params>
   </control>
   <control>
-    <name>cold_reset</name>
-    <doc>cold_reset</doc>
+    <name>default_cold_reset</name>
+    <doc>cold_reset from the flex cable</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="5" map="onoff_i" init="off" clobber_ok=""></params>
+    offset="5" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>pwr_button</name>

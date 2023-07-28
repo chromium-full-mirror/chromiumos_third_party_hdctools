@@ -204,13 +204,14 @@
     </params>
   </control>
   <control>
-    <name>gsc_ec_reset</name>
+    <name>gsc_cold_reset</name>
+    <alias>gsc_ec_reset</alias>
     <doc>send the gsc ec_reset command to reset the EC.</doc>
     <params cmd="get" uart_cmd="ecrst"
     regex="EC_RST_L is (asserted|deasserted)" group="1"
-    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    interface="9" drv="cr50" map="asserted_re"></params>
     <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok="" init="off"></params>
+    map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>gsc_reset_count</name>

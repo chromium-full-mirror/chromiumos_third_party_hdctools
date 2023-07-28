@@ -55,10 +55,10 @@
     map="onoff" init="on" />
   </control>
   <control>
-    <name>gsc_reset</name>
-    <alias>cr50_reset_odl</alias>
+    <name>default_cold_reset</name>
+    <alias>cr50_reset_odl,gsc_reset</alias>
     <doc>Hold DUT in reset via H1 reset</doc>
-    <params subtype="h1_reset" interface="6" drv="ec3po_c2d2" clobber_ok=""
+    <params subtype="h1_reset" interface="6" drv="ec3po_c2d2"
     map="onoff" init="off" />
   </control>
   <control>
@@ -87,11 +87,6 @@
     <doc>EC_FLASH_SELECT GPIO pin.</doc>
     <params subtype="ec_boot_mode" interface="9" drv="cr50"
     map="onoff" init="off" />
-  </control>
-  <control>
-    <name>cold_reset_select</name>
-    <doc>cold_reset (active low).</doc>
-    <params init="gsc_ec_reset" clobber_ok=""></params>
   </control>
   <!-- UART and CONSOLE settings -->
   <control>
