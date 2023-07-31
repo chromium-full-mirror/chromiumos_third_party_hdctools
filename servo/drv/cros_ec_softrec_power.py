@@ -67,8 +67,6 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         'warm_reset_can_hold_ap', 'yes'))
     self._wait_ext_is_fake = ('yes' == self._params.get(
         'wait_ext_is_fake', 'no'))
-    self._role_swap_delay = float(
-        self._params.get('role_swap_delay', 1.0))
     self._pb_init_idle = ('yes' == self._params.get('pb_init_idle', 'no'))
     # Time in seconds to wait after booting the AP to reboot the EC.
     self._reset_delay = float(
