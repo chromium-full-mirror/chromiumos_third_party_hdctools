@@ -41,6 +41,7 @@ class TestServoStarter(unittest.TestCase):
   @unittest.mock.patch('servo.servo_server.Servod.validate_dut_controller', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servod.servo_server.Servod.hwinit', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.watchdog.DeviceWatchdog.__init__', unittest.mock.MagicMock(return_value=None))
+  @unittest.mock.patch('servo.servod.disable_unusable_usb3_hubs', unittest.mock.MagicMock())
   def test_init(self):
     """Test __init__()."""
     sopts = unittest.mock.MagicMock()
@@ -58,6 +59,7 @@ class TestServoStarter(unittest.TestCase):
     servo_logging.setup.assert_called_once()
     servo_server.Servod.hwinit.assert_called_once_with(verbose=True)
     servo_server.Servod.validate_dut_controller.assert_called_once()
+    servod.disable_unusable_usb3_hubs.assert_called_once()
     self.assertTrue(isinstance(starter._server_thread, threading.Thread))
     self.assertTrue(isinstance(starter._watchdog_thread, watchdog.DeviceWatchdog))
     self.assertFalse(starter._turndown_initiated)
@@ -272,7 +274,8 @@ class TestServoStarter(unittest.TestCase):
     starter.devopts_generator = None
     starter._scratchutil = None
     sopts = argparse.Namespace()
-    sopts.no_device_discovery = sopts.min_device_discovery = False
+    sopts.device_discovery = 'full'
+    sopts.dual_v4 = False
 
     res = starter._discover_servos(sopts, None)
 
@@ -297,7 +300,8 @@ class TestServoStarter(unittest.TestCase):
     starter._logger = unittest.mock.MagicMock()
     starter._logger.fatal = unittest.mock.MagicMock()
     sopts = argparse.Namespace()
-    sopts.no_device_discovery = sopts.min_device_discovery = False
+    sopts.device_discovery = 'full'
+    sopts.dual_v4 = False
 
     with self.assertRaises(SystemExit) as exit:
       starter._discover_servos(sopts, None)
@@ -565,18 +569,15 @@ class TestServoStarter(unittest.TestCase):
 class TestMain(unittest.TestCase):
   """Test Main."""
 
-  @unittest.mock.patch('servo.servod.disable_unusable_usb3_hubs', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servod.ServodStarter.__init__', unittest.mock.MagicMock(return_value=None))
   @unittest.mock.patch('servo.servod.ServodStarter.serve', unittest.mock.MagicMock())
   def test_main(self):
     """Test main()."""
     servod.main(['-b', 'atlas'])
 
-    servod.disable_unusable_usb3_hubs.assert_called_once()
     servod.ServodStarter.__init__.assert_called_once_with(['-b', 'atlas'])
     servod.ServodStarter.serve.assert_called_once()
 
-  @unittest.mock.patch('servo.servod.disable_unusable_usb3_hubs', unittest.mock.MagicMock())
   @unittest.mock.patch('servo.servod.ServodStarter.__init__', unittest.mock.MagicMock(side_effect=servod.ServodError("err")))
   @unittest.mock.patch('servo.servod.ServodStarter.serve', unittest.mock.MagicMock())
   def test_main_error(self):
@@ -584,7 +585,6 @@ class TestMain(unittest.TestCase):
     with self.assertRaises(SystemExit) as cm:
       servod.main(['-b', 'atlas'])
 
-    servod.disable_unusable_usb3_hubs.assert_called_once()
     servod.ServodStarter.__init__.assert_called_once_with(['-b', 'atlas'])
     servod.ServodStarter.serve.assert_not_called()
     self.assertEqual(cm.exception.code, 1)

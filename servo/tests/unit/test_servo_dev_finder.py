@@ -241,7 +241,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
       dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
-      'User does not choose a valid device for'):
+      'User did not choose a valid device for'):
       entries = finder.discover_servos()
 
   def test_discover_servos_no_device(self):

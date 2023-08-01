@@ -107,7 +107,8 @@ class Logs(tool.Tool):
     if combine_log_subdirs:
       _make_tarfile(OUTPUT_TAR, combine_log_subdirs)
       self._logger.info("\nExtracted MCU log for:\n%s\n" % '\n'.join(log_dirs))
-      self._logger.info("MCU logs extracted to\n%s" % OUTPUT_TAR)
+      self._logger.info("MCU logs extracted to\n%s\n" % OUTPUT_DIR)
+      self._logger.info("MCU logs compressed to\n%s" % OUTPUT_TAR)
 
   def _extract_one_dir(self, log_dir, include_previous):
     """Helper to extract MCU logs from 1 directory of servod logs.
@@ -234,7 +235,8 @@ class Logs(tool.Tool):
 
 def _cleanup_output_dir():
   """Helper to clean up all old extracted log files."""
-  shutil.rmtree(OUTPUT_DIR)
+  if os.path.exists(OUTPUT_DIR):
+    shutil.rmtree(OUTPUT_DIR)
   os.makedirs(OUTPUT_DIR)
 
 def _make_tarfile(output, sources):

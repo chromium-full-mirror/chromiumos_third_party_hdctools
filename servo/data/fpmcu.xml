@@ -7,7 +7,7 @@
     <doc>Pseudo-terminal (pty) thats connnected to FP MCU's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <!-- EC-3PO console interpreter for FP MCU -->
   <control>
@@ -24,34 +24,34 @@
     <doc>State indicating if interpreter is listening to the EC
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok=""></params>
+    subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
     <name>uart4_baudrate</name>
     <alias>fpmcu_uart_baudrate,usbpd_uart_baudrate</alias>
     <doc>Baudrate for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    clobber_ok="" interface="1"></params>
+    clobber_ok="full" interface="1"></params>
   </control>
   <control>
     <name>uart4_parity</name>
     <alias>fpmcu_uart_parity,usbpd_uart_parity</alias>
     <doc>Parity for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    clobber_ok="" interface="1" map="uart_parity"></params>
+    clobber_ok="full" interface="1" map="uart_parity"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
     <alias>fpmcu_uart_sbits,usbpd_uart_sbits</alias>
     <doc>Number of stop bits for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-    clobber_ok="" interface="1" map="uart_sbits"></params>
+    clobber_ok="full" interface="1" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart4_bits</name>
     <alias>fpmcu_uart_bits,usbpd_uart_bits</alias>
     <doc>Number of data bits for FP MCU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok="full"
     interface="1" map="uart_bits"></params>
   </control>
   <!-- FP MCU UART Automation Controls -->
@@ -109,26 +109,24 @@
     <name>jtag_buf_en</name>
     <alias>fpmcu_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
-    <name>uart4_on_flex_en</name>
-    <alias>fpmcu_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,fpmcu_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to
     uart4.</doc>
-    <params interface="2" drv="pca95xx"
-    subtype="gpio" child="0x26" offset="3" map="onoff_i" init="on"
-    clobber_ok=""></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <!-- Override from definition in servo_v2_r0.xml -->
   <control>
     <name>dev_mode</name>
     <alias>fpmcu_boot_mode,usbpd_boot_mode</alias>
-    <params clobber_ok="" od="PP" map="onoff"></params>
+    <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>
   <control>
     <name>pch_disable</name>
     <alias>fpmcu_reset,usbpd_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

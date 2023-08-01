@@ -19,7 +19,7 @@ class TestDutControl(unittest.TestCase):
     parser = dut_control._build_parser()
     self.assertTrue(isinstance(parser, servo_parsing.ServodClientParser))
 
-    default = parser.parse_args()
+    default = parser.parse_args([])
     self.assertListEqual([default.info, default.hwinit, default.value_only, default.get_all,
       default.gnuplot, default.verbose, default.repeat, default.time_in_secs, default.print_time,
       default.sleep_msecs], [False, False, False, False, False, False, 1, 0.0, False, 0.0])

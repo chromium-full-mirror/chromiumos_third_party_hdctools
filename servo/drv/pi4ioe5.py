@@ -286,7 +286,38 @@ class pi4Ioe5(hw_driver.HwDriver):
       self._i2c_obj._write_reg(self.REG_PULL_EN + port, 0xFF)
 
   def _set_ioex_to_output(self, value, opendrain):
-    raise Pi4Ioe5Error('Setting all ioex pins to output is not supported')
+    """Configure all ioex pins to output
+
+    1. Set Output Port Configuration register
+    Then for each port:
+    2. Configure Output register
+    3. Clear Individual Pin Output Configuration register
+    4. Set all pins to output
+
+    Args:
+      value: Logical 0 or 1 to be set on output pin
+      opendrain: 0 for push-pull and 1 for open drain configuration
+    """
+    # Open drain/push pull is configured on per-port basis via Output Port
+    # Configuration Register and can be modified by settings in Individual
+    # Pin Output Configuration Register.
+    if opendrain:
+      self._i2c_obj._write_reg(self.REG_OUT_PORT_CONFIG, 0xFF)
+    else:
+      self._i2c_obj._write_reg(self.REG_OUT_PORT_CONFIG, 0x0)
+
+    for port in range(self.PORT_CNT):
+      # write output register
+      if value:
+        self._i2c_obj._write_reg(self.REG_OUT + port, 0xFF)
+      else:
+        self._i2c_obj._write_reg(self.REG_OUT + port, 0x0)
+
+      # Not reverse configuration programmed above
+      self._i2c_obj._write_reg(self.REG_OUT_PIN_CONFIG + port, 0x0)
+
+      # Set pin to output
+      self._i2c_obj._write_reg(self.REG_DIR + port, 0x0)
 
   def _check_set_args_and_call(self, fmt_value, set_input, set_output):
     """Parse input string and take appropriate action

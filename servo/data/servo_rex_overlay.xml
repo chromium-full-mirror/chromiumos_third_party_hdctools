@@ -1,9 +1,9 @@
 <root>
   <include>
-    <name>cpu_fw_spi.xml</name>
+    <name>cpu_fw_spi_pp1800.xml</name>
   </include>
   <include>
-    <name>cr50.xml</name>
+    <name>ti50.xml</name>
   </include>
   <include>
     <name>x86_ec_common.xml</name>
@@ -21,9 +21,5 @@
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_uut" chip_for_ccd_cr50="npcx_uut"/>
-  </control>
-  <control>
-    <name>dut_pd_data_role</name>
-    <params clobber_ok="" port_count="3" />
   </control>
 </root>

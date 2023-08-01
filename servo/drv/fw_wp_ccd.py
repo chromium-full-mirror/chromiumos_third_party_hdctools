@@ -31,14 +31,14 @@ class fwWpCcd(fw_wp_state.FwWpStateDriver, cr50.cr50):
     """Get the firmware write-protection state."""
     # The output string is defined in ec/board/cr50/wp.c
     result = self._issue_cmd_get_results(
-        'wp', [r'Flash WP:\s*(forced)?\s*(enabled|disabled)'])[0]
+        'wp', [r'Flash WP:([ A-z]*(enabled|disabled))'])[0]
     if result is None:
       raise fwWpCcdError('Cannot retrieve wp result on CCD console.')
 
-    if result[2] == 'enabled':
-      if result[1] == 'forced':
-        return self._STATE_FORCE_ON
-      return self._STATE_ON
-    if result[1] == 'forced':
-      return self._STATE_FORCE_OFF
-    return self._STATE_OFF
+    if 'fwmp' in result[1]:
+        self._logger.warning('FWMP is forcing WP enable.')
+        self._logger.warning('Clear the FWMP to reset wp.')
+    forced = 'forced' in result[1]
+    if 'enabled' in result[1]:
+      return self._STATE_FORCE_ON if forced else self._STATE_ON
+    return self._STATE_FORCE_OFF if forced else self._STATE_OFF

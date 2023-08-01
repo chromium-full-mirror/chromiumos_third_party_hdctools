@@ -25,7 +25,7 @@ steps:
   - --push
   - --platform
   - linux/amd64,linux/arm64
-  - -t=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi:$COMMIT_SHA
+  - -t=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi:$_BRANCH_NAME-$_SPIN_NUMBER
   - -f=/workspace/servo/dockerfiles/Dockerfile
   - '.'
   waitFor: ['driver']
@@ -34,5 +34,5 @@ options:
   # Use higher CPU machines so the caching and build steps are faster.
   machineType: 'N1_HIGHCPU_32'
 
-timeout: 3600s
+timeout: 7200s
 

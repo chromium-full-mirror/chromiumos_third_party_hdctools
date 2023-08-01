@@ -208,16 +208,28 @@ Connect to GSC Console:
 (chroot) $ usb_console -d 18d1:5014
 ```
 
-#### Switch USB3 to Host
+#### Switch USB3 to Host or DUT
+
+Both USB3 type A ports can be individually powered or routed to either host or DUT.
+
+To enable the mux:
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
+(chroot) $ dut-control usb3_mux_en:on
 ```
 
-#### Switch USB3 to DUT
+To toggle the top and bottom ports:
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
+(chroot) $ dut-control top_usbkey_power:on # top port -> on
+(chroot) $ dut-control bottom_usbkey_pwr:off # bottom port -> off
+```
+
+To route them to host or DUT:
+
+```bash
+(chroot) $ dut-control top_usbkey_mux:servo_sees_usbkey # top port -> host
+(chroot) $ dut-control bottom_usbkey_mux:dut_sees_usbkey # bottom port -> DUT
 ```
 
 ### Disable/Enable [SuzyQ] wiring (debug accessory mode)
@@ -244,28 +256,37 @@ Type-C Servo v4.1 only
 (chroot) $ dut-control servo_pd_role:snk [src]
 ```
 
-## Flashrom
+## Disable/Enable Ethernet
 
 <!-- mdformat off(b/139308852) -->
 *** note
-For [CCD]: Flashrom doesn't need to specify voltage anymore, this is done
-within GSC. See the "care and feeding" for your specific device for the
-correct `flashrom` commands for [CCD], Servo Micro, and Servo v2, as they are
-each different.
+Type-C Servo v4.1 only
 ***
 <!-- mdformat on -->
+
+If you have tests you need to run that require Ethernet to be disconnected and
+the DUT be connected to Wi-Fi instead you can connect to Wi-Fi and turn off
+Ethernet remotely. The Wi-Fi connection should persist through reboots.
+
+```bash
+(DUT) $ /usr/local/autotest/cros/scripts/wifi connect <ssid> <password>
+(chroot) $ dut-control dut_eth_pwr_en:off [on]
+```
+
+## Firmware flashing and reading
 
 <!-- mdformat off(b/139308852) -->
 *** note
 When flashing the BIOS or EC with [CCD], you need to make sure the [`FlashAP`]
-capability is enabled in GSCCCC.
+capability is enabled in GSC.
 ***
 <!-- mdformat on -->
 
-Flash BIOS with CCD:
+Read and flash AP firmware (BIOS) with CCD or any other servo debug connection:
 
 ```bash
-(chroot) $ sudo flashrom -p raiden_debug_spi:target=AP -w bios.bin
+(chroot) $ sudo futility read --servo -v "$OUTFILE"
+(chroot) $ sudo futility update --servo -v -i "$INFILE"
 ```
 
 ## Updating Firmware {#updating-firmware}
@@ -412,5 +433,5 @@ To set the Servo v4.1 serial number on the Servo console:
 [SuzyQ]: ./ccd.md#suzyq-suzyqable
 [CCD]: ./ccd.md
 [`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md#flashap
-[Bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3EChromeOSDebugBoards
+[Bug]: https://issuetracker.google.com/issues/new?component=983411&template=1678684
 [`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools

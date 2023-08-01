@@ -34,15 +34,37 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="" shutdown_delay="4.5" reset_recovery="0.5"/>
+    <params clobber_ok="" shutdown_ec_commands="hibdelay 3600;apshutdown"
+      shutdown_delay="4.5" reset_recovery="0.5"/>
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
       set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
                    spi2_vref:pp1800"
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
                    warm_reset:off"
       />
+  </control>
+
+  <!-- USB3 should be disabled by default in servo_v4p1. However
+    most of boards are known to work well with servo_v4p1 and USB3.
+    So in servo_v4p1 config there is servo_v4p1_dut_usb3_en control
+    defined to enable USB3 to DUT during servod initialization.
+
+    This specific board is incompatible with servo + USB3 so we need
+    to overwrite init value of this control and keep USB3 disabled.
+    Please refer to b/254857085.
+
+    Note: we need to use 'patch' mechanism to safely overwrite
+    parameters of this control (for cases where servo_v4p1 XML is not
+    used and mentioned control not defined).
+
+    TODO (b/254857085 b/268737644) - delete this control if proper
+    fixes would be upreved on all models from this family.
+  -->
+  <control>
+    <name>servo_v4p1_dut_usb3_en</name>
+    <params clobber_ok="patch" init="disable"></params>
   </control>
 </root>

@@ -215,7 +215,7 @@ class Hierarchy(object):
     for device in devices:
       try:
         d_serial = usb.util.get_string(device, device.iSerialNumber)
-      except ValueError as e:
+      except (ValueError, usb.core.USBError) as e:
         logging.debug('Device %s has USB comms issues. %s', device, e)
         d_serial = None
       if d_serial == serial:

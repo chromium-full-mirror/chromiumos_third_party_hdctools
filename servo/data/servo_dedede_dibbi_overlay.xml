@@ -1,0 +1,8 @@
+<root>
+  <include>
+    <name>servo_dedede_overlay.xml</name>
+  </include>
+  <include>
+    <name>chromebox.xml</name>
+  </include>
+</root>

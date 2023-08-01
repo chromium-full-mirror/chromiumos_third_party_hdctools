@@ -5,7 +5,6 @@
 """Unit tests for ServoDevTemplates."""
 
 import unittest
-import random
 
 from servo import servo_dev_templates
 from servo.tests.data.device_info import SERVO_DEVICE_DATA
@@ -62,21 +61,23 @@ class TestServoDevTemplates(unittest.TestCase):
       input_vid = expected_vals[0][0]
       input_pid = expected_vals[0][1]
       input_lotids = expected_vals[1]
-      input_serial = ""
-      # If class has LOTIDs, incorporate one into the serial
-      if input_lotids:
-        input_serial = random.choice(input_lotids) + "-madeupstring"
+      input_serial_array = []
+      # If class has LOTIDs, incorporate them into the serial
+      if not input_lotids:
+        input_serial_array = ["madeupstring"]
       else:
-        input_serial = "madeupstring"
+        for lotid in input_lotids:
+          input_serial_array.append(lotid + "-madeupstring")
 
-      # run the function
-      output_class = servo_dev_templates.GetTemplateClass(
-        input_vid, input_pid, input_serial
-      )
+      for input_serial in input_serial_array:
+        # run the function
+        output_class = servo_dev_templates.GetTemplateClass(
+            input_vid, input_pid, input_serial
+            )
 
-      # compare values for the result
-      self.assertEqual(dev, output_class.TYPE)
-      self.assertEqual(expected_vals[2], output_class.DEFAULT_CONFIG)
+        # compare values for the result
+        self.assertEqual(dev, output_class.TYPE)
+        self.assertEqual(expected_vals[2], output_class.DEFAULT_CONFIG)
 
   def test_GetAllServoIDs(self):
     """Tests that all servo devices in data are contained in the set returned by GetAllServoIDs function."""

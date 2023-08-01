@@ -328,15 +328,3 @@ class cr50(pty_driver.ptyDriver):
   def _Set_rec_mode(self, value):
     self._issue_cmd('gpioset CCD_REC_LID_SWITCH %d' % value)
     self._Set_rec_btn_force(value == 0)
-
-  def _Get_en_i2c_dbg_pwr(self):
-    result = 'off'
-    gpio = self._issue_cmd_get_results('gpioget EN_I2C_DBG_PWR_L',
-                                       [r'\s+([01])\*?\s+EN_I2C_DBG_PWR_L'])
-    if gpio[0]:
-      if gpio[0][1] == '0':
-        result = 'on'
-    return result
-
-  def _Set_en_i2c_dbg_pwr(self, value):
-    self._issue_cmd('gpioset EN_I2C_DBG_PWR_L %d' % (1 if value == 0 else 0))

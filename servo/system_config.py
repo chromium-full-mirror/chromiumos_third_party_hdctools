@@ -18,7 +18,13 @@ import xml.etree.ElementTree
 MAP_TAG = 'map'
 CONTROL_TAG = 'control'
 CLOBBER_ATTR = 'clobber_ok'
+CLOBBER_NEVER = 'never'
+CLOBBER_PATCH = 'patch'
+CLOBBER_UPDATE = 'update'
 CLOBBER_FULL = 'full'
+# from low to high
+CLOBBER_RANK = {v: i for i, v in enumerate(
+    [None, CLOBBER_NEVER, CLOBBER_PATCH, CLOBBER_UPDATE, CLOBBER_FULL])}
 CONTENT_TAG = 'content'
 CONTENT_ITEM_TAG = 'item'
 CONTENT_ITEM_KEY_ATTR = 'key'
@@ -32,6 +38,8 @@ UNDEF_CONTROL_DICT = {'drv': 'undefined',
                       'interface': 'servo',
                       'input_type': 'str'}
 
+# Valid pattern for control names and aliases
+IDENTIFIER_RE = re.compile(r'[a-z][a-z0-9_]+')
 
 # pylint: disable=g-bad-exception-name
 # TODO(coconutruben): figure out if it's worth it to rename this so that it
@@ -292,6 +300,20 @@ class SystemConfig(object):
         of the same name.  If its value is "full" then parameters from the
         clobbered control are completely thrown away, otherwise only those
         which are also specified in this control will be replaced.
+      clobber_ok: Gives special instructions for how to reconcile an existing
+        control definition with the same name or alias.  By default, if this
+        is not specified, attempting to redefine a control is an error.
+        Supported values:
+          "full": This control will always be defined, and will completely
+            replace any existing control with the same name or alias
+          "patch": This control will update the params of an existing control,
+            but this will never define a new control.
+          "never": This control will be ignored if there is already a control
+            under the same name or alias.  Otherwise, this will define a new
+            control.
+          "" (or any string not listed above): This control will update the
+            params of an existing control if present, or if not, this will
+            define a new control.
 
     NOTE, method is recursive when parsing 'include' elements from XML.
 
@@ -347,9 +369,6 @@ class SystemConfig(object):
         alias = element.findtext('alias')
         remap = element.findtext('remap')
         clone = element.findtext('clone')
-        # only patch existing controls, otherwise ignore
-        # TODO: can be cleaned up with a single source of control xmls
-        patch = element.findtext('patch')
 
         if remap:
           if name_prefix:
@@ -464,36 +483,53 @@ class SystemConfig(object):
 
         assert tag == CONTROL_TAG
 
-        clobber_ok = set_dict.get(CLOBBER_ATTR)
-        if clobber_ok != CLOBBER_FULL:
-          clobber_ok = get_dict.get(CLOBBER_ATTR, clobber_ok)
+        clobbers = []
+        for ctrl_dict in get_dict, set_dict:
+          clobbers.append(ctrl_dict.get(CLOBBER_ATTR))
+          if clobbers[-1] is not None and clobbers[-1] not in CLOBBER_RANK:
+            clobbers[-1] = CLOBBER_UPDATE
+        clobber_ok = max(clobbers, key=lambda k: CLOBBER_RANK[k])
 
-        if name in self.syscfg_dict[tag] and clobber_ok is None:
-          raise SystemConfigError("Duplicate %s %s without %r key\n%s" % (
-              tag, name, CLOBBER_ATTR, element_str))
+        if clobber_ok == CLOBBER_NEVER:
+          if name in self.syscfg_dict[tag]:
+            self._logger.debug('Quietly refusing to clobber existing %s %r' %
+                               (tag, name))
+            continue
+        if clobber_ok == CLOBBER_PATCH:
+          if name not in self.syscfg_dict[tag]:
+            self._logger.debug('Ignoring clobber patch for nonexistent %s %r' %
+                               (tag, name))
+            continue
+          self._logger.debug('Applying clobber patch to %s %r' % (tag, name))
+        elif clobber_ok is None and name in self.syscfg_dict[tag]:
+          raise SystemConfigError('Duplicate %s %r without %r key\n%s' %
+                                  (tag, name, CLOBBER_ATTR, element_str))
 
         if 'init' in set_dict:
           hwinit_found = False
           # only allow one hwinit per control
           if clobber_ok is not None:
+            # if we clobbered an alias, look for its hwinit under its real name
+            realname = self.aliases.get(name, name)
             for i, (hwinit_name, _) in enumerate(self.hwinit):
-              if hwinit_name == name:
-                self.hwinit[i] = (name, set_dict['init'])
+              if hwinit_name == realname:
+                self.hwinit[i] = (realname, set_dict['init'])
                 hwinit_found = True
                 break
 
           if not hwinit_found:
             self.hwinit.append((name, set_dict['init']))
 
-        if patch and name not in self.syscfg_dict[tag]:
-          self._logger.debug('Cannot patch nonexistent control %s.' % name)
-          continue
-
-        if (clobber_ok is not None and clobber_ok != CLOBBER_FULL and
-            name in self.syscfg_dict[tag]):
+        if name in self.syscfg_dict[tag]:
+          assert clobber_ok is not None
+          # Always update existing dicts when present, to avoid splitting
+          # aliases into separate controls.
+          if clobber_ok == CLOBBER_FULL:
+            self.syscfg_dict[tag][name]['get_params'].clear()
+            self.syscfg_dict[tag][name]['set_params'].clear()
           self.syscfg_dict[tag][name]['get_params'].update(get_dict)
           self.syscfg_dict[tag][name]['set_params'].update(set_dict)
-          if doc != 'undocumented':
+          if doc != 'undocumented' or clobber_ok == CLOBBER_FULL:
             self.syscfg_dict[tag][name]['doc'] = doc
         else:
           self.syscfg_dict[tag][name] = {
@@ -503,12 +539,18 @@ class SystemConfig(object):
           }
 
         if alias:
-          for aliasname in (elem.strip() for elem in alias.split(',')):
+          # if we clobbered an alias, point our aliases to its real name
+          realname = self.aliases.get(name, name)
+          for aliasname in alias.split(','):
+            if not IDENTIFIER_RE.fullmatch(aliasname):
+              raise SystemConfigError('file %r %s element %r invalid '
+                                      'alias "%s"' %
+                                      (filename, tag, name, aliasname))
             if name_prefix:
               aliasname = name_prefix + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
             # Also store what the alias relationship
-            self.aliases[aliasname] = name
+            self.aliases[aliasname] = realname
 
   def finalize(self):
     """Finalize setup, Call this after no more config files will be added.
@@ -605,6 +647,24 @@ class SystemConfig(object):
       boolean, True if name is control, False otherwise
     """
     return name in self.syscfg_dict[CONTROL_TAG]
+
+  def get_control_str(self, name):
+    """Generate a string that describes all information of the control.
+
+    Args:
+      name: string of control name to lookup
+
+    Returns:
+      A string representing the control
+    """
+    ctrl_dict = self.syscfg_dict[CONTROL_TAG]
+    max_len = max(len(name) for name in ctrl_dict)
+    dashes = '-' * max_len
+    padded_name = '%-*s' % (max_len, '%s' % name)
+    doc = '%s DOC: %s' % (padded_name, ctrl_dict[name]['doc'])
+    get = '%s GET: %s' % (dashes, str(ctrl_dict[name]['get_params']))
+    set = '%s SET: %s' % (dashes, str(ctrl_dict[name]['set_params']))
+    return '%s\n%s\n%s' % (doc, get, set)
 
   def is_map(self, name):
     """Determine if name is a map or not.
@@ -767,10 +827,12 @@ class SystemConfig(object):
               reformat_value = keyname
               break
           # try matching it as a simple string
-          else:
-            if val == reformat_value:
-              reformat_value = keyname
-              break
+          elif val == reformat_value:
+            reformat_value = keyname
+            break
+          # check for the possibility that there's need to reformat
+          elif keyname == reformat_value:
+            break
         else:
           if reformat_value and reformat_value != 'not_applicable':
             control = params['control_name']

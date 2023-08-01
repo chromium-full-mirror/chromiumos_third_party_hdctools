@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 """Driver for controlling the watchdog."""
 
-import logging
-
 from servo.drv import hw_driver
 from servo import servo_dev_templates
 

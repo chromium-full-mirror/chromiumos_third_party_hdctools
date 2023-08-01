@@ -122,6 +122,6 @@
     <name>uart2_en</name>
     <alias>fpmcu_uart_en,usbpd_uart_en</alias>
     <doc>Enable communication with FP MCU's uart console.</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
 </root>

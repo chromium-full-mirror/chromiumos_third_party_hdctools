@@ -1,0 +1,13 @@
+<root>
+  <control>
+    <name>relay_pwrbtn_press</name>
+    <doc>Tell relay switch to press power button for X seconds</doc>
+    <params subtype="relay_pwrbtn_press" interface="servo" cmd="set" drv="relay_switch"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>relay_serial_port</name>
+    <doc>Returns the serial port connected to the relay switch</doc>
+    <params subtype="relay_serial_port" interface="servo" cmd="get" drv="relay_switch"></params>
+  </control>
+</root>

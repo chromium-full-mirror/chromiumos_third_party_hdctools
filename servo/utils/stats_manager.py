@@ -80,6 +80,7 @@ class StatsManager(object):
     _nan_domains: set to keep track of which domains contain NaN samples
     _summary: dict of stats per domain (key): min, max, count, mean, stddev
     _logger = StatsManager logger
+    _rate: frequency that the data is sampled at (in seconds)
 
   Note:
     _summary is empty until CalculateStats() is called, and is updated when
@@ -88,7 +89,7 @@ class StatsManager(object):
 
   # pylint: disable=W0102
   def __init__(self, smid='', title='', order=[], hide_domains=[],
-               accept_nan=True):
+               accept_nan=True, rate=None):
     """Initialize infrastructure for data and their statistics."""
     self._title = title
     self._data = collections.defaultdict(list)
@@ -98,6 +99,7 @@ class StatsManager(object):
     self._hide_domains = hide_domains
     self._accept_nan = accept_nan
     self._nan_domains = set()
+    self._rate = rate
     self._summary = {}
     self._logger = logging.getLogger(type(self).__name__)
 
@@ -250,16 +252,26 @@ class StatsManager(object):
     if self.NanInOutput:
       formatted_lines.append('%s %s' % (prefix, NAN_DESCRIPTION))
 
+    line_length = len(formatted_lines[0])
+    dec_length = len(prefix)
+    # line is a seperator line consisting of -----
+    line = '%s%s' % (prefix, '-' * (line_length - dec_length))
+    title_lines = []
     if self._title:
-      line_length = len(formatted_lines[0])
-      dec_length = len(prefix)
       # trim title to be at most as long as the longest line without the prefix
       title = self._title[:(line_length - dec_length)]
-      # line is a seperator line consisting of -----
-      line = '%s%s' % (prefix, '-' * (line_length - dec_length))
       # prepend the prefix to the centered title
       padded_title = '%s%s' % (prefix, title.center(line_length)[dec_length:])
-      formatted_lines = [line, padded_title, line] + formatted_lines + [line]
+      title_lines.append(padded_title)
+    if self._rate:
+      rate = "sample rate (sec): %.2f" % self._rate
+      # trim rate to be at most as long as the longest line without the prefix
+      rate = rate[:(line_length - dec_length)]
+      # prepend the prefix to the centered title
+      padded_rate = '%s%s' % (prefix, rate.center(line_length)[dec_length:])
+      title_lines.append(padded_rate)
+    if title_lines:
+      formatted_lines = [line] + title_lines + [line] + formatted_lines + [line]
     formatted_output = '\n'.join(formatted_lines)
     return formatted_output
 

@@ -101,7 +101,11 @@ class basePWRADC(hw_driver.HwDriver):
     Returns:
       str, [self._base_name]_[reg]_reg
     """
-    return '%s_%s_reg' % (self._base_name, reg)
+    reg_control_name = '%s_%s_reg' % (self._base_name, reg)
+    # TODO(b/275723447): remove this prefix string manipulation from driver
+    if '.' not in reg_control_name:
+        return self._params['device_type'] + '.' + reg_control_name
+    return reg_control_name
 
   def _has_reg(self, reg):
     """Determine whether |reg| has a servod control associated with it.
@@ -113,7 +117,6 @@ class basePWRADC(hw_driver.HwDriver):
       True, if this ADC control (identified by |self._base_name| has
       a register control for |reg|, False otherwise
     """
-    # pylint: disable=protected-access
     return self._servod.has_control(self._reg_control_name(reg))
 
   def _read_reg(self, reg):
@@ -164,7 +167,6 @@ class basePWRADC(hw_driver.HwDriver):
       BasePWRADCError: if |self._base_name|_|suffix| is no servod control
     """
     ctrl_name = '%s_%s' % (self._base_name, suffix)
-    # pylint: disable=protected-access
     if not self._servod.has_control(ctrl_name):
       raise BasePWRADCError('Control %r unknown.' % ctrl_name)
     self._servod_set(ctrl_name, value)

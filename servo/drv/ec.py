@@ -64,6 +64,8 @@ class ec(pty_driver.ptyDriver):
     """
     super(ec, self).__init__(interface, params)
     self._logger.debug('')
+    self._role_swap_delay = float(
+        self._params.get('role_swap_delay', 1.0))
     # Add locals to the values dictionary.
     if 'kbd' not in self._interface._uart_state:
         self._interface._uart_state['kbd'] = list(KEY_STATE)
@@ -80,11 +82,6 @@ class ec(pty_driver.ptyDriver):
 
   def _restore_channel(self):
     """Load saved channel setting"""
-    # To improve backward compatibility on EC images that do not have save/
-    # restore, set channel mask to power-on default before running restore.
-    # TODO(shawnn): Remove this line once all test units have new EC image.
-    self._issue_cmd('chan 0xffffffff')
-
     self._issue_cmd('chan restore')
 
   def _set_key_pressed(self, key_rc, pressed):
@@ -462,6 +459,7 @@ class ec(pty_driver.ptyDriver):
       if role == value:
         return
       self._issue_cmd('pd %d swap data' % port)
+      time.sleep(self._role_swap_delay)
       role, _ = self._read_port_role(port)
       if role != value:
         raise ecError(

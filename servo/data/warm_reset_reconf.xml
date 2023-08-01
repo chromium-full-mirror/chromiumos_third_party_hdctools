@@ -9,13 +9,12 @@
   <control>
     <name>hpd</name>
     <doc>hpd</doc>
-    <patch>hpd</patch>
-    <params map="onoff_i" clobber_ok=""/>
+    <params clobber_ok="patch" map="onoff_i" />
   </control>
   <!-- Not overwrite the map for warm_reset as it might not be using onoff or onoff_i -->
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
-    <params clobber_ok="" od="PU" init="off"/>
+    <params clobber_ok="" od="PU" init="off" />
   </control>
 </root>

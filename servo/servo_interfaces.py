@@ -51,6 +51,17 @@ for vid, pid in PACMAN_DEFAULTS:
      {'name': 'ftdi_i2c', 'interface': 1},  # 2: FTDI i2c 0/interface 1
     ]
 
+# ftdi generic 4232H
+FTDI4232H_MODULE_DEFAULTS = [(0x0403, 0x6011)]
+for vid, pid in FTDI4232H_MODULE_DEFAULTS:
+  INTERFACE_DEFAULTS[vid][pid] = \
+    ['empty',
+     'empty',                               # 1
+     {'name': 'ftdi_i2c', 'interface': 1},  # 2: FTDI i2c 0/interface 0
+     'empty',                               # 3
+     {'name': 'ftdi_i2c', 'interface': 2},  # 4: FTDI i2c 1/interface 1
+    ]
+
 # Ryu Raiden CCD
 RAIDEN_DEFAULTS = [(0x18d1, 0x500f)]
 for vid, pid in RAIDEN_DEFAULTS:
@@ -158,10 +169,10 @@ for vid, pid in C2D2_DEFAULTS:
   INTERFACE_DEFAULTS[vid][pid] = \
     ['empty',
      {'name': 'stm32_uart', 'interface': 0}, # 1: H1 console
-     {'name': 'stm32_i2c',  'interface': 4}, # 2: i2c
-     {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
      {'name': 'stm32_i2c',  'interface': 4,
-      'port': 1},                            # 4: i2c 2 // INAs etc
+      'port': 1},                            # 2: i2c 2 // INAs etc
+     {'name': 'stm32_uart', 'interface': 3}, # 3: servo console
+     {'name': 'stm32_i2c',  'interface': 4}, # 4: i2c
      'empty',                                # 5: empty
      {'name': 'ec3po_uart',                  # 6: servo console
       'raw_pty': 'raw_c2d2_uart_pty', 'source': 'c2d2'},

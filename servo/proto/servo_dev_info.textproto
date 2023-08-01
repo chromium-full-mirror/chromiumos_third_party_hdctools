@@ -81,9 +81,9 @@ servo_devices {
   DUT_CONTROLLER: true
 }
 
-# Servo ccd cr50 template class.
+# Servo ccd ti50 template class.
 servo_devices {
-  TYPE: 'ccd_ti50'
+  TYPE: 'ccd_gsc'
   VID: 0x18d1
   PID: 0x504a
   DEFAULT_CONFIG: 'ccd_ti50.xml'
@@ -123,4 +123,12 @@ servo_devices {
   VID: 0x18d1
   PID: 0x5211
   DEFAULT_CONFIG: 'pacman_v1.xml'
+}
+
+# ftdi mini-module (generic)
+servo_devices {
+  TYPE: 'ft4232h_generic'
+  VID: 0x0403
+  PID: 0x6011
+  DEFAULT_CONFIG: 'single_pac.xml'
 }

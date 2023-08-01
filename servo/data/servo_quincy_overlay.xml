@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <!-- See this file for documentation -->
+    <name>servo_fpmcu_dev_board_common_overlay.xml</name>
+  </include>
+  <include>
+    <name>quincy_r0.xml</name>
+  </include>
+  <include>
+    <name>servo_fpmcu_dev_board_uart_common_overlay.xml</name>
+  </include>
+</root>

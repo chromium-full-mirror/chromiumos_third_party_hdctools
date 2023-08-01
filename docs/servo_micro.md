@@ -1,4 +1,4 @@
-# Servo 
+# Servo
 
 Servo Micro (aka "uServo") is a self contained replacement for Yoshi Servo Flex.
 It is meant to be compatible with Servo v2 via [`servod`]. The design uses
@@ -38,24 +38,16 @@ system.
 
 ### Flashing the BIOS or EC with Servo Micro
 
-Servo Micro can be used to flash the AP BIOS or EC with `flashrom`. Note that
-`flashrom`'s command line needs to specify the correct endpoint, which is
-`raiden` rather than `ftdi`.
+Reading or flashing AP firmware (BIOS) or EC firmware with Servo Micro is done
+with the same commands as any servo type.  Under the hood the implementation
+for each servo type can vary, but that is abstracted away from you as a user.
 
-For example, on a 3.3V DUT:
+For example, to read and flash AP firmware (BIOS):
 
 ```bash
-(chroot) $ dut-control spi2_vref:pp3300 spi2_buf_en:on
-(chroot) $ sudo flashrom --programmer raiden_debug_spi -w bios.bin
-(chroot) $ dut-control spi2_vref:off spi2_buf_en:off
+(chroot) $ sudo futility read --servo -v "$OUTFILE"
+(chroot) $ sudo futility update --servo -v -i "$INFILE"
 ```
-
-<!-- mdformat off(b/139308852) -->
-*** note
-NOTE: There is no `target=(AP|EC)` command as with other `raiden_debug_spi`
-devices. Adding this flag to the `flashrom` command will cause an error.
-***
-<!-- mdformat on -->
 
 ## Servo Micro Header Pins
 

@@ -227,4 +227,4 @@ device_templates = _ReadTextProto(_TEXTPROTO_PATH)
 _InitMaps(device_templates)
 # Servo types used to categorize servo devices
 DEBUG_HEADER_SERVO_TYPES = set(['servo_micro', 'servo_v2', 'c2d2'])
-CCD_SERVO_TYPES = set(['ccd_cr50', 'ccd_ti50'])
+CCD_SERVO_TYPES = set(['ccd_cr50', 'ccd_gsc'])

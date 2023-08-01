@@ -8,11 +8,11 @@ from enum import Enum
 import collections
 import logging
 import os
+import pprint
 import select
 import sys
 
 from servo import servo_dev_templates
-from servo import servo_parsing
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 
@@ -22,6 +22,7 @@ INTERATIVE_MENU_TIMEOUT_SECONDS = 30
 
 class ServoDeviceFinderError(Exception):
   """ServoDeviceFinderError error class."""
+
 
 class ServoDeviceDiscoveryMode(Enum):
   """Indicates how much auto discovery can be performed by ServoDeviceFinder."""
@@ -50,8 +51,24 @@ class ServoDeviceDiscoveryMode(Enum):
   #    an interactive cmdline menu.
   NO_AUTO = 2
 
+
+def _ClusterSortKey(servo_dev_entry):
+  """Return a key for sorting servos in a cluster with the root servo first.
+
+  This function is intended for use as a sorting key.  There is no reason to
+  call this function directly, instead use servo_dev_entry.is_cluster_root().
+
+  Args:
+    servo_dev_entry: servo.utils.servo_dev_hierarchy.ServoDeviceEntry
+
+  Returns:
+    hashable object
+  """
+  return (not servo_dev_entry.is_cluster_root(),) + servo_dev_entry.key
+
+
 class ServoDeviceFinder(object):
-  """ Discover devices to be served by a servod instance."""
+  """Discover devices to be served by a servod instance."""
 
   def __init__(self, devopts, devopts_generator, dev_hierarchy, scratch, discover_mode,
     choose_device=None):
@@ -59,7 +76,7 @@ class ServoDeviceFinder(object):
 
     Args:
       devopts: a list of device opts parsed from the servod starting commandline
-      default_devopts_generator: a function that generates a default devopts
+      devopts_generator: a function that generates a default devopts
         for devices pulled in during device auto-discovery.
       dev_hierarchy: a ServoDeviceHierarchy generated when the servod starts
       scratch: ServoSratch that manages information across different servod instances.
@@ -113,7 +130,7 @@ class ServoDeviceFinder(object):
          one_dev_opts.serialname)
       dev_entry = self._find_one_device(vid, pid, serial)
       dev_entry.devopts = one_dev_opts
-      self._logger.info('Pull in device %s as it is included in invocation args.', dev_entry)
+      self._logger.info('Pulling in device %s as it is included in invocation args.', dev_entry)
       invocation_devs.add(dev_entry)
 
     # Then pull in all the devices connecting to the devices included in command
@@ -121,28 +138,20 @@ class ServoDeviceFinder(object):
     dev_list = invocation_devs.copy()
     if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
       for dev_entry in invocation_devs:
-        # for a root hub device, include all its cluster member
-        if dev_entry.is_cluster_root():
-          for member in dev_entry.cluster_members:
+        # For a root hub device, include all cluster members.
+        # Same if "full" discovery mode was requested.
+        if (dev_entry.is_cluster_root() or
+            self.discover_mode == ServoDeviceDiscoveryMode.FULL_AUTO):
+          for member in sorted(dev_entry.cluster_root.cluster_members):
             if member not in dev_list:
-              self._logger.info('Pull in device %s as it is a child of device %s.', member, dev_entry)
+              self._logger.info('Pulling in device %s as it is a member of the same cluster as %s.', member, dev_entry)
               self._complete_devopts(member, dev_entry)
               dev_list.add(member)
-        # for a non-root device in a cluster, include its root hub
-        elif dev_entry.is_in_cluster():
-          if dev_entry.cluster_root not in dev_list:
-            self._logger.info('Pull in device %s as it is the parent hub of device %s.',
-            dev_entry.cluster_root, dev_entry)
-            self._complete_devopts(dev_entry.cluster_root, dev_entry)
-            dev_list.add(dev_entry.cluster_root)
-          # also include the other cluster members if we would like complete clusters served
-          # by one servod instance
-          if  self.discover_mode == ServoDeviceDiscoveryMode.FULL_AUTO:
-            for member in dev_entry.cluster_root.cluster_members:
-              if member not in dev_list:
-                self._logger.info('Pull in device %s as it is a sibling of device %s.', member, dev_entry)
-                self._complete_devopts(member, dev_entry)
-                dev_list.add(member)
+        elif dev_entry.cluster_root not in dev_list:
+          self._logger.info('Pulling in device %s as it is the parent hub of device %s.',
+          dev_entry.cluster_root, dev_entry)
+          self._complete_devopts(dev_entry.cluster_root, dev_entry)
+          dev_list.add(dev_entry.cluster_root)
 
     dev_list = list(dev_list)
     self.validate_device_availability(dev_list)
@@ -167,19 +176,34 @@ class ServoDeviceFinder(object):
     """
     input_str = 'vid: %s pid: %s serial: %s' % (vid, pid, serial)
     if (not vid) and (not pid) and (not serial):
-      candidates = list(self._dev_hierarchy.get_all_entries().values())
+      candidates = sorted(self._dev_hierarchy.get_all_entries().values())
     else:
-      candidates = list(self._dev_hierarchy.get_entries(vid, pid, serial))
+      candidates = sorted(self._dev_hierarchy.get_entries(vid, pid, serial))
+    self._logger.info('Servo candidates:\n%s',
+                      '\n'.join(repr(c) for c in candidates))
+
+    # Determine the servo clusters represented by all of the candidate servos.
+    # Sets are used here for uniqueness.
+    clusters = {frozenset(self._dev_hierarchy.get_cluster(c.vid, c.pid, c.serial)) for c in candidates}
+    # Now replace the sets with sorted lists, for consistent logging output.
+    # Within each servo cluster, the root servo should be listed first.
+    clusters = sorted(sorted(clstr, key=_ClusterSortKey) for clstr in clusters)
+    self._logger.info('Servo clusters represented by the candidates:\n%s',
+                      pprint.pformat(clusters))
+    # The clusters list is currently only used for logging output, as requested
+    # in https://issuetracker.google.com/277768816 for ease of troubleshooting.
+    # It may in the future be useful for enhancing interactive servo selection.
 
     if len(candidates) < 1:
-      raise ServoDeviceFinderError('Cannot find a servo device with %s' % input_str)
+      raise ServoDeviceFinderError(
+          'Cannot find a servo device with %s' % (input_str,))
     candidate = candidates[0]
     if len(candidates) > 1:
       self._logger.info('Found > 1 servo devices with %s', input_str)
       # when user does not provide enough information for picking a device (e.g. when
       # vid/pid/serial is None), try selecting a device based on each device's priority.
       if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
-        self._logger.info('Try to smartly select a device among device candidates: %s', candidates)
+        self._logger.info('Selecting a servo device among the candidates...')
         prioritized_devs = servo_dev_hierarchy.ServoDeviceHierarchy.generate_device_priority(candidates)
         candidates = servo_dev_hierarchy.ServoDeviceHierarchy.most_prirotized_devices(prioritized_devs)
         candidate = candidates[0]
@@ -188,8 +212,9 @@ class ServoDeviceFinder(object):
         self._logger.info('We have found multiple devices that match args provided %s', input_str)
         candidate = self.choose_device(candidates)
         if not candidate:
-          raise ServoDeviceFinderError('User does not choose a valid device for %s. Device candidates: %s' %
-            (input_str, candidates))
+          raise ServoDeviceFinderError(
+              'User did not choose a valid device for %s from candidates %s' %
+              (input_str, candidates))
     self._logger.debug('Found device %s with %s', candidate, input_str)
     return candidate
 
@@ -201,7 +226,7 @@ class ServoDeviceFinder(object):
       old_dev: a ServoDeviceEntry which already has device options
     """
     new_dev.devopts = self._devopts_generator()
-    for arg in ['board', 'model', 'config', 'noautoconfig']:
+    for arg in 'board', 'model', 'config', 'noautoconfig':
       setattr(new_dev.devopts, arg, getattr(old_dev.devopts, arg))
 
   def choose_main_device(self, devs):
@@ -292,32 +317,24 @@ class ServoDeviceFinder(object):
     for dev in devs:
       dev_type_map[dev.dev_template.TYPE].append(dev)
       dev_prefix = set(dev.devopts.prefix) - known_prefixes
-      # handle main device's prefix
+
       if dev == main_dev:
+        self._logger.debug('Device %s is the main device and is given prefix '
+                           '%r', dev, servo_dev_templates.MAIN_DEV_PREFIXES)
         dev_prefix.update(servo_dev_templates.MAIN_DEV_PREFIXES)
-        dev.devopts.prefix = list(dev_prefix)
-        known_prefixes.update(dev_prefix)
-        self._logger.debug('Device %s is the main device and is given prefix %s',
-          dev, servo_dev_templates.MAIN_DEV_PREFIXES)
-        continue
+      else:
+        # prevent non-main device from having main device prefixes
+        dev_prefix.difference_update(servo_dev_templates.MAIN_DEV_PREFIXES)
 
-      # prevent non-main device to have main device's prefix
-      dev_prefix = dev_prefix - set(servo_dev_templates.MAIN_DEV_PREFIXES)
-
-      # handle root device's prefix
       if dev == main_dev.cluster_root:
+        self._logger.debug('Device %s is the root device and is given prefix '
+                           '%r', dev, servo_dev_templates.ROOT_DEV_PREFIX)
         dev_prefix.add(servo_dev_templates.ROOT_DEV_PREFIX)
-        dev.devopts.prefix = list(dev_prefix)
-        known_prefixes.update(dev_prefix)
-        self._logger.debug('Device %s is the root device and is given prefix %s',
-          dev, servo_dev_templates.ROOT_DEV_PREFIX)
-        continue
+      else:
+        # prevent non-root device from having root device prefix
+        dev_prefix.discard(servo_dev_templates.ROOT_DEV_PREFIX)
 
-      # prevent non-root device to have root device's prefix
-      dev_prefix = dev_prefix - set([servo_dev_templates.ROOT_DEV_PREFIX])
-
-      # handle all other device's prefix
-      dev.devopts.prefix = list(dev_prefix)
+      dev.devopts.prefix = sorted(dev_prefix)
       known_prefixes.update(dev_prefix)
       self._logger.debug('Device %s is given prefix %s during invocation',
         dev, dev_prefix)

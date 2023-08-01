@@ -276,26 +276,26 @@
   <control>
     <name>c2d2_i2c_pseudo_is_started</name>
     <doc>Check if the C2D2 I2C pseudo adapter has been started.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="2">
+    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="4">
     </params>
   </control>
   <control>
     <name>c2d2_i2c_pseudo_is_running</name>
     <doc>Check if the C2D2 I2C pseudo adapter I/O thread is running.
     </doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="2">
+    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="4">
     </params>
   </control>
   <control>
     <name>c2d2_i2c_pseudo_adapter_num</name>
     <doc>Get the I2C adapter number of the C2D2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="2">
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="4">
     </params>
   </control>
   <control>
     <name>c2d2_i2c_pseudo_id</name>
     <doc>Get the I2C pseudo ID of the C2D2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
+    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="4">
     </params>
   </control>
   <!-- Controls overwritten by Cr50 -->
@@ -328,8 +328,7 @@
   <control>
     <name>servo_adcs_enabled</name>
     <doc>Configure the servod device to read ADCs.</doc>
-    <params subtype="i2c_speed" interface="6" c2d2_interface="6" bus="ap"
-      c2d2_drv="ec3po_c2d2" drv="ec3po_c2d2" input_type="int"
-      map="i2c_ap_onoff"/>
+    <params subtype="i2c_speed" interface="6" bus="ap" drv="ec3po_c2d2"
+      input_type="int" map="i2c_ap_onoff"/>
   </control>
 </root>

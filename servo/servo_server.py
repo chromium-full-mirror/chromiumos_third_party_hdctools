@@ -10,6 +10,8 @@ import sys
 from servo import recovery
 from servo import servo_dev_templates
 from servo.utils import diagnose
+from servo.utils import usb_hierarchy
+
 
 class ServodError(Exception):
   """Exception class for servod."""
@@ -20,6 +22,8 @@ class Servod(object):
 
   # Separator for control strings between servo device prefix and control name
   PREFIX_DELIMITER = '.'
+  # Constant for flex Control
+  _IS_FLEX_CTRL = 'is_flex_board'
 
   def __init__(self, usbkm232=None):
     """Servod constructor.
@@ -78,7 +82,13 @@ class Servod(object):
   def reinitialize(self):
     """Reinitialize all devices that support reinitialization"""
     for device in self.get_devices():
-        device.reinitialize()
+        try:
+          device.reinitialize()
+        except usb_hierarchy.HierarchyError as e:
+          if not device.disconnect_is_ok():
+            raise
+          self._logger.info('Ignoring failed re-initilization of device that '
+                            'is ok to be disconnected. %s error(%s).', device, e)
 
   def close(self):
     """Servod turn down logic."""
@@ -141,7 +151,7 @@ class Servod(object):
     """
     prefix, processed_name = Servod._get_control_prefix_and_name(name)
     if prefix not in self._devices:
-      error_msg = ("No control named '%s' registerd. "
+      error_msg = ("No control named '%s' registered. "
         "No servo device registered for prefix %s.") % (name, prefix)
       raise ServodError(error_msg)
     dev = self._devices[prefix]
@@ -153,7 +163,7 @@ class Servod(object):
         dev = self.get_root_device()
 
     if not dev.syscfg.is_control(processed_name):
-      error_msg = ("No control named '%s' registerd with any connected servo device.\n"
+      error_msg = ("No control named '%s' registered with any connected servo device.\n"
       "Servo device %s (prefix: %s) is picked as the targed device for the control.\n"
       ) % (name, dev, dev.get_prefixes())
       candidates = [ctrl for ctrl in self._controls if name in ctrl]
@@ -265,7 +275,7 @@ class Servod(object):
     """
     dev, name = self._get_dev_and_name(name)
     return dev.set(name, wr_val_str)
-  
+
   def update_known_ctrls(self):
     """Helper to generate a list of all accessible controls in servod."""
     known_ctrls = set()
@@ -273,7 +283,7 @@ class Servod(object):
       dev_ctrls = dev.syscfg.get_all_controls()
       # controls for root and main dev does not need to have prefixes
       new_ctrls = set('%s.%s' % (prefix, ctrl) for ctrl in dev_ctrls) \
-        if prefix else dev_ctrls 
+        if prefix else dev_ctrls
       if prefix == servo_dev_templates.ROOT_DEV_PREFIX:
         new_ctrls |= dev_ctrls
       known_ctrls |= new_ctrls
@@ -390,8 +400,20 @@ class Servod(object):
     return self.get_main_device().base_board
 
   def get_servo_serials(self):
-    """Return all the serials associated with this process."""
-    return self._serialnames
+    """Return all the serials associated with this process.
+
+    This gets passed directly to the xml rpc response to xmlrpc client request
+    get_servo_serials(). It needs to be in a basic type for Python to
+    correctly marshal.  See b/279006079
+
+    Returns:
+      {str: str} - Dict of control prefix mapped to servo serial number.
+      Multiple prefixes may be mapped to the same serial number.
+    
+    Each call to this function returns a new dict.  The returned dict may be
+    mutated without affecting any other state.
+    """
+    return dict(self._serialnames)
 
   def add_serial_number(self, key, serial_number):
     """Adds the serial number to the _serialnames dictionary.
@@ -448,11 +470,27 @@ class Servod(object):
         interfaces += [(str(dev), interface)]
     return interfaces
 
+  def is_flex_board(self):
+    """Returns true if servod is run with a flex board"""
+    if not self.has_control(self._IS_FLEX_CTRL):
+      return False
+    is_flex_board = self.get(self._IS_FLEX_CTRL)
+    if is_flex_board == 'no':
+        return False
+    if is_flex_board == 'yes':
+        return True
+    raise ServodError('Control %r has invalid value %r.' %
+                        (self._IS_FLEX_CTRL, is_flex_board))
+
   def validate_dut_controller(self):
     """Validate the servod instance has at least 1 dut controller."""
     for dev in self.get_devices():
       if dev.template.DUT_CONTROLLER:
         return
+
+    if self.is_flex_board():
+      self._logger.info('Flex board doesn\'t use DUT controller, skip check.')
+      return
 
     # Start diagnosing why servod does not have DUT controller.
     # Fail if we requested board control but don't have an interface for this.
@@ -496,15 +534,15 @@ class Servod(object):
   def _get_version(self):
     """Gets the type of the servo device setups.
 
-    NOTE: please avoid assuming the format of servo type string and parsing it. 
+    NOTE: please avoid assuming the format of servo type string and parsing it.
     Use 'devices' control to fetch all servo devices of this servod instance instead.
     """
     main_device = self.get_main_device()
     root_device = self.get_root_device()
-    type = main_device.template.TYPE
-    if root_device:
-      type = root_device.template.TYPE + '_with_' + type
+    type_ = main_device.template.TYPE
+    if root_device and root_device is not main_device:
+      type_ = root_device.template.TYPE + '_with_' + type_
       for dev in root_device.get_child_devices():
         if dev.template.DUT_CONTROLLER and dev != main_device:
-          type += '_and_' + dev.template.TYPE
-    return type
+          type_ += '_and_' + dev.template.TYPE
+    return type_

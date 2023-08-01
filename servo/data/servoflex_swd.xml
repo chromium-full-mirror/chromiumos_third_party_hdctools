@@ -32,6 +32,6 @@
     <name>warm_reset</name>
     <alias>cold_reset</alias>
     <doc>SWD flex connects EC reset to warm reset control.</doc>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

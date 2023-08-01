@@ -12,9 +12,6 @@
   <include>
     <name>uart_common.xml</name>
   </include>
-  <include>
-    <name>servo_adc_enabled_noop.xml</name>
-  </include>
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>
@@ -52,15 +49,13 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" interface="servo" drv="na"
+    <params clobber_ok="patch" interface="servo" drv="na"
     init="not_applicable"></params>
   </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>gsc_ec_reset</name>
     <clone>cold_reset</clone>
-    <doc>cold_reset (active low).</doc>
-    <params init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>cold_reset_select</name>
@@ -101,15 +96,15 @@
     drv="ec" map="yesno" clobber_ok=""></params>
   </control>
   <control>
+    <name>ccd_keepalive_en</name>
+    <doc>Enable/disable keepalive on CCD</doc>
+    <params clobber_ok="" init="on"></params>
+  </control>
+  <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="9" drv="fw_wp_ccd" input_type="str"
     init="force_off" />
-  </control>
-  <control>
-    <name>cpu_fw_spi</name>
-    <doc>Enable SPI mode for flashing CPU firmware over servo (fake in CCD)</doc>
-    <params interface="servo" drv="na"/>
   </control>
   <control>
     <name>ccd_cpu_fw_spi</name>
@@ -131,18 +126,17 @@
   </control>
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
-    <name>uart4_on_flex_en</name>
-    <alias>cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en
-    </alias>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Override control not needed for ccd.</doc>
     <params interface="servo" drv="na" input_type="str"
-    init="not_applicable" clobber_ok=""></params>
+    init="not_applicable" clobber_ok="patch"></params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1,fw_wp_vref</alias>
     <params interface="servo" drv="na" input_type="str"
-    init="not_applicable" clobber_ok=""></params>
+    init="not_applicable" clobber_ok="patch"></params>
   </control>
   <control>
     <name>ccd_ec_boot_mode_uut</name>
@@ -162,7 +156,7 @@
     <name>gsc_testlab</name>
     <alias>cr50_testlab</alias>
     <doc>GSC testlab state</doc>
-    <params clobber_ok="" init="open"></params>
+    <params clobber_ok="patch" init="open"></params>
   </control>
   <!-- I2C pseudo adapter controller -->
   <control>
@@ -198,5 +192,11 @@
     <name>servo_class</name>
     <doc>servo type (flex or ccd)</doc>
     <params drv="echo" value="ccd" interface="servo" clobber_ok=""/>
+  </control>
+  <control>
+    <name>servo_adcs_enabled</name>
+    <doc>Configure the servod device to read ADCs.</doc>
+    <params interface="9" drv="ec3po_gpio" name="EN_PP3300_INA_L"
+    subtype="single" map="onoff_i" clobber_ok="full"></params>
   </control>
 </root>

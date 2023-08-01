@@ -49,7 +49,7 @@ class AtmegaKBEmulatorProgrammer(programmer.Programmer):
   I2C_RD_MASK = 0x2
 
   # Time to wait after reset/power-cycle for the keyboard emulator to enumerate.
-  ATM_BOOT_TIMEOUT_S = 3.0
+  ATM_BOOT_TIMEOUT_S = 10.0
 
   def __init__(self, force, i2caddr, i2coffset, parent_hub_vid=None,
                parent_hub_pid=None):

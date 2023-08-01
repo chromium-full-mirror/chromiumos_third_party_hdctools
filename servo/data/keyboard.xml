@@ -54,6 +54,18 @@
     input_type="float" map="keypress_duration" clobber_ok="" />
   </control>
   <control>
+    <name>alt_f5</name>
+    <doc>Send alt f5 either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="alt_f5" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok="" />
+  </control>
+  <control>
+    <name>alt_f6</name>
+    <doc>Send alt f6 either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="alt_f6" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok="" />
+  </control>
+  <control>
     <name>arrow_up</name>
     <doc>Send arrow up key either by servoflex or USB KB emulation</doc>
     <params cmd="set" subtype="key" key="arrow_up" interface="servo" drv="kb"
@@ -94,6 +106,12 @@
     <name>sysrq_x</name>
     <doc>Send sysrq x either by servoflex or USB KB emulation</doc>
     <params cmd="set" subtype="key" key="sysrq_x" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration" clobber_ok="" />
+  </control>
+  <control>
+    <name>sysrq_r</name>
+    <doc>Send sysrq r either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="sysrq_r" interface="servo" drv="kb"
     input_type="float" map="keypress_duration" clobber_ok="" />
   </control>
   <control>

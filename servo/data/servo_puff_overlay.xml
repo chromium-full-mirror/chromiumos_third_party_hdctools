@@ -18,6 +18,9 @@
   <include>
     <name>gsc_reset_pch_disable.xml</name>
   </include>
+  <include>
+    <name>ec_efs2.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>
@@ -33,13 +36,29 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
-      set_value_1="ec_uart_cmd:apshutdown
-                   spi2_vref:pp3300 spi2_buf_en:on spi2_buf_on_flex_en:on
-                   spi_hold:off"
-      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
-                   spi_hold:off ec_uart_cmd:powerb"
-      />
+    <doc>Enable SPI mode for flashing AP firmware via Servo header</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:2</item>
+            <item>spi2_vref:pp3300</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi2_buf_on_flex_en:on</item>
+            <item>spi_hold:off</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>spi2_buf_en:off</item>
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>spi_hold:off</item>
+            <item>sleep:2</item>
+            <item>ec_uart_cmd:powerb</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
   <control>
     <name>ec_chip</name>

@@ -7,6 +7,6 @@
     <name>pch_disable</name>
     <alias>gsc_reset,cr50_reset_odl,h1_reset</alias>
     <doc>Force gsc power-on reset</doc>
-    <params ccd_cr50_drv="na" ccd_gsc_drv="na" clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

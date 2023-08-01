@@ -8,15 +8,53 @@
   <include>
     <name>cr50.xml</name>
   </include>
-  <include>
-    <name>cpu_fw_spi.xml</name>
-  </include>
 
   <!-- warm_reset is on pin 39, reconfigure -->
   <include>
     <name>warm_reset_reconf.xml</name>
   </include>
 
+ <!-- FW flashing config -->
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:5</item>
+          </item>
+          <item key="0">
+            <item>power_state:reset</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over C2D2</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:5</item>
+            <item>ap_flash_select:on</item>
+            <item>spi2_vref:pp1800</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>ap_flash_select:off</item>
+            <item>power_state:reset</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+
+ <!-- misc controls -->
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>

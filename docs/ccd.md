@@ -84,7 +84,7 @@ monitor `lsusb` for GSC device enumeration:
 # H1/Cr50
 (chroot) $ watch -n 1 "lsusb | grep 18d1:5014"
 # D2/Ti50
-(chroot) $ watch -n 1 "lsusb | grep 18d1:504A"
+(chroot) $ watch -n 1 "lsusb | grep 18d1:504a"
 ```
 ***
 <!-- mdformat on -->
@@ -132,19 +132,19 @@ several tools needed to work with `servod`. Make sure the latest version is
 installed in your chroot:
 
 ```bash
-(chroot) $ sudo emerge hdctools
+(chroot) $ ~/chromiumos/src/scripts/update_chroot
 ```
 
 On your workstation, `servod` must also be running to communicate with GSC:
 
 ```bash
-(chroot) $ sudo servod -b $BOARD &
+(chroot) $ sudo servod -b "$BOARD"
 ```
 
 CPU/AP UART can be accessed by running:
 
 ```bash
-(chroot) $ miniterm.py --eol LF `dut-control cpu_uart_pty|cut -d ":" -f 2`
+(sdk root) $ minicom -D "$(cros_sdk -- dut-control -o cpu_uart_pty)"
 ```
 
 Note that on a normal install of Chrome OS the UART is not normally used. The
@@ -156,7 +156,7 @@ reasons, but they can be added back in with a custom AP firmware.
 EC UART:
 
 ```bash
-(chroot) $ miniterm.py --eol LF `dut-control ec_uart_pty|cut -d ":" -f 2`
+(sdk root) $ minicom -D "$(cros_sdk -- dut-control -o ec_uart_pty)"
 ```
 
 The console is read only, unless you have [opened CCD][GSC CCD]. The console
@@ -166,7 +166,7 @@ GSC itself has a console available, but most commands are locked by default for
 security:
 
 ```bash
-(chroot) $ miniterm.py --eol LF `dut-control cr50_uart_pty|cut -d ":" -f 2`
+(sdk root) $ minicom -D "$(cros_sdk -- dut-control -o gsc_uart_pty)"
 ```
 
 #### Features

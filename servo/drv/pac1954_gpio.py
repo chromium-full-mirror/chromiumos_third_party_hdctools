@@ -27,12 +27,12 @@ class pac1954Gpio(pac1934.pac1934):
   REQUIRED_GET_PARAMS = ['io_mode', 'pin', 'base_name']
   REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
-  def __init__(self, interface, params):
+  def __init__(self, interface, params, servo=None):
     """Setup the drv and i2c reg."""
     # Note: we only inherit from pac1934 for register read/write
     # functionality. Do not initialize pac1934 but rather just hw_driver
     # as this drv does not deal with power, or rsense values.
-    hw_driver.HwDriver.__init__(self, interface, params)
+    hw_driver.HwDriver.__init__(self, interface, params, servo)
     # Need to retrieve the mode: i/o and which GPIO is in use (1,2)
     self._io_mode = self._params['io_mode']
     self._pin = int(self._params['pin'])

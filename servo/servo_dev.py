@@ -29,7 +29,7 @@ class ServoDevice(object):
 
   # Reinit capable devices.
   REINIT_CAPABLE = set(
-    [servo_dev_templates.GetID("ccd_cr50"), servo_dev_templates.GetID("ccd_ti50")]
+      [servo_dev_templates.GetID("ccd_cr50"), servo_dev_templates.GetID("ccd_gsc")]
   )
 
   # Available attempts to reconnect a device
@@ -411,8 +411,7 @@ class ServoDevice(object):
     for params in [get_params, set_params]:
       # |cmd| is guaranteed to be in each params.
       mode = params['cmd']
-      # Get the most suitable drv given the servo instance.
-      drv_prefix = self._get_servo_specific_param(params, 'drv', control_name)
+      drv_prefix = params.get('drv')
       if drv_prefix == 'na':
         # 'na' drv can be used to selectively turn controls into noops for
         # a given servo hardware. Ensure that there is an interface.
@@ -424,11 +423,21 @@ class ServoDevice(object):
         # noop
         params.update({'input_type': 'str'})
 
-      interface_id = self._get_servo_specific_param(params, 'interface',
-                                                    control_name)
+      interface_id = params.get('interface')
       if None in [drv_prefix, interface_id]:
         raise ServoDeviceError('No drv/interface for control %r found' %
                           control_name)
+      # Store map params in params
+      map_name = params.get('map')
+      if map_name != None:
+        map_params = self.syscfg.lookup_map_params(map_name)
+        params['map_params'] = map_params
+
+      # Store this device name in params (necessary to scope control names when
+      # querying controls from a non-main servo device)
+      # TODO(b/275723447): remove this parameter once prefix string is no longer
+      # necessary in drivers
+      params['device_type'] = self.template.TYPE
 
       # this control only needs cross-servo-device communication and does not
       # need hardware interface for low-level communication
@@ -461,35 +470,6 @@ class ServoDevice(object):
     set_drv.set_complement(get_drv)
     # Run the method again, as it will find the entries now in the cache.
     return self._get_param_drv(control_name, is_get)
-
-  def _get_servo_specific_param(self, params, param_key, control_name):
-    """Get |param_key| from params by looking for servo specific params first.
-
-    Find the candidate servos. First see if there's a more specific param_key
-    that applies to this servo dev's type, before checking for the generic
-    params key.
-
-    1. [servo_type]_[params_key]
-    2. [params_key]
-
-    Args:
-      params: params dictionary for a control
-      param_key: identifier in the params dictionary to look for
-      control_name: control name the params correspond to
-
-    Returns:
-      The best suited param value for param_key given the servo type or
-      None if even the default is not defined.
-    """
-    candidates = ['%s_%s' % (self.template.TYPE, param_key)]
-    candidates.append(param_key)
-    for candidate in candidates:
-      if candidate in params:
-        self._logger.debug('Using %s parameter.', candidate)
-        return params[candidate]
-    self._logger.error('Unable to determine %s for %s', param_key, control_name)
-    self._logger.error('params: %r', params)
-    return None
 
   def clear_cached_drv(self):
     """Clear the cached drivers.

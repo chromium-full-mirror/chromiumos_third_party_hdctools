@@ -1,0 +1,29 @@
+<!-- This is the reven overlay that implements repair for the Flex devices -->
+<root>
+  <include>
+    <name>relay_switch.xml</name>
+  </include>
+  <!-- Override default dts mode, and set it to off. -->
+  <control>
+    <name>is_flex_board</name>
+    <doc>Returns "yes value if this is a ChromeOS Flex board, "no" otherwise.
+        Only Flex boards are required to define this control. Absence of this control
+        implies "no" value.</doc>
+    <params drv="echo" interface="servo" value="yes"/>
+  </control>
+  <control>
+    <name>servo_dts_mode</name>
+    <doc>Enable/disable DTS mode on servo_v4p1, overrides value in servo_v4p1.xml</doc>
+    <params clobber_ok="patch" init="off"/>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params cmd="set" interface="servo" drv="reven_power" input_type="str" reset_hold="0.1" reset_recovery="0.5"/>
+  </control>
+  <control>
+    <name>power_off_time</name>
+    <doc>Amount of time to hold down power button to turn off the device.</doc>
+    <params cmd="get" drv="echo" interface="servo" value="13"/>
+  </control>
+</root>

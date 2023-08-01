@@ -47,7 +47,7 @@ class TestServoDevice(unittest.TestCase):
     self.assertEqual(self.v4_dev.board, 'brya_default')
     self.assertEqual(self.v4_dev.base_board, '')
     self.assertEqual(self.v4_dev.model, 'default')
-    self.assertTrue(self.v4_dev._ifaces_available.isSet())
+    self.assertTrue(self.v4_dev._ifaces_available.is_set())
     self.assertEqual(self.v4_dev._reinit_attempts, self.v4_dev.REINIT_ATTEMPTS)
     self.assertFalse(self.v4_dev._reinit_capable)
     self.assertFalse(self.v4_dev._disconnect_ok)
@@ -384,7 +384,9 @@ class TestServoDevice(unittest.TestCase):
     get_params = {"cmd" : "get", "uart_cmd" : "ecrst", "regex" : "EC_RST_L is (asserted|deasserted)", "group" : "1",
     "interface" : "9", "drv" : "cr50", "map" : "asserted_re", "clobber_ok" : ""}
     set_params = {"cmd" : "set", "subtype" : "cold_reset", "interface" : "9", "drv" : "cr50", "map" : "onoff_i", "clobber_ok" : ""}
+    map_params = {"deasserted", "asserted"}
     self.v4_dev.syscfg.lookup_control_params = unittest.mock.MagicMock(return_value=(set_params, get_params))
+    self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(return_value=(map_params))
     self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True)[0], get_params)
 
   @unittest.mock.patch('servo.drv.cr50.cr50.__init__', unittest.mock.MagicMock(return_value=None))
@@ -394,52 +396,10 @@ class TestServoDevice(unittest.TestCase):
     get_params = {"cmd" : "get", "uart_cmd" : "ecrst", "regex" : "EC_RST_L is (asserted|deasserted)", "group" : "1",
     "interface" : "9", "drv" : "cr50", "map" : "asserted_re", "clobber_ok" : ""}
     set_params = {"cmd" : "set", "subtype" : "cold_reset", "interface" : "9", "drv" : "cr50", "map" : "onoff_i", "clobber_ok" : ""}
+    map_params = {"0", "1"}
     self.v4_dev.syscfg.lookup_control_params = unittest.mock.MagicMock(return_value=(set_params, get_params))
+    self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(return_value=(map_params))
     self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False)[0], set_params)
-
-  def test_get_servo_specific_param(self):
-    """Test _get_servo_specific_param()."""
-    self.v4_dev._logger.debug = unittest.mock.MagicMock()
-    self.v4_dev._logger.error = unittest.mock.MagicMock()
-    self.micro_dev._logger.debug = unittest.mock.MagicMock()
-    self.micro_dev._logger.error = unittest.mock.MagicMock()
-
-    v4_res = self.v4_dev._get_servo_specific_param(
-      {"servo_micro_interface" : "1", "servo_v4_interface" : "2"},
-      "interface", "cold_reset")
-    self.assertEqual(v4_res, "2")
-    self.v4_dev._logger.debug.assert_called_once_with('Using %s parameter.', 'servo_v4_interface')
-    self.v4_dev._logger.error.assert_not_called()
-
-    micro_res = self.micro_dev._get_servo_specific_param(
-      {"servo_micro_interface" : "1", "servo_v4_interface" : "2"},
-      "interface", "cold_reset")
-    self.assertEqual(micro_res, "1")
-    self.micro_dev._logger.debug.assert_called_once_with('Using %s parameter.', 'servo_micro_interface')
-    self.micro_dev._logger.error.assert_not_called()
-
-  def test_get_servo_specific_param_error(self):
-    """Test _get_servo_specific_param() in case of error."""
-    self.v4_dev._logger.debug = unittest.mock.MagicMock()
-    self.v4_dev._logger.error = unittest.mock.MagicMock()
-    self.micro_dev._logger.debug = unittest.mock.MagicMock()
-    self.micro_dev._logger.error = unittest.mock.MagicMock()
-
-    v4_res = self.v4_dev._get_servo_specific_param({},"interface", "cold_reset")
-    self.assertIsNone(v4_res)
-    self.v4_dev._logger.debug.assert_not_called()
-    self.v4_dev._logger.error.assert_has_calls([
-      unittest.mock.call('Unable to determine %s for %s', 'interface', 'cold_reset'),
-      unittest.mock.call('params: %r', {})
-    ])
-
-    micro_res = self.micro_dev._get_servo_specific_param({},"interface", "cold_reset")
-    self.assertIsNone(micro_res)
-    self.micro_dev._logger.debug.assert_not_called()
-    self.micro_dev._logger.error.assert_has_calls([
-      unittest.mock.call('Unable to determine %s for %s', 'interface', 'cold_reset'),
-      unittest.mock.call('params: %r', {})
-    ])
 
   def test_clear_cached_drv(self):
     """Test clear_cached_drv()."""
@@ -534,7 +494,7 @@ class TestServoDevice(unittest.TestCase):
     self.assertEqual(self.v4_dev.get_child_devices(), [])
 
     self.v4_dev.is_root_hub_device = unittest.mock.MagicMock(return_value=True)
-    self.v4_entry.cluster_members = [self.v4_entry, self.micro_entry]
+    self.v4_entry.cluster_members = {self.v4_entry, self.micro_entry}
     self.assertTrue(self.v4_dev.get_child_devices(), [self.micro_dev])
 
   def test_to_json(self):

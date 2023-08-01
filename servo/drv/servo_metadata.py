@@ -30,8 +30,8 @@ class servoMetadata(hw_driver.HwDriver):
 
   def _Get_type(self):
     """Gets the type of the servo device setups.
-    
-    NOTE: please avoid assuming the format of servo type string and parsing it. 
+
+    NOTE: please avoid assuming the format of servo type string and parsing it.
     Use 'devices' control to fetch all servo devices of this servod instance instead.
     """
     return self._servod._get_version()

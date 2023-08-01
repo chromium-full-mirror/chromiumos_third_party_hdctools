@@ -6,6 +6,8 @@
 
 set -x
 
+/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
+
 CONFIG_FILE_DIR="/var/lib/servod"
 CONFIG_FILE=$CONFIG_FILE_DIR/config_$PORT
 LOG="/var/log/servod_$PORT.STARTUP.log"
@@ -29,6 +31,7 @@ update_config $CONFIG_FILE BOARD $BOARD
 update_config $CONFIG_FILE MODEL $MODEL
 update_config $CONFIG_FILE SERIAL $SERIAL
 update_config $CONFIG_FILE CONFIG $CONFIG
+update_config $CONFIG_FILE DUAL_V4 $DUAL_V4
 
 log_output "Store servo hub location and servo micro serial if presents. "\
     "$CONFIG_FILE $SERIAL"
@@ -85,9 +88,30 @@ if [ ! -z "$REC_MODE" ]; then
     REC_MODE_FLAG="--recovery_mode"
 fi
 
-if [ -n "$SERIAL" ]; then
+if [ "$DUAL_V4" = "1" ]; then
+    # --allow-dual-v4 is deprecated and replaced by
+    # --device-discovery=full
+    DEVICE_DISCOVERY_FLAG="--device-discovery=full"
+else
+    DEVICE_DISCOVERY_FLAG=""
+fi
+
+NAME_FLAG=""
+if [ ! -z "$NAME" ]; then
+    NAME_FLAG="--name $NAME"
+fi
+
+if ([ -n "$SERVO_REBOOT" ] && [ -n "$SERIAL" ]); then
     servodtool device -s $SERIAL reboot
     sleep 5
+fi
+
+# Optionally update the servo firmware, if the firmware is already at the correct
+# version this is a no-op
+# SERVO_FW_CHANNEL should be one of - stable, beta, dev, prev (it is case sensitive)
+# SERVO_TYPE should be one of servo_v4 or servo_v4p1
+if ([ -n "$SERVO_FW_CHANNEL" ] && [ -n "$SERIAL" ] && [ -n "$SERVO_TYPE" ]); then
+    servo_updater -s $SERIAL -c $SERVO_FW_CHANNEL -b $SERVO_TYPE
 fi
 
 log_output "Launching servod for $BOARD $MODEL_MSG on port $PORT $SERIAL_MSG"
@@ -101,4 +125,6 @@ servod \
     $PORT_FLAG \
     $DEBUG_FLAG \
     $REC_MODE_FLAG \
-    $CONFIG_FLAG
+    $CONFIG_FLAG \
+    $NAME_FLAG \
+    $DEVICE_DISCOVERY_FLAG

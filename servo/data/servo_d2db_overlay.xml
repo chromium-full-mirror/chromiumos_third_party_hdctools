@@ -6,26 +6,16 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
 -->
 
 <root>
-  <control>
-    <name>jtag_buf_on_flex_en</name>
-    <doc>Enables JTAG buffer on servo flex.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="3" map="onoff_i" clobber_ok=""></params>
-  </control>
-  <control>
-    <name>spi1_buf_on_flex_en</name>
-    <doc>Enables SPI1 buffers on servo flex.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="7" map="onoff_i" ccd_d2_drv="na" servo_micro_drv="na"
-    clobber_ok=""></params>
-  </control>
-  <control>
-    <name>spi2_buf_on_flex_en</name>
-    <doc>Enables SPI2 buffers on servo flex.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="6" map="onoff_i" ccd_d2_drv="na" servo_micro_drv="na"
-    clobber_ok=""></params>
-  </control>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <!-- cpu_fw_spi_pp1800.xml was previously included by default in servo_v2 and
+       servo_micro configs.  Since this board config lacks its own cpu_fw_spi
+       implementation, this include has been added as part of removing it from
+       servo configs. -->
+  <include>
+    <name>cpu_fw_spi_pp1800.xml</name>
+  </include>
   <control>
     <name>uart4_pty</name>
     <alias>raw_d2_uart_pty,raw_usbpd_uart_pty</alias>
@@ -36,7 +26,7 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" init="glados" c2d2_drv="na"></params>
+    <params clobber_ok="patch" init="glados"></params>
   </control>
   <control>
     <name>d2_loglevel</name>
@@ -71,37 +61,33 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     subtype="interp_connect" clobber_ok="" ></params>
   </control>
   <control>
-    <name>uart4_on_flex_en</name>
-    <alias>d2_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,d2_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
     <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
-    <params interface="2" drv="pca95xx" subtype="gpio"
-    child="0x26" offset="3" map="onoff_i" init="on" clobber_ok=""
-    servo_micro_drv="na" c2d2_drv="na"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
     <name>jtag_buf_en</name>
     <alias>d2_uart_en,usbpd_uart_en</alias>
     <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
-    <params  ccd_d2_drv="na" servo_micro_drv="na"
-    clobber_ok="" init="on" c2d2_drv="na">
-    </params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>jtag_vref_sel1</name>
-    <params clobber_ok="" init="pp3300"></params>
+    <params clobber_ok="patch" init="pp3300"></params>
   </control>
   <control>
     <name>dev_mode</name>
     <alias>d2_bootstrap</alias>
-    <params clobber_ok="" od="PU" map="onoff" init="off"></params>
+    <params clobber_ok="patch" od="PU" map="onoff" init="off"></params>
   </control>
   <control>
     <name>pch_disable</name>
     <alias>d2_reset</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

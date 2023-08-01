@@ -1,0 +1,26 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <!-- cpu_fw_spi_pp1800.xml was previously included by default in servo_v2 and
+       servo_micro configs.  Since this board config lacks its own cpu_fw_spi
+       implementation, this include has been added as part of removing it from
+       servo configs. -->
+  <include>
+    <name>cpu_fw_spi_pp1800.xml</name>
+  </include>
+  <include>
+    <name>stm32_ec_common.xml</name>
+  </include>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="" shutdown_delay="3.0" reset_recovery="5.0"
+            drv="cros_ec_softrec_power" />
+  </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="" fw_wp_vref="off"/>
+  </control>
+</root>

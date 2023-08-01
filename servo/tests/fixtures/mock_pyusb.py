@@ -226,7 +226,7 @@ def mock_pyusb(mocker):
     mock_pyusb = mocker.Mock(name="PyUSB")
     mock_pyusb.devices = []
 
-    def mock_find(mock_pyusb, find_all, idVendor, idProduct):
+    def mock_find(mock_pyusb, find_all, idVendor, idProduct, serial_number=None):
         found_devices = []
         for device in mock_pyusb.devices:
             if device.idVendor == idVendor and device.idProduct == idProduct:

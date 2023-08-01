@@ -11,7 +11,6 @@ from servo.drv import active_v4_device
 from servo.drv import ad5248
 from servo.drv import ap
 from servo.drv import cr50
-from servo.drv import cr50_i2c
 from servo.drv import cros_chip
 from servo.drv import cros_ec_hardrec_pbinitidle_power
 from servo.drv import cros_ec_hardrec_power
@@ -28,7 +27,6 @@ from servo.drv import ec3po_servo_v4
 from servo.drv import ec_i2c_pin
 from servo.drv import ec_lm4
 from servo.drv import echo
-from servo.drv import stud_evb
 from servo.drv import fast_ec
 from servo.drv import fluffy
 from servo.drv import ftdii2c_cmd
@@ -36,6 +34,7 @@ from servo.drv import fw_wp_ccd
 from servo.drv import fw_wp_servoflex
 from servo.drv import fw_wp_state
 from servo.drv import gpio
+from servo.drv import gsc_i2c
 from servo.drv import hw_driver
 from servo.drv import i2c_pseudo
 from servo.drv import i2c_reg
@@ -66,6 +65,9 @@ from servo.drv import pi4msd
 from servo.drv import power_kb
 from servo.drv import ps8742
 from servo.drv import pty_driver
+from servo.drv import relay_switch
+from servo.drv import reven_power
+from servo.drv import sarien_power
 from servo.drv import select_control
 from servo.drv import servo_firmware_checker
 from servo.drv import servo_metadata
@@ -87,3 +89,5 @@ from servo.drv import uart
 from servo.drv import undefined
 from servo.drv import usb_downloader
 from servo.drv import usb_image_manager
+from servo.drv import veyron_chromebox_power
+from servo.drv import veyron_power

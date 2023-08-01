@@ -14,7 +14,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:bullseye as clang-builder
+FROM debian:bookworm as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -29,15 +29,11 @@ RUN apt-get update \
         python3 \
         python3-distutils \
         python3-setuptools \
+        python3-wheel \
         uuid-dev \
         wget
-
 RUN update-alternatives --auto c++
 RUN update-alternatives --auto cc
-
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3 ./get-pip.py
-RUN pip3 install --upgrade pip && pip3 install wheel
 
 ENV CC=clang
 ENV CXX=clang++
@@ -129,15 +125,10 @@ COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
 ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 
 WORKDIR /ec
-ENV CFLAGS=" -Wno-deprecated-declarations"
-RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations ${CFLAGS}/' extra/usb_updater/Makefile
-RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations /' Makefile.toolchain
-RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations /' Makefile.toolchain
+#RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
-    make build/host/util/ec_parse_panicinfo BOARD=host && \
-    make build/host/util/ec_sb_firmware_update BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
@@ -147,8 +138,6 @@ RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="powerlog" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="console" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
-
-RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shflags
 
 RUN strip /ec/extra/usb_updater/usb_updater2 \
           /ec/build/host/util/stm32mon \
@@ -164,21 +153,11 @@ RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 
 WORKDIR /ec
 
-RUN git checkout cr50_stab && git pull
-RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations ${CFLAGS}/' extra/usb_updater/Makefile
-RUN CFLAGS="-Wno-deprecated-declarations" make -C extra/usb_updater gsctool
+RUN git checkout gsc_utils && git pull
+RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
+RUN make -C extra/usb_updater gsctool
 
 RUN strip  /ec/extra/usb_updater/gsctool
-
-######################################################################
-FROM clang-builder as protoc-builder
-
-WORKDIR /
-RUN wget  https://github.com/protocolbuffers/protobuf/releases/download/v3.19.3/protobuf-python-3.19.3.tar.gz && tar xf protobuf-python-3.19.3.tar.gz && rm protobuf-python-3.19.3.tar.gz
-# Version is set to match version of protoc in the chroot
-# When updating package versions, also update protoc to x.y.z in:
-# chromium/src/third_party/portage-stable/dev-libs/protobuf/protobuf-x.y.z.ebuild
-RUN cd /protobuf-3.19.3/ && ./configure && make -j $(grep -c   "^processor" /proc/cpuinfo) && make check && make install && ldconfig
 
 ######################################################################
 FROM libftdi as hdctools-builder
@@ -188,14 +167,10 @@ FROM libftdi as hdctools-builder
 COPY / hdctools/
 #RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
-# Install protoc
-# Put  protoc in /usr/bin to match chroot's protoc location so that proto/Makefile
-# runs without issue
-COPY --from=protoc-builder /usr/local/bin/protoc /usr/bin
-COPY --from=protoc-builder /usr/local/lib/libproto* /usr/local/lib/
-RUN ldconfig
-
-RUN pip3 install pytest
+RUN apt-get update \
+    && apt-get install -y \
+        protobuf-compiler \
+        python3-pytest
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
@@ -223,36 +198,44 @@ RUN make
 RUN strip  /uhubctl/uhubctl
 
 ######################################################################
-FROM python:3.10-bullseye as firmware-installer
+FROM debian:bookworm-slim as firmware-installer
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
-         apt-transport-https ca-certificates gnupg sudo \
+         apt-transport-https \
+         ca-certificates \
+         curl \
+         gnupg \
+         python3 \
+         sudo \
+         xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo tee /usr/share/keyrings/cloud.google.gpg
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/cloud.google.gpg
 RUN sudo apt-get update && sudo apt-get install google-cloud-cli
 
 RUN mkdir -p /usr/share/servo_updater/firmware/
 WORKDIR /usr/share/servo_updater/firmware/
 COPY /servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
-RUN python servo_firmware_provision.py && rm servo_firmware_provision.py
+RUN python3 servo_firmware_provision.py && rm servo_firmware_provision.py
 
 ######################################################################
 FROM libftdi as flashrom-builder
 
 WORKDIR /
-RUN pip3 install meson ninja
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 
 RUN apt-get update \
     && apt-get install -y \
+        meson \
+        ninja-build \
         cmake \
-	    libpci-dev
+        libcmocka-dev \
+        libpci-dev
+
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 
 WORKDIR /flashrom
-ENV CFLAGS=" -Wno-incompatible-function-pointer-types -Wno-error-int-conversion -Wno-deprecated-declarations"
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
 
@@ -269,7 +252,7 @@ RUN make && make install
 RUN strip /usr/bin/futility
 
 ######################################################################
-FROM python:3.10-slim-bullseye
+FROM debian:bookworm-slim
 
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
@@ -280,6 +263,7 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         dnsutils \
+        fwupd \
         iptables \
         iputils-ping \
         kmod \
@@ -294,19 +278,32 @@ RUN apt-get update --no-install-recommends \
         build-essential \
         make \
         gcc \
+        python3 \
+        python3-mock \
+        python3-numpy \
+        python3-pexpect \
+        python3-protobuf \
+        python3-serial \
+        python3-pytest \
+        python3-pytest-cov \
+        python3-pytest-forked \
+        python3-pytest-mock \
+        python3-pytest-xdist \
+        python3-usb \
+        python3-requests \
+        python3-six \
+        python3-pip \
+        wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
-# Install python packages.
-COPY /servo/dockerfiles/requirements.txt /opt/requirements.txt
-RUN pip install --upgrade pip && pip3 --no-cache-dir install -r /opt/requirements.txt
 
 WORKDIR /hdctools/chromeos/
 COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --from=hdctools-builder /hdctools/dist/* ./
 COPY --from=ec-builder /ec/dist/*.whl ./
-RUN pip install *.whl
+RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
 
@@ -319,10 +316,13 @@ COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
 
+# Install genesys hub firmware
+RUN mkdir -p /usr/local/genesys
+RUN wget https://fwupd.org/downloads/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab \
+    -O /usr/local/genesys/GenesysLogic_GL3590_64.17.cab
+
 # Install ec tools
 COPY --from=ec-builder \
-    /ec/build/host/util/ec_parse_panicinfo \
-    /ec/build/host/util/ec_sb_firmware_update \
     /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/stm32mon \
     /ec/build/host/util/uartupdatetool \
@@ -342,12 +342,10 @@ COPY --from=ec-builder \
         /usr/lib/libftdi* \
         /usr/lib/
 
-COPY --from=ec-builder /usr/share/misc/shflags /usr/share/misc/shflags
+RUN wget https://raw.githubusercontent.com/kward/shflags/master/shflags --output-document /usr/share/misc/shflags
 COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
 COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
-
-RUN mkdir -p /usr/share/ec-devutils
 
 # Install uhubctl
 COPY --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
@@ -389,10 +387,19 @@ RUN apt-get remove --purge -y \
         build-essential \
         make \
         gcc \
+        python3-pip \
+        wget \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /usr/local/lib/python3.10/site-packages/numpy/core/tests \
-    && python -m pip uninstall -y pip \
+    && rm -rf /usr/local/lib/python*/site-packages/numpy/core/tests \
     && rm -rf /var/cache/debconf \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
+
+# Required for the name paramter for using .servorc.
+ENV SUDO_USER=docker
+# Required for the ftdi libraries to be found. ENV does not allow the
+# use of command to populate the results, to be less brittle it would
+# be nice if the path could be discovered with a command like:
+# find / -name libftdii2c.so -exec dirname {} \;
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages

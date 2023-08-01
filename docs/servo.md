@@ -149,14 +149,13 @@ Servo can also be used for flashing firmware. To flash EC firmware:
 (chroot) $ /mnt/host/source/src/platform/ec/util/flash_ec --board=$BOARD --image=$IMAGE
 ```
 
-The procedure for flashing system firmware may vary slightly by platform. Here
-is a typical command sequence for flashing system firmware on Baytrail-based
-Chrome devices:
+The procedure for reading or flashing system firmware varies by servo type and
+platform, however the differences are abstracted away by futility and servod.
+These commands work with any servo type and any board.
 
 ```bash
-(chroot) $ dut-control spi2_buf_en:on spi2_buf_on_flex_en:on spi2_vref:pp1800 cold_reset:on
-(chroot) $ sudo flashrom -V -p ft2232_spi:type=google-servo-v2 -w $IMAGE # [need to change for each servo type]
-(chroot) $ dut-control spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off cold_reset:off
+(chroot) $ sudo futility read --servo -v "$OUTFILE"
+(chroot) $ sudo futility update --servo -v -i "$INFILE"
 ```
 
 To set up servo to run automated tests, connect the servo board and the test

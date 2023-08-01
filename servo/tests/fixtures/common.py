@@ -93,14 +93,16 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_dartmonkey_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_dragonclaw_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_dragontalon_overlay.xml",   # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_helipilot_overlay.xml",     # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_icetower_overlay.xml",      # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_quincy_overlay.xml",        # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_zerblebarn_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
         "servo_chocodile_overlay.xml",     # Not working as it includes servo_micro.xml
         "servo_hana_overlay.xml",  # Not working
         "servo_elm_overlay.xml",   # Not working
         "servo_oak_overlay.xml",   # Not working
     ]
-    filenames = glob.glob("/usr/local/lib/*/site-packages/servo/data/servo_*_overlay.xml")
+    filenames = glob.glob("/usr/local/lib/*/*-packages/servo/data/servo_*_overlay.xml")
     board_model_list = []
     for filename in filenames:
         basename = os.path.basename(filename)
@@ -119,6 +121,9 @@ def get_board_model_pairs(board_exclude_list=[]):
             board_model_list.append((parts[1], parts[2]))
         else:
             raise Exception("Data file %s not in correct format - untested" % os.path.basename(filename))
+
+    if not board_model_list:
+        raise Exception("Failed to find ANY boards, likely there is a test bug.")
 
     return board_model_list
 

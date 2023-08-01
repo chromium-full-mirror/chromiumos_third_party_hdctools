@@ -8,7 +8,7 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>enable pd uart routing</doc>
-    <params clobber_ok="" init="glados"></params>
+    <params clobber_ok="patch" init="glados"></params>
   </control>
 
   <!-- Invert usbpd_boot_mode since it's backwards on chocodile. -->
@@ -16,7 +16,7 @@
     <name>dev_mode</name>
     <alias>usbpd_boot_mode</alias>
     <doc>BEC_UPDATE_L</doc>
-    <params clobber_ok="" map="onoff_i" od="PP"></params>
+    <params clobber_ok="patch" map="onoff_i" od="PP"></params>
   </control>
 
   <!-- Override warm_reset to BEC_EN. -->

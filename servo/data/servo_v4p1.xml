@@ -45,6 +45,12 @@
     <doc>Determines whether DUT or host sees USB port</doc>
     <params servo_sees_usbkey="0" dut_sees_usbkey="1"></params>
   </map>
+  <control>
+    <name>second_usbkey_direction</name>
+    <doc>Safely switch second usbkey direction by cycling power first. This port isn't currently implemented to use usb drives.</doc>
+    <params subtype="second_usbkey_direction" interface="servo"
+      drv="usb_image_manager" map="usbkey" usb_power_off_delay="2"></params>
+  </control>
   <map>
     <name>servo_v4p1_cc_map</name>
     <doc>Enable CC and power config for various CCD modes</doc>
@@ -169,14 +175,14 @@
   </control>
   <control>
     <name>aux_usbkey_pwr</name>
-    <doc>(bottom) muxable usb port mux.</doc>
+    <doc>(bottom) muxable usb port power enable.</doc>
     <alias>bottom_usbkey_pwr</alias>
     <params interface="23" drv="tca6416" child="0x21" port="1"
     offset="1" map="onoff" init="on"></params>
   </control>
   <control>
     <name>aux_usbkey_mux</name>
-    <doc>(bottom) muxable usb port power enable.</doc>
+    <doc>(bottom) muxable usb port mux.</doc>
     <alias>bottom_usbkey_mux</alias>
     <params interface="23" drv="tca6416" child="0x21" port="1"
     offset="2" map="usbkey" init="dut_sees_usbkey"></params>
@@ -284,6 +290,25 @@
     <params map="onoff" init="off" drv="kb_handler_init" interface="servo"
       subtype="init_usb_keyboard"></params>
   </control>
+  <control>
+    <name>servo_v4p1_dut_usb3_en</name>
+    <doc>Enable/disable USB3 to DUT on servo_v4p1.
+    USB3 is disabled on servo_v4p1 by default due to incompatibility
+    with some models. This control allows to manipulate USB3 state.
+    Also it automatically enables USB3 during servod initialization.
+    If specific DUT does not work well with servo_v4p1 and USB3,
+    its config should include this control with 'patch' element inside.
+    Also it should include 'clobber_ok' and overwrite 'init' value to 'disable'.
+    Note: need to use servo FW with dut_usb3 console command available.
+    Note: servo_v4p1_dut_usb3_en:enable forces USB3 once after issuing.
+    It also resets USB DUT hub, to make USB devices enumerate again
+    as super speed. Then USB3 is only ALLOWED, which means that other
+    parts of servo FW can change it to USB2, eg. PD stack. </doc>
+    <params cmd="get" uart_cmd="dut_usb3" regex="(allowed/enabled|disabled)"
+    group="0" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="dut_usb3" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(enable|disable)$" init="disable"/>
+  </control>
 
   <!-- UART and CONSOLE settings -->
   <control>
@@ -308,7 +333,7 @@
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_v4p1_uart</name>
-    <alias>servo_v4p1_uart_pty</alias>
+    <alias>servo_v4p1_uart_pty,servo_v4_uart_pty</alias>
     <doc>Servo v4p1 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
@@ -451,10 +476,10 @@
   </control>
   <control>
     <name>servo_v4p1_type</name>
-    <alias>dut_connection_type</alias>
-    <!-- This is a hard-coded return string to be compatible with v4
-      code. v4p1 is always type-c-->
-    <params interface="servo" drv="echo" value="type-c"></params>
+    <alias>dut_connection_type,servo_v4_type</alias>
+    <doc>DONGLE_DET</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="DONGLE_DET" ioex="true" map="servo_v4p1_type_map" />
   </control>
   <control>
     <name>usbc_polarity</name>

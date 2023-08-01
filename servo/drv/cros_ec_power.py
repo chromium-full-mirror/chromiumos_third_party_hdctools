@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 import time
 
-from servo.drv import power_state
 from servo.drv import polling_control
+from servo.drv import power_state
+
 
 CONTROL_COMMAND = 'ec_system_powerstate'
 CONTROL_OUTPUT_EXPECTED = ['S5', 'G3']
@@ -22,19 +23,19 @@ class CrosECPower(power_state.PowerStateDriver):
       servod: Servod that is used for cross-servo-device communication
     """
     super(CrosECPower, self).__init__(interface, params, servod)
-    self._apreset_ec_command = self._params.get('apreset_ec_command', '')
-    self._shutdown_ec_command = self._params.get('shutdown_ec_command',
-                                                 'apshutdown')
+    self._apreset_ec_commands = self._params.get('apreset_ec_commands', '')
+    self._shutdown_ec_commands = self._params.get('shutdown_ec_commands',
+                                                  'apshutdown')
     self._shutdown_delay = float(self._params.get('shutdown_delay', 11.0))
 
   def _warm_reset(self):
     """Apply warm reset to the DUT."""
-    if not self._apreset_ec_command:
+    if not self._apreset_ec_commands:
       # Fallback to the default sequence, which is defined in the superclass
       super(CrosECPower, self)._warm_reset()
     else:
       self._servod_set('ec_uart_regexp', 'None')
-      self._servod_set('ec_uart_cmd', self._apreset_ec_command)
+      self._servod_set('ec_uart_multicmd', self._apreset_ec_commands)
       # After the reset, give the EC the time it needs to
       # re-initialize.
       time.sleep(self._reset_recovery_time)
@@ -42,7 +43,7 @@ class CrosECPower(power_state.PowerStateDriver):
   def _power_off(self, manage_delay=True):
     """Power off the DUT."""
     self._servod_set('ec_uart_regexp', 'None')
-    self._servod_set('ec_uart_cmd', self._shutdown_ec_command)
+    self._servod_set('ec_uart_multicmd', self._shutdown_ec_commands)
 
     if manage_delay:
       if not polling_control.PollingControl().poll(

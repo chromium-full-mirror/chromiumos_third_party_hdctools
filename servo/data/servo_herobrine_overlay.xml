@@ -27,7 +27,7 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"
-    apreset_ec_command="apreset"/>
+    apreset_ec_commands="apreset"/>
   </control>
   <!--
     Simple property indicating what model of EC we have.  We use a Nuvoton EC
@@ -62,7 +62,7 @@
       set to active before any other configuration, so cr50 settings won't get
       cleared by a deep sleep reset.
     -->
-    <params clobber_ok="" interface="servo" drv="macro" map="onoff"
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
       set_value_1="cold_reset:on sleep:2 gsc_idle_level:active spi2_buf_en:on
                    spi2_buf_on_flex_en:on spi2_vref:off ap_flash_select:on
                    spi_hold:off"
@@ -74,5 +74,26 @@
   <control>
     <name>cpu_fw_spi</name>
     <remap>ccd_cpu_fw_spi</remap>
+  </control>
+
+  <!-- USB3 should be disabled by default in servo_v4p1. However
+    most of boards are known to work well with servo_v4p1 and USB3.
+    So in servo_v4p1 config there is servo_v4p1_dut_usb3_en control
+    defined to enable USB3 to DUT during servod initialization.
+
+    This specific board is incompatible with servo + USB3 so we need
+    to overwrite init value of this control and keep USB3 disabled.
+    Please refer to b/254857085.
+
+    Note: we need to use 'patch' mechanism to safely overwrite
+    parameters of this control (for cases where servo_v4p1 XML is not
+    used and mentioned control not defined).
+
+    TODO (b/254857085 b/268737644) - delete this control if proper
+    fixes would be upreved on all models from this family.
+  -->
+  <control>
+    <name>servo_v4p1_dut_usb3_en</name>
+    <params clobber_ok="patch" init="disable"></params>
   </control>
 </root>

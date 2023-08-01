@@ -8,11 +8,22 @@
   <include>
     <name>cr50.xml</name>
   </include>
-
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
+    <name>ec_efs2.xml</name>
+  </include>
   <!-- warm_reset is on pin 39, reconfigure -->
   <include>
     <name>warm_reset_reconf.xml</name>
   </include>
+
+  <map>
+    <name>ap_spi_mux_map</name>
+    <doc>Map for Zork ap_spi_mux_sel control. Picks which debugger interface, meaning GSC (CCD) or Servo Header (case open debug), should have access to AP SPI flash.</doc>
+    <params gsc="0" servo="1" />
+  </map>
 
   <control>
     <name>fw_wp_state</name>
@@ -35,20 +46,34 @@
   </control>
   <control>
     <name>dev_mode</name>
-    <alias>servo_present</alias>
-    <doc>Used to connect servo to SPI flash via mux</doc>
-    <!-- servo_present is an alias with dev_mode (and spi1_buf_on_flex_en),
-    but change type to push-pull since we need to drive high to enable SPI
-    flash b/143179371 -->
-    <params clobber_ok="" od="PP" />
+    <alias>ap_spi_mux_sel</alias>
+    <doc>Controls a mux on Zork that switches between GSC or Servo Header access to AP SPI flash. (Zork AP is always connected to its API flash, this mux is /not/ in path for the AP.)</doc>
+    <!-- change type to push-pull since we need to drive high
+    https://issuetracker.google.com/143179371 -->
+    <params clobber_ok="patch" od="PP" map="ap_spi_mux_map" />
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
-      set_value_1="spi2_vref:pp1800 spi2_buf_en:on spi2_buf_on_flex_en:on
-                   cold_reset:on servo_present:on"
-      set_value_0="spi2_vref:off spi2_buf_en:off spi2_buf_on_flex_en:off
-                   cold_reset:off servo_present:off"
-      />
+    <doc>Enable SPI mode for flashing CPU firmware over servo</doc>
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>spi2_vref:pp1800</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi2_buf_on_flex_en:on</item>
+            <item>cold_reset:on</item>
+            <item>ap_spi_mux_sel:servo</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>spi2_buf_en:off</item>
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>cold_reset:off</item>
+            <item>ap_spi_mux_sel:gsc</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
 </root>

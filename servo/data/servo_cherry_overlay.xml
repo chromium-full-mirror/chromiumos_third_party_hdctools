@@ -32,11 +32,20 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok=""
-      set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
-      spi2_vref:pp1800"
-      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
-      warm_reset:off"
-      />
+    <doc>Enable SPI mode for flashing AP firmware over C2D2</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>warm_reset:on</item>
+            <item>spi2_vref:pp1800</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>warm_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
 </root>

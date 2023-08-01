@@ -77,6 +77,8 @@ class ServodStarter(object):
     sopts, devopts_list = self._parse_args(cmdline)
     self._host = sopts.host
 
+    disable_unusable_usb3_hubs()
+
     # Turn on recovery mode if requested.
     if sopts.recovery_mode:
       recovery.set_recovery_active()
@@ -156,24 +158,23 @@ class ServodStarter(object):
                              'files get rotated on new instance, by user '
                              'request or when they grow past %d bytes.' %
                              servo_logging.MAX_LOG_BYTES)
-    server_pars.add_argument('--allow-dual-v4',
-                             help='Deprecated flag. '
-                            'Double DUT controllor is always allowed now.')
+    server_pars.add_argument('--allow-dual-v4', dest='dual_v4', default=False,
+                             action='store_true',
+                             help='DEPRECATED.  Backwards compatible way to set '
+                             '--device-discovery=full')
     server_pars.add_argument('--recovery_mode', default=False,
                              action='store_true',
                              help='Start servod through issues to allow for '
                              'inspection and recovery mechanisms.')
-    server_pars.add_argument('--no-device-discovery', default=False,
-                             action='store_true',
-                             help='Only use devices included in the command '
-                             'line and rc file to start servod. Disallow auto-'
-                             'discovering any other devices.')
-    server_pars.add_argument('--min-device-discovery', default=False,
-                             action='store_true',
-                             help='Only perform minimum auto-discovering of '
-                             'devices based on the deviced provided through'
-                             'command line and rc file. i.e. pull in the necessary'
-                             'root hub and child devices.')
+    # In the long term we might want to enable pulling in all servo devices
+    # including all DUT controllers by default. Currently we default to pull
+    # the minimum to be backwards compatible.
+    server_pars.add_argument('-D', '--device-discovery', default='min',
+                             const='min', nargs='?',
+                             choices=('none', 'min', 'full'),
+                             help='Level of auto-discovering devices based '
+                             'on the deviced provided through command line and '
+                             'rc file. Default to minimum discovery.')
     # This is included in server_pars because it is shared across all devices
     server_pars.add_argument('-u', '--usbkm232', type=str,
                           help='path to USB-KM232 device which allow for '
@@ -314,12 +315,12 @@ class ServodStarter(object):
       a tuple of all the ServoDeviceEntry's, the main device's ServoDeviceEntry
     """
     dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
-    if sopts.no_device_discovery:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
-    elif sopts.min_device_discovery:
+    if sopts.device_discovery == 'full' or sopts.dual_v4:
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
+    elif sopts.device_discovery == 'min':
       discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO
     else:
-      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
+      discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.NO_AUTO
     finder = servo_dev_finder.ServoDeviceFinder(devopts=devopts_list,
                                                 devopts_generator=self.devopts_generator,
                                                 dev_hierarchy=dev_hierarchy,
@@ -363,9 +364,6 @@ class ServodStarter(object):
       for cfg_file in all_configs:
         scfg.add_cfg_file(cfg_file)
 
-      self._logger.debug('System configs for device %s\n%s', dev_entry,
-        scfg.display_config())
-
       servo_device = servo_dev.ServoDevice(dev_entry=dev_entry, config=scfg,
         interfaces=devopts.interfaces, servod=weakref.proxy(self._servod))
 
@@ -387,7 +385,11 @@ class ServodStarter(object):
           self._logger.warn('Cannot set up board %s for device %s. '
             'Start device without board specific config.',
             devopts.board, servo_device)
+
       servo_device.syscfg.finalize()
+      self._logger.debug('System configs for device %s\n%s', dev_entry,
+        servo_device.syscfg.display_config())
+
       for prefix in dev_entry.devopts.prefix:
         self._servod.add_device(servo_device, prefix)
 
@@ -492,7 +494,6 @@ def disable_unusable_usb3_hubs():
 # Ability to pass an arbitrary or artificial cmdline for testing is desirable.
 def main(cmdline=sys.argv[1:]):
   """Main function for servod."""
-  disable_unusable_usb3_hubs()
   try:
     starter = ServodStarter(cmdline)
   except ServodError as error:

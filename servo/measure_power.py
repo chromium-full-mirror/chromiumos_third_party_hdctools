@@ -86,7 +86,8 @@ class ServodPowerTracker(threading.Thread):
       title = '%s (%s)' % (title, suffix)
     self.title = title
     self._stats = timelined_stats_manager.TimelinedStatsManager(smid=tag,
-                                                                title=title)
+                                                                title=title,
+                                                                rate=sample_rate)
     self._logger = logging.getLogger(type(self).__name__)
     # Flag to indicate whether to skip the first reading. This is used
     # for trackers that run averaging, and the first reading is used to reset
@@ -474,7 +475,8 @@ class RegexFilter(object):
     Returns:
       filtered controls: a list (potentially empty) after filtering
     """
-    controls = control_names.copy()
+    # Only use ctrls from the main device for now
+    controls = [ctrl for ctrl in control_names if '.' not in ctrl]
     if self.rgx_to_remove is not None:
       controls = []
       for c in control_names:
@@ -728,61 +730,6 @@ class PowerMeasurement(object):
     for tracker in self._power_trackers:
       if tracker.is_alive():
         tracker.join()
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
-
-  def GetPMStatus(self):
-    """Pass the information if the power measurement is finished or not
-       Returns:
-         True:  power measurement is finished
-         False: power measurement is still working
-    """
-    return self._stop_signal.is_set()
 
   def GetPMStatus(self):
     """Pass the information if the power measurement is finished or not
