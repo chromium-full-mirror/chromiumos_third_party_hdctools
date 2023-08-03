@@ -15,17 +15,19 @@
          - the gsc will reset the efs boot_mode when it resets the EC.
       - c2d2: gsc_reset
          - gsc_reset resets the GSC. GSC resets boot_mode when its reset
-      - 50pin servo: gsc_reset
-         - req: connect the GSC_RST_L signal to the servo pch_disable
-           pin. This is already a requirement for new boards.
-         - gsc_reset resets the GSC. GSC resets boot_mode when its reset.
+      - 50pin servo: gsc_locked_cold_reset
+         - asserts the servo cold reset signal and notifies gsc the EC
+	   reset by sending `ecrst pulse`. `ecrst pulse` works when ccd is
+	   locked, so boot_mode will work correctly even if ccd is locked. The
+	   servo signal will continue to hold the device in reset until
+	   cold_reset:off is called.
     There must be an init value for every type of servo. Servo_specific splits
     the device_type at the first '_'. ccd_init applies to all ccd_* devices
     servo_init applies to all servo_* devices. c2d2 applies to c2d2.
   -->
   <control>
     <name>cold_reset_select</name>
-    <params servo_init="gsc_reset" c2d2_init="gsc_reset"
+    <params servo_init="gsc_locked_cold_reset" c2d2_init="gsc_reset"
     ccd_init="default_cold_reset" init="servo_specific" clobber_ok="patch"/>
   </control>
 </root>

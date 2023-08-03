@@ -214,6 +214,26 @@
     map="onoff_i" init="off"></params>
   </control>
   <control>
+    <name>gsc_locked_cold_reset</name>
+    <doc>pulse gsc ecrst and assert flex cold_reset.</doc>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="get_controls">
+          <item>default_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>default_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <item>default_cold_reset:on</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
     <name>gsc_reset_count</name>
     <alias>cr50_reset_count</alias>
     <doc>GSC reset count</doc>
