@@ -184,6 +184,26 @@
     drv="cr50" input_type="str" clobber_ok="" init="open" ></params>
   </control>
   <control>
+    <name>gsc_ecrst_pulse</name>
+    <doc>Send the gsc 'ecrst pulse' command</doc>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff_i" clobber_ok="full">
+      <content>
+        <item key="get_controls">
+          <item>gsc_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>cr50_uart_cmd:ecrst pulse</item>
+          </item>
+          <item key="1">
+            <item>gsc_cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
     <name>gsc_ec_reset</name>
     <doc>send the gsc ec_reset command to reset the EC.</doc>
     <params cmd="get" uart_cmd="ecrst"
