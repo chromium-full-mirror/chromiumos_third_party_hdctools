@@ -2,12 +2,15 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-IMAGE=us-docker.pkg.dev/chromeos-hw-tools-dev/servod/dev_env:latest
+set -x
+IMAGE=us-docker.pkg.dev/chromeos-hw-tools/servod/dev_env:latest
+SCRIPT_PATH="$(dirname -- "${BASH_SOURCE[0]}")"
+
 docker pull -q ${IMAGE}
 docker build -q -t 127.0.1.1:5000/hdctoolsdev \
     --build-arg USER=$USER \
     --build-arg  USERID=$(id -u) \
-    -f Dockerfile.local .
+    -f ${SCRIPT_PATH}/Dockerfile.local ${SCRIPT_PATH}
 docker run --rm --net host \
     --env DISPLAY=unix$DISPLAY --privileged \
     --volume /tmp/.X11-unix:/tmp/.X11-unix  --shm-size=5g --user $USER \

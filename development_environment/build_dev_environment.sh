@@ -8,11 +8,11 @@ xhost +
 function download_file_from_git() {
     curl https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/development_environment/${1}?format=TEXT | base64 -d > ${1}
 }
-#         "start_dev_environment.sh" \
 for s in "add_docker_settings.py" \
          "local-docker-registry" \
          "local-docker-proxy" \
          "build_servod.sh" \
+         "start_dev_environment.sh" \
          "Dockerfile.local" ; do
     download_file_from_git ${s}
 done

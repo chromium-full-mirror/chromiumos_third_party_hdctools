@@ -99,8 +99,9 @@ if __name__ == "__main__":
         "--sleep",
         action=argparse.BooleanOptionalAction,
         help="Run the continer but do not start servod - best for debug.",
+    )
     args = parser.parse_args()
     client = setup()
     start_servod(
-        client, args.hostname, args.board, args.model, args.serial, args.run_tests
+        client, args.hostname, args.board, args.model, args.serial, args.run_tests, args.sleep
     )
