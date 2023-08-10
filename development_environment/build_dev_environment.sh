@@ -11,9 +11,7 @@ function download_file_from_git() {
 for s in "add_docker_settings.py" \
          "local-docker-registry" \
          "local-docker-proxy" \
-         "build_servod.sh" \
-         "start_dev_environment.sh" \
-         "Dockerfile.local" ; do
+         "start_dev_environment.sh" do
     download_file_from_git ${s}
 done
 # Install a script to start the container that has the servod build environment.
