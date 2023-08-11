@@ -17,8 +17,8 @@ for s in "start_dev_environment.sh" \
     download_file_from_git ${s}
 done
 
-docker pull -q ${IMAGE}
-docker build -q -t 127.0.1.1:5000/hdctoolsdev \
+docker pull ${IMAGE}
+docker build -t 127.0.1.1:5000/hdctoolsdev \
     --build-arg USER=$USER \
     --build-arg  USERID=$(id -u) \
     -f ${tmpdir}/Dockerfile.local ${tmpdir}
@@ -32,4 +32,3 @@ docker run --rm --net host \
     --ulimit nofile=200000:200000 -e USER=$USER -v $HOME:/home/$USER \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -v $(pwd):/hdctools_source -it -t 127.0.1.1:5000/hdctoolsdev:latest
-

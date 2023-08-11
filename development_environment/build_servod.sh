@@ -1,9 +1,7 @@
 #!/bin/bash
 
-REGISTRY="${1:-127.0.1.1:5000}"
-set -x
-
 export DOCKER_BUILDKIT=1
+IMAGE = "servod:dev"
 cd /hdctools_source/hdctools
 
 if [ "$2" == "multi" ]
@@ -17,11 +15,10 @@ then
 	    --output type=registry,registry.insecure=true,push=true \
 	    --allow security.insecure \
 	    --allow network.host \
-	    -t ${REGISTRY}/servod:release \
+	    -t ${IMAGE} \
 	    -f servo/dockerfiles/Dockerfile .
 else
-     docker build --build-arg=BUILD_ENV=developer -t ${REGISTRY}/servod:dev -f servo/dockerfiles/Dockerfile . \
-     && docker push "${REGISTRY}/servod:dev"
+     docker build -t ${IMAGE} -f servo/dockerfiles/Dockerfile .
 fi
 
 cd -
