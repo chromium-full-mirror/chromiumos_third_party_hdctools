@@ -131,3 +131,19 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo_mfg":
             'servo_mfg = servo_mfg.main:main',
         ],
     })
+
+if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "ec3po":
+    setup(
+        name="ec3po",
+        version="1.0.0rc1",
+        maintainer='chromium os',
+        maintainer_email='chromium-os-dev@chromium.org',
+        license = 'Chromium',
+        url = 'http://www.chromium.org',
+        package_dir={"" : "util"},
+        packages=["ec3po"],
+        py_modules=["ec3po.console", "ec3po.interpreter"],
+        description="EC console interpreter.",
+    )
+
+

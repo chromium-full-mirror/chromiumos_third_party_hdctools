@@ -125,7 +125,6 @@ RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations -Wno-sign-c
 RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
 
 COPY servo/dockerfiles/setup_ec.py .
-RUN PACKAGE="ec3po" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 
@@ -153,6 +152,7 @@ COPY /servo/dockerfiles/setup_hdctools.py .
 RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
+RUN PACKAGE="ec3po" python3 setup_hdctools.py bdist_wheel
 
 ######################################################################
 FROM debian:bookworm-slim

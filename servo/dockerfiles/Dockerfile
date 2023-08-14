@@ -132,7 +132,6 @@ RUN make build/host/util/iteflash BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
-RUN PACKAGE="ec3po" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="powerlog" python3 setup_ec.py bdist_wheel
@@ -182,6 +181,7 @@ COPY /servo/dockerfiles/setup_hdctools.py .
 RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
 RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
+RUN PACKAGE="ec3po" python3 setup_hdctools.py bdist_wheel
 
 #####################################################################
 FROM clang-builder as uhubctl-builder

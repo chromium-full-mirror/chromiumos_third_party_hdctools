@@ -5,7 +5,7 @@
 export HDCTOOLS_DIR = $(shell pwd)
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 
-SUBDIRS		= lib test servo usbkm232
+SUBDIRS		= lib test servo usbkm232 util
 ifdef EXTRA_DIRS
 SUBDIRS		+= $(EXTRA_DIRS)
 endif
