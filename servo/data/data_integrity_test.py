@@ -279,8 +279,7 @@ class TestControlIntegrity(object):
                                          ('doc', (0, 1)),
                                          ('params', (1, 2)),
                                          ('alias', (0, 1)),
-                                         ('remap', (0, 1)),
-                                         ('clone', (0, 1))])
+                                         ('remap', (0, 1))])
   def element(self, request):
     """Helper to parameterize over all control components.
 
@@ -314,7 +313,7 @@ class TestControlIntegrity(object):
     Returns:
       True if |control| uses all element; False otherwise.
     """
-    return 'remap' not in control and 'clone' not in control
+    return 'remap' not in control
 
   def test_ControlElement(self, control, element):
     """|element|[0] is in |control| one of |element|[1] number of times.
