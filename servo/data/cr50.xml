@@ -184,13 +184,54 @@
     drv="cr50" input_type="str" clobber_ok="" init="open" ></params>
   </control>
   <control>
-    <name>gsc_ec_reset</name>
+    <name>gsc_ecrst_pulse</name>
+    <doc>Send the gsc 'ecrst pulse' command</doc>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="get_controls">
+          <item>gsc_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>gsc_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <item>cr50_uart_cmd:ecrst pulse</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>gsc_cold_reset</name>
+    <alias>gsc_ec_reset</alias>
     <doc>send the gsc ec_reset command to reset the EC.</doc>
     <params cmd="get" uart_cmd="ecrst"
     regex="EC_RST_L is (asserted|deasserted)" group="1"
-    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    interface="9" drv="cr50" map="asserted_re"></params>
     <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok="" init="off"></params>
+    map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>gsc_locked_cold_reset</name>
+    <doc>pulse gsc ecrst and assert flex cold_reset.</doc>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="get_controls">
+          <item>default_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>default_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <item>default_cold_reset:on</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
   <control>
     <name>gsc_reset_count</name>

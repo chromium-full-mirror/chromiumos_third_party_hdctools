@@ -30,9 +30,9 @@ install:
 	$(MKDIR) -p $(INIT_DEST)
 	$(MESSAGE) "Installing '$(SERVOD_CONF)' to $(INIT_DEST)"
 	$(CP) $(SERVOD_CONF) "$(INIT_DEST)"
-	chmod a+r "$(INIT_DEST)/$(SERVOD_CONF)"
+	chmod 0644 "$(INIT_DEST)/$(SERVOD_CONF)"
 
 	$(MKDIR) -p $(SHARE_DEST)
 	$(MESSAGE) "Installing '$(SERVOD_UTILS)' to $(SHARE_DEST)"
 	$(CP) $(SERVOD_UTILS) "$(SHARE_DEST)"
-	chmod a+r "$(SHARE_DEST)/$(SERVOD_UTILS)"
+	chmod 0644 "$(SHARE_DEST)/$(SERVOD_UTILS)"

@@ -24,7 +24,7 @@
     <alias>warm_reset</alias>
     <doc>warm_reset not connected on Gale flex cable. Connect it to
     cold_reset.</doc>
-    <params clobber_ok="" />
+    <params clobber_ok="patch" />
   </control>
   <!-- gale does not have a CrOS EC (thus also does not support
     communication through it).-->

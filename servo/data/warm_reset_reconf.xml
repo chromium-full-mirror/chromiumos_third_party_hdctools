@@ -2,7 +2,8 @@
   <!-- warm_reset is moved to pin 39, same as hpd -->
   <control>
     <name>hpd</name>
-    <remap>warm_reset</remap>
+    <alias>warm_reset</alias>
+    <params clobber_ok="patch"/>
   </control>
   <!-- overwrite its config as pull-up and reversed polarity -->
   <!-- TODO: can be cleaned up with a single source of control xmls -->

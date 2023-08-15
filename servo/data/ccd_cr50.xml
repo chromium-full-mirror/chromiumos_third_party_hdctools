@@ -12,6 +12,9 @@
   <include>
     <name>uart_common.xml</name>
   </include>
+  <include>
+    <name>select_cold_reset.xml</name>
+  </include>
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_ec_uart_pty</name>
@@ -54,13 +57,9 @@
   </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
-    <name>gsc_ec_reset</name>
-    <clone>cold_reset</clone>
-  </control>
-  <control>
-    <name>cold_reset_select</name>
-    <doc>Use ccd controls for cold reset</doc>
-    <params type="ccd" clobber_ok=""/>
+    <name>gsc_cold_reset</name>
+    <alias>default_cold_reset</alias>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ccd_state</name>

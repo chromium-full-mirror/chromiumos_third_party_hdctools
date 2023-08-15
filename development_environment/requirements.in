@@ -1,6 +1,0 @@
-black
-docker
-flake8
-flake8-docstrings
-pip-tools
-pylint

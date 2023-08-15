@@ -4,8 +4,6 @@
 # found in the LICENSE file.
 
 git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
-git clone https://chromium.googlesource.com/chromiumos/platform/ec
-
 
 function setup_git() {
     cd "${1}"
@@ -25,5 +23,5 @@ for repo in [ "hdctools" "ec" ]; do
 done
 
 # Let the user know to set up git credentials
-echo "In a browser go to https://www.googlesource.com/new-password and paste"
-echo "the generated code into this shell."
+printf "\n\n\e[6;33mIn a browser go to\e[0m\e[33m https://www.googlesource.com/new-password\e[6;33m and paste\e[0m"
+printf "\e[6;33m the generated code into this shell.\n\n\e[0m"

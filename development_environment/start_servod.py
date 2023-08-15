@@ -6,34 +6,37 @@
 import docker
 import logging
 import argparse
+from datetime import datetime
 
-# hostname and port docker server is running on the lattice machine
-DOCKER_HOST_SERVER = "127.0.1.1:2375"
-
-IMAGE = "127.0.1.1:5000/servod:dev"
-
+IMAGE = "servod:dev"
 
 def setup():
     client = docker.from_env()
-    try:
-        client.images.pull(IMAGE)
-    except docker.errors.APIError:
-        logging.exception("Failed to pull image")
+    #try:
+    #    client.images.pull(IMAGE)
+    #except docker.errors.APIError:
+    #    logging.exception("Failed to pull image")
     return client
 
 
-def start_servod(client, dut_hostname, board, model, serial_no, test=False):
+def start_servod(client, container_name, board, model, serial_no, test=False, sleep=False):
     environment = [
         "BOARD=%s" % board,
         "MODEL=%s" % model,
         "SERIAL=%s" % serial_no,
         "PORT=%s" % "9999",
     ]
+    if not container_name:
+      now = datetime.now()
+      container_name = now.strftime("%s")
 
-    name = "%s-docker_servod" % dut_hostname
-    logs_volume = "%s_log" % dut_hostname
+    name = "%s-docker_servod" % container_name
+    logs_volume = "%s_log" % container_name
 
     command = ["bash", "/start_servod.sh"]
+    if sleep:
+      command = ["sleep", "infinity"]
+
     if test:
         command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
 
@@ -67,21 +70,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "-h",
-        "--hostname",
-        required=True,
+        "--container_name",
         type=str,
         help="The IP or hostname of the DUT connected to servo.",
     )
     parser.add_argument(
-        "-b", "--board", required=True, type=str, help="The board of the DUT."
+        "-b", "--board", type=str, help="The board of the DUT."
     )
     parser.add_argument(
-        "-m", "--model", required=True, type=str, help="The model of the DUT."
+        "-m", "--model", type=str, help="The model of the DUT."
     )
     parser.add_argument(
         "-s",
         "--serial",
-        required=True,
         type=str,
         help="The serial number of the servo.",
     )
@@ -91,8 +92,15 @@ if __name__ == "__main__":
         action=argparse.BooleanOptionalAction,
         help="Run the servod tests and exist.",
     )
+    parser.add_argument(
+        "-d",
+        "--sleep",
+        action=argparse.BooleanOptionalAction,
+        help="Run the continer but do not start servod - best for debug.",
+    )
     args = parser.parse_args()
     client = setup()
     start_servod(
-        client, args.hostname, args.board, args.model, args.serial, args.run_tests
+        client, args.container_name, args.board, args.model, args.serial, args.run_tests, args.sleep
     )
+

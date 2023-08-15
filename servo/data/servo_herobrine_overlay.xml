@@ -21,7 +21,8 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" interface="9" drv="fw_wp_ccd"/>
+    <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
+    init="force_off"/>
   </control>
   <control>
     <name>power_state</name>
@@ -58,6 +59,10 @@
   <control>
     <name>cpu_fw_spi</name>
     <!--
+      TODO(https://issuetracker.google.com/288374042): Split herobrine
+      cpu_fw_spi and ccd_cpu_fw_spi into separate controls. -->
+    <alias>ccd_cpu_fw_spi</alias>
+    <!--
       The order does matter. The device has to be put in reset with cr50 idle
       set to active before any other configuration, so cr50 settings won't get
       cleared by a deep sleep reset.
@@ -70,10 +75,26 @@
                    ap_flash_select:off cold_reset:off spi_hold:off"
       />
   </control>
-  <!-- Flashing over CCD uses the same sequence. -->
+
+  <!-- USB3 should be disabled by default in servo_v4p1. However
+    most of boards are known to work well with servo_v4p1 and USB3.
+    So in servo_v4p1 config there is servo_v4p1_dut_usb3_en control
+    defined to enable USB3 to DUT during servod initialization.
+
+    This specific board is incompatible with servo + USB3 so we need
+    to overwrite init value of this control and keep USB3 disabled.
+    Please refer to b/254857085.
+
+    Note: we need to use 'patch' mechanism to safely overwrite
+    parameters of this control (for cases where servo_v4p1 XML is not
+    used and mentioned control not defined).
+
+    TODO (b/254857085 b/268737644) - delete this control if proper
+    fixes would be upreved on all models from this family.
+  -->
   <control>
-    <name>cpu_fw_spi</name>
-    <remap>ccd_cpu_fw_spi</remap>
+    <name>servo_v4p1_dut_usb3_en</name>
+    <params clobber_ok="patch" init="disable"></params>
   </control>
 
   <!-- USB3 should be disabled by default in servo_v4p1. However

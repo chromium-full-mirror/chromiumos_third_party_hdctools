@@ -33,6 +33,6 @@
     Vgs threshold on the transitor, so it will be considered a logic high. All
     of the transistors for WP circuitry need to work with 1.8V signal for logic
     high. -->
-    <params clobber_ok="" fw_wp_vref="pp1800"/>
+    <params clobber_ok="patch" fw_wp_vref="pp1800"/>
   </control>
 </root>

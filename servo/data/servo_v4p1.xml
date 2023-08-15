@@ -503,11 +503,6 @@
     <params cmd="set" uart_cmd="usbc_action drswap"
     interface="26" drv="ec3po_servo" input_type="str" choices="^(0|1)$"/>
   </control>
-  <control>
-    <name>fw_wp_state</name>
-    <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="" init="force_off"></params>
-  </control>
   <!-- Debug helper controls -->
   <control>
     <name>servo_v4p1_panicinfo</name>

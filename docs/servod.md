@@ -178,9 +178,6 @@ A configuration file is an xml file that has `<control>`, `<map>`, and
         This allows for generic drivers that get the information they need
         passed through by the params dictionary. _required_. See more below.
 
-    *   `<remap>` Remap makes the control at `<remap>` an alias for the control.
-        See [FAQ][16] for details.
-
 <!-- mdformat off(b/139308852) -->
     *** note
     Note: two params may be defined if the params for the `set` version of the

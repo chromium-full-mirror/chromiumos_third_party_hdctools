@@ -6,6 +6,9 @@
   <include>
     <name>common.xml</name>
   </include>
+  <include>
+    <name>select_cold_reset.xml</name>
+  </include>
   <map>
     <name>i2c_mux</name>
     <doc>4 to 1 mux to steer ftdi i2c bus to different sets of
@@ -199,7 +202,7 @@
     port="1" offset="3" map="onoff_i"></params>
   </control>
   <control>
-    <name>cold_reset</name>
+    <name>default_cold_reset</name>
     <doc>reset the device frigidly</doc>
     <params cmd="set" interface="4" drv="gpio" offset="6"
     map="onoff_i"></params>

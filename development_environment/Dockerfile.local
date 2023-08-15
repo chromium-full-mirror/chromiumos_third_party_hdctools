@@ -1,0 +1,9 @@
+FROM us-docker.pkg.dev/chromeos-hw-tools/servod/dev_env:latest
+
+ARG USER
+ARG USERID
+
+RUN adduser --gecos "" --disabled-password --uid ${USERID} ${USER}
+RUN echo "$USER ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+USER $USER

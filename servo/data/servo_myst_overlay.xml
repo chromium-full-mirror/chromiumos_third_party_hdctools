@@ -77,7 +77,7 @@
     <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
     device, and the AP SPI Flash is 1.8V, so set fw_wp_vref to
     match. b/143319676 -->
-    <params clobber_ok="" fw_wp_vref="pp1800"/>
+    <params clobber_ok="patch" fw_wp_vref="pp1800"/>
   </control>
   <control>
     <name>ec_chip</name>

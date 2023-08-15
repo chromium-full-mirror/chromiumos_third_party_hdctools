@@ -1,0 +1,15 @@
+steps:
+
+- name: 'gcr.io/kaniko-project/executor:latest'
+  id: 'build'
+  args:
+  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:latest
+  - --cache=true
+  - --cache-ttl=96h
+  - -f=/workspace/servo/dockerfiles/Dockerfile
+
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  machineType: 'N1_HIGHCPU_32'
+
+timeout: 1800s
