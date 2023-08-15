@@ -33,6 +33,7 @@
   <control>
     <name>cold_reset</name>
     <doc>cold reset used for warm reset</doc>
-    <remap>warm_reset</remap>
+    <alias>warm_reset</alias>
+    <params clobber_ok="patch"/>
   </control>
 </root>

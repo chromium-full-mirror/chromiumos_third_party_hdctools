@@ -28,7 +28,8 @@
   -->
   <control>
     <name>hpd</name>
-    <remap>dev_mode</remap>
+    <alias>dev_mode</alias>
+    <params clobber_ok="patch"/>
   </control>
   <!-- To avoid disabling atmega Keyboard on servo_v4 as part of servo_repair.
        Init atmega_rst to off

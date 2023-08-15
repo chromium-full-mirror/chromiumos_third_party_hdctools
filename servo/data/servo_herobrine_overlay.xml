@@ -59,6 +59,10 @@
   <control>
     <name>cpu_fw_spi</name>
     <!--
+      TODO(https://issuetracker.google.com/288374042): Split herobrine
+      cpu_fw_spi and ccd_cpu_fw_spi into separate controls. -->
+    <alias>ccd_cpu_fw_spi</alias>
+    <!--
       The order does matter. The device has to be put in reset with cr50 idle
       set to active before any other configuration, so cr50 settings won't get
       cleared by a deep sleep reset.
@@ -70,11 +74,6 @@
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
                    ap_flash_select:off cold_reset:off spi_hold:off"
       />
-  </control>
-  <!-- Flashing over CCD uses the same sequence. -->
-  <control>
-    <name>cpu_fw_spi</name>
-    <remap>ccd_cpu_fw_spi</remap>
   </control>
 
   <!-- USB3 should be disabled by default in servo_v4p1. However
