@@ -59,7 +59,6 @@
   <control>
     <name>usbpd_uart_routing</name>
     <doc>override enable pd uart routing</doc>
-    <params interface="servo" drv="na" input_type="str"
-    clobber_ok=""></params>
+    <params interface="servo" drv="na" input_type="str"></params>
   </control>
 </root>
