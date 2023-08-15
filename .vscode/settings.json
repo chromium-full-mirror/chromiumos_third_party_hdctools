@@ -1,0 +1,45 @@
+// Copyright 2023 The ChromiumOS Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+{
+    "gerrit.auth.url": "chromium-review.googlesource.com",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter",
+    },
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "files.autoSave": "afterDelay",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "isort.args": [
+        "--profile",
+        "black"
+    ],
+    "cSpell.words": [
+        "bringup",
+        "Buganizer",
+        "chromeos",
+        "chromiumos",
+        "FAFT",
+        "flashrom",
+        "hdctool",
+        "hdctools",
+        "JTAG",
+        "nocheck",
+        "pinout",
+        "pluggable",
+        "protos",
+        "serialname",
+        "servod",
+        "servodtool",
+        "TAST",
+        "UART",
+        "Unpowered",
+        "unshrouded"
+    ],
+    "gitlens.advanced.blame.customArguments": [
+        "--ignore-revs-file",
+        ".git-blame-ignore-revs"
+    ],
+}

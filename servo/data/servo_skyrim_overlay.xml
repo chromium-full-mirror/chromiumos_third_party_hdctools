@@ -22,6 +22,7 @@
       <content>
         <item key="macro_map">
           <item key="1">
+            <item>ec_uart_cmd:reboot cancel</item>
             <item>ec_uart_cmd:apshutdown</item>
             <item>sleep:5</item>
           </item>
@@ -39,6 +40,7 @@
       <content>
         <item key="macro_map">
           <item key="1">
+            <item>ec_uart_cmd:reboot cancel</item>
             <item>ec_uart_cmd:apshutdown</item>
             <item>sleep:5</item>
             <item>ap_flash_select:on</item>

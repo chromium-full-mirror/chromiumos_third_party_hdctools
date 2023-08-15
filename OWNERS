@@ -1,12 +1,11 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 aaboagye@chromium.org
-bnemec@chromium.org
+bnemec@google.com
 haddowk@chromium.org
 matthewb@chromium.org
-mqg@chromium.org
 mruthven@chromium.org
-otabek@google.com
-pgeorgi@chromium.org
-puthik@chromium.org
+pgeorgi@google.com
 udaykiran@google.com
-waihong@google.com
-xianuowang@chromium.org

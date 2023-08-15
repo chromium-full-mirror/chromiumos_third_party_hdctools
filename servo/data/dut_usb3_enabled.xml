@@ -1,0 +1,22 @@
+<!--
+  Include this config from a board overlay to explicitly enable USB3-to-DUT for
+  the board, regardless of the current default setting for the servo.
+
+  Prefer using this config over directly patching from a board overlay!
+-->
+<root>
+  <control>
+    <name>reinit_dut_usb3_en</name>
+    <params clobber_ok="patch" init="enabled"/>
+  </control>
+  <!--
+    With servo_v4 only use special value "automatic" to gate USB3-to-DUT on
+    the servo_v4 serial number.  See:
+    https://issuetracker.google.com/160426972
+    https://issuetracker.google.com/163418494
+  -->
+  <control>
+    <name>servo_v4_reinit_dut_usb3_en</name>
+    <params clobber_ok="patch" init="automatic" automatic_default="enabled"/>
+  </control>
+</root>

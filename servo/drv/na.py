@@ -15,17 +15,17 @@ from servo.drv import hw_driver
 
 
 class na(hw_driver.HwDriver):
-  """Object to access drv=na controls."""
+    """Object to access drv=na controls."""
 
-  def __init__(self, interface, params, servod=None):
-    """Constructor."""
-    super(na, self).__init__(interface, params, servod)
+    def __init__(self, interface, params, servod=None):
+        """Constructor."""
+        super(na, self).__init__(interface, params, servod)
 
-  def get(self):
-    """Return not_applicate"""
-    self._logger.debug("na drv called. returning 'not_applicable'.")
-    return 'not_applicable'
+    def get(self):
+        """Return not_applicate"""
+        self._logger.debug("na drv called. returning 'not_applicable'.")
+        return "not_applicable"
 
-  def set(self, value):
-    """Do nothing"""
-    self._logger.debug('na drv called. setting nothing.')
+    def set(self, value):
+        """Do nothing"""
+        self._logger.debug("na drv called. setting nothing.")

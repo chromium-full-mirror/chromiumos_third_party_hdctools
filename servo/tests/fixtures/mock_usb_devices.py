@@ -2,13 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import logging
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 
 from functools import partial
+import logging
 
 import pytest
-from servo.tests.data import mocked_pty_data
+
 import servo.servo_dev_templates as tmpl
+from servo.tests.data import mocked_pty_data
+
 
 _logger = logging.getLogger("mock_servos")
 
@@ -107,6 +111,7 @@ def mock_cr50_configuration(mocker, mock_interface):
 
     return generate_mock_cr50_configuration
 
+
 @pytest.fixture(scope="function")
 def mock_servo_micro_configuration(mocker, mock_interface):
     def generate_mock_servo_micro_configuration():
@@ -163,6 +168,7 @@ def mock_servo_micro_configuration(mocker, mock_interface):
         return mock_cfg
 
     return generate_mock_servo_micro_configuration
+
 
 @pytest.fixture(scope="function")
 def mock_c2d2_configuration(mocker, mock_interface):
@@ -221,11 +227,15 @@ def mock_c2d2_configuration(mocker, mock_interface):
 
     return generate_mock_c2d2_configuration
 
+
 @pytest.fixture(scope="function")
 def mock_v4p1_usb_device(mock_usb_device, mock_v4p1_configuration):
     def create_device(mock_usb_device, iSerial, bus, address):
         mock_device = mock_usb_device(
-            "Servo V4.1 Device", tmpl.GetVID('servo_v4p1'), tmpl.GetPID('servo_v4p1'), mock_v4p1_configuration
+            "Servo V4.1 Device",
+            tmpl.GetVID("servo_v4p1"),
+            tmpl.GetPID("servo_v4p1"),
+            mock_v4p1_configuration,
         )
         mock_device.iSerial = iSerial
         mock_device.bus = bus
@@ -239,7 +249,10 @@ def mock_v4p1_usb_device(mock_usb_device, mock_v4p1_configuration):
 def mock_cr50_usb_device(mock_usb_device, mock_cr50_configuration):
     def create_device(mock_usb_device, iSerial, bus, address):
         mock_device = mock_usb_device(
-            "CR50 Device", tmpl.GetVID('ccd_cr50'), tmpl.GetPID('ccd_cr50'), mock_cr50_configuration
+            "CR50 Device",
+            tmpl.GetVID("ccd_cr50"),
+            tmpl.GetPID("ccd_cr50"),
+            mock_cr50_configuration,
         )
         mock_device.iSerial = iSerial
         mock_device.bus = bus
@@ -247,12 +260,16 @@ def mock_cr50_usb_device(mock_usb_device, mock_cr50_configuration):
         return mock_device
 
     return partial(create_device, mock_usb_device)
+
 
 @pytest.fixture(scope="function")
 def mock_servo_micro_usb_device(mock_usb_device, mock_servo_micro_configuration):
     def create_device(mock_usb_device, iSerial, bus, address):
         mock_device = mock_usb_device(
-            "Servo Micro Device", tmpl.GetVID('servo_micro'), tmpl.GetPID('servo_micro'), mock_servo_micro_configuration
+            "Servo Micro Device",
+            tmpl.GetVID("servo_micro"),
+            tmpl.GetPID("servo_micro"),
+            mock_servo_micro_configuration,
         )
         mock_device.iSerial = iSerial
         mock_device.bus = bus
@@ -260,12 +277,16 @@ def mock_servo_micro_usb_device(mock_usb_device, mock_servo_micro_configuration)
         return mock_device
 
     return partial(create_device, mock_usb_device)
+
 
 @pytest.fixture(scope="function")
 def mock_c2d2_usb_device(mock_usb_device, mock_c2d2_configuration):
     def create_device(mock_usb_device, iSerial, bus, address):
         mock_device = mock_usb_device(
-            "C2d2 Device", tmpl.GetVID('c2d2'), tmpl.GetPID('c2d2'), mock_c2d2_configuration
+            "C2d2 Device",
+            tmpl.GetVID("c2d2"),
+            tmpl.GetPID("c2d2"),
+            mock_c2d2_configuration,
         )
         mock_device.iSerial = iSerial
         mock_device.bus = bus
@@ -273,6 +294,7 @@ def mock_c2d2_usb_device(mock_usb_device, mock_c2d2_configuration):
         return mock_device
 
     return partial(create_device, mock_usb_device)
+
 
 @pytest.fixture(scope="function")
 def mock_usb_device(mocker):

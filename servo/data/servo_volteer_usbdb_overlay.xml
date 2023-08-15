@@ -14,15 +14,15 @@
   <control>
     <name>cpu_uart_pty</name>
     <alias>ap_side_pty</alias>
-    <params clobber_ok=""/>
+    <params clobber_ok="patch"/>
   </control>
   <control>
     <name>cpu_uart_timestamp</name>
-    <params clobber_ok="" init="on"/>
+    <params clobber_ok="patch" init="on"/>
   </control>
   <control>
     <name>ec_uart_pty</name>
     <alias>connector_side_pty</alias>
-    <params clobber_ok=""/>
+    <params clobber_ok="patch"/>
   </control>
 </root>

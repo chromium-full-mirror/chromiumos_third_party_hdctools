@@ -45,8 +45,7 @@
   <control>
     <name>cpu_uart_en</name>
     <doc>Enable/disable AP UART output.</doc>
-    <params clobber_ok="" interface="servo" drv="na"
-    init="not_applicable"></params>
+    <params interface="servo" drv="na" init="not_applicable"></params>
   </control>
   <control>
     <name>ec_uart_en</name>
@@ -65,9 +64,9 @@
     <name>pwr_button</name>
     <doc>Hold DUT power button</doc>
     <params cmd="get" subtype="pwr_button" interface="6" drv="ec3po_c2d2"
-    clobber_ok="" map="pressrelease_yesno" />
+    map="pressrelease_yesno" />
     <params cmd="set" subtype="pwr_button" interface="6" drv="ec3po_c2d2"
-    clobber_ok="" map="press_i" />
+    map="press_i" />
   </control>
   <control>
     <name>h1_vref_present</name>
@@ -170,8 +169,13 @@
     <name>ec3po_c2d2_uart</name>
     <alias>c2d2_uart_pty</alias>
     <doc>C2D2 console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="6" drv="uart">
-    </params>
+    <params cmd="get" subtype="pty" interface="6" drv="uart"/>
+  </control>
+  <control>
+    <name>c2d2_uart_timestamp</name>
+    <doc>Add timestamps to the servo micro console messages</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"/>
   </control>
   <!-- C2D2 Console Automation Controls -->
   <control>
@@ -179,7 +183,7 @@
     <doc>Set to send command to the c2d2 console. Get to obtain the
     matched results with the regular expression of c2d2_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="6" drv="uart" input_type="str"
-    clobber_ok="" tags="servo_cmd_ctrl"></params>
+    tags="servo_cmd_ctrl"></params>
   </control>
   <control>
     <name>c2d2_uart_timeout</name>
@@ -191,28 +195,27 @@
   <control>
     <name>c2d2_uart_multicmd</name>
     <doc>Set to send multiple commands to the c2d2 console.</doc>
-    <params interface="6" drv="na" cmd="get" clobber_ok=""></params>
+    <params interface="6" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="6" drv="uart" input_type="str"
-    cmd="set" clobber_ok=""></params>
+    cmd="set"></params>
   </control>
   <control>
     <name>c2d2_uart_regexp</name>
     <doc>List of regular expressions to match the response of
     c2d2_uart_cmd.</doc>
     <params subtype="uart_regexp" interface="6" drv="uart"
-    input_type="str" cmd="set" clobber_ok=""></params>
+    input_type="str" cmd="set"></params>
   </control>
   <control>
     <name>c2d2_uart_capture</name>
     <doc>enable c2d2 console capture</doc>
     <params subtype="uart_capture" interface="6" drv="uart"
-    map="onoff" clobber_ok=""></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>c2d2_uart_stream</name>
     <doc>c2d2 stream collected while c2d2_uart_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="6" drv="uart"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="uart_stream" interface="6" drv="uart"></params>
   </control>
   <!-- firmware version introspection controls -->
   <control>
@@ -250,7 +253,7 @@
     IT8320 EC chip by sending special non-I2C waveforms over the I2C
     bus wires.</doc>
     <params cmd="get" subtype="enable_ite_dfu" interface="6"
-    drv="ec3po_c2d2" input_type="str" clobber_ok=""></params>
+    drv="ec3po_c2d2" input_type="str"></params>
   </control>
   <control>
     <name>get_ite_chipid</name>
@@ -259,13 +262,13 @@
     CHIPID2 registers. It will only respond over I2C when in DFU
     mode.</doc>
     <params cmd="get" subtype="get_ite_chipid" interface="6"
-    drv="ec3po_c2d2" input_type="str" clobber_ok=""></params>
+    drv="ec3po_c2d2" input_type="str"></params>
   </control>
   <control>
     <name>i2c_ec_bus_speed</name>
     <doc>The I2C bus speed for the EC I2C pins</doc>
     <params subtype="i2c_speed" interface="6" bus="ec" drv="ec3po_c2d2"
-    input_type="int" clobber_ok=""></params>
+    input_type="int"></params>
   </control>
   <!-- I2C pseudo adapter controller -->
   <control>
@@ -298,15 +301,15 @@
     <name>warm_reset</name>
     <doc>warm_reset (active low)</doc>
     <params cmd="get" uart_cmd="sysrst"
-    regex="SYS_RST_L is (asserted|deasserted)" group="1" 
-    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    regex="SYS_RST_L is (asserted|deasserted)" group="1"
+    interface="9" drv="cr50" map="asserted_re"></params>
     <params cmd="set" subtype="warm_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    map="onoff_i"></params>
   </control>
   <control>
     <name>rec_mode</name>
     <params subtype="rec_mode" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok="" init="off"></params>
+    map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
