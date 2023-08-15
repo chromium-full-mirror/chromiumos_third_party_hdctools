@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export DOCKER_BUILDKIT=1
-IMAGE = "servod:dev"
+IMAGE="servod:dev"
 cd /hdctools_source/hdctools
 
 if [ "$2" == "multi" ]
