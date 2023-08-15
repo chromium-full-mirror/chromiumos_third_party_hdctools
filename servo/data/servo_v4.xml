@@ -410,7 +410,7 @@
     matched results with the regular expression of
     servo_v4_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
-    clobber_ok="" tags="servo_cmd_ctrl"></params>
+    tags="servo_cmd_ctrl"></params>
   </control>
   <control>
     <name>servo_v4_uart_timeout</name>
@@ -422,28 +422,27 @@
   <control>
     <name>servo_v4_uart_multicmd</name>
     <doc>Set to send multiple commands to the servo v4 console.</doc>
-    <params interface="26" drv="na" cmd="get" clobber_ok=""></params>
+    <params interface="26" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
-    cmd="set" clobber_ok=""></params>
+    cmd="set"></params>
   </control>
   <control>
     <name>servo_v4_uart_regexp</name>
     <doc>List of regular expressions to match the response of
     servo_v4_uart_cmd.</doc>
     <params subtype="uart_regexp" interface="26" drv="uart"
-    input_type="str" clobber_ok=""></params>
+    input_type="str"></params>
   </control>
   <control>
     <name>servo_v4_uart_capture</name>
     <doc>enable servo v4 console capture</doc>
     <params subtype="uart_capture" interface="26" drv="uart"
-    map="onoff" clobber_ok=""></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>servo_v4_uart_stream</name>
     <doc>servo v4 console stream collected while servo_v4_uart_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"></params>
   </control>
   <!-- DTS mode control -->
   <control>
@@ -535,17 +534,17 @@
   <control>
     <name>ppdut5_mv</name>
     <alias>vbus_voltage</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ppdut5_ma</name>
     <alias>vbus_current</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ppdut5_mw</name>
     <alias>vbus_power</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <!-- I2C pseudo adapter controller -->
   <control>
