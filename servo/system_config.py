@@ -367,16 +367,6 @@ class SystemConfig(object):
         doc = element.findtext('doc', default='undocumented')
         doc = ' '.join(doc.split())
         alias = element.findtext('alias')
-        remap = element.findtext('remap')
-
-        if remap:
-          if name_prefix:
-            remap = name_prefix + remap
-          # Sometimes the remap control doesn't exist (e.g. fw_up in servo
-          # v4).  Just ignore it and continue on.
-          if name in self.syscfg_dict[tag]:
-            self.syscfg_dict[tag][remap] = self.syscfg_dict[tag][name]
-          continue
 
         get_dict = None
         set_dict = None

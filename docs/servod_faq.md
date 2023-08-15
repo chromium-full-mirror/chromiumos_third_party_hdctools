@@ -96,24 +96,6 @@ Common interfaces are:
 
 ### tl;dr:
 
-If you want control `control_name` to route to `real_control_name` for a
-specific board or servo device, you can create a control with a `<remap>` tag
-which will remap the control defined in the tag to the control defined in the
-name.
-
-Example:
-
-```xml
-<control>
-  <name>real_control_name</name>
-  <doc>using real_control_name for control_name</doc>
-  <remap>control_name</remap>
-</control>
-```
-
-This ensures that whenever `control_name` is called, `real_control_name` gets
-executed.
-
 If you want to overwrite `control_name` for a board, just write a control named
 the same in the board overlay and make sure that [clobber_ok=""][4] inside its
 params. This ensures it will clobber a previous definition of the control if it
