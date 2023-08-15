@@ -51,11 +51,11 @@
   <control>
     <name>ec_system_powerstate</name>
     <doc>N/A on sweetberry boards.</doc>
-    <params clobber_ok="" drv="na"></params>
+    <params clobber_ok="full" drv="na"></params>
   </control>
   <control>
     <name>ec_board</name>
     <doc>N/A on sweetberry boards.</doc>
-    <params clobber_ok="" drv="na"></params>
+    <params clobber_ok="full" drv="na"></params>
   </control>
 </root>
