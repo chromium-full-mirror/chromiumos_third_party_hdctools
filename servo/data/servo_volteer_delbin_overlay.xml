@@ -7,7 +7,7 @@
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
-      subtype="init_default_keyboard" handler_type="ChromeECDelbin" clobber_ok="">
+      subtype="init_default_keyboard" handler_type="ChromeECDelbin" clobber_ok="full">
     </params>
   </control>
 </root>
