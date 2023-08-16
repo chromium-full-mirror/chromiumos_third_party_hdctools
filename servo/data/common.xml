@@ -215,7 +215,7 @@
   <control>
     <name>servo_class</name>
     <doc>servo type (flex or ccd)</doc>
-    <params drv="echo" value="flex" interface="servo" clobber_ok=""/>
+    <params drv="echo" value="flex" interface="servo"/>
   </control>
   <control>
     <name>all_controls</name>
