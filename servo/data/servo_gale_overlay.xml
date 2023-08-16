@@ -5,13 +5,13 @@
   <control>
     <name>dev_mode</name>
     <doc>dev_mode GPIO is inverted on gale</doc>
-    <params map="onoff_i" clobber_ok=""></params>
+    <params map="onoff_i" clobber_ok="patch"></params>
   </control>
   <control>
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
     <params interface="servo" drv="na" init="not_applicable"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <control>
     <name>power_state</name>
@@ -30,7 +30,7 @@
     communication through it).-->
   <control>
     <name>supports_cros_ec_communication</name>
-    <params clobber_ok="" value="no"/>
+    <params clobber_ok="patch" value="no"/>
   </control>
 </root>
 
