@@ -7,7 +7,7 @@
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
     <params interface="servo" drv="na" init="not_applicable"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <control>
     <name>rec_mode</name>
