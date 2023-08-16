@@ -325,9 +325,12 @@ class TestControlIntegrity(object):
                    'interface'
     """
     for param in control['params']:
-      if 'clobber_ok' in param:
-        pytest.skip('clobber_ok controls are update controls, and do not '
-                    'require all elements of a full control.')
+      clobber_ok = param.get('clobber_ok')
+      # TODO(https://issuetracker.google.com/287541200): drop support for
+      # clobber_ok="" here when removing support for it from servod configs
+      if clobber_ok == "patch" or clobber_ok == "":
+        pytest.skip('clobber_ok="%s" controls are update controls, and do not '
+                    'require all elements of a full control.' % (clobber_ok,))
       assert param_attrib in param
 
   def test_DoubleParams(self, control):
