@@ -6,7 +6,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/dev_env:latest
   - --cache=true
   - --cache-ttl=96h
-  - -f=/workspace/development_environment/Dockerfile
+  - -f=./Dockerfile
 
 options:
   # Use higher CPU machines so the caching and build steps are faster.

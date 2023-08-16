@@ -371,8 +371,9 @@ RUN mkdir -p /usr/share/ec-devutils
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
 COPY /servo/dockerfiles/update_servo_firmware.py \
-     /servo/dockerfiles/start_servod.sh /servo/dockerfiles/stop_servod.sh \
-     /
+     /servo/dockerfiles/start_servod.sh \
+     /servo/dockerfiles/start_servod_dev.sh \
+     /servo/dockerfiles/stop_servod.sh /
 
 # Running sync in the container with no params will crash the host bare metal as all disks
 # are mounted, put a script in the place of sync that checks are lease one argument is passed
