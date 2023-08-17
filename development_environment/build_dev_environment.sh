@@ -7,7 +7,7 @@
 function download_file_from_git() {
     curl https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/development_environment/${1}?format=TEXT | base64 -d > ${1}
 }
-for s in "start_dev_environment.sh" do
+for s in "start_dev_environment.sh"; do
     download_file_from_git ${s}
 done
 # Install a script to start the container that has the servod build environment.
