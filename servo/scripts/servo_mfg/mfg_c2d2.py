@@ -13,10 +13,9 @@ consisting of barcode scan, flash, provision, test.
 It will produce logfiles in a logfile/ directory for
 each device and for the full run.
 """
-from __future__ import print_function
-from six.moves import input
 
 import argparse
+import input
 import re
 import time
 
