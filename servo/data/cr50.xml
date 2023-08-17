@@ -167,7 +167,7 @@
     'UnlessLocked' means Enabled unless CCD is locked.
     'IfOpened' means Enabled if CCD is opened.</doc>
     <params cmd="get" uart_cmd="ccd"
-    regex="\s+I2C\s+[YN]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)" group="1" interface="9" drv="cr50" ></params>
+    regex="\s+I2C\s+[Y-]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)" group="1" interface="9" drv="cr50" ></params>
   </control>
   <control>
     <name>gsc_testlab</name>
