@@ -103,39 +103,15 @@ FROM libftdi as ec-builder
 
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 
-WORKDIR /
-
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
-
-WORKDIR /flashmap
-RUN make && make install
-
-# Install libusb.
-COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
-ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
-
 WORKDIR /ec
-ENV CFLAGS=" -Wno-deprecated-declarations -Wno-sign-compare"
-RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations -Wno-missing-declarations /' extra/usb_updater/Makefile
-RUN sed -i 's/-Wmissing-declarations/-Wsign-compare -Wno-sign-compare/' extra/usb_updater/Makefile
-RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
-RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
 
 COPY servo/dockerfiles/setup_ec.py .
 RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 
-RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shfl
 ######################################################################
 FROM libftdi as hdctools-builder
-# For cloud build and for developers copying the local source is correct, if
-# you need to build from checked in code vs you local source comment out the
-# copy command and uncomment the clone command.
 COPY / hdctools/
-#RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
 RUN apt-get update \
     && apt-get install -y \
@@ -194,7 +170,6 @@ RUN apt-get update --no-install-recommends \
         python3-pytest-xdist \
         python3-usb \
         python3-requests \
-        python3-six \
         python3-pip \
         wget \
     && rm -rf /var/lib/apt/lists/* \
