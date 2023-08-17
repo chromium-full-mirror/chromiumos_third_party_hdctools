@@ -5,23 +5,17 @@
 
 """Unit tests for the EC-3PO Console interface."""
 
-# Note: This is a py2/3 compatible file.
-
-from __future__ import print_function
-
-import binascii
 import logging
 import tempfile
 import unittest
+from unittest import mock
 
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-import mock  # pylint:disable=import-error
-import six
 
 
-ESC_STRING = six.int2byte(console.ControlKey.ESC)
+ESC_STRING = bytes([console.ControlKey.ESC])
 
 
 class Keys(object):
@@ -78,20 +72,6 @@ BACKSPACE_STRING += b" "
 # Move cursor left 1 column.
 BACKSPACE_STRING += OutputStream.MoveCursorLeft(1)
 
-
-def BytesToByteList(string):
-    """Converts a bytes string to list of bytes.
-
-    Args:
-      string: A literal bytes to turn into a list of bytes.
-
-    Returns:
-      A list of integers representing the byte value of each character in the
-        string.
-    """
-    if six.PY3:
-        return [c for c in string]
-    return [ord(c) for c in string]
 
 
 def CheckConsoleOutput(test_case, exp_console_out):
@@ -220,7 +200,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_EnteringChars(self):
         """Verify that characters are echoed onto the console."""
         test_str = b"abc"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
 
         # Send the characters in.
         for byte in input_stream:
@@ -241,7 +221,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_EnteringDeletingMoreCharsThanEntered(self):
         """Verify that we can press backspace more than we have entered chars."""
         test_str = b"spamspam"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
 
         # Send the characters in.
         for byte in input_stream:
@@ -271,7 +251,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         """Verify that we drop characters when the line is too long."""
         test_str = self.console.line_limit * b"o"  # All allowed.
         test_str += 5 * b"x"  # All should be dropped.
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
 
         # Send the characters in.
         for byte in input_stream:
@@ -297,7 +277,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out = test_str
         # Try to fill it even more; these should all be dropped.
         test_str += 5 * b"x"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
 
         # We should be able to press the following keys:
         # - Backspace
@@ -311,7 +291,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         input_stream.append(console.ControlKey.BACKSPACE)
         exp_console_out += BACKSPACE_STRING
         # Refill the line.
-        input_stream.extend(BytesToByteList(b"o"))
+        input_stream.extend(b"o")
         exp_console_out += b"o"
 
         # Left arrow key.
@@ -414,7 +394,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         """Verify that we shift the chars over when backspacing within a line."""
         # Misspell 'help'
         test_str = b"heelp"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         # Use the arrow key to go back to fix it.
         # Move cursor left 1 column.
         input_stream.extend(2 * Keys.LEFT_ARROW)
@@ -452,7 +432,8 @@ class TestConsoleEditingMethods(unittest.TestCase):
         """Verify that we can jump to the beginning of a line with Ctrl+A."""
         # Enter some chars and press CTRL+A
         test_str = b"abc"
-        input_stream = BytesToByteList(test_str) + [console.ControlKey.CTRL_A]
+        input_stream = list(test_str)
+        input_stream.append(console.ControlKey.CTRL_A)
 
         # Send the characters in.
         for byte in input_stream:
@@ -474,7 +455,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_JumpToBeginningOfLineViaHomeKey(self):
         """Jump to beginning of line via HOME key."""
         test_str = b"version"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.extend(Keys.HOME)
 
         # Send out the stream.
@@ -495,8 +476,8 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_JumpToEndOfLineViaEndKey(self):
         """Jump to the end of the line using the END key."""
         test_str = b"version"
-        input_stream = BytesToByteList(test_str)
-        input_stream += [console.ControlKey.CTRL_A]
+        input_stream = list(test_str)
+        input_stream.append(console.ControlKey.CTRL_A)
         # Now, jump to the end of the line.
         input_stream.extend(Keys.END)
 
@@ -521,7 +502,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_JumpToEndOfLineViaCtrlE(self):
         """Enter some chars and then try to jump to the end. (Should be a no-op)"""
         test_str = b"sysinfo"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.append(console.ControlKey.CTRL_E)
 
         # Send out the stream
@@ -566,7 +547,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_MoveLeftWithArrowKey(self):
         """Move cursor left one column with arrow key."""
         test_str = b"tastyspam"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.extend(Keys.LEFT_ARROW)
 
         # Send the sequence out.
@@ -588,7 +569,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_MoveLeftWithCtrlB(self):
         """Move cursor back one column with Ctrl+B."""
         test_str = b"tastyspam"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.append(console.ControlKey.CTRL_B)
 
         # Send the sequence out.
@@ -610,7 +591,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_MoveRightWithArrowKey(self):
         """Move cursor one column to the right with the arrow key."""
         test_str = b"version"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         # Jump to beginning of line.
         input_stream.append(console.ControlKey.CTRL_A)
         # Press right arrow key.
@@ -628,9 +609,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # We expect the test string, followed by a jump to the beginning of the
         # line, and finally a move right 1.
-        exp_console_out = test_str + OutputStream.MoveCursorLeft(
-            len((test_str))
-        )
+        exp_console_out = test_str + OutputStream.MoveCursorLeft(len((test_str)))
 
         # A move right 1 column.
         exp_console_out += OutputStream.MoveCursorRight(1)
@@ -641,7 +620,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_MoveRightWithCtrlF(self):
         """Move cursor forward one column with Ctrl+F."""
         test_str = b"panicinfo"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.append(console.ControlKey.CTRL_A)
         # Now, move right one column.
         input_stream.append(console.ControlKey.CTRL_F)
@@ -658,9 +637,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # We expect the test string, followed by a jump to the beginning of the
         # line, and finally a move right 1.
-        exp_console_out = test_str + OutputStream.MoveCursorLeft(
-            len((test_str))
-        )
+        exp_console_out = test_str + OutputStream.MoveCursorLeft(len((test_str)))
 
         # A move right 1 column.
         exp_console_out += OutputStream.MoveCursorRight(1)
@@ -709,11 +686,9 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_KillEntireLine(self):
         """Verify that we can kill an entire line with Ctrl+K."""
         test_str = b"accelinfo on"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         # Jump to beginning of line and then kill it with Ctrl+K.
-        input_stream.extend(
-            [console.ControlKey.CTRL_A, console.ControlKey.CTRL_K]
-        )
+        input_stream.extend([console.ControlKey.CTRL_A, console.ControlKey.CTRL_K])
 
         # Send the sequence out.
         for byte in input_stream:
@@ -743,7 +718,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_KillPartialLine(self):
         """Verify that we can kill a portion of a line."""
         test_str = b"accelread 0 1"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         len_to_kill = 5
         for _ in range(len_to_kill):
             # Move cursor left
@@ -781,7 +756,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_InsertingCharacters(self):
         """Verify that we can insert characters within the line."""
         test_str = b"accel 0 1"  # Here we forgot the 'read' part in 'accelread'
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         # We need to move over to the 'l' and add read.
         insertion_point = test_str.find(b"l") + 1
         for i in range(len(test_str) - insertion_point):
@@ -789,7 +764,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
             input_stream.extend(Keys.LEFT_ARROW)
         # Now, add in 'read'
         added_str = b"read"
-        input_stream.extend(BytesToByteList(added_str))
+        input_stream.extend(added_str)
 
         # Send the sequence out.
         for byte in input_stream:
@@ -834,7 +809,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         test_commands.append(b"accelread 0 1")
         input_stream = []
         for c in test_commands:
-            input_stream.extend(BytesToByteList(c))
+            input_stream.extend(c)
             input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -851,7 +826,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         test_commands = [b"version", b"accelrange 0", b"battery", b"gettime"]
         input_stream = []
         for command in test_commands:
-            input_stream.extend(BytesToByteList(command))
+            input_stream.extend(command)
             input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Now, hit the UP arrow key to print the previous entries.
@@ -907,7 +882,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         """Verify that pressing the up arrow many times won't go out of bounds."""
         # Enter one command.
         test_str = b"help version"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
         # Then press the up arrow key twice.
         input_stream.extend(2 * Keys.UP_ARROW)
@@ -935,7 +910,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         test_commands = [b"version", b"accelrange 0", b"battery", b"gettime"]
         input_stream = []
         for command in test_commands:
-            input_stream.extend(BytesToByteList(command))
+            input_stream.extend(command)
             input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Now, hit the UP arrow key twice to print the previous two entries.
@@ -984,12 +959,12 @@ class TestConsoleEditingMethods(unittest.TestCase):
         """Verify that partial commands are saved when navigating history."""
         # Enter a command.
         test_str = b"accelinfo"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Enter a partial command.
         partial_cmd = b"ver"
-        input_stream.extend(BytesToByteList(partial_cmd))
+        input_stream.extend(partial_cmd)
 
         # Hit the UP arrow key.
         input_stream.extend(Keys.UP_ARROW)
@@ -1045,7 +1020,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
     def test_DeleteCharsUsingDELKey(self):
         """Verify that we can delete characters using the DEL key."""
         test_str = b"version"
-        input_stream = BytesToByteList(test_str)
+        input_stream = list(test_str)
 
         # Hit the left arrow key 2 times.
         input_stream.extend(2 * Keys.LEFT_ARROW)
@@ -1089,7 +1064,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         input_stream = []
         for command in test_commands:
-            input_stream.extend(BytesToByteList(command))
+            input_stream.extend(command)
             input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1145,7 +1120,7 @@ class TestConsoleCompatibility(unittest.TestCase):
         input_stream = []
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
         test_command = b"version"
-        input_stream.extend(BytesToByteList(test_command))
+        input_stream.extend(test_command)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1155,17 +1130,11 @@ class TestConsoleCompatibility(unittest.TestCase):
         # Expected calls to send down the pipe would be each character of the test
         # command.
         expected_calls = []
-        expected_calls.append(
-            mock.call(six.int2byte(console.ControlKey.CARRIAGE_RETURN))
-        )
+        expected_calls.append(mock.call(bytes([console.ControlKey.CARRIAGE_RETURN])))
         for char in test_command:
-            if six.PY3:
-                expected_calls.append(mock.call(bytes([char])))
-            else:
-                expected_calls.append(mock.call(char))
-        expected_calls.append(
-            mock.call(six.int2byte(console.ControlKey.CARRIAGE_RETURN))
-        )
+            expected_calls.append(mock.call(bytes([char])))
+
+        expected_calls.append(mock.call(bytes([console.ControlKey.CARRIAGE_RETURN])))
 
         # Verify that the calls happened.
         self.console.cmd_pipe.send.assert_has_calls(expected_calls)
@@ -1194,16 +1163,13 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         test_command = b"sysinfo"
         input_stream = []
-        input_stream.extend(BytesToByteList(test_command))
+        input_stream.extend(test_command)
 
         expected_calls = []
         # All keystrokes to the console should be directed straight through to the
         # EC until we press the enter key.
         for char in test_command:
-            if six.PY3:
-                expected_calls.append(mock.call(bytes([char])))
-            else:
-                expected_calls.append(mock.call(char))
+            expected_calls.append(mock.call(bytes([char])))
 
         # Press the enter key.
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
@@ -1224,7 +1190,7 @@ class TestConsoleCompatibility(unittest.TestCase):
         CheckInputBuffer(self, b"")
         CheckInputBufferPosition(self, 0)
         # ...and repeat the command.
-        input_stream = BytesToByteList(test_command)
+        input_stream = list(test_command)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1258,7 +1224,7 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         test_command = b"sysinfo"
         input_stream = []
-        input_stream.extend(BytesToByteList(test_command))
+        input_stream.extend(test_command)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1276,12 +1242,10 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         # The carriage return should have passed through though.
         expected_calls = []
-        expected_calls.append(
-            mock.call(six.int2byte(console.ControlKey.CARRIAGE_RETURN))
-        )
+        expected_calls.append(mock.call(bytes([console.ControlKey.CARRIAGE_RETURN])))
 
         # Since the command was dropped, repeat the command.
-        input_stream = BytesToByteList(test_command)
+        input_stream = list(test_command)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1291,13 +1255,9 @@ class TestConsoleCompatibility(unittest.TestCase):
         # Since we're not enhanced now, we should have sent each character in the
         # entire command separately and a carriage return.
         for char in test_command:
-            if six.PY3:
-                expected_calls.append(mock.call(bytes([char])))
-            else:
-                expected_calls.append(mock.call(char))
-        expected_calls.append(
-            mock.call(six.int2byte(console.ControlKey.CARRIAGE_RETURN))
-        )
+            expected_calls.append(mock.call(bytes([char])))
+
+        expected_calls.append(mock.call(bytes([console.ControlKey.CARRIAGE_RETURN])))
 
         # Verify all of the calls.
         self.console.cmd_pipe.send.assert_has_calls(expected_calls)
@@ -1442,9 +1402,9 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         # all.
         cmd = b"interrogate never"
         # Enter the OOBM prompt.
-        input_stream.extend(BytesToByteList(b"%"))
+        input_stream.extend(b"%")
         # Type the command
-        input_stream.extend(BytesToByteList(cmd))
+        input_stream.extend(cmd)
         # Press enter.
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
@@ -1463,11 +1423,11 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         self.console.ProcessOOBMQueue()
 
         # Type out a few commands.
-        input_stream.extend(BytesToByteList(b"version"))
+        input_stream.extend(b"version")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"flashinfo"))
+        input_stream.extend(b"flashinfo")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"sysinfo"))
+        input_stream.extend(b"sysinfo")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1491,9 +1451,9 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         # scanning the output stream for the 'console is enabled' strings.
         cmd = b"interrogate auto"
         # Enter the OOBM prompt.
-        input_stream.extend(BytesToByteList(b"%"))
+        input_stream.extend(b"%")
         # Type the command
-        input_stream.extend(BytesToByteList(cmd))
+        input_stream.extend(cmd)
         # Press enter.
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
@@ -1513,11 +1473,11 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         self.console.ProcessOOBMQueue()
 
         # Type out a few commands.
-        input_stream.extend(BytesToByteList(b"version"))
+        input_stream.extend(b"version")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"flashinfo"))
+        input_stream.extend(b"flashinfo")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"sysinfo"))
+        input_stream.extend(b"sysinfo")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1542,9 +1502,9 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         # interrogation.
         cmd = b"interrogate always"
         # Enter the OOBM prompt.
-        input_stream.extend(BytesToByteList(b"%"))
+        input_stream.extend(b"%")
         # Type the command
-        input_stream.extend(BytesToByteList(cmd))
+        input_stream.extend(cmd)
         # Press enter.
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
@@ -1567,11 +1527,11 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         mock_check.side_effect = [False, False, False]
 
         # Type out a few commands.
-        input_stream.extend(BytesToByteList(b"help list"))
+        input_stream.extend(b"help list")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"taskinfo"))
+        input_stream.extend(b"taskinfo")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"hibdelay"))
+        input_stream.extend(b"hibdelay")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
@@ -1595,9 +1555,9 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         input_stream = []
         cmd = b"interrogate never enhanced"
         # Enter the OOBM prompt.
-        input_stream.extend(BytesToByteList(b"%"))
+        input_stream.extend(b"%")
         # Type the command
-        input_stream.extend(BytesToByteList(cmd))
+        input_stream.extend(cmd)
         # Press enter.
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
@@ -1617,11 +1577,11 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         self.console.ProcessOOBMQueue()
 
         # Type out a few commands.
-        input_stream.extend(BytesToByteList(b"chgstate"))
+        input_stream.extend(b"chgstate")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"hash"))
+        input_stream.extend(b"hash")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
-        input_stream.extend(BytesToByteList(b"sysjump rw"))
+        input_stream.extend(b"sysjump rw")
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.

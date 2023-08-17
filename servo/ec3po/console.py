@@ -10,10 +10,6 @@ handles the presentation of the EC console including editing methods as well as
 session-persistent command history.
 """
 
-# Note: This is a py2/3 compatible file.
-
-from __future__ import print_function
-
 import argparse
 import binascii
 import ctypes
@@ -29,7 +25,6 @@ import traceback
 
 from ec3po import interpreter
 from ec3po import threadproc_shim
-import six
 
 
 PROMPT = b"> "
@@ -328,9 +323,7 @@ class Console(object):
 
         # Restore the partial cmd.
         if self.history_pos == len(self.history):
-            self.logger.debug(
-                "Restoring partial command of %r", self.partial_cmd
-            )
+            self.logger.debug("Restoring partial command of %r", self.partial_cmd)
             # Backspace the line.
             for _ in range(self.input_buffer_pos):
                 self.SendBackspace()
@@ -480,9 +473,7 @@ class Console(object):
             # END key.
             if byte == ord("~"):
                 self.logger.debug("End key pressed.")
-                self.MoveCursor(
-                    "right", len(self.input_buffer) - self.input_buffer_pos
-                )
+                self.MoveCursor("right", len(self.input_buffer) - self.input_buffer_pos)
                 self.esc_state = 0  # Reset the state.
                 self.logger.debug("ESC sequence complete.")
                 return
@@ -502,11 +493,7 @@ class Console(object):
             return
 
         # Don't store 2 consecutive identical commands in the history.
-        if (
-            self.history
-            and self.history[-1] != self.input_buffer
-            or not self.history
-        ):
+        if self.history and self.history[-1] != self.input_buffer or not self.history:
             self.history.append(self.input_buffer)
 
         # Split the command up by spaces.
@@ -589,7 +576,7 @@ class Console(object):
 
         # Add chars to the pending OOBM command if we're currently receiving one.
         if self.receiving_oobm_cmd and byte != ControlKey.CARRIAGE_RETURN:
-            tmp_bytes = six.int2byte(byte)
+            tmp_bytes = bytes([byte])
             self.pending_oobm_cmd += tmp_bytes
             self.logger.debug("%s", tmp_bytes)
             os.write(self.controller_pty, tmp_bytes)
@@ -626,7 +613,7 @@ class Console(object):
 
         if not self.enhanced_ec:
             # Send everything straight to the EC to handle.
-            self.cmd_pipe.send(six.int2byte(byte))
+            self.cmd_pipe.send(bytes([byte]))
             # Reset the input buffer.
             self.input_buffer = b""
             self.input_buffer_pos = 0
@@ -708,9 +695,7 @@ class Console(object):
         # Ctrl+E. Move cursor to end of the line.
         elif byte == ControlKey.CTRL_E:
             self.logger.debug("Control+E pressed.")
-            self.MoveCursor(
-                "right", len(self.input_buffer) - self.input_buffer_pos
-            )
+            self.MoveCursor("right", len(self.input_buffer) - self.input_buffer_pos)
 
         # Ctrl+F. Move cursor right 1 column.
         elif byte == ControlKey.CTRL_F:
@@ -744,7 +729,7 @@ class Console(object):
                 self.logger.debug("Dropped char: %c(%d)", byte, byte)
                 return
             # Print the character.
-            os.write(fd, six.int2byte(byte))
+            os.write(fd, bytes([byte]))
             # Print the rest of the line (if any).
             extra_bytes_written = os.write(
                 fd, self.input_buffer[self.input_buffer_pos :]
@@ -753,7 +738,7 @@ class Console(object):
             # Recreate the input buffer.
             self.input_buffer = (
                 self.input_buffer[0 : self.input_buffer_pos]
-                + six.int2byte(byte)
+                + bytes([byte])
                 + self.input_buffer[self.input_buffer_pos :]
             )
             # Update the input buffer position.
@@ -799,9 +784,7 @@ class Console(object):
             self.input_buffer_pos += count
 
         else:
-            raise AssertionError(
-                ("The only valid directions are 'left' and 'right'")
-            )
+            raise AssertionError(("The only valid directions are 'left' and 'right'"))
 
         self.logger.debug("input_buffer_pos: %d", self.input_buffer_pos)
         # Move the cursor.
@@ -886,14 +869,10 @@ class Console(object):
 
                 # Update the assumptions of the EC image.
                 self.enhanced_ec = enhanced
-                self.logger.debug(
-                    "Enhanced EC image is now %r", self.enhanced_ec
-                )
+                self.logger.debug("Enhanced EC image is now %r", self.enhanced_ec)
 
                 # Send command to interpreter as well.
-                self.cmd_pipe.send(
-                    b"enhanced " + str(self.enhanced_ec).encode("ascii")
-                )
+                self.cmd_pipe.send(b"enhanced " + str(self.enhanced_ec).encode("ascii"))
             else:
                 self.PrintOOBMHelp()
 
@@ -936,9 +915,7 @@ class Console(object):
                 self.enhanced_ec = False
 
             # Inform the interpreter of the result.
-            self.cmd_pipe.send(
-                b"enhanced " + str(self.enhanced_ec).encode("ascii")
-            )
+            self.cmd_pipe.send(b"enhanced " + str(self.enhanced_ec).encode("ascii"))
             self.logger.debug("Enhanced EC image? %r", self.enhanced_ec)
 
             # Clear look buffer since a match was found.
@@ -986,9 +963,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
     """
     try:
         console.logger.debug("Console is being served on %s.", console.user_pty)
-        console.logger.debug(
-            "Console controller is on %s.", console.controller_pty
-        )
+        console.logger.debug("Console controller is on %s.", console.controller_pty)
         console.logger.debug(
             "Command interface is being served on %s.", console.interface_pty
         )
@@ -1037,9 +1012,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             # Ctrl+A, Ctrl+E, etc.
                             try:
                                 line = bytearray(
-                                    os.read(
-                                        console.controller_pty, CONSOLE_MAX_READ
-                                    )
+                                    os.read(console.controller_pty, CONSOLE_MAX_READ)
                                 )
                                 console.logger.debug(
                                     "Input from user: %s, locked:%s",
@@ -1199,9 +1172,7 @@ def main(argv):
     )
     parser.add_argument(
         "ec_uart_pty",
-        help=(
-            "The full PTY name that the EC UART is present on. eg: /dev/pts/12"
-        ),
+        help=("The full PTY name that the EC UART is present on. eg: /dev/pts/12"),
     )
     parser.add_argument(
         "--log-level",
@@ -1225,9 +1196,7 @@ def main(argv):
     elif opts.log_level == "critical":
         log_level = logging.CRITICAL
     else:
-        parser.error(
-            "Invalid log level. (info, debug, warning, error, critical)"
-        )
+        parser.error("Invalid log level. (info, debug, warning, error, critical)")
 
     # Start logging with a timestamp, module, and log level shown in each log
     # entry.

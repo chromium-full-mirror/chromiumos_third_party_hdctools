@@ -34,10 +34,8 @@ wait until after completing the TODO above to stop using multiprocessing.Pipe!
 
 # Imports to bring objects into this namespace for users of this module.
 from multiprocessing import Pipe
+from queue import Queue
 from threading import Thread as ThreadOrProcess
-
-from six.moves.queue import Queue
-
 
 # True if this module has ec3po using subprocesses, False if using threads.
 USING_SUBPROCS = False
