@@ -116,6 +116,26 @@ The Type-C Servo version acts as both a USB hub and PD charger. Servo v4.1 can a
 control both CC terminations which allows it to act as a debug accessory. It
 should be used on systems with [CCD].
 
+### Recommended setup
+
+It is recommended to attach the Servo to the Host through a powered USB hub
+capable of at least 1.5A per port.  Depending what you connect to the Servo,
+you may need greater power, up the 3A maximum supported by USB-C without PD.
+(Servo v4.1 does not support USB PD for its own power, it can only use 5V at
+up to 3A.)
+
+Besides that, experience has shown that connecting the servo in the
+following order is the most reliable:
+
+1. Host cable
+2. Servo Power supply (optional)
+3. DUT Power supply (if used)
+4. DUT cable
+5. DisplayPort
+
+The other peripherals (USBA ports, RJ22, RJ45) can be attached at any time
+because they won't affect operation positively or negatively.
+
 ## Servo v4.1 LEDs
 
 * Red power:  Lit when unit is powered.  Located near host USBC connector.
@@ -151,19 +171,6 @@ around sixty of these EVT units total.
 
 *   The host port BC1.2 detection sometimes malfunctions and won't permit the EC
     to be detected by the host.
-
-
-## Tips
-
-This is the recommended order in which to attach cabling/peripherals for best results.
-
-1. Host cable
-2. Servo Power supply (optional)
-3. DUT Power supply (if used)
-4. DUT cable
-5. DisplayPort
-
-This sequence has better coverage.  The other peripherals (USBA ports, RJ22, RJ45) shouldn't matter for order.
 
 
 ## Software
