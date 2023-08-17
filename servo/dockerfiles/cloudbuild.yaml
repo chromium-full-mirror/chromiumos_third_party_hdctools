@@ -40,6 +40,13 @@ steps:
     - /hdctools/servo/tests/
   waitFor: ['build']
 
+- name: 'python:slim'
+  id: 'test-ec3po'
+  entrypoint: 'bash'
+  args:
+    - /workspace/servo/ec3po/run_tests.sh
+  waitFor: ['src-prep']
+
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: bash
   args:
@@ -63,7 +70,6 @@ steps:
   waitFor: ['test']
 
 options:
-  # Use higher CPU machines so the caching and build steps are faster.
   machineType: 'N1_HIGHCPU_32'
 
 timeout: 3600s
