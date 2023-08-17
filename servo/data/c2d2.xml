@@ -169,8 +169,13 @@
     <name>ec3po_c2d2_uart</name>
     <alias>c2d2_uart_pty</alias>
     <doc>C2D2 console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="6" drv="uart">
-    </params>
+    <params cmd="get" subtype="pty" interface="6" drv="uart"/>
+  </control>
+  <control>
+    <name>c2d2_uart_timestamp</name>
+    <doc>Add timestamps to the servo micro console messages</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"/>
   </control>
   <!-- C2D2 Console Automation Controls -->
   <control>
