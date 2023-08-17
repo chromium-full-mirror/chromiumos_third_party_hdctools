@@ -424,6 +424,37 @@ To set the Servo v4.1 serial number on the Servo console:
 > serialno set 0123456
 ```
 
+## Troubleshooting
+
+### Servo appears/disappears on host USB, blinks and doesn't do anything useful
+
+Servo v4.1 consumes a fair amount of power, even with no USB devices plugged
+in. If the host system can't provide enough, it's possible that servo powers
+on, [browns out][brownout], repeating until it's disconnected from the host
+system.
+
+Symptons:
+
+ - Lots of USB connect / disconnect activity (see `dmesg` on the host)
+ - The red LED at the host connection is permanently on
+ - The red LED near the DUT pigtail is almost permanently on, with a short
+   flash to off every few seconds
+ - There's a green LED in the middle of the servo PCB that flashes to on in
+   sync with the second red LED
+
+Tests:
+
+ - Attach the host USB-C connector to a USB charger. The LED near the host
+   connector should be permanently on, while the other red LED should blink in
+   a calm 1 second on / 1 second off rhythm.
+ - Attach the host USB-C connector to other USB ports on the host system. It's
+   possible that some of them provide more power than others.
+
+Remedy:
+ - Use a powered USB hub between host and servo to ensure that there's enough
+   power available. Ideally, the servo power USB connection should help but
+   apparently it's not activated quickly enough.
+
 [Servo]: ./servo.md
 [Servo v4.1 Block Diagram]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/images/Servo_V4.1_Block_Diagram_V1p02.pdf
 [Servo v4.1 Schematic]: https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/images/G650-05260-03-SCH_Revision_3p03_Servo_4p1_DVT_Released_210316.pdf
@@ -435,3 +466,4 @@ To set the Servo v4.1 serial number on the Servo console:
 [`FlashAP`]: https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md#flashap
 [Bug]: https://issuetracker.google.com/issues/new?component=983411&template=1678684
 [`hdctools`]: https://chromium.googlesource.com/chromiumos/third_party/hdctools
+[brownout]: https://en.wikipedia.org/wiki/Brownout_(electricity)
