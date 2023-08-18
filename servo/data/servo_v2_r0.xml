@@ -162,6 +162,11 @@
     offset="2" map="onoff_i" init="off"></params>
   </control>
   <control>
+    <name>servo_v2_jtag_buf_on_flex_en</name>
+    <doc>Do-nothing placeholder for servoflex configs to selectively implement with clobber_ok="patch". Since servoflex configs are included by board overlays regardless of Servo device type in use, this lets the servoflex config only implement this control when this Servo device type is in use.</doc>
+    <params drv="na"/>
+  </control>
+  <control>
     <name>default_cold_reset</name>
     <doc>Use cold_reset signal from servo flex to reset the dut</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
@@ -178,6 +183,11 @@
     <doc>dev_mode GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
     offset="5" map="onoff"></params>
+  </control>
+  <control>
+    <name>servo_v2_spi1_buf_on_flex_en</name>
+    <doc>Do-nothing placeholder for servoflex configs to selectively implement with clobber_ok="patch". Since servoflex configs are included by board overlays regardless of Servo device type in use, this lets the servoflex config only implement this control when this Servo device type is in use.</doc>
+    <params drv="na"/>
   </control>
   <control>
     <name>tp78</name>
@@ -240,7 +250,11 @@
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
     offset="5" map="yesno" init="yes"></params>
   </control>
-  <!-- bit overloaded for enabling flex cable buffers -->
+  <control>
+    <name>servo_v2_spi2_buf_on_flex_en</name>
+    <doc>Do-nothing placeholder for servoflex configs to selectively implement with clobber_ok="patch". Since servoflex configs are included by board overlays regardless of Servo device type in use, this lets the servoflex config only implement this control when this Servo device type is in use.</doc>
+    <params drv="na"/>
+  </control>
   <control>
     <name>rec_mode</name>
     <doc>Google recovery mode</doc>
