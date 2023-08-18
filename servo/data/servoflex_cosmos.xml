@@ -18,4 +18,13 @@
     <params interface="2" drv="pca95xx" subtype="gpio" od="PU" port="1"
     child="0x26" offset="6" map="onoff_i" init="off" />
   </control>
+  <control>
+    <!-- This control is probably not used with cosmos and could be deleted.
+    This control was originally present by default in servo_v2 config, without
+    any override in this config. -->
+    <name>spi1_buf_on_flex_en</name>
+    <doc>Enables SPI1 buffers on servo flex. Note, this is the same GPIO as the default servo_v2 "dev_mode" control.</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
+    offset="5" map="onoff_i" init="off" />
+  </control>
 </root>
