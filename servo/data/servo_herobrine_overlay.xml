@@ -94,6 +94,6 @@
   -->
   <control>
     <name>servo_v4p1_dut_usb3_en</name>
-    <params clobber_ok="patch" init="disable"></params>
+    <params clobber_ok="patch" init="disabled"/>
   </control>
 </root>

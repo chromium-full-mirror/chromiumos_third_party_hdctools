@@ -45,6 +45,11 @@
     <doc>Determines whether DUT or host sees USB port</doc>
     <params servo_sees_usbkey="0" dut_sees_usbkey="1"></params>
   </map>
+  <map>
+    <name>enabled_enable</name>
+    <doc>Maps "enabled"/"disabled" to underlying "enable"/"disable" values.</doc>
+    <params disabled="disable" enabled="enable"/>
+  </map>
   <control>
     <name>second_usbkey_direction</name>
     <doc>Safely switch second usbkey direction by cycling power first. This port isn't currently implemented to use usb drives.</doc>
@@ -304,10 +309,16 @@
     It also resets USB DUT hub, to make USB devices enumerate again
     as super speed. Then USB3 is only ALLOWED, which means that other
     parts of servo FW can change it to USB2, eg. PD stack. </doc>
-    <params cmd="get" uart_cmd="dut_usb3" regex="(allowed/enabled|disabled)"
-    group="0" interface="26" drv="ec3po_servo"/>
+    <!-- The .* part of this regex can be deleted after
+         stable servo_v4p1 firmware contains https://crrev.com/c/4795131 -->
+    <params cmd="get" uart_cmd="dut_usb3" regex="USB3 to DUT: .*(enabled|disabled)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <!-- The map is used so these "set" values match the "get" values despite
+         servo_v4p1 firmware dut_usb3 command inconsistency.  The enabled_enable
+         map can be deleted after stable servo_v4p1 firmware contains
+         https://crrev.com/c/4795460 -->
     <params cmd="set" uart_cmd="dut_usb3" interface="26"
-    drv="ec3po_servo" input_type="str" choices="^(enable|disable)$" init="disable"/>
+    drv="ec3po_servo" input_type="str" map="enabled_enable" init="disabled"/>
   </control>
 
   <!-- UART and CONSOLE settings -->
