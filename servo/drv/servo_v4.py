@@ -27,9 +27,9 @@ class servoV4(hw_driver.HwDriver):
         'usb_reset_ms': str(int) e.g. '500' - How long in milliseconds to hold
             the DUT-facing USB hub in reset for triggering DUT re-enumeration of
             Servo USB devices.
-        'automatic_default': 'off' or 'on' - The default value for the automatic
-            USB3-to-DUT choice setting when the current Servo v4 is not present
-            in either the default-enable or default-disable lists.
+        'automatic_default': 'disabled' or 'enabled' - The default value for the
+            automatic USB3-to-DUT choice setting when the current Servo v4 is
+            not present in either the default-enable or default-disable lists.
       servod: Servod that is used for cross-servo-device communication
     """
     usb_reset_ms = int(params['usb_reset_ms'])
@@ -38,27 +38,27 @@ class servoV4(hw_driver.HwDriver):
                        'it is: %d' % (usb_reset_ms,))
 
     default = params['automatic_default']
-    if default not in ('off', 'on'):
+    if default not in ('disabled', 'enabled'):
       raise ValueError('invalid automatic_default param value: %r' % (default,))
 
     super(servoV4, self).__init__(interface, params, servod)
     # float for time.sleep()
     self._usb_reset_seconds = usb_reset_ms / 1000.0
-    # 'off' or 'on'
+    # 'disabled' or 'enabled'
     self._dut_usb3_default = default
-    # {str: str} - Mapping of Servo v4 serial number to 'on' or 'off',
+    # {str: str} - Mapping of Servo v4 serial number to 'enabled' or 'disabled',
     # representing the USB3-to-DUT setting for the Servo when
     # reinit_dut_usb3_en:automatic is set.
     self._dut_usb3_servos = {}
 
     # Official lists of yes-DUT-USB3 servos.
-    self._LoadDutUsb3Servos(_DUT_USB3_ON_DATA_GLOB, 'on')
+    self._LoadDutUsb3Servos(_DUT_USB3_ON_DATA_GLOB, 'enabled')
     # Official lists of no-DUT-USB3 servos.
-    self._LoadDutUsb3Servos(_DUT_USB3_OFF_DATA_GLOB, 'off')
+    self._LoadDutUsb3Servos(_DUT_USB3_OFF_DATA_GLOB, 'disabled')
     # Local lists of yes-DUT-USB3 servos, overrides the official lists.
-    self._LoadDutUsb3Servos(_DUT_USB3_ON_SYSCONF_GLOB, 'on')
+    self._LoadDutUsb3Servos(_DUT_USB3_ON_SYSCONF_GLOB, 'enabled')
     # Local lists of no-DUT-USB3 servos, overrides the official lists.
-    self._LoadDutUsb3Servos(_DUT_USB3_OFF_SYSCONF_GLOB, 'off')
+    self._LoadDutUsb3Servos(_DUT_USB3_OFF_SYSCONF_GLOB, 'disabled')
 
   def _LoadDutUsb3Servos(self, globpath, value):
     """Load config files of Servo v4 serial numbers to enable or disable USB3.
@@ -92,9 +92,9 @@ class servoV4(hw_driver.HwDriver):
     Returns: int - 0 for off, 1 for on
     """
     name = self._servod_get('dut_usb3_en')
-    if name == 'off':
+    if name == 'disabled':
       return 0
-    if name == 'on':
+    if name == 'enabled':
       return 1
     raise ValueError('unexpected dut_usb3_en value: %r' % (name,))
 
@@ -115,10 +115,10 @@ class servoV4(hw_driver.HwDriver):
       value: int - 0 for off, 1 for on, 2 for automatic
     """
     if value == 0:
-      new = 'off'
+      new = 'disabled'
     elif value == 1:
-      new = 'on'
-    elif value == 2:  # automatic
+      new = 'enabled'
+    elif value == 2:  # 'automatic'
       serialnum = self._servod_get('serialname')
       new = self._dut_usb3_servos.get(serialnum, self._dut_usb3_default)
     else:
