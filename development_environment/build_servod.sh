@@ -1,8 +1,13 @@
 #!/bin/bash
-
 export DOCKER_BUILDKIT=1
 IMAGE="servod:dev"
-cd /hdctools_source/hdctools
+
+SOURCE=${BASH_SOURCE[0]}
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+  SOURCE=$(readlink "$SOURCE")
+done
+DIR=$( cd -P "$DIR/$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
 
 if [ "$2" == "multi" ]
 then
@@ -16,9 +21,9 @@ then
 	    --allow security.insecure \
 	    --allow network.host \
 	    -t ${IMAGE} \
-	    -f servo/dockerfiles/Dockerfile .
+	    -f ${DIR}/../servo/dockerfiles/Dockerfile ${DIR}/..
 else
-     docker build -t ${IMAGE} -f servo/dockerfiles/Dockerfile .
+     docker build -t ${IMAGE} -f ${DIR}/../servo/dockerfiles/Dockerfile ${DIR}/..
 fi
 
 cd -

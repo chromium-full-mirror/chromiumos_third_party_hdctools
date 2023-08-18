@@ -34,20 +34,20 @@ def start_servod(
     serial_no,
     image,
     other_servod_args,
-    test=False,
     sleep=False,
+    test=False,
 ):
 
     servod_params = "--port 9999 "
 
     if board:
-        servod_params.append("--board %s " % board)
+        servod_params += "--board %s " % board
     if model:
-        servod_params.append("--model %s " % model)
+        servod_params += "--model %s " % model
     if serial_no:
-        servod_params.append("--serialname %s " % model)
+        servod_params.append += "--serialname %s " % model
     if other_servod_args:
-        servod_params.append(other_servod_args)
+        servod_params += other_servod_args
     if not container_name:
         now = datetime.now()
         container_name = now.strftime("%s")
