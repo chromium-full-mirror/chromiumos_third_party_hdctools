@@ -5,24 +5,15 @@
   <include>
     <name>detachable.xml</name>
   </include>
-  <!-- USB3 should be disabled by default in servo_v4p1. However
-    most of boards are known to work well with servo_v4p1 and USB3.
-    So in servo_v4p1 config there is servo_v4p1_dut_usb3_en control
-    defined to enable USB3 to DUT during servod initialization.
-
-    This specific board is incompatible with servo + USB3 so we need
+  <!-- This specific board is incompatible with servo + USB3 so we need
     to overwrite init value of this control and keep USB3 disabled.
     Please refer to b/254857085.
 
-    Note: we need to use 'patch' mechanism to safely overwrite
-    parameters of this control (for cases where servo_v4p1 XML is not
-    used and mentioned control not defined).
-
-    TODO (b/254857085 b/268737644) - delete this control if proper
-    fixes would be upreved on all models from this family.
-  -->
+    TODO(b/254857085,b/268737644) - delete this control if proper
+    fixes are upreved on all models from this family, including Fleet
+    recovery OS/FW version. -->
   <control>
-    <name>servo_v4p1_dut_usb3_en</name>
+    <name>reinit_dut_usb3_en</name>
     <params clobber_ok="patch" init="disabled"/>
   </control>
 </root>
