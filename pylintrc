@@ -74,6 +74,8 @@ ignored-modules=
     mock,
     numpy,
     pexpect,
+    pw_tokenizer,
+    pw_tokenizer.detokenize,
     pytest,
     serial,
     servo,

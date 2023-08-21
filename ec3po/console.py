@@ -16,11 +16,14 @@ import ctypes
 from datetime import datetime
 import logging
 import os
+import pathlib
 import pty
 import re
 import select
 import stat
 import sys
+
+from pw_tokenizer import detokenize
 
 from ec3po import interpreter
 from ec3po import threadproc_shim
@@ -58,6 +61,11 @@ ENHANCED_EC_INTERROGATION_TIMEOUT = 1.0  # Maximum number of seconds to wait for
 INTERROGATION_MODES = [b"never", b"always", b"auto"]
 # Format for printing host timestamp
 HOST_STRFTIME = "%y-%m-%d %H:%M:%S.%f"
+
+TOKEN_PREFIX = b"`"
+TOKEN_SUFFIX = b"~"
+# List of valid token modes
+TOKEN_MODES = {b"off": False, b"on": True}
 
 
 class EscState:
@@ -143,6 +151,7 @@ class Console:
         cmd_pipe,
         dbg_pipe,
         name=None,
+        tokenized=False,
     ):
         """Initializes a Console object with the provided arguments.
 
@@ -159,7 +168,8 @@ class Console:
           represents the console's read-only side of the debug pipe.  This must be a
           unidirectional pipe attached to the interpreter.  EC debug messages use
           this pipe.
-        name: the console source name
+        name: The console source name.
+        tokenized: Device is using tokenized logging.
         """
         # Create a unique logger based on the console name
         console_prefix = ("%s - " % (name,)) if name else ""
@@ -188,6 +198,14 @@ class Console:
         self.look_buffer = b""
         self.raw_debug = False
         self.output_line_log_buffer = []
+        self.tm_req = True
+        self.z_detokenizer = None
+        self.decoder = None
+        self.is_tokenized = tokenized
+        self.token_db = None
+
+        if self.is_tokenized:
+            self.LoadTokenDatabase()
 
     def __str__(self):
         """Show internal state of Console object as a string."""
@@ -211,6 +229,26 @@ class Console:
                 "look_buffer: %r" % (self.look_buffer,),
             )
         )
+
+    def LoadTokenDatabase(self, token_path=None):
+        """Load the token database.
+
+        Loads the token database and configures the detokenizer.
+
+        Args:
+          token_path: path to the token database to load.
+                      if None, reload last used token_db path.
+        """
+        self.is_tokenized = True
+
+        if token_path is not None:
+            self.token_db = token_path
+
+        if self.token_db:
+            self.logger.info(f"Loading detokenizer database(s): {self.token_db}")
+            self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(self.token_db)
+            self.z_detokenizer.show_errors = True
+            self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
 
     def LogConsoleOutput(self, data):
         """Log to debug user MCU output to controller_pty when line is filled.
@@ -867,6 +905,31 @@ class Console:
             else:
                 self.PrintOOBMHelp()
 
+        elif cmd[0] == b"tokens":
+            # Toggle tokens on/off and optionally accept path to token database
+            # Example:
+            #   > %tokens on                    << reuses last token db loaded
+            #   > %tokens on /tmp/tokens.bin
+            #   > %tokens off
+
+            if len(cmd) < 2:
+                self.logger.error("Insufficient args for %r command", cmd[0])
+                return
+            if len(cmd) > 3:
+                self.logger.error("Too many args for %r command", cmd[0])
+                return
+
+            mode = cmd[1].lower()
+            self.is_tokenized = TOKEN_MODES.get(mode)
+            if self.is_tokenized is None:
+                self.logger.error("Unexpected mode for %r command: %r", cmd[0], cmd[1])
+                return
+
+            self.logger.debug("Updated is_tokenized to %s.", self.is_tokenized)
+            if self.is_tokenized:
+                token_path = pathlib.Path(cmd[2].decode()) if len(cmd) == 3 else None
+                self.LoadTokenDatabase(token_path)
+
         else:
             self.PrintOOBMHelp()
 
@@ -879,6 +942,7 @@ class Console:
             b"  interrogate <never | always | auto> " b"[enhanced]\r\n",
         )
         os.write(self.controller_pty, b"  loglevel <int>\r\n")
+        os.write(self.controller_pty, b"  tokens <off | on [path]>\r\n")
 
     def CheckBufferForEnhancedImage(self, data):
         """Adds data to a look buffer and checks to see for enhanced EC image.
@@ -914,6 +978,55 @@ class Console:
 
         # Move the sliding window.
         self.look_buffer = self.look_buffer[-LOOK_BUFFER_SIZE:]
+
+    def SendToController(self, data: bytes):
+        """Send data to controller pty.
+
+        Args:
+        data: bytes to send to controller pty.
+        """
+        if self.timestamp_enabled:
+            # A timestamp is required at the beginning of this line
+            if self.tm_req:
+                now = datetime.now()
+                tm = CanonicalizeTimeString(now.strftime(HOST_STRFTIME))
+                os.write(self.controller_pty, tm)
+                self.tm_req = False
+
+            # Insert timestamps into the middle where appropriate
+            # except if the last character is a newline
+            nls_found = data.count(b"\n", 0, -1)
+            now = datetime.now()
+            tm = CanonicalizeTimeString(now.strftime("\n" + HOST_STRFTIME))
+            data_tm = data.replace(b"\n", tm, nls_found)
+        else:
+            data_tm = data
+
+        # timestamp required on next input
+        if data[-1:] == b"\n":
+            self.tm_req = True
+        os.write(self.controller_pty, data_tm)
+
+    def HandleDebugPipeData(self, data: bytes, controller_connected, command_active):
+        """Handle data coming from debug pipe.
+
+        Args:
+        data: bytes coming from debug pipe.
+        controller_connected: boolean indicating the controller is connected.
+        command_active:  boolean indicating command is currently active.
+        """
+        if len(data) > 1 and self.raw_debug:
+            self.logger.debug(
+                "|DBG|-%s->%r",
+                ("u" if controller_connected else "") + ("i" if command_active else ""),
+                data.strip(),
+            )
+        self.LogConsoleOutput(data)
+        if controller_connected:
+            self.SendToController(data)
+
+        if command_active:
+            os.write(self.interface_pty, data)
 
 
 def CanonicalizeTimeString(timestr):
@@ -967,9 +1080,6 @@ def StartLoop(console, command_active, shutdown_pipe=None):
         # This is used instead of "break" to avoid exiting the loop in the middle of
         # an iteration.
         continue_looping = True
-
-        # Used for determining when to print host timestamps
-        tm_req = True
 
         while continue_looping:
             # Check to see if pts is connected to anything
@@ -1083,48 +1193,45 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             )
                             continue_looping = False
                             continue
+
                         if console.interrogation_mode == b"auto":
                             # Search look buffer for enhanced EC image string.
                             console.CheckBufferForEnhancedImage(data)
-                        # Write it to the user console.
-                        if len(data) > 1 and console.raw_debug:
-                            console.logger.debug(
-                                "|DBG|-%s->%r",
-                                ("u" if controller_connected else "")
-                                + ("i" if command_active.value else ""),
-                                data.strip(),
-                            )
-                        console.LogConsoleOutput(data)
-                        if controller_connected:
-                            if console.timestamp_enabled:
-                                # A timestamp is required at the beginning of
-                                # this line
-                                if tm_req is True:
-                                    now = datetime.now()
-                                    tm = CanonicalizeTimeString(
-                                        now.strftime(HOST_STRFTIME)
+
+                        if (
+                            console.is_tokenized
+                            and console.z_detokenizer
+                            and controller_connected
+                        ):
+                            for is_message, chunk in console.decoder.read_messages(
+                                data
+                            ):
+                                if is_message:
+                                    # detokenize and print
+                                    message = console.z_detokenizer.detokenize_base64(
+                                        chunk,
+                                        prefix=TOKEN_PREFIX,
                                     )
-                                    os.write(console.controller_pty, tm)
-                                    tm_req = False
 
-                                # Insert timestamps into the middle where
-                                # appropriate except if the last character is a
-                                # newline
-                                nls_found = data.count(b"\n", 0, -1)
-                                now = datetime.now()
-                                tm = CanonicalizeTimeString(
-                                    now.strftime("\n" + HOST_STRFTIME)
-                                )
-                                data_tm = data.replace(b"\n", tm, nls_found)
-                            else:
-                                data_tm = data
+                                    console.HandleDebugPipeData(
+                                        message,
+                                        controller_connected,
+                                        command_active.value,
+                                    )
+                                else:  # raw text
+                                    chunk = chunk.replace(TOKEN_SUFFIX, b"")
+                                    if len(chunk) > 0:
+                                        console.HandleDebugPipeData(
+                                            chunk,
+                                            controller_connected,
+                                            command_active.value,
+                                        )
 
-                            # timestamp required on next input
-                            if data[-1:] == b"\n":
-                                tm_req = True
-                            os.write(console.controller_pty, data_tm)
-                        if command_active.value:
-                            os.write(console.interface_pty, data)
+                            continue
+
+                        console.HandleDebugPipeData(
+                            data, controller_connected, command_active.value
+                        )
 
                     elif fileno == shutdown_pipe.fileno():
                         console.logger.debug(
