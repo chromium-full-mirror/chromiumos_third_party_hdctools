@@ -183,7 +183,7 @@ class SystemConfig(object):
     self.aliases = {}
     self.syscfg_dict = collections.defaultdict(dict)
     self.hwinit = []
-    self._loaded_xml_files = []
+    self._loaded_xml_files = set()
     self._board_cfg = None
 
   def find_cfg_file(self, filename):
@@ -355,7 +355,7 @@ class SystemConfig(object):
       self._logger.warning('Already sourced system file (%s, %s, %d).',
                            filename, name_prefix, interface_increment)
       return
-    self._loaded_xml_files.append((filename, name_prefix, interface_increment))
+    self._loaded_xml_files.add((filename, name_prefix, interface_increment))
 
     self._logger.info('Loading XML config (%s, %s, %d)', filename, name_prefix,
                       interface_increment)
