@@ -294,7 +294,7 @@ class SystemConfig(object):
               '%s %r cmd="%s" has no driver configured (drv= attribute)' %
               (CONTROL_TAG, name, cmd))
 
-  def add_cfg_file(self, filename, name_prefix=None, interface_increment=0):
+  def add_cfg_file(self, filename, name_prefix=None):
     """Add system config file to the system config object.
 
     Each design may rely on multiple system files so need to have the facility
@@ -330,16 +330,9 @@ class SystemConfig(object):
 
     NOTE, method is recursive when parsing 'include' elements from XML.
 
-    The arguments name_prefix and interface_increment are used to support
-    multiple servo micros. The interfaces of the extra servo micros, like
-    the one for hammer, are relocated to higher slots. The controls of this
-    extra servo micros should be shifted their interface numbers. Adding
-    the name prefix avoid conflict with the main servo micro.
-
     Args:
       filename: string of path to system file ( xml )
       name_prefix: string to prepend to all control names
-      interface_increment: number to add to all interfaces
 
     Raises:
       SystemConfigError: for schema violations, or file not found.
@@ -351,18 +344,16 @@ class SystemConfig(object):
       raise SystemConfigError(msg)
 
     filename = cfgname
-    if (filename, name_prefix, interface_increment) in self._loaded_xml_files:
-      self._logger.warning('Already sourced system file (%s, %s, %d).',
-                           filename, name_prefix, interface_increment)
+    if (filename, name_prefix) in self._loaded_xml_files:
+      self._logger.warning('Already sourced system file (%r, %r).',
+                           filename, name_prefix)
       return
-    self._loaded_xml_files.add((filename, name_prefix, interface_increment))
+    self._loaded_xml_files.add((filename, name_prefix))
 
-    self._logger.info('Loading XML config (%s, %s, %d)', filename, name_prefix,
-                      interface_increment)
+    self._logger.info('Loading XML config (%r, %r)', filename, name_prefix)
     root = xml.etree.ElementTree.parse(filename).getroot()
     for element in root.findall('include'):
-      self.add_cfg_file(
-          element.find('name').text, name_prefix, interface_increment)
+      self.add_cfg_file(element.find('name').text, name_prefix=name_prefix)
     for tag in SYSCFG_TAG_LIST:
       for element in root.findall(tag):
         element_str = xml.etree.ElementTree.tostring(element)
@@ -402,8 +393,7 @@ class SystemConfig(object):
             # Modify the interface attributes.
             if 'interface' in p.attrib:
               if p.attrib['interface'] != 'servo':
-                interface_id = int(p.attrib['interface'])
-                p.attrib['interface'] = interface_id + interface_increment
+                p.attrib['interface'] = int(p.attrib['interface'])
 
         if len(params_list) == 2:
           assert tag != MAP_TAG, 'maps have only one params entry'
