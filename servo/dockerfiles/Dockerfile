@@ -146,6 +146,15 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
+FROM libftdi as pigweed-builder
+
+RUN git clone https://chromium.googlesource.com/external/pigweed/pigweed/pigweed
+
+WORKDIR /pigweed
+COPY servo/dockerfiles/setup_pigweed.py .
+RUN python3 setup_pigweed.py bdist_wheel
+
+######################################################################
 FROM libftdi as gcstool-builder
 
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
@@ -302,6 +311,7 @@ COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --from=hdctools-builder /hdctools/dist/* ./
 COPY --from=ec-builder /ec/dist/*.whl ./
+COPY --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
@@ -343,6 +353,8 @@ COPY --from=ec-builder \
 
 RUN wget https://raw.githubusercontent.com/kward/shflags/master/shflags --output-document /usr/share/misc/shflags
 COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
+#TODO(b/287265152): Fetch token database from GCS
+#COPY --from=ec-builder /ec/tokens.bin /tmp/tokens.bin
 
 COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
 
