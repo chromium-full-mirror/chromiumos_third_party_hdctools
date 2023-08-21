@@ -294,7 +294,7 @@ class SystemConfig(object):
               '%s %r cmd="%s" has no driver configured (drv= attribute)' %
               (CONTROL_TAG, name, cmd))
 
-  def add_cfg_file(self, filename, name_prefix=None):
+  def add_cfg_file(self, name_prefix, filename):
     """Add system config file to the system config object.
 
     Each design may rely on multiple system files so need to have the facility
@@ -331,8 +331,8 @@ class SystemConfig(object):
     NOTE, method is recursive when parsing 'include' elements from XML.
 
     Args:
-      filename: string of path to system file ( xml )
       name_prefix: string to prepend to all control names
+      filename: string of path to system file ( xml )
 
     Raises:
       SystemConfigError: for schema violations, or file not found.
@@ -344,30 +344,27 @@ class SystemConfig(object):
       raise SystemConfigError(msg)
 
     filename = cfgname
-    if (filename, name_prefix) in self._loaded_xml_files:
+    if (name_prefix, filename) in self._loaded_xml_files:
       self._logger.warning('Already sourced system file (%r, %r).',
                            filename, name_prefix)
       return
-    self._loaded_xml_files.add((filename, name_prefix))
+    self._loaded_xml_files.add((name_prefix, filename))
 
     self._logger.info('Loading XML config (%r, %r)', filename, name_prefix)
     root = xml.etree.ElementTree.parse(filename).getroot()
     for element in root.findall('include'):
-      self.add_cfg_file(element.find('name').text, name_prefix=name_prefix)
+      self.add_cfg_file(name_prefix, element.find('name').text)
     for tag in SYSCFG_TAG_LIST:
       for element in root.findall(tag):
         element_str = xml.etree.ElementTree.tostring(element)
         name = element.find('name')
-        if name is not None:
-          name = name.text
-          if tag == CONTROL_TAG and name_prefix:
-            name = name_prefix + name
-        else:
+        if name is None:
           # TODO(tbroch) would rather have lineno but dumping element seems
           # better than nothing.  Utimately a DTD/XSD for the XML schema will
           # catch these anyways.
           raise SystemConfigError('%s: no name ... see XML\n%s' % (tag,
                                                                    element_str))
+        name = name.text
         doc = element.findtext('doc', default='undocumented')
         doc = ' '.join(doc.split())
         alias = element.findtext('alias')
@@ -446,11 +443,10 @@ class SystemConfig(object):
         else:
           raise SystemConfigError('%s %s has illegal number of params %d\n%s' %
                                   (tag, name, len(params_list), element_str))
-        # If name_prefix was given, use it as the interface prefix. Use '' if
-        # it wasn't.'
+
         if tag == CONTROL_TAG:
-          set_dict['interface_prefix'] = name_prefix or ''
-          get_dict['interface_prefix'] = name_prefix or ''
+          set_dict['interface_prefix'] = name_prefix
+          get_dict['interface_prefix'] = name_prefix
 
         # Save the control name to the params dicts, such that the driver can
         # refer to it.
@@ -537,8 +533,6 @@ class SystemConfig(object):
               raise SystemConfigError('file %r %s element %r invalid '
                                       'alias "%s"' %
                                       (filename, tag, name, aliasname))
-            if name_prefix:
-              aliasname = name_prefix + aliasname
             self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
             # Also store what the alias relationship
             self.aliases[aliasname] = realname
@@ -928,7 +922,7 @@ def test():
       format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
   scfg = SystemConfig()
   # TODO(tbroch) make this a comprenhensive test xml file
-  scfg.add_cfg_file(os.path.join('data', 'servo.xml'))
+  scfg.add_cfg_file('', os.path.join('data', 'servo.xml'))
   scfg.display_config()
 
   control_dict = scfg._lookup('control', 'rec_mode')

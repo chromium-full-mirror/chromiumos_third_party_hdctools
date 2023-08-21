@@ -268,7 +268,7 @@ class TestServoDevice(unittest.TestCase):
     v2_dev._sync_interface_lists.assert_called_once()
     v2_dev.syscfg.get_board_model_config.assert_called_once_with('atlas', 'default')
     v2_dev.syscfg.set_board_cfg.assert_called_once_with("config")
-    v2_dev.syscfg.add_cfg_file.assert_called_once_with(filename="config")
+    v2_dev.syscfg.add_cfg_file.assert_called_once_with("v2", "config")
 
   def test_set_board_and_model_keyerror(self):
     """Test set_board_and_model()."""
@@ -284,7 +284,7 @@ class TestServoDevice(unittest.TestCase):
     self.v4_dev._sync_interface_lists.assert_not_called()
     self.v4_dev.syscfg.get_board_model_config.assert_called_once_with('atlas', 'default')
     self.v4_dev.syscfg.set_board_cfg.assert_called_once_with("config")
-    self.v4_dev.syscfg.add_cfg_file.assert_called_once_with(filename="config")
+    self.v4_dev.syscfg.add_cfg_file.assert_called_once_with("v4", "config")
 
   def test_set_board_and_model_no_config(self):
     """Test set_board_and_model()."""

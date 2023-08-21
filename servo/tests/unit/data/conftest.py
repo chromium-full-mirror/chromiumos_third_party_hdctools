@@ -35,7 +35,7 @@ def sys_config_gen():
 
 
 # List of setups that are supported.
-SUPPORTED_SETUPS = set(['servo_micro'])
+SUPPORTED_SETUPS = {'servo_micro'}
 
 def build_system_config(cfile, setup):
   """Helper to make a SystemConfig object.
@@ -74,5 +74,5 @@ def build_system_config(cfile, setup):
     raise SystemConfigTestError('Cannot test an empty config.')
   scfg = system_config.SystemConfig()
   for f in files:
-    scfg.add_cfg_file(f)
+    scfg.add_cfg_file(setup, f)
   return scfg

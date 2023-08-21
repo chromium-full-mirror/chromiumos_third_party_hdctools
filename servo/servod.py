@@ -362,7 +362,7 @@ class ServodStarter(object):
 
       scfg = system_config.SystemConfig()
       for cfg_file in all_configs:
-        scfg.add_cfg_file(cfg_file)
+        scfg.add_cfg_file(dev_entry.devopts.prefix[0], cfg_file)
 
       servo_device = servo_dev.ServoDevice(dev_entry=dev_entry, config=scfg,
         interfaces=devopts.interfaces, servod=weakref.proxy(self._servod))

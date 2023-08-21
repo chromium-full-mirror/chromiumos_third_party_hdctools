@@ -22,7 +22,7 @@ class selectControl(hw_driver.HwDriver):
   get/set the cold_reset value.
   """
 
-  SELECT_SUFFIX = '_select'
+  __SELECT_SUFFIX = '_select'
 
   def __init__(self, interface, params, servod):
     """Constructor.
@@ -40,7 +40,7 @@ class selectControl(hw_driver.HwDriver):
     if not hasattr(self._servod, 'selected_controls'):
       self._servod.selected_controls = {}
     servo_type = self._params.get('device_type', '')
-    self._prefix = (servo_type + '.') if servo_type else ''
+    self.__prefix = (servo_type + '.') if servo_type else ''
 
   def _Set_select(self, val):
     """Set the control to use."""
@@ -70,21 +70,21 @@ class selectControl(hw_driver.HwDriver):
   def _Get_control(self):
     """Get the value from the selected control."""
     selected_control = self._get_selected_control()
-    return self._servod_get(selected_control)
+    return self._servod_get(self.__prefix + selected_control)
 
   def _Set_control(self, value):
     """Set the selected control to value."""
     selected_control = self._get_selected_control()
-    return self._servod_set(selected_control, value)
+    return self._servod_set(self.__prefix + selected_control, value)
 
   def _get_control_key(self):
     """Get the base control name."""
     control_name = self._params.get('control_name', '')
     if not control_name:
       raise selectControlError('control_name not found')
-    return self._prefix + control_name
+    return self.__prefix + control_name
 
   def _get_selected_control(self):
     """Return the control being used."""
     control_name = self._params.get('control_name', '')
-    return self._servod_get(control_name + self.SELECT_SUFFIX)
+    return self._servod_get(self.__prefix + control_name + self.__SELECT_SUFFIX)

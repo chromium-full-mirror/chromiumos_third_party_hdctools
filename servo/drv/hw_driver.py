@@ -114,7 +114,7 @@ class HwDriver(object):
       self._choices = re.compile(self._params['choices'])
       self._logger.debug('Valid input choices: %s', self._choices)
     self._io_type = _get_io_type(params)
-    self._prefix = self._params.get('interface_prefix', '')
+    self._prefix = self._params.get('interface_prefix')
 
   def __str__(self):
     """Return a string representation of this drv."""
@@ -125,13 +125,13 @@ class HwDriver(object):
     """Get the value of the given control with proper prefix."""
     if not self._servod:
       raise HwDriverError("No valid servod instance.")
-    return self._servod.get(self._prefix + control)
+    return self._servod.get(control)
 
   def _servod_set(self, control, value):
     """Set the value of the given control with proper prefix."""
     if not self._servod:
       raise HwDriverError("No valid servod instance.")
-    return self._servod.set(self._prefix + control, value)
+    return self._servod.set(control, value)
 
   def __repr__(self):
     """Return same as __str__()"""

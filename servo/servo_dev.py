@@ -280,7 +280,7 @@ class ServoDevice(object):
     if model and board_id and board_id.endswith(model):
       self.model = model
     if cfg:
-      self.syscfg.add_cfg_file(filename=cfg)
+      self.syscfg.add_cfg_file(self.prefixes[0], cfg)
       return True
     return False
 

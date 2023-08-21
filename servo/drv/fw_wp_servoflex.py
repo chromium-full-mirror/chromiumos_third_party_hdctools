@@ -25,7 +25,6 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
     # Get the control prefix, like 'hammer_', if it is a base control.
     control_name = self._params.get('control_name', '')
     assert control_name.endswith('fw_wp_state'), 'Should be fw_wp_state control'
-    self._prefix = control_name.replace('fw_wp_state', '')
 
   def _force_on(self):
     """Force the firmware to write-protected."""
