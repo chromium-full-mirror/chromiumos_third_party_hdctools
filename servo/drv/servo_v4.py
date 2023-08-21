@@ -4,10 +4,10 @@
 
 """Driver for Servo v4 custom logic built on the low-level controls."""
 
-import errno
 import glob
-from servo.drv import hw_driver
 import time
+
+from servo.drv import hw_driver
 
 _DUT_USB3_OFF_SYSCONF_GLOB = '/etc/servo/dut_usb3.no'
 _DUT_USB3_ON_SYSCONF_GLOB = '/etc/servo/dut_usb3.yes'
