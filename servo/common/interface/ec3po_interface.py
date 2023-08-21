@@ -1,8 +1,8 @@
 # Copyright 2015 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Servo interface for the EC-3PO console interpreter."""
 
+"""Servo interface for the EC-3PO console interpreter."""
 
 import collections
 import ctypes
@@ -32,6 +32,8 @@ from servo.common.proto import driver_grpc
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
+EC_TOKENS_CONTROL = "uses_cros_ec_tokens"
+EC_TOKENS_VALUES = {"never": False, "always": True}
 
 
 def _RunCallbacks(*callbacks):
@@ -105,7 +107,7 @@ class EC3PO(uart.Uart):
     This includes both the interpreter and the console objects for one UART.
     """
 
-    def __init__(self, raw_ec_uart, source_name, device_info):
+    def __init__(self, raw_ec_uart, source_name, device_info, tokenized):
         """Provides the interface to the EC-3PO console interpreter.
 
         Args:
@@ -113,6 +115,7 @@ class EC3PO(uart.Uart):
           source_name: A user friendly name documenting the source of this PTY.
           device_info: A DeviceInfo tuple of the USB device info
               (vid, pid, serialname)
+          tokenized: Boolean indicating device logging is tokenized.
         """
         # Run Fuart init.
         uart.Uart.__init__(self, logger_name="%s - EC3PO Interface" % source_name)
@@ -221,6 +224,7 @@ class EC3PO(uart.Uart):
             cmd_pipe_interactive,
             dbg_pipe_interactive,
             self._source,
+            tokenized,
         )
         self._console = new_console
         new_console._logger = logging.getLogger("Console")
@@ -286,7 +290,25 @@ class EC3PO(uart.Uart):
                 device_type="",
             )
             raw_ec_uart = json.loads(drv.value)
-            return EC3PO(raw_ec_uart["response"], raw_uart_source, device_info)
+            ec_tokenized = False
+            if raw_uart_source == "EC" and servo_device.syscfg.is_control(
+                EC_TOKENS_CONTROL
+            ):
+                ec_tokens_val = servo_device.get(EC_TOKENS_CONTROL)
+                ec_tokenized = EC_TOKENS_VALUES.get(ec_tokens_val)
+                if ec_tokenized is None:
+                    raise EC3POInterfaceError(
+                        "control {!r} invalid value {!r} is not one of {!r}".format(
+                            EC_TOKENS_CONTROL, ec_tokens_val, sorted(EC_TOKENS_VALUES)
+                        )
+                    )
+            c.build_logger.info(f"Tokenized EC: {ec_tokenized}")
+            return EC3PO(
+                raw_ec_uart["response"],
+                raw_uart_source,
+                device_info,
+                ec_tokenized
+            )
         except Exception:
             c.build_logger.info(
                 "Skip initializing EC3PO for %s, no control specified.",

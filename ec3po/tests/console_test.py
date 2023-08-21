@@ -5,14 +5,20 @@
 
 """Unit tests for the EC-3PO Console interface."""
 
+
 import logging
+import sys
 import tempfile
 import unittest
 from unittest import mock
 
-from ec3po import console
-from ec3po import interpreter
-from ec3po import threadproc_shim
+
+sys.modules["pw_tokenizer"] = mock.MagicMock()
+sys.modules["pw_tokenizer.detokenize"] = mock.MagicMock()
+
+from ec3po import console  # pylint: disable=wrong-import-position
+from ec3po import interpreter  # pylint: disable=wrong-import-position
+from ec3po import threadproc_shim  # pylint: disable=wrong-import-position
 
 
 ESC_STRING = bytes([console.ControlKey.ESC])
