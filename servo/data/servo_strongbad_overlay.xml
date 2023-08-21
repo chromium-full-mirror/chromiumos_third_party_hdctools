@@ -5,15 +5,14 @@
   <include>
     <name>detachable.xml</name>
   </include>
-  <!-- This specific board is incompatible with servo + USB3 so we need
-    to overwrite init value of this control and keep USB3 disabled.
-    Please refer to b/254857085.
+  <include>
+    <!-- This specific board is incompatible with servo + USB3 so we need
+      to overwrite init value of this control and keep USB3 disabled.
+      Please refer to b/254857085.
 
-    TODO(b/254857085,b/268737644) - delete this control if proper
-    fixes are upreved on all models from this family, including Fleet
-    recovery OS/FW version. -->
-  <control>
-    <name>reinit_dut_usb3_en</name>
-    <params clobber_ok="patch" init="disabled"/>
-  </control>
+      TODO(b/254857085,b/268737644) - delete this control if proper
+      fixes are upreved on all models from this family, including Fleet
+      recovery OS/FW version. -->
+    <name>dut_usb3_disabled.xml</name>
+  </include>
 </root>

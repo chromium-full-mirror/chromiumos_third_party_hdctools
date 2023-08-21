@@ -1,0 +1,23 @@
+<!--
+  Include this config from a board overlay to explicitly disable USB3-to-DUT for
+  the board, regardless of the current default setting for the servo.
+
+  Prefer using this config over directly patching from a board overlay!
+
+  This config should be included when a board has known issues with USB3
+  (in general or specific to USB3 + DTS/CCD combination).  In such cases please
+  link to a bug for the board in the <include> block that includes this config.
+
+  This config may also be included when a board simply has not been well tested
+  with USB3 (in general or specific to USB3 + DTS/CCD combination).  In such
+  cases please explain that in the <include> block that includes this config, to
+  differentiate from the scenario above (actual known bugs).  If there is a plan
+  to test and validate the board with USB3 (there may not be for older boards),
+  link to the tracking bug for that as well.
+-->
+<root>
+  <control>
+    <name>reinit_dut_usb3_en</name>
+    <params clobber_ok="patch" init="disabled"/>
+  </control>
+</root>

@@ -212,6 +212,10 @@
   </control>
 
   <control>
+    <!--
+      Most human and automation uses should use reinit_dut_usb3_en instead of
+      this low-level control.
+    -->
     <name>dut_usb3_en</name>
     <alias>servo_v4_dut_usb3_en</alias>
     <doc>Enable Parade USB3 mux on DUT type-c</doc>
@@ -220,6 +224,12 @@
   </control>
 
   <control>
+    <!--
+      When patching this control to change init= from a board overlay, please
+      use (include) dut_usb3_disabled.xml or dut_usb3_enabled.xml if applicable,
+      rather than hardcoding this control name or its allowed values directly in
+      the board overlay.
+    -->
     <name>reinit_dut_usb3_en</name>
     <alias>servo_v4_reinit_dut_usb3_en</alias>
     <doc>Reinitialize DUT-facing USB3 mux. This is a wrapper around dut_usb3_en.
