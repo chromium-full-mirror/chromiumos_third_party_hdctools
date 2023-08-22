@@ -20,11 +20,7 @@ CONTROL_TAG = 'control'
 CLOBBER_ATTR = 'clobber_ok'
 CLOBBER_NEVER = 'never'
 CLOBBER_PATCH = 'patch'
-CLOBBER_UPDATE = 'update'
 CLOBBER_FULL = 'full'
-# from low to high
-CLOBBER_RANK = {v: i for i, v in enumerate(
-    [None, CLOBBER_NEVER, CLOBBER_PATCH, CLOBBER_UPDATE, CLOBBER_FULL])}
 CONTENT_TAG = 'content'
 CONTENT_ITEM_TAG = 'item'
 CONTENT_ITEM_KEY_ATTR = 'key'
@@ -371,6 +367,8 @@ class SystemConfig(object):
 
         get_dict = None
         set_dict = None
+        get_is_defined = True
+        set_is_defined = True
         params_list = element.findall('params')
 
         if tag == CONTROL_TAG:
@@ -426,9 +424,11 @@ class SystemConfig(object):
             if cmd == 'get':
               get_dict = copy.copy(pd)
               set_dict = copy.copy(UNDEF_CONTROL_DICT)
+              set_is_defined = False
             else:  # |cmd| is 'set'
               set_dict = copy.copy(pd)
               get_dict = copy.copy(UNDEF_CONTROL_DICT)
+              get_is_defined = False
           else:
             # |cmd| is not set. assume it's the same for both.
             get_dict = copy.copy(pd)
@@ -462,12 +462,20 @@ class SystemConfig(object):
 
         assert tag == CONTROL_TAG
 
-        clobbers = []
-        for ctrl_dict in get_dict, set_dict:
-          clobbers.append(ctrl_dict.get(CLOBBER_ATTR))
-          if clobbers[-1] is not None and clobbers[-1] not in CLOBBER_RANK:
-            clobbers[-1] = CLOBBER_UPDATE
-        clobber_ok = max(clobbers, key=lambda k: CLOBBER_RANK[k])
+        clobber_vals = set()
+        if get_is_defined:
+          clobber_vals.add(get_dict.get(CLOBBER_ATTR))
+        if set_is_defined:
+          clobber_vals.add(set_dict.get(CLOBBER_ATTR))
+
+        if not clobber_vals:
+          clobber_ok = None
+        elif len(clobber_vals) == 1:
+          clobber_ok = clobber_vals.pop()
+        else:
+          raise SystemConfigError(
+              'config file %r %s %r has conflicting %s= values between '
+              'cmd="get" and cmd="set"' % (filename, tag, name, CLOBBER_ATTR))
 
         if clobber_ok == CLOBBER_NEVER:
           if name in self.syscfg_dict[tag]:
