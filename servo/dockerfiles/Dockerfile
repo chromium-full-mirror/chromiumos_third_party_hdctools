@@ -168,17 +168,20 @@ RUN make -C extra/usb_updater gsctool
 RUN strip  /ec/extra/usb_updater/gsctool
 
 ######################################################################
-FROM libftdi as hdctools-builder
-# For cloud build and for developers copying the local source is correct, if
-# you need to build from checked in code vs you local source comment out the
-# copy command and uncomment the clone command.
-COPY / hdctools/
-#RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
+FROM libftdi as hdctools-builder-base
 
 RUN apt-get update \
     && apt-get install -y \
         protobuf-compiler \
         python3-pytest
+
+######################################################################
+FROM hdctools-builder-base as hdctools-builder
+# For cloud build and for developers copying the local source is correct, if
+# you need to build from checked in code vs you local source comment out the
+# copy command and uncomment the clone command.
+COPY / hdctools/
+#RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
@@ -261,13 +264,7 @@ RUN make && make install
 RUN strip /usr/bin/futility
 
 ######################################################################
-FROM debian:bookworm-slim
-
-# Install libusb.
-COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+FROM debian:bookworm-slim as base
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
@@ -305,11 +302,13 @@ RUN apt-get update --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
+# Install libusb.
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
-WORKDIR /hdctools/chromeos/
-COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
-COPY --from=hdctools-builder /hdctools/dist/* ./
 COPY --from=ec-builder /ec/dist/*.whl ./
 COPY --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
@@ -356,8 +355,6 @@ COPY --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 #TODO(b/287265152): Fetch token database from GCS
 #COPY --from=ec-builder /ec/tokens.bin /tmp/tokens.bin
 
-COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
-
 # Install uhubctl
 COPY --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
 RUN chmod 755 /usr/local/bin/uhubctl
@@ -396,10 +393,8 @@ RUN chmod 755 /bin/sync
 # Try to remove as much as possible to make the container smaller
 RUN apt-get remove --purge -y \
         xz-utils \
-        build-essential \
         make \
         gcc \
-        python3-pip \
         wget \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* \
@@ -408,6 +403,7 @@ RUN apt-get remove --purge -y \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
 
+
 # Required for the name paramter for using .servorc.
 ENV SUDO_USER=docker
 # Required for the ftdi libraries to be found. ENV does not allow the
@@ -415,3 +411,16 @@ ENV SUDO_USER=docker
 # be nice if the path could be discovered with a command like:
 # find / -name libftdii2c.so -exec dirname {} \;
 ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages
+
+######################################################################
+FROM base
+
+WORKDIR /hdctools/chromeos/
+COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
+WORKDIR /wheels
+COPY --from=hdctools-builder /hdctools/dist/* ./
+RUN pip3  install  *.whl --break-system-packages
+WORKDIR /
+RUN rm -rf wheels
+
+COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
