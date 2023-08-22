@@ -345,11 +345,15 @@ class SystemConfig(object):
                            filename, name_prefix)
       return
     self._loaded_xml_files.add((name_prefix, filename))
-
     self._logger.info('Loading XML config (%r, %r)', filename, name_prefix)
+
+    # set of tuples representing config entities seen already in this file
+    seen_entities = set()  # {(str, str)} - set of (tag, name) tuples
+
     root = xml.etree.ElementTree.parse(filename).getroot()
     for element in root.findall('include'):
       self.add_cfg_file(name_prefix, element.find('name').text)
+
     for tag in SYSCFG_TAG_LIST:
       for element in root.findall(tag):
         element_str = xml.etree.ElementTree.tostring(element)
@@ -360,10 +364,18 @@ class SystemConfig(object):
           # catch these anyways.
           raise SystemConfigError('%s: no name ... see XML\n%s' % (tag,
                                                                    element_str))
+
         name = name.text
         doc = element.findtext('doc', default='undocumented')
         doc = ' '.join(doc.split())
         alias = element.findtext('alias')
+
+        this_entity = tag, name
+        if this_entity in seen_entities:
+          raise SystemConfigError(
+              'config file %r contains redundant or conflicting definitions '
+              'for %s %r' % (filename, tag, name))
+        seen_entities.add(this_entity)
 
         get_dict = None
         set_dict = None
