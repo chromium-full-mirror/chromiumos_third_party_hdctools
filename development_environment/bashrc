@@ -1,6 +1,0 @@
-
-source $HOME/.bashrc
-
-alias run_tests="start_servod.py -t -b unknown $@"
-alias build="build_servod.sh $@"
-alias run="start_servod.py $@"

@@ -7,6 +7,8 @@ import docker
 import logging
 import argparse
 from datetime import datetime
+import time
+import sys
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
@@ -33,11 +35,12 @@ def start_servod(
     model,
     serial_no,
     image,
-    other_servod_args,
-    sleep=False,
-    test=False,
+    mounts,
+    port,
+    passthrough_args,
+    sleep,
+    test,
 ):
-
     servod_params = "--port 9999 "
 
     if board:
@@ -45,9 +48,9 @@ def start_servod(
     if model:
         servod_params += "--model %s " % model
     if serial_no:
-        servod_params.append += "--serialname %s " % model
-    if other_servod_args:
-        servod_params += other_servod_args
+        servod_params += "--serialname %s " % serial_no
+    if passthrough_args:
+        servod_params += passthrough_args
     if not container_name:
         now = datetime.now()
         container_name = now.strftime("%s")
@@ -60,6 +63,16 @@ def start_servod(
         command = ["sleep", "infinity"]
     elif test:
         command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
+    # elif servo_upgrade:
+    #    command = ["servo_updator", "-c", fw_channel, "-b", servo_board]
+
+    volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
+    if mounts:
+        for mount in mounts:
+            volumes.append("".join(mount))
+    ports = {}
+    if port:
+        ports = {"9999": port}
 
     cont = client.containers.run(
         image,
@@ -69,27 +82,39 @@ def start_servod(
         hostname=name,
         cap_add=["NET_ADMIN"],
         detach=True,
-        volumes=["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume],
+        volumes=volumes,
+        ports=ports,
         command=command,
     )
-    log_lines = cont.logs(stream=True, follow=True)
     started = False
-    while log_lines and not started:
-        cont.reload()
-        for line in log_lines:
-            print(line.decode("utf-8").strip())
-            if b"servod - INFO - Listening on 0.0.0.0 port" in line:
+    log_lines = cont.logs(stream=True, follow=True)
+    if not test and not sleep:
+        while not started:
+            try:
+                (ec, _) = cont.exec_run(
+                    "servodtool instance wait-for-active --timeout 1 -p 9999"
+                )
+            except docker.errors.APIError:
+                for line in log_lines:
+                    print(line.decode("utf-8"), end="")
+                sys.exit(1)
+            if ec == 0:
                 started = True
-                logging.info("Detected servod has started.")
-                break
-        if cont.status == "removing":
-            break
+                log_lines = cont.logs(tail=3)
+                print(log_lines.decode("utf-8"))
+    elif test:
+        cont.reload()
+        print(cont.status)
+        while cont.status == "running":
+            cont.reload()
+            for line in log_lines:
+                print(line.decode("utf-8"), end="")
 
 
-if __name__ == "__main__":
+def parse_args():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
-        "-h",
+        "-n",
         "--container_name",
         type=str,
         help="The IP or hostname of the DUT connected to servo.",
@@ -123,21 +148,35 @@ if __name__ == "__main__":
         help="Run the continer but do not start servod - best for debug.",
     )
     parser.add_argument(
-        "--other_servod_args",
+        "--mount",
         type=str,
-        help="Any extra args to be passed to servod",
+        action="append",
+        nargs="*",
+        help="Mount a host directory into the servod container in the format <hostdir>:<containerdir>.",
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "-p", "--port", type=int, help="Host port number to map the servod service to"
+    )
+    parser.add_argument(
+        "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
+    )
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
     client = setup()
+    args = parse_args()
     image = get_image(args.channel)
     start_servod(
-        client,
-        args.container_name,
-        args.board,
-        args.model,
-        args.serial,
-        image,
-        args.run_tests,
-        args.sleep,
-        args.other_servod_args,
+        client=client,
+        container_name=args.container_name,
+        board=args.board,
+        model=args.model,
+        serial_no=args.serial,
+        image=image,
+        mounts=args.mount,
+        port=args.port,
+        passthrough_args=args.passthrough[1:],
+        sleep=args.sleep,
+        test=args.run_tests,
     )

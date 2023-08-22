@@ -11,15 +11,18 @@ class RunCommandBase(object):
     def parse_args(self):
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument(
-            "-h",
+            "-n",
             "--container_name",
             type=str,
             help="The IP or hostname of the DUT connected to servo.",
         )
-        return parser.parse_known_args()
+        parser.add_argument(
+            "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
+        )
+        return parser.parse_args()
 
     def run_command_in_container(self):
-        args, unknown_args = self.parse_args()
+        args = self.parse_args()
         client = docker.from_env()
 
         name_search = "docker_servod"
@@ -30,12 +33,12 @@ class RunCommandBase(object):
         if not containers:
             print("Can not find a container that matches name %s" % name_search)
         elif len(containers) == 1:
-            self.execute_command(containers[0], unknown_args)
+            self.execute_command(containers[0], args.passthrough[1:])
         else:
             print(
                 "More than one container matches %s, please re-run with --container_name"
                 % name_search
             )
 
-    def execute_command(self, unknown_args):
+    def execute_command(self, passthrough):
         pass
