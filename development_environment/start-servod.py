@@ -104,12 +104,15 @@ def start_servod(
                 print(log_lines.decode("utf-8"))
     elif test:
         cont.reload()
-        print(cont.status)
         while cont.status == "running":
-            cont.reload()
-            for line in log_lines:
-                print(line.decode("utf-8"), end="")
-
+            try:
+                cont.reload()
+            except docker.errors.APIError:
+                cont.status == "failed"
+                sys.exit(0)
+            else:
+                for line in log_lines:
+                    print(line.decode("utf-8"), end="")
 
 def parse_args():
     parser = argparse.ArgumentParser(add_help=False)
