@@ -9,6 +9,7 @@ import run_command
 class StopCommand(run_command.RunCommandBase):
     def execute_command(self, container, _):
         container.kill()
+        return (0, None)
 
 
 if __name__ == "__main__":

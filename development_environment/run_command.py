@@ -3,9 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import docker
 import argparse
+import sys
 
+import docker
 
 class RunCommandBase(object):
     def parse_args(self):
@@ -33,7 +34,10 @@ class RunCommandBase(object):
         if not containers:
             print("Can not find a container that matches name %s" % name_search)
         elif len(containers) == 1:
-            self.execute_command(containers[0], args.passthrough[1:])
+            exit_code, output = self.execute_command(containers[0], args.passthrough[1:])
+            if output:
+               print(output.decode("utf-8"), end="")
+            sys.exit(exit_code)
         else:
             print(
                 "More than one container matches %s, please re-run with --container_name"
