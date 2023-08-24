@@ -18,7 +18,7 @@ for s in "start_dev_environment.sh" \
 done
 
 docker pull ${IMAGE}
-docker build -t 127.0.1.1:5000/hdctoolsdev \
+docker build -t hdctoolsdev:latest \
     --build-arg USER=$USER \
     --build-arg  USERID=$(id -u) \
     -f ${tmpdir}/Dockerfile.local ${tmpdir}
@@ -31,4 +31,4 @@ docker run --rm --net host \
     --volume /tmp/.X11-unix:/tmp/.X11-unix  --shm-size=5g --user $USER \
     --ulimit nofile=200000:200000 -e USER=$USER -v $HOME:/home/$USER \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v $(pwd):/hdctools_source -it -t 127.0.1.1:5000/hdctoolsdev:latest
+    -v $(pwd):/hdctools_source -it -t hdctoolsdev:latest
