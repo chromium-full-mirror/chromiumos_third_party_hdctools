@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<root>
+  <control>
+    <name>servo_v2_jtag_buf_on_flex_en</name>
+    <alias>jtag_buf_on_flex_en</alias>
+    <doc>Enables JTAG buffer on servo flex.</doc>
+    <!-- The od= and port= attributes were originally inherited from a default
+    servo_v2 implementation of this control.  Each might be correct and
+    necessary, or unused but harmless. -->
+    <params interface="2" drv="pca95xx" subtype="gpio" od="PU" port="0"
+    child="0x26" offset="3" map="onoff_i" init="off" clobber_ok="patch" />
+  </control>
+  <control>
+    <name>servo_v2_spi2_buf_on_flex_en</name>
+    <alias>spi2_buf_on_flex_en</alias>
+    <doc>Enables SPI2 buffers on servo flex.</doc>
+    <!-- The od= and port= attributes were originally inherited from a default
+    servo_v2 implementation of this control.  Each might be correct and
+    necessary, or unused but harmless. -->
+    <params interface="2" drv="pca95xx" subtype="gpio" od="PU" port="1"
+    child="0x26" offset="6" map="onoff_i" init="off" clobber_ok="patch" />
+  </control>
+  <control>
+    <name>servo_v2_spi1_buf_on_flex_en</name>
+    <alias>spi1_buf_on_flex_en</alias>
+    <doc>Enables SPI1 buffers on servo flex.</doc>
+    <!-- The od= and port= attributes were originally inherited from a default
+    servo_v2 implementation of this control.  Each might be correct and
+    necessary, or unused but harmless. -->
+    <params interface="2" drv="pca95xx" subtype="gpio" od="PU" port="0"
+    child="0x26" offset="7" map="onoff_i" init="off" clobber_ok="patch" />
+  </control>
+</root>

@@ -4,9 +4,42 @@
 
 """Unit tests for SystemConfig."""
 
+import os
 import unittest
 
 from servo import system_config
+from servo.tests.unit import syscfg_atlas
+
+
+def _testdata_path(filename):
+  """Find a testdata/test_system_config/ file path.
+
+  Args:
+    filename: str
+
+  Returns:
+    str: absolute path
+  """
+  return os.path.join(
+      os.path.dirname(__file__), 'testdata', 'test_system_config', filename)
+
+
+class SystemConfig(system_config.SystemConfig):
+  """SystemConfig subclass that finds testdata configs."""
+
+  def find_cfg_file(self, filename):
+    """Find testdata config files.
+
+    Args:
+      filename: str
+
+    Returns:
+      None or str: absolute path, or None if the file does not exist in testdata
+    """
+    filepath = _testdata_path(filename)
+    if os.path.isfile(filepath):
+      return filepath
+    return None
 
 
 class TestSystemConfig(unittest.TestCase):
@@ -17,7 +50,7 @@ class TestSystemConfig(unittest.TestCase):
   def setUp(self):
     """Set up a SystemConfig object to use. Cache module values."""
     super(TestSystemConfig, self).setUp()
-    self.syscfg = system_config.SystemConfig()
+    self.syscfg = SystemConfig()
     self.ALLOWABLE_INPUT_TYPES = system_config.ALLOWABLE_INPUT_TYPES
 
   def tearDown(self):
@@ -106,7 +139,7 @@ class TestSystemConfig(unittest.TestCase):
     fake_map_name = 'fake_map'
     control_params = {'map': fake_map_name}
     with self.assertRaisesRegex(system_config.SystemConfigError,
-                                 "Map %s isn't defined" % fake_map_name):
+                                "Map %s isn't defined" % (fake_map_name,)):
       # 'random_key' passed as key as the key does not matter for this test.
       self.syscfg.resolve_val(control_params, 'random_key')
 
@@ -122,8 +155,8 @@ class TestSystemConfig(unittest.TestCase):
     # need to include the map name.
     control_params = {'map': map_name}
     with self.assertRaisesRegex(system_config.SystemConfigError,
-                                 "Map %r doesn't contain "
-                                 'key %r' % (map_name, fake_map_key)):
+                                "Map %r doesn't contain key %r" %
+                                (map_name, fake_map_key)):
       self.syscfg.resolve_val(control_params, fake_map_key)
 
   def test_ResolveValInputType(self):
@@ -195,7 +228,7 @@ class TestSystemConfig(unittest.TestCase):
       self._AddNAControl(control, {'tags': tags})
     self.syscfg.finalize()
     # Split tags into individual tags using helper.
-    for tag in system_config.SystemConfig.tag_string_to_tags(tags):
+    for tag in self.syscfg.tag_string_to_tags(tags):
       found_tagged_controls = self.syscfg.get_controls_for_tag(tag)
       # Assert that the same controls are found that were fed in.
       assert sorted(found_tagged_controls) == sorted(tagged_controls)
@@ -212,6 +245,25 @@ class TestSystemConfig(unittest.TestCase):
     found_tagged_controls = self.syscfg.get_controls_for_tag(unknown_tag)
     # Assert that no controls were found.
     assert not found_tagged_controls
+
+  def _LoadConfigs(self, servo_type, board, model):
+    overlay_file, overlay_name = self.syscfg.get_board_model_config(
+        board=board, model=model)
+    self.assertTrue(servo_type)
+    self.assertTrue(overlay_file)
+    self.syscfg.add_cfg_file(servo_type, servo_type + '.xml')
+    self.syscfg.add_cfg_file(servo_type, overlay_file)
+    self.syscfg.finalize()
+
+  def test_LoadValidConfigs(self):
+    """Tests that a real-world set of configs load successfully."""
+    self._LoadConfigs('servo_micro', 'atlas', 'atlas')
+    self.assertEqual(syscfg_atlas.syscfg_dict, self.syscfg.syscfg_dict)
+
+  def test_MissingDrvConfigs(self):
+    """Tests that a control with missing drv= is an error."""
+    with self.assertRaises(system_config.SystemConfigError):
+      self._LoadConfigs('servo_micro', 'atlas', 'missingdrv')
 
 
 if __name__ == '__main__':

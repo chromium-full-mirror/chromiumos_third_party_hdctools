@@ -1,0 +1,10 @@
+<root>
+  <control>
+    <!-- warm_reset is moved to pin 39, previously used for hpd -->
+    <name>hpd</name>
+    <alias>warm_reset</alias>
+    <doc>warm_reset</doc>
+    <!-- overwrite its config as pull-up and reversed polarity -->
+    <params clobber_ok="patch" od="PU" map="onoff_i" init="off"/>
+  </control>
+</root>
