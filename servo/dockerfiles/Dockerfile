@@ -370,6 +370,14 @@ COPY --from=futility-builder /usr/local/lib/*/libflashrom.so.1.0.0 /usr/lib
 RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
    ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
 
+RUN ln -s /usr/bin/futility /usr/bin/dump_fmap; \
+    ln -s /usr/bin/futility /usr/bin/dump_kernel_config; \
+    ln -s /usr/bin/futility /usr/bin/gbb_utility; \
+    ln -s /usr/bin/futility /usr/bin/vbutil_firmware; \
+    ln -s /usr/bin/futility /usr/bin/vbutil_kernel; \
+    ln -s /usr/bin/futility /usr/bin/vbutil_key; \
+    ln -s /usr/bin/futility /usr/bin/vbutil_keyblock
+
 # Install cbfstool for flashrom and ec.
 COPY --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
