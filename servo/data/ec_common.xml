@@ -5,31 +5,31 @@
     <doc>Enable servo to assert certain keypresses via kbd_m1 and
     kbd_m2</doc>
     <params subtype="kbd_en" interface="10" drv="ec" map="onoff"
-    clobber_ok=""></params>
+    clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m1_a0</name>
     <doc>kbd_m1_a0</doc>
     <params subtype="kbd_m1_a0" interface="10" drv="ec" map="onoff"
-    clobber_ok=""></params>
+    clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m1_a1</name>
     <doc>kbd_m1_a1</doc>
     <params subtype="kbd_m1_a1" interface="10" drv="ec" map="onoff"
-    clobber_ok=""></params>
+    clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m2_a0</name>
     <doc>kbd_m2_a0</doc>
     <params subtype="kbd_m2_a0" interface="10" drv="ec" map="onoff"
-    clobber_ok=""></params>
+    clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m2_a1</name>
     <doc>kbd_m2_a1</doc>
     <params subtype="kbd_m2_a1" interface="10" drv="ec" map="onoff"
-    clobber_ok=""></params>
+    clobber_ok="full"/>
   </control>
   <control>
     <name>avg_ppvar_vbat_ma</name>
