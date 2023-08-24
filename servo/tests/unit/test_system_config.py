@@ -265,6 +265,31 @@ class TestSystemConfig(unittest.TestCase):
     with self.assertRaises(system_config.SystemConfigError):
       self._LoadConfigs('servo_micro', 'atlas', 'missingdrv')
 
+  def test_ClobberConflict0Configs(self):
+    """Tests that a control with conflicting clobber_ok is an error."""
+    with self.assertRaises(system_config.SystemConfigError):
+      self._LoadConfigs('servo_micro', 'atlas', 'clobberconflict0')
+
+  def test_ClobberConflict1Configs(self):
+    """Tests that a control with conflicting clobber_ok is an error."""
+    with self.assertRaises(system_config.SystemConfigError):
+      self._LoadConfigs('servo_micro', 'atlas', 'clobberconflict1')
+
+  def test_DuplicateControl0Configs(self):
+    """Tests that duplicate control names in one file is an error."""
+    with self.assertRaises(system_config.SystemConfigError):
+      self._LoadConfigs('servo_micro', 'atlas', 'dupctrl0')
+
+  def test_DuplicateControl1Configs(self):
+    """Tests that duplicate control names in one file is an error."""
+    with self.assertRaises(system_config.SystemConfigError):
+      self._LoadConfigs('servo_micro', 'atlas', 'dupctrl1')
+
+  def test_DuplicateControl2Configs(self):
+    """Tests that duplicate control names in one file is an error."""
+    with self.assertRaises(system_config.SystemConfigError):
+      self._LoadConfigs('servo_micro', 'atlas', 'dupctrl2')
+
 
 if __name__ == '__main__':
   unittest.main()
