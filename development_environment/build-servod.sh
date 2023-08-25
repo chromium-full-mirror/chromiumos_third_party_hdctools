@@ -25,6 +25,3 @@ then
 else
      docker build -t ${IMAGE} -f ${DIR}/../servo/dockerfiles/Dockerfile ${DIR}/..
 fi
-
-cd -
-
