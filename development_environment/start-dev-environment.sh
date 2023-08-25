@@ -12,8 +12,7 @@ function download_file_from_git() {
 tmpdir=$(mktemp -d)
 cd ${tmpdir}
 
-for s in "start_dev_environment.sh" \
-         "Dockerfile.local" ; do
+for s in "Dockerfile.local" ; do
     download_file_from_git ${s}
 done
 

@@ -4,4 +4,4 @@
 # found in the LICENSE file.
 
 sudo chmod 666 /var/run/docker.sock
-export PATH=/hdctools_source/hdctools/scripts:${PATH}
+bash --rcfile /usr/local/bin/bashrc

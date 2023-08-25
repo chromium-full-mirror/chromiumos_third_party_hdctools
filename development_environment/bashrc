@@ -1,0 +1,1 @@
+export PATH=/hdctools_source/hdctools/scripts:${PATH}

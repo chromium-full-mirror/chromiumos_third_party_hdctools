@@ -77,7 +77,7 @@ RUN apt-get -yq update && apt-get install -yq google-chrome-stable
 
 WORKDIR /hdctools_source
 
-COPY entry.sh get-source.sh /usr/local/bin/
+COPY development_environment/entry.sh development_environment/bashrc development_environment/get-source.sh /usr/local/bin/
 RUN chmod uog+rx /usr/local/bin/get-source.sh /usr/local/bin/entry.sh
 
 ENV DISPLAY=:0
