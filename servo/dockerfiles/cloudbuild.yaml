@@ -37,6 +37,8 @@ steps:
     - --cov-report=xml
     - --cov-report=lcov
     - --cov=/usr/local/lib/python3.11/dist-packages/servo
+    - --cov=/usr/local/lib/python3.11/dist-packages/usbkm232
+    - --cov=/usr/local/lib/python3.11/dist-packages/ec3po
     - /hdctools/servo/tests/
   waitFor: ['build']
 
