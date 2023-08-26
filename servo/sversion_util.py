@@ -17,7 +17,7 @@ except ImportError:
   # This means that the version dictionary was somehow not generated.
   # This should not break things, rather make a fake dictionary that
   # indicates this issue.
-  vdict = {k: UNKNOWN_VALUE for k in ['vbase', 'ghash', 'builder', 'date']}
+  vdict = {k: UNKNOWN_VALUE for k in ['vbase', 'ghash', 'builder', 'date', 'branch']}
   vdict['dirty'] = True
 
 
@@ -38,5 +38,5 @@ def extended_version():
   # [date]
   # [builder]
   vbase = setuptools_version()
-  return '%s%s\n%s\n%s' % (vbase, vdict['ghash'], vdict['date'],
-                           vdict['builder'])
+  return '%s%s\nDate: %s\nBuilder: %s\nHash: %s\nBranch: %s' % (vbase, vdict['ghash'], vdict['date'],
+                           vdict['builder'], vdict['ghash'], vdict['branch'])
