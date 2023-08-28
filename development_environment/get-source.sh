@@ -18,9 +18,13 @@ function setup_git() {
 read -p "Enter Your Email (chromium.org if you have otherwise google.com): "  email
 read -p "Enter your first and last name for Git to use in reviews "  name
 
-for repo in [ "hdctools" "ec" ]; do
+for repo in [ "hdctools" ]; do
     setup_git ${repo} "${email}" "${name}"
 done
+
+# Setup pre-commit
+cd hdctools
+pre-commit install
 
 # Let the user know to set up git credentials
 printf "\n\n\e[6;33mIn a browser go to\e[0m\e[33m https://www.googlesource.com/new-password\e[6;33m and paste\e[0m"
