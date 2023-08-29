@@ -27,52 +27,52 @@ class TestServoClient(unittest.TestCase):
   def test_doc(self):
     """Test doc()."""
     self._client._server.doc = unittest.mock.MagicMock(return_value="1234")
-    res = self._client.doc("dummy")
+    res = self._client.doc("testing")
 
-    self._client._server.doc.assert_called_once_with('dummy')
+    self._client._server.doc.assert_called_once_with('testing')
     self.assertEqual(res, "1234")
 
   def test_doc_error(self):
     """Test doc() in case of error."""
-    self._client._server.doc = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "dummy"))
+    self._client._server.doc = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "testing"))
 
     with self.assertRaisesRegex(client.ServoClientError,
-                                "Problem docstring 'dummy'"):
-      self._client.doc('dummy')
-    self._client._server.doc.assert_called_once_with('dummy')
+                                "Problem docstring 'testing'"):
+      self._client.doc('testing')
+    self._client._server.doc.assert_called_once_with('testing')
 
   def test_get(self):
     """Test get()."""
     self._client._server.get = unittest.mock.MagicMock(return_value="1235")
-    res = self._client.get("dummy")
+    res = self._client.get("testing")
 
-    self._client._server.get.assert_called_once_with('dummy')
+    self._client._server.get.assert_called_once_with('testing')
     self.assertEqual(res, "1235")
 
   def test_get_error(self):
     """Test get() in case of error."""
-    self._client._server.get = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "dummy"))
+    self._client._server.get = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "testing"))
 
     with self.assertRaisesRegex(client.ServoClientError,
-                                "Problem getting 'dummy'"):
-      self._client.get('dummy')
-    self._client._server.get.assert_called_once_with('dummy')
+                                "Problem getting 'testing'"):
+      self._client.get('testing')
+    self._client._server.get.assert_called_once_with('testing')
 
   def test_set(self):
     """Test set()."""
     self._client._server.set = unittest.mock.MagicMock()
-    self._client.set("dummy", "1")
+    self._client.set("testing", "1")
 
-    self._client._server.set.assert_called_once_with('dummy', '1')
+    self._client._server.set.assert_called_once_with('testing', '1')
 
   def test_set_error(self):
     """Test set() in case of error."""
-    self._client._server.set = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "dummy"))
+    self._client._server.set = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "testing"))
 
     with self.assertRaisesRegex(client.ServoClientError,
-                                "Problem setting 'dummy'"):
-      self._client.set('dummy', '1')
-    self._client._server.set.assert_called_once_with('dummy', '1')
+                                "Problem setting 'testing'"):
+      self._client.set('testing', '1')
+    self._client._server.set.assert_called_once_with('testing', '1')
 
   def test_get_all(self):
     """Test get_all()."""
@@ -85,19 +85,19 @@ class TestServoClient(unittest.TestCase):
   def test_set_get_all(self):
     """Test set_get_all()."""
     self._client._server.set_get_all = unittest.mock.MagicMock(return_value="1237")
-    res = self._client.set_get_all(["dummy", "dummy2"])
+    res = self._client.set_get_all(["testing", "testing2"])
 
-    self._client._server.set_get_all.assert_called_once_with(['dummy', 'dummy2'])
+    self._client._server.set_get_all.assert_called_once_with(['testing', 'testing2'])
     self.assertEqual(res, "1237")
 
   def test_set_get_all_error(self):
     """Test set_get_all() in case of error."""
-    self._client._server.set_get_all = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "dummy"))
+    self._client._server.set_get_all = unittest.mock.MagicMock(side_effect=xmlrpc.client.Fault(1, "testing"))
 
     with self.assertRaisesRegex(client.ServoClientError,
-                                r"Problem with \['dummy', 'dummy2'\]"):
-      self._client.set_get_all(["dummy", "dummy2"])
-    self._client._server.set_get_all.assert_called_once_with(["dummy", "dummy2"])
+                                r"Problem with \['testing', 'testing2'\]"):
+      self._client.set_get_all(["testing", "testing2"])
+    self._client._server.set_get_all.assert_called_once_with(["testing", "testing2"])
 
   def test_ftdii2c(self):
     """Test ftdii2c()."""

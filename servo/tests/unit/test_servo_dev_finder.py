@@ -65,7 +65,7 @@ class TestServoDeviceFinder(unittest.TestCase):
                             'serial': 'dev-f',
                             'vid': dev_templates.GetVID("servo_v2"),
                             'pid': dev_templates.GetPID("servo_v2")}
-    self._dummy_choose_device = lambda devs: None
+    self._testing_choose_device = lambda devs: None
 
   def tearDown(self):
     """Remove /sys/bus/usb/devices mocking & destroy temp directory."""
@@ -115,7 +115,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     entries = finder.discover_servos()
     assert 3 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_1_attrs,
@@ -137,7 +137,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = dev_templates.GetVID("servo_micro")
     devopts.product = dev_templates.GetPID("servo_micro")
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO, self._testing_choose_device)
     entries = finder.discover_servos()
     assert 2 == len(entries)
     for attrs in [self._root_servo_dev_attrs, self._non_root_servo_dev_1_attrs]:
@@ -158,7 +158,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = dev_templates.GetVID("servo_micro")
     devopts.product = dev_templates.GetPID("servo_micro")
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.NO_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.NO_AUTO, self._testing_choose_device)
     entries = finder.discover_servos()
     assert 1 == len(entries)
     for attrs in [self._non_root_servo_dev_1_attrs]:
@@ -179,7 +179,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     devopts.vendor = dev_templates.GetVID("servo_v2")
     devopts.product = dev_templates.GetPID("servo_v2")
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     entries = finder.discover_servos()
     assert 1 == len(entries)
     assert self.attrs_belong_to_entry(self._solo_dev_attrs, entries[0])
@@ -239,7 +239,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'User did not choose a valid device for'):
       entries = finder.discover_servos()
@@ -249,7 +249,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'Cannot find a servo device with'):
       entries = finder.discover_servos()
@@ -269,7 +269,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     main = finder.choose_main_device(devs)
     assert main == test_entry
 
@@ -305,7 +305,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'No device is picked as the main device'):
       main = finder.choose_main_device(devs)
@@ -322,7 +322,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     main = finder.choose_main_device(devs)
     assert main == test_entry
 
@@ -356,7 +356,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'No device is picked as the main device'):
       main = finder.choose_main_device(devs)
@@ -376,7 +376,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
 
     finder.generate_prefixes(devs, test_entry)
     assert set(test_entry.devopts.prefix) == set(dev_templates.MAIN_DEV_PREFIXES.copy() + ['servo_micro'])
@@ -409,7 +409,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
 
     finder.generate_prefixes(devs, test_entry)
     assert set(test_entry.devopts.prefix) == set(dev_templates.MAIN_DEV_PREFIXES.copy() + ['servo_micro-s'])
@@ -427,7 +427,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     hierarchy = ServoDeviceHierarchy()
     devopts = empty_devopts()
     finder = dev_finder.ServoDeviceFinder([devopts], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError, 'does not have a prefix'):
       main = finder.validate_devopts([test_entry])
 
@@ -445,7 +445,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     test_entry2.devopts.prefix = ['']
     hierarchy = ServoDeviceHierarchy()
     finder = dev_finder.ServoDeviceFinder([empty_devopts()], empty_devopts, hierarchy, Scratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'Multiple devices are chosen as the main device.'):
       main = finder.validate_devopts([test_entry, test_entry2])
@@ -460,7 +460,7 @@ class TestServoDeviceFinder(unittest.TestCase):
                                    serial='s2', dev_path='e-f-g')
     hierarchy = ServoDeviceHierarchy()
     finder = dev_finder.ServoDeviceFinder([empty_devopts()], empty_devopts, hierarchy, MockScratch(),
-      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._dummy_choose_device)
+      dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO, self._testing_choose_device)
     with self.assertRaisesRegex(ServoDeviceFinderError,
       'Not all devices requested are available right now.'):
       main = finder.validate_device_availability([test_entry, test_entry2])

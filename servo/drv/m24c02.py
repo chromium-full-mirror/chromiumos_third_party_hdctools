@@ -105,7 +105,7 @@ class m24c02(hw_driver.HwDriver):
 
     child = self._get_child()
     if child not in m24c02.SUPPORTED_ADDRESS:
-      raise ValueError('Slave address(%d) error.' % child)
+      raise ValueError('Child address(%d) error.' % child)
 
     offset = 0
     read_count = m24c02._EEPROM_SIZE

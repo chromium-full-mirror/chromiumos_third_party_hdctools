@@ -349,7 +349,7 @@ class TestServoStarter(unittest.TestCase):
     dev_entry_2.devopts.noautoconfig = False
     dev_entry_2.devopts.config = []
     dev_entry_2.devopts.prefix = ['v4']
-    dev_entry_2.devopts.board = dev_entry_2.devopts.model = 'dummy'
+    dev_entry_2.devopts.board = dev_entry_2.devopts.model = 'testing'
     dev_entry_2.devopts.interfaces = []
     dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName('servo_v4p1')
     dev_entries = [dev_entry_1, dev_entry_2]
@@ -368,7 +368,7 @@ class TestServoStarter(unittest.TestCase):
     self.assertEqual(dev_entry_1.devopts.model, 'nuvoton')
     servo_dev.ServoDevice.set_base_board.assert_called_once_with('atlas')
     servo_dev.ServoDevice.set_board_and_model.asset_has_calls([
-      unittest.mock.call('atlas', 'nuvoton'), unittest.mock.call('dummy', 'dummy')])
+      unittest.mock.call('atlas', 'nuvoton'), unittest.mock.call('testing', 'testing')])
     self.assertEqual(system_config.SystemConfig.finalize.call_count, 2)
     self.assertEqual(starter._servod.update_known_ctrls.call_count, 2)
 
@@ -403,7 +403,7 @@ class TestServoStarter(unittest.TestCase):
     dev_entry_2.devopts.noautoconfig = True
     dev_entry_2.devopts.config = []
     dev_entry_2.devopts.prefix = ['v4']
-    dev_entry_2.devopts.board = dev_entry_2.devopts.model = 'dummy'
+    dev_entry_2.devopts.board = dev_entry_2.devopts.model = 'testing'
     dev_entry_2.devopts.interfaces = []
     dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName('servo_v4p1')
     dev_entries = [dev_entry_1, dev_entry_2]

@@ -103,7 +103,7 @@ class TestServod(unittest.TestCase):
     servod = servo_server.Servod()
     self.assertTrue(servod._is_main_dev_prefix(''))
     self.assertTrue(servod._is_main_dev_prefix('main'))
-    self.assertFalse(servod._is_main_dev_prefix('dummy'))
+    self.assertFalse(servod._is_main_dev_prefix('testing'))
 
   @unittest.mock.patch('servo.servo_server.Servod._get_control_prefix_and_name', unittest.mock.MagicMock(return_value=('', 'cold_reset')))
   def test_get_dev_and_name(self):
@@ -119,11 +119,11 @@ class TestServod(unittest.TestCase):
 
     self.assertEqual(servod._get_dev_and_name("cold_reset"), (dev2, "cold_reset"))
 
-  @unittest.mock.patch('servo.servo_server.Servod._get_control_prefix_and_name', unittest.mock.MagicMock(return_value=('dummy', 'cold_reset')))
+  @unittest.mock.patch('servo.servo_server.Servod._get_control_prefix_and_name', unittest.mock.MagicMock(return_value=('testing', 'cold_reset')))
   def test_get_dev_and_name_invalid_prefix(self):
     """Test _get_dev_and_name() in case the prefix is invalid."""
     servod = servo_server.Servod()
-    with self.assertRaisesRegex(servo_server.ServodError, 'No servo device registered for prefix dummy'):
+    with self.assertRaisesRegex(servo_server.ServodError, 'No servo device registered for prefix testing'):
       servod._get_dev_and_name('ccd_cr50.cold_reset')
 
   @unittest.mock.patch('servo.servo_server.Servod._get_control_prefix_and_name', unittest.mock.MagicMock(return_value=('', 'cold_reset')))
@@ -444,7 +444,7 @@ class TestServod(unittest.TestCase):
     dev1.get_child_devices = unittest.mock.MagicMock(return_value=[])
     dev2.get_child_devices = unittest.mock.MagicMock(return_value=[dev1])
     dev1.syscfg = unittest.mock.MagicMock()
-    dev1.syscfg.hwinit = [("ctr1", "dummy"), ("ctr2", "dummy")]
+    dev1.syscfg.hwinit = [("ctr1", "testing"), ("ctr2", "testing")]
     dev1.hwinit = unittest.mock.MagicMock()
     dev2.hwinit = unittest.mock.MagicMock()
     servod.get_devices = unittest.mock.MagicMock(return_value=[dev1, dev2])

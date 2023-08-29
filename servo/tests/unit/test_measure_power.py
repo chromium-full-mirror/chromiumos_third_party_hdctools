@@ -110,7 +110,7 @@ class TestServodPowerTracker(unittest.TestCase):
 
   def test_clean_sample_data(self):
     """Test clean_sample_data()."""
-    self.tracker._sample_data = ['dummy']
+    self.tracker._sample_data = ['testing']
     self.tracker.clean_sample_data()
     self.assertEqual(self.tracker._sample_data, [])
 
@@ -533,7 +533,7 @@ class TestPowerMeasurement(unittest.TestCase):
   def test_Reset(self):
     """Test Reset()."""
     pm = measure_power.PowerMeasurement('localhost', 9990)
-    pm._stats = {'a' : 'dummy'}
+    pm._stats = {'a' : 'testing'}
     pm._setup_done.set()
     pm._stop_signal.set()
     pm._processing_done = True
@@ -856,15 +856,15 @@ class TestPowerMeasurement(unittest.TestCase):
     pm._processing_done = True
     stats_manager1 = stats_manager.StatsManager()
     stats_manager2 = stats_manager.StatsManager()
-    stats_manager1.GetSummary = unittest.mock.MagicMock(return_value="dummy1")
-    stats_manager2.GetSummary = unittest.mock.MagicMock(return_value="dummy2")
+    stats_manager1.GetSummary = unittest.mock.MagicMock(return_value="testing1")
+    stats_manager2.GetSummary = unittest.mock.MagicMock(return_value="testing2")
     pm._stats = {'adc' : stats_manager1, 'ec': stats_manager2}
 
     res = pm.GetSummary()
 
     stats_manager1.GetSummary.assert_called_once()
     stats_manager2.GetSummary.assert_called_once()
-    self.assertEqual(res, {'adc' : "dummy1", 'ec' : "dummy2"})
+    self.assertEqual(res, {'adc' : "testing1", 'ec' : "testing2"})
 
   def test_GetSummary_failure(self):
     """Test GetSummary()."""
@@ -881,15 +881,15 @@ class TestPowerMeasurement(unittest.TestCase):
     pm._processing_done = True
     stats_manager1 = stats_manager.StatsManager()
     stats_manager2 = stats_manager.StatsManager()
-    stats_manager1.SummaryToString = unittest.mock.MagicMock(return_value="dummy1")
-    stats_manager2.SummaryToString = unittest.mock.MagicMock(return_value="dummy2")
+    stats_manager1.SummaryToString = unittest.mock.MagicMock(return_value="testing1")
+    stats_manager2.SummaryToString = unittest.mock.MagicMock(return_value="testing2")
     pm._stats = {'adc' : stats_manager1, 'ec': stats_manager2}
 
     res = pm.GetFormattedSummary()
 
     stats_manager1.SummaryToString.assert_called_once()
     stats_manager2.SummaryToString.assert_called_once()
-    self.assertEqual(res, 'dummy1\ndummy2')
+    self.assertEqual(res, 'testing1\ntesting2')
 
   def test_GetFormattedSummary_failure(self):
     """Test GetFormattedSummary()."""
@@ -914,12 +914,12 @@ class TestPowerMeasurement(unittest.TestCase):
     """Test SaveSummaryJSON()."""
     pm = measure_power.PowerMeasurement('localhost', 9990)
     pm._processing_done = True
-    pm._SaveSummaryJSON = unittest.mock.MagicMock(return_value=["dummy.json"])
+    pm._SaveSummaryJSON = unittest.mock.MagicMock(return_value=["testing.json"])
 
     res = pm.SaveSummaryJSON()
 
     pm._SaveSummaryJSON.assert_called_once()
-    self.assertEqual(res, ["dummy.json"])
+    self.assertEqual(res, ["testing.json"])
 
   def test_SaveSummaryJSON_failure(self):
     """Test SaveSummaryJSON()."""

@@ -41,14 +41,14 @@ class TestTool(unittest.TestCase):
     t = tool.Tool()
     t.error = unittest.mock.MagicMock(side_effect=SystemExit(1))
     args = argparse.Namespace()
-    args.command = 'dummy-dummy'
+    args.command = 'testing-testing'
 
     with self.assertRaises(SystemExit) as cm:
       t.run(args)
 
     self.assertEqual(cm.exception.code, 1)
     t.error.assert_called_once_with('Tool does not recognize command %r. It should be implemented '
-                 'as a method called %r.', 'dummy-dummy', 'dummy_dummy')
+                 'as a method called %r.', 'testing-testing', 'testing_testing')
 
 if __name__ == '__main__':
   unittest.main()

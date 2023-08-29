@@ -111,10 +111,10 @@ class TestLogs(unittest.TestCase):
     """Test _extract_mcu_logs()."""
     dir = tempfile.mkdtemp()
     with open(os.path.join(dir, logs.OUTPUT_JOINT_DEBUG_LOG), 'w+') as file:
-      file.write('dummy\n')
+      file.write('testing\n')
       file.write('2020-01-23 13:15:12,223 - servo_v4 - EC3PO.Console - DEBUG - '
         'console.py:219:LogConsoleOutput - /dev/pts/9 - cc polarity: cc1\n')
-      file.write('dummy\n')
+      file.write('testing\n')
 
     l = logs.Logs()
     l._extract_mcu_logs(dir)

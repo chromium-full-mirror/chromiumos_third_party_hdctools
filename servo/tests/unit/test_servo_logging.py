@@ -122,7 +122,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
     assert shuffled_files == files
 
   def test_LoggerLogsToFile(self):
-    """Basic sanity that content is being output to the file."""
+    """Basic testing that content is being output to the file."""
     test_str = 'This is a test string to make sure there is logging.'
     handler = servo_logging.ServodRotatingFileHandler(logdir=self.logdir,
                                                       ts=self.ts,

@@ -369,13 +369,13 @@ class TestServoDevice(unittest.TestCase):
 
   def test_get_param_drv_get_cache(self):
     """Test _get_param_drv()."""
-    self.v4_dev._drv_dict["cold_reset"] = {"get": ["dummy"]}
-    self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True), ["dummy"])
+    self.v4_dev._drv_dict["cold_reset"] = {"get": ["testing"]}
+    self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True), ["testing"])
 
   def test_get_param_drv_set_cache(self):
     """Test _get_param_drv()."""
-    self.v4_dev._drv_dict["cold_reset"] = {"set": ["dummy"]}
-    self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False), ["dummy"])
+    self.v4_dev._drv_dict["cold_reset"] = {"set": ["testing"]}
+    self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False), ["testing"])
 
   @unittest.mock.patch('servo.drv.cr50.cr50.__init__', unittest.mock.MagicMock(return_value=None))
   @unittest.mock.patch('servo.drv.cr50.cr50.set_complement', unittest.mock.MagicMock())

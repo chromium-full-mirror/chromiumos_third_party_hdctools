@@ -340,7 +340,7 @@ retry:
   }
 WR_RD_DONE:
   if (fic->error || err) {
-    prn_error("Slave 0x%02x failed wr_rd with fic->error:%d err:%d\n",
+    prn_error("Child 0x%02x failed wr_rd with fic->error:%d err:%d\n",
               fic->child, fic->error, err);
   }
   tot_retry_count += retry_count;
