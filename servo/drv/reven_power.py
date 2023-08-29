@@ -1,4 +1,4 @@
-# Copyright (c) 2023 The Chromium OS Authors. All rights reserved.
+# Copyright 2023 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Power state driver for the reven board that doesn't use EC."""
