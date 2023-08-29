@@ -204,6 +204,11 @@ FROM hdctools-builder as hdctools-ec3po-builder
 RUN PACKAGE="ec3po" python3 setup_hdctools.py bdist_wheel
 
 #####################################################################
+FROM hdctools-builder as hdctools-servo_mfg-builder
+
+RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
+
+#####################################################################
 FROM clang-builder as uhubctl-builder
 
 RUN git clone https://github.com/mvp/uhubctl
@@ -437,6 +442,7 @@ WORKDIR /wheels
 COPY --link --from=hdctools-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-ec3po-builder /hdctools/dist/* ./
+COPY --link --from=hdctools-servo_mfg-builder /hdctools/dist/* ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
