@@ -1,1 +1,16 @@
-servo_dedede_dibbi_overlay.xml
+<root>
+  <include>
+    <name>servo_dedede_overlay.xml</name>
+  </include>
+  <include>
+    <name>chromebox.xml</name>
+  </include>
+  <control>
+    <!-- Longer reset_recovery than dedede -->
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok="patch" reset_recovery="3.0"
+    shutdown_delay="15.0" boot_to_rec_screen_delay="10.0"
+    warm_reset_can_hold_ap="no" pb_init_idle="yes"/>
+  </control>
+</root>
