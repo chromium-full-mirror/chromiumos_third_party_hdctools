@@ -357,7 +357,8 @@ indent-after-paren=4
 indent-string='    '
 
 # Maximum number of characters on a single line.
-max-line-length=100
+# We use black for formatting so set it to black max line length.
+max-line-length=88
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -533,8 +534,6 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
-    trailing-newlines,
-    trailing-whitespace,
     unbalanced-tuple-unpacking,
     undefined-loop-variable,
     undefined-variable,
