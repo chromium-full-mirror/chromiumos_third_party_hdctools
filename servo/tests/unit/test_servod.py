@@ -260,14 +260,14 @@ class TestServoStarter(unittest.TestCase):
         err = socket.error()
         err.errno = errno.EADDRINUSE
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             with unittest.mock.patch(
                 "xmlrpc.server.SimpleXMLRPCServer.__init__",
                 unittest.mock.MagicMock(side_effect=err),
             ):
                 starter._start_xml_server(sopts)
 
-        self.assertEqual(exit.exception.code, -1)
+        self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with("Port 9999 is busy")
 
     @unittest.mock.patch(
@@ -289,14 +289,14 @@ class TestServoStarter(unittest.TestCase):
         err = socket.error()
         err.errno = errno.ERANGE
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             with unittest.mock.patch(
                 "xmlrpc.server.SimpleXMLRPCServer.__init__",
                 unittest.mock.MagicMock(side_effect=err),
             ):
                 starter._start_xml_server(sopts)
 
-        self.assertEqual(exit.exception.code, -1)
+        self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with(
             "Problem opening Server's socket: %s", err
         )
@@ -355,7 +355,7 @@ class TestServoStarter(unittest.TestCase):
         err = socket.error()
         err.errno = errno.EADDRINUSE
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             with unittest.mock.patch(
                 "xmlrpc.server.SimpleXMLRPCServer.__init__",
                 unittest.mock.MagicMock(side_effect=err),
@@ -365,7 +365,7 @@ class TestServoStarter(unittest.TestCase):
                     SimpleXMLRPCServer.__init__.call_count, 9999 - 9200 + 1
                 )
 
-        self.assertEqual(exit.exception.code, -1)
+        self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with(
             "Could not find a free port in 9200..9999 range"
         )
@@ -477,7 +477,7 @@ class TestServoStarter(unittest.TestCase):
         sopts.device_discovery = "full"
         sopts.dual_v4 = False
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             starter._discover_servos(sopts, None)
 
         servo_dev_finder.ServoDeviceFinder.discover_servos.assert_called_once()
@@ -491,7 +491,7 @@ class TestServoStarter(unittest.TestCase):
         starter._logger.fatal.assert_called_once_with(
             "Failure during discovering servo devices: %s", unittest.mock.ANY
         )
-        self.assertEqual(exit.exception.code, -1)
+        self.assertEqual(result.exception.code, -1)
 
     @unittest.mock.patch(
         "servo.servod.ServodStarter.__init__",
@@ -757,10 +757,10 @@ class TestServoStarter(unittest.TestCase):
         starter._server_thread.is_alive = unittest.mock.MagicMock(return_value=False)
         starter.cleanup = unittest.mock.MagicMock()
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             starter.serve()
 
-        self.assertEqual(exit.exception.code, 0)
+        self.assertEqual(result.exception.code, 0)
         starter._scratchutil.AddEntry.assert_called_once_with(
             9999, set(["serial1", "serial2"]), unittest.mock.ANY
         )
@@ -791,10 +791,10 @@ class TestServoStarter(unittest.TestCase):
         )
         starter._servo_port = 9999
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             starter.serve()
 
-        self.assertEqual(exit.exception.code, 1)
+        self.assertEqual(result.exception.code, 1)
         starter._scratchutil.AddEntry.assert_called_once_with(
             9999, set(["serial1", "serial2"]), unittest.mock.ANY
         )
@@ -831,10 +831,10 @@ class TestServoStarter(unittest.TestCase):
         starter._server_thread.is_alive = unittest.mock.MagicMock(return_value=True)
         starter.cleanup = unittest.mock.MagicMock()
 
-        with self.assertRaises(SystemExit) as exit:
+        with self.assertRaises(SystemExit) as result:
             starter.serve()
 
-        self.assertEqual(exit.exception.code, 0)
+        self.assertEqual(result.exception.code, 0)
         starter._scratchutil.AddEntry.assert_called_once_with(
             9999, set(["serial1", "serial2"]), unittest.mock.ANY
         )

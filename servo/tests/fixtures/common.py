@@ -16,11 +16,12 @@ import servo.servo_dev_templates as tmpl
 
 device_types = ["servo_v4p1", "ccd_cr50", "servo_micro", "c2d2"]
 device_details = {}
-for type in device_types:
-    device_details[type] = {
-        "idVendor": tmpl.GetVID(type),
-        "idProduct": tmpl.GetPID(type),
+for _device_type in device_types:
+    device_details[_device_type] = {
+        "idVendor": tmpl.GetVID(_device_type),
+        "idProduct": tmpl.GetPID(_device_type),
     }
+del _device_type
 
 DEFAULT_SERIALS = {
     "servo_v4p1": "SERVOV4P1-S-%s%d",

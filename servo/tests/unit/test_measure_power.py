@@ -584,9 +584,9 @@ class TestRegexFilter(unittest.TestCase):
 
     def test_call(self):
         """Test __call__()."""
-        filter = measure_power.RegexFilter("pp.*", "pps.*")
+        regexp_filter = measure_power.RegexFilter("pp.*", "pps.*")
         self.assertEqual(
-            filter(["abc", "ppas", "ppsa", "ppvs"]), ["ppas", "ppsa", "ppvs"]
+            regexp_filter(["abc", "ppas", "ppsa", "ppvs"]), ["ppas", "ppsa", "ppvs"]
         )
 
         filter2 = measure_power.RegexFilter("pps.*", "pp.*")

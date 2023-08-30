@@ -71,28 +71,28 @@ def mock_servo_host(
             def MockReadFromSysfs(self, sysfs_path, dev_file, cast=str):
                 return self.sysfs[sysfs_path][dev_file]
 
-            def add_device(self, type, bus, address, dd):
-                serial = common.get_servo_serial(type)
+            def add_device(self, servo_type, bus, address, dd):
+                serial = common.get_servo_serial(servo_type)
                 sys_path = "/sys/bus/usb/devices/%s-%s" % (bus, dd)
                 self.hierarchy[(bus, address)] = sys_path
                 self.sysfs[sys_path] = {}
-                self.sysfs[sys_path]["idVendor"] = common.device_details[type][
+                self.sysfs[sys_path]["idVendor"] = common.device_details[servo_type][
                     "idVendor"
                 ]
-                self.sysfs[sys_path]["idProduct"] = common.device_details[type][
+                self.sysfs[sys_path]["idProduct"] = common.device_details[servo_type][
                     "idProduct"
                 ]
                 self.sysfs[sys_path]["serial"] = serial
 
                 device = None
 
-                if type == "ccd_cr50":
+                if servo_type == "ccd_cr50":
                     device = mock_cr50_usb_device(serial, bus, address)
-                elif type == "servo_v4p1":
+                elif servo_type == "servo_v4p1":
                     device = mock_v4p1_usb_device(serial, bus, address)
-                elif type == "servo_micro":
+                elif servo_type == "servo_micro":
                     device = mock_servo_micro_usb_device(serial, bus, address)
-                elif type == "c2d2":
+                elif servo_type == "c2d2":
                     device = mock_c2d2_usb_device(serial, bus, address)
 
                 if device:

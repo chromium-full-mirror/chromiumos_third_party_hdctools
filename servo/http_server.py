@@ -164,5 +164,5 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         save_html_reader.close()
         html_reader.close()
 
-    def log_request(self, format):
+    def log_request(self, code="-", size="-"):
         """This function helps avoid showing the http.server's logging on the console"""

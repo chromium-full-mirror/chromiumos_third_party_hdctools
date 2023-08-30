@@ -18,7 +18,6 @@ import argparse
 import re
 import time
 
-import input
 import servo_updater
 
 from servo.scripts.servo_mfg import mfg_servo_common as c

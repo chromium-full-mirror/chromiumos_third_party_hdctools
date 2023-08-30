@@ -195,10 +195,10 @@ class Suart:
 
 
 def test():
-    format = "%(asctime)s - %(name)s - %(levelname)s"
+    log_format = "%(asctime)s - %(name)s - %(levelname)s"
     if True:
-        format += " - %(filename)s:%(lineno)d:%(funcName)s"
-    format += " - %(message)s"
+        log_format += " - %(filename)s:%(lineno)d:%(funcName)s"
+    log_format += " - %(message)s"
 
     sobj = Suart()
     sobj.run()

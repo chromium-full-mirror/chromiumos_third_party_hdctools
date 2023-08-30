@@ -144,8 +144,8 @@ class TestLogs(unittest.TestCase):
     @unittest.mock.patch("os.path.exists", unittest.mock.MagicMock(return_value=True))
     def test_extract_mcu_logs(self):
         """Test _extract_mcu_logs()."""
-        dir = tempfile.mkdtemp()
-        with open(os.path.join(dir, logs.OUTPUT_JOINT_DEBUG_LOG), "w+") as file:
+        temp_dir = tempfile.mkdtemp()
+        with open(os.path.join(temp_dir, logs.OUTPUT_JOINT_DEBUG_LOG), "w+") as file:
             file.write("testing\n")
             file.write(
                 "2020-01-23 13:15:12,223 - servo_v4 - EC3PO.Console - DEBUG - "
@@ -154,10 +154,10 @@ class TestLogs(unittest.TestCase):
             file.write("testing\n")
 
         l = logs.Logs()
-        l._extract_mcu_logs(dir)
-        with open(os.path.join(dir, "servo_v4.txt"), "r") as mcu_f:
+        l._extract_mcu_logs(temp_dir)
+        with open(os.path.join(temp_dir, "servo_v4.txt"), "r") as mcu_f:
             self.assertEqual(mcu_f.read(), "cc polarity: cc1\n")
-        shutil.rmtree(dir)
+        shutil.rmtree(temp_dir)
 
     def test_add_args(self):
         """Test add_args()."""

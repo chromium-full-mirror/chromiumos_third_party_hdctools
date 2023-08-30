@@ -694,10 +694,10 @@ class SystemConfig(object):
         max_len = max(len(name) for name in ctrl_dict)
         dashes = "-" * max_len
         padded_name = "%-*s" % (max_len, "%s" % name)
-        doc = "%s DOC: %s" % (padded_name, ctrl_dict[name]["doc"])
-        get = "%s GET: %s" % (dashes, str(ctrl_dict[name]["get_params"]))
-        set = "%s SET: %s" % (dashes, str(ctrl_dict[name]["set_params"]))
-        return "%s\n%s\n%s" % (doc, get, set)
+        doc_str = "%s DOC: %s" % (padded_name, ctrl_dict[name]["doc"])
+        get_str = "%s GET: %s" % (dashes, str(ctrl_dict[name]["get_params"]))
+        set_str = "%s SET: %s" % (dashes, str(ctrl_dict[name]["set_params"]))
+        return "%s\n%s\n%s" % (doc_str, get_str, set_str)
 
     def is_map(self, name):
         """Determine if name is a map or not.

@@ -285,13 +285,13 @@ class Fuart(uart.Uart):
 def test():
     (options, args) = ftdi_utils.parse_common_args(interface=3)
 
-    format = "%(asctime)s - %(name)s - %(levelname)s"
+    log_format = "%(asctime)s - %(name)s - %(levelname)s"
     loglevel = logging.INFO
     if options.debug:
         loglevel = logging.DEBUG
-        format += " - %(filename)s:%(lineno)d:%(funcName)s"
-    format += " - %(message)s"
-    logging.basicConfig(level=loglevel, format=format)
+        log_format += " - %(filename)s:%(lineno)d:%(funcName)s"
+    log_format += " - %(message)s"
+    logging.basicConfig(level=loglevel, format=log_format)
     logger = logging.getLogger(os.path.basename(sys.argv[0]))
     logger.info("Start")
 
