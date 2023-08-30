@@ -447,7 +447,6 @@ disable=
     anomalous-backslash-in-string,
     arguments-differ,
     arguments-renamed,
-    assignment-from-no-return,
     attribute-defined-outside-init,
     bad-builtin,
     bad-indentation,

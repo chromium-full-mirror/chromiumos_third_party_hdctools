@@ -227,7 +227,7 @@ class DutPower(object):
             "--visualization",
             default=False,
             action="store_true",
-            help="Visualization the power measurementresultson a local server.",
+            help="Visualization the power measurement results on a local server.",
         )
         # Specify the http server port for passing the information to html
         parser.add_argument(
@@ -395,7 +395,7 @@ class DutPower(object):
 
         if args.visualization:
             # Start to prepare the data which will pass to the visualization UI
-            sample_generator_thread = threading.Thread(
+            threading.Thread(
                 target=self.power_data.sample_generator, daemon=True
             ).start()
         # Wait until measurement is setup
