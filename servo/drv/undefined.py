@@ -5,18 +5,20 @@
 
 from servo.drv import hw_driver
 
+
 class undefinedCtrl(hw_driver.HwDriverError):
-  """Specific error class (to allow logic to selectively catch these)."""
+    """Specific error class (to allow logic to selectively catch these)."""
+
 
 # pylint: disable=invalid-name
 # naming convention needed for servod driver query.
 class undefined(hw_driver.HwDriver):
-  """class to raise set or get errors."""
+    """class to raise set or get errors."""
 
-  def _get(self):
-    """raise error that |get| is undefined."""
-    raise undefinedCtrl('get undefined for %r.' % self._params['control_name'])
+    def _get(self):
+        """raise error that |get| is undefined."""
+        raise undefinedCtrl("get undefined for %r." % self._params["control_name"])
 
-  def _set(self, _):
-    """raise error that |set| is undefined."""
-    raise undefinedCtrl('set undefined for %r.' % self._params['control_name'])
+    def _set(self, _):
+        """raise error that |set| is undefined."""
+        raise undefinedCtrl("set undefined for %r." % self._params["control_name"])

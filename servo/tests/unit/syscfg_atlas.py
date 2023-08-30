@@ -339,7 +339,7 @@ syscfg_dict = {
             },
         },
         "all_controls": {
-            "doc": "All control names support by current " "servod instance.",
+            "doc": "All control names support by current servod instance.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -360,7 +360,7 @@ syscfg_dict = {
             },
         },
         "alt_f5": {
-            "doc": "Send alt f5 either by servoflex or USB KB " "emulation",
+            "doc": "Send alt f5 either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "alt_f5",
@@ -383,7 +383,7 @@ syscfg_dict = {
             },
         },
         "alt_f6": {
-            "doc": "Send alt f6 either by servoflex or USB KB " "emulation",
+            "doc": "Send alt f6 either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "alt_f6",
@@ -406,8 +406,7 @@ syscfg_dict = {
             },
         },
         "arb_key": {
-            "doc": "Send an arbitrary key either by servoflex or "
-            "USB KB emulation",
+            "doc": "Send an arbitrary key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "arb_key",
@@ -455,8 +454,7 @@ syscfg_dict = {
             },
         },
         "arrow_down": {
-            "doc": "Send arrow down key either by servoflex or "
-            "USB KB emulation",
+            "doc": "Send arrow down key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "arrow_down",
@@ -479,8 +477,7 @@ syscfg_dict = {
             },
         },
         "arrow_up": {
-            "doc": "Send arrow up key either by servoflex or USB "
-            "KB emulation",
+            "doc": "Send arrow up key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "arrow_up",
@@ -554,7 +551,7 @@ syscfg_dict = {
             },
         },
         "avg_ppvar_vbat_mv": {
-            "doc": "millivolts of the battery. 1 minute " "running average",
+            "doc": "millivolts of the battery. 1 minute running average",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -651,7 +648,7 @@ syscfg_dict = {
             },
         },
         "battery_full_charge_mah": {
-            "doc": "battery last full charge in " "mAh",
+            "doc": "battery last full charge in mAh",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -675,7 +672,7 @@ syscfg_dict = {
             },
         },
         "battery_full_design_mah": {
-            "doc": "battery design full capacity " "in mAh",
+            "doc": "battery design full capacity in mAh",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -732,9 +729,7 @@ syscfg_dict = {
                 "group": "1",
                 "interface": 10,
                 "interface_prefix": "servo_micro",
-                "regex": "Temp:[\\s0-9a-fx]*= "
-                "\\d+\\.\\d+ K "
-                "\\((-*\\d+\\.\\d+)",
+                "regex": "Temp:[\\s0-9a-fx]*= " "\\d+\\.\\d+ K " "\\((-*\\d+\\.\\d+)",
                 "retries": "3",
                 "uart_cmd": "battery",
             },
@@ -748,7 +743,7 @@ syscfg_dict = {
             },
         },
         "battery_voltage_design_mv": {
-            "doc": "Battery design voltage in " "mV",
+            "doc": "Battery design voltage in mV",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -772,7 +767,7 @@ syscfg_dict = {
             },
         },
         "bus_voltage_rails": {
-            "doc": "List of available rail controls to " "measure bus voltage.",
+            "doc": "List of available rail controls to measure bus voltage.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -869,7 +864,7 @@ syscfg_dict = {
             },
         },
         "cold_reset": {
-            "doc": "Use EC reset or GSC reset to hold the " "device in reset",
+            "doc": "Use EC reset or GSC reset to hold the device in reset",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1198,8 +1193,7 @@ syscfg_dict = {
             },
         },
         "cpu_uart_pty": {
-            "doc": "CPU UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "CPU UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1219,8 +1213,7 @@ syscfg_dict = {
             },
         },
         "cpu_uart_raw_debug": {
-            "doc": "Turn on per-message-received logs "
-            "to the AP console messages.",
+            "doc": "Turn on per-message-received logs to the AP console messages.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1269,8 +1262,7 @@ syscfg_dict = {
             },
         },
         "cpu_uart_stream": {
-            "doc": "Cpu uart stream collected while "
-            "cpu_uart_capture is set to 'on'",
+            "doc": "Cpu uart stream collected while cpu_uart_capture is set to 'on'",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1314,7 +1306,7 @@ syscfg_dict = {
             },
         },
         "cpu_uart_timestamp": {
-            "doc": "Add timestamps to CPU console " "messages",
+            "doc": "Add timestamps to CPU console messages",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1387,7 +1379,7 @@ syscfg_dict = {
             },
         },
         "cr50_ccd_state_flags": {
-            "doc": "CCD state flags that are " "currently enabled.",
+            "doc": "CCD state flags that are currently enabled.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1459,7 +1451,7 @@ syscfg_dict = {
             },
         },
         "cr50_force_servo_detect": {
-            "doc": "Control ccdblock to control " "detecting servo.",
+            "doc": "Control ccdblock to control detecting servo.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1484,7 +1476,7 @@ syscfg_dict = {
             },
         },
         "cr50_i2c_ctrl": {
-            "doc": "Send a special command to GSC " "(write-only)",
+            "doc": "Send a special command to GSC (write-only)",
             "get_params": {
                 "cmd": "get",
                 "control_name": "gsc_i2c_ctrl",
@@ -1505,8 +1497,7 @@ syscfg_dict = {
             },
         },
         "cr50_idle_level": {
-            "doc": "Controls the level of sleep the gsc "
-            "will enter when idling.",
+            "doc": "Controls the level of sleep the gsc will enter when idling.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1676,7 +1667,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_bits": {
-            "doc": "Number of data bits for gsc uart " "console",
+            "doc": "Number of data bits for gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1750,7 +1741,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_multicmd": {
-            "doc": "Set to send multiple commands to " "the GSC console.",
+            "doc": "Set to send multiple commands to the GSC console.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1796,8 +1787,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_pty": {
-            "doc": "gsc UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "gsc UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1817,8 +1807,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_raw_debug": {
-            "doc": "Turn on per-message-received logs "
-            "to the gsc console messages.",
+            "doc": "Turn on per-message-received logs to the gsc console messages.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1867,7 +1856,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_sbits": {
-            "doc": "Number of stop bits for gsc uart " "console",
+            "doc": "Number of stop bits for gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1892,7 +1881,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_stream": {
-            "doc": "GSC console stream collected while " "gsc_uart_capture on",
+            "doc": "GSC console stream collected while gsc_uart_capture on",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1937,7 +1926,7 @@ syscfg_dict = {
             },
         },
         "cr50_uart_timestamp": {
-            "doc": "Add timestamps to the GSC console " "messages",
+            "doc": "Add timestamps to the GSC console messages",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -1984,7 +1973,7 @@ syscfg_dict = {
             },
         },
         "ctrl_d": {
-            "doc": "Send ctrl d either by servoflex or USB KB " "emulation",
+            "doc": "Send ctrl d either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_d",
@@ -2007,7 +1996,7 @@ syscfg_dict = {
             },
         },
         "ctrl_enter": {
-            "doc": "Send ctrl enter either by servoflex or USB " "KB emulation",
+            "doc": "Send ctrl enter either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_enter",
@@ -2030,7 +2019,7 @@ syscfg_dict = {
             },
         },
         "ctrl_key": {
-            "doc": "Send ctrl either by servoflex or USB KB " "emulation",
+            "doc": "Send ctrl either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_key",
@@ -2053,7 +2042,7 @@ syscfg_dict = {
             },
         },
         "ctrl_r": {
-            "doc": "Send ctrl r either by servoflex or USB KB " "emulation",
+            "doc": "Send ctrl r either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_r",
@@ -2076,8 +2065,7 @@ syscfg_dict = {
             },
         },
         "ctrl_refresh_key": {
-            "doc": "Send ctrl refresh key either by "
-            "servoflex or USB KB emulation",
+            "doc": "Send ctrl refresh key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_refresh_key",
@@ -2100,7 +2088,7 @@ syscfg_dict = {
             },
         },
         "ctrl_s": {
-            "doc": "Send ctrl s either by servoflex or USB KB " "emulation",
+            "doc": "Send ctrl s either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_s",
@@ -2123,7 +2111,7 @@ syscfg_dict = {
             },
         },
         "ctrl_u": {
-            "doc": "Send ctrl u either by servoflex or USB KB " "emulation",
+            "doc": "Send ctrl u either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "ctrl_u",
@@ -2146,7 +2134,7 @@ syscfg_dict = {
             },
         },
         "current_rails": {
-            "doc": "List of available rail controls to " "measure current.",
+            "doc": "List of available rail controls to measure current.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2279,8 +2267,7 @@ syscfg_dict = {
             },
         },
         "ec3po_cpu_console": {
-            "doc": "CPU UART console provided via "
-            "EC-3PO console interpreter.",
+            "doc": "CPU UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2300,8 +2287,7 @@ syscfg_dict = {
             },
         },
         "ec3po_cr50_uart": {
-            "doc": "gsc UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "gsc UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2321,8 +2307,7 @@ syscfg_dict = {
             },
         },
         "ec3po_ec_console": {
-            "doc": "EC UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "EC UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2342,8 +2327,7 @@ syscfg_dict = {
             },
         },
         "ec3po_gsc_uart": {
-            "doc": "gsc UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "gsc UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2363,9 +2347,7 @@ syscfg_dict = {
             },
         },
         "ec3po_servo_micro_uart": {
-            "doc": "Servo micro console provided "
-            "via EC-3PO console "
-            "interpreter.",
+            "doc": "Servo micro console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2385,8 +2367,7 @@ syscfg_dict = {
             },
         },
         "ec3po_usbpd_console": {
-            "doc": "USB PD UART console provided via "
-            "EC-3PO console interpreter.",
+            "doc": "USB PD UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2406,8 +2387,7 @@ syscfg_dict = {
             },
         },
         "ec3po_usbpd_uart_pty": {
-            "doc": "gsc UART console provided via "
-            "EC-3PO console interpreter.",
+            "doc": "gsc UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2562,9 +2542,7 @@ syscfg_dict = {
             },
         },
         "ec_ec3po_interp_connect": {
-            "doc": "State indicating if "
-            "interpreter is listening to "
-            "the EC UART.",
+            "doc": "State indicating if interpreter is listening to the EC UART.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2610,7 +2588,7 @@ syscfg_dict = {
             },
         },
         "ec_flash_size": {
-            "doc": "The usable size of the EC flash memory " "in Kbytes",
+            "doc": "The usable size of the EC flash memory in Kbytes",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2707,7 +2685,7 @@ syscfg_dict = {
             },
         },
         "ec_system_powerstate": {
-            "doc": "The current power state " "according to the EC.",
+            "doc": "The current power state according to the EC.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2844,8 +2822,7 @@ syscfg_dict = {
             },
         },
         "ec_uart_flush": {
-            "doc": "Enable flushing the console before "
-            "sending an EC command.",
+            "doc": "Enable flushing the console before sending an EC command.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2870,7 +2847,7 @@ syscfg_dict = {
             },
         },
         "ec_uart_multicmd": {
-            "doc": "Set to send multiple commands to EC " "UART.",
+            "doc": "Set to send multiple commands to EC UART.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2916,8 +2893,7 @@ syscfg_dict = {
             },
         },
         "ec_uart_pty": {
-            "doc": "EC UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "EC UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2937,8 +2913,7 @@ syscfg_dict = {
             },
         },
         "ec_uart_raw_debug": {
-            "doc": "Turn on per-message-received logs "
-            "to the EC console messages.",
+            "doc": "Turn on per-message-received logs to the EC console messages.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -2987,8 +2962,7 @@ syscfg_dict = {
             },
         },
         "ec_uart_stream": {
-            "doc": "Ec uart stream collected while "
-            "ec_uart_capture is set to 'on'",
+            "doc": "Ec uart stream collected while ec_uart_capture is set to 'on'",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3032,7 +3006,7 @@ syscfg_dict = {
             },
         },
         "ec_uart_timestamp": {
-            "doc": "Add timestamps to the EC console " "messages",
+            "doc": "Add timestamps to the EC console messages",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3081,7 +3055,7 @@ syscfg_dict = {
             },
         },
         "enter_key": {
-            "doc": "Send enter key either by servoflex or USB " "KB emulation",
+            "doc": "Send enter key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "enter_key",
@@ -3177,7 +3151,7 @@ syscfg_dict = {
             },
         },
         "fault_flag_controls": {
-            "doc": "Known fault flags that servod can " "report on",
+            "doc": "Known fault flags that servod can report on",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3494,7 +3468,7 @@ syscfg_dict = {
             },
         },
         "gsc_ccd_state_flags": {
-            "doc": "CCD state flags that are " "currently enabled.",
+            "doc": "CCD state flags that are currently enabled.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3516,7 +3490,7 @@ syscfg_dict = {
             },
         },
         "gsc_cold_reset": {
-            "doc": "send the gsc ec_reset command to reset " "the EC.",
+            "doc": "send the gsc ec_reset command to reset the EC.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3592,7 +3566,7 @@ syscfg_dict = {
             },
         },
         "gsc_ec_reset": {
-            "doc": "send the gsc ec_reset command to reset " "the EC.",
+            "doc": "send the gsc ec_reset command to reset the EC.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3653,7 +3627,7 @@ syscfg_dict = {
             },
         },
         "gsc_force_servo_detect": {
-            "doc": "Control ccdblock to control " "detecting servo.",
+            "doc": "Control ccdblock to control detecting servo.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3678,7 +3652,7 @@ syscfg_dict = {
             },
         },
         "gsc_i2c_ctrl": {
-            "doc": "Send a special command to GSC " "(write-only)",
+            "doc": "Send a special command to GSC (write-only)",
             "get_params": {
                 "cmd": "get",
                 "control_name": "gsc_i2c_ctrl",
@@ -3699,8 +3673,7 @@ syscfg_dict = {
             },
         },
         "gsc_idle_level": {
-            "doc": "Controls the level of sleep the gsc "
-            "will enter when idling.",
+            "doc": "Controls the level of sleep the gsc will enter when idling.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3728,7 +3701,7 @@ syscfg_dict = {
             },
         },
         "gsc_locked_cold_reset": {
-            "doc": "pulse gsc ecrst and assert flex " "cold_reset.",
+            "doc": "pulse gsc ecrst and assert flex cold_reset.",
             "get_params": {
                 "CONTENT": {
                     "get_controls": ["default_cold_reset"],
@@ -3903,7 +3876,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_bits": {
-            "doc": "Number of data bits for gsc uart " "console",
+            "doc": "Number of data bits for gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -3977,7 +3950,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_multicmd": {
-            "doc": "Set to send multiple commands to " "the GSC console.",
+            "doc": "Set to send multiple commands to the GSC console.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4023,8 +3996,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_pty": {
-            "doc": "gsc UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "gsc UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4044,8 +4016,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_raw_debug": {
-            "doc": "Turn on per-message-received logs "
-            "to the gsc console messages.",
+            "doc": "Turn on per-message-received logs to the gsc console messages.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4094,7 +4065,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_sbits": {
-            "doc": "Number of stop bits for gsc uart " "console",
+            "doc": "Number of stop bits for gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4119,7 +4090,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_stream": {
-            "doc": "GSC console stream collected while " "gsc_uart_capture on",
+            "doc": "GSC console stream collected while gsc_uart_capture on",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4164,7 +4135,7 @@ syscfg_dict = {
             },
         },
         "gsc_uart_timestamp": {
-            "doc": "Add timestamps to the GSC console " "messages",
+            "doc": "Add timestamps to the GSC console messages",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4244,8 +4215,7 @@ syscfg_dict = {
             },
         },
         "imaginary_key": {
-            "doc": "Send non existant key either by "
-            "servoflex or USB KB emulation",
+            "doc": "Send non existant key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "imaginary_key",
@@ -4337,8 +4307,7 @@ syscfg_dict = {
             },
         },
         "kbd_en": {
-            "doc": "Enable servo to assert certain keypresses via "
-            "kbd_m1 and kbd_m2",
+            "doc": "Enable servo to assert certain keypresses via kbd_m1 and kbd_m2",
             "get_params": {
                 "CONTENT": None,
                 "clobber_ok": "full",
@@ -4640,7 +4609,7 @@ syscfg_dict = {
             },
         },
         "power_key": {
-            "doc": "Send power key either by servoflex or USB " "KB emulation",
+            "doc": "Send power key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "power_key",
@@ -4662,7 +4631,7 @@ syscfg_dict = {
             },
         },
         "power_rails": {
-            "doc": "List of available rail controls to " "measure power.",
+            "doc": "List of available rail controls to measure power.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4870,7 +4839,7 @@ syscfg_dict = {
             },
         },
         "raw_cpu_uart_pty": {
-            "doc": "UART console. USART3: PB10/PB11 - " "Servo header UART2",
+            "doc": "UART console. USART3: PB10/PB11 - Servo header UART2",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4890,8 +4859,7 @@ syscfg_dict = {
             },
         },
         "raw_cr50_uart_pty": {
-            "doc": "Pseudo-terminal (pty) thats "
-            "connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4911,7 +4879,7 @@ syscfg_dict = {
             },
         },
         "raw_ec_uart_pty": {
-            "doc": "UART console. USART2: PA2/PA3 - Servo " "header UART1",
+            "doc": "UART console. USART2: PA2/PA3 - Servo header UART1",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4931,8 +4899,7 @@ syscfg_dict = {
             },
         },
         "raw_gsc_uart_pty": {
-            "doc": "Pseudo-terminal (pty) thats "
-            "connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4972,8 +4939,7 @@ syscfg_dict = {
             },
         },
         "raw_usbpd_uart_pty": {
-            "doc": "Pseudo-terminal (pty) thats "
-            "connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5024,8 +4990,7 @@ syscfg_dict = {
             },
         },
         "refresh_key": {
-            "doc": "Send refresh key either by servoflex or "
-            "USB KB emulation",
+            "doc": "Send refresh key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "refresh_key",
@@ -5048,7 +5013,7 @@ syscfg_dict = {
             },
         },
         "rotate_servod_logs": {
-            "doc": "Trigger a forced servod log " "rotation.",
+            "doc": "Trigger a forced servod log rotation.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5071,7 +5036,7 @@ syscfg_dict = {
             },
         },
         "serialname": {
-            "doc": "The main serial number of servo being " "used.",
+            "doc": "The main serial number of servo being used.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5113,7 +5078,7 @@ syscfg_dict = {
             },
         },
         "servo_adcs_enabled": {
-            "doc": "Noop control for this servod " "device. ADCs always work.",
+            "doc": "Noop control for this servod device. ADCs always work.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5206,7 +5171,7 @@ syscfg_dict = {
             },
         },
         "servo_firmware_version_controls": {
-            "doc": "Controls to query " "servo firmware " "versions on setup.",
+            "doc": "Controls to query servo firmware versions on setup.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5310,8 +5275,7 @@ syscfg_dict = {
             },
         },
         "servo_mcu_panicinfo": {
-            "doc": "Controls to query panicinfo from "
-            "servo mcu (v4, micro, etc).",
+            "doc": "Controls to query panicinfo from servo mcu (v4, micro, etc).",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5363,9 +5327,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_firmware_channel": {
-            "doc": "which channel the "
-            "current servo micro "
-            "firmware is from",
+            "doc": "which channel the current servo micro firmware is from",
             "get_params": {
                 "CONTENT": None,
                 "board": "servo_micro",
@@ -5385,7 +5347,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_firmware_uptodate": {
-            "doc": "whether servo micro " "firmware is to update",
+            "doc": "whether servo micro firmware is to update",
             "get_params": {
                 "CONTENT": None,
                 "board": "servo_micro",
@@ -5433,9 +5395,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_i2c_pseudo_id": {
-            "doc": "Get the I2C pseudo ID of "
-            "the Servo Micro I2C pseudo "
-            "adapter.",
+            "doc": "Get the I2C pseudo ID of the Servo Micro I2C pseudo adapter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5501,7 +5461,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_latest_stable_version": {
-            "doc": "servo-firmware " "available fw " "version",
+            "doc": "servo-firmware available fw version",
             "get_params": {
                 "CONTENT": None,
                 "board": "servo_micro",
@@ -5522,7 +5482,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_latest_version": {
-            "doc": "servo-firmware available " "fw version",
+            "doc": "servo-firmware available fw version",
             "get_params": {
                 "CONTENT": None,
                 "board": "servo_micro",
@@ -5566,7 +5526,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_panicinfo": {
-            "doc": "Get panicinfo output for servo " "micro.",
+            "doc": "Get panicinfo output for servo micro.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5595,7 +5555,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_uart_capture": {
-            "doc": "enable servo micro console " "capture",
+            "doc": "enable servo micro console capture",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5647,9 +5607,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_uart_multicmd": {
-            "doc": "Set to send multiple "
-            "commands to the servo micro "
-            "console.",
+            "doc": "Set to send multiple commands to the servo micro console.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5670,8 +5628,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_uart_pty": {
-            "doc": "Servo micro console provided via "
-            "EC-3PO console interpreter.",
+            "doc": "Servo micro console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5789,7 +5746,7 @@ syscfg_dict = {
             },
         },
         "servo_micro_uart_timestamp": {
-            "doc": "Add timestamps to the " "servo micro console " "messages",
+            "doc": "Add timestamps to the servo micro console messages",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5864,7 +5821,7 @@ syscfg_dict = {
             },
         },
         "servod_logging_active": {
-            "doc": "Query whether file logging is " "turned on.",
+            "doc": "Query whether file logging is turned on.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5908,8 +5865,7 @@ syscfg_dict = {
             },
         },
         "shunt_voltage_rails": {
-            "doc": "List of available rail controls "
-            "to measure shunt voltage.",
+            "doc": "List of available rail controls to measure shunt voltage.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -5934,7 +5890,7 @@ syscfg_dict = {
             },
         },
         "sleep": {
-            "doc": "Forces a delay in seconds, according to the " "parameter",
+            "doc": "Forces a delay in seconds, according to the parameter",
             "get_params": {
                 "cmd": "get",
                 "control_name": "sleep",
@@ -6114,7 +6070,7 @@ syscfg_dict = {
             },
         },
         "sysrq_r": {
-            "doc": "Send sysrq r either by servoflex or USB KB " "emulation",
+            "doc": "Send sysrq r either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "sysrq_r",
@@ -6137,7 +6093,7 @@ syscfg_dict = {
             },
         },
         "sysrq_x": {
-            "doc": "Send sysrq x either by servoflex or USB KB " "emulation",
+            "doc": "Send sysrq x either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "sysrq_x",
@@ -6328,7 +6284,7 @@ syscfg_dict = {
             },
         },
         "uart1_pty": {
-            "doc": "UART console. USART2: PA2/PA3 - Servo " "header UART1",
+            "doc": "UART console. USART2: PA2/PA3 - Servo header UART1",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6423,7 +6379,7 @@ syscfg_dict = {
             },
         },
         "uart2_pty": {
-            "doc": "UART console. USART3: PB10/PB11 - Servo " "header UART2",
+            "doc": "UART console. USART3: PB10/PB11 - Servo header UART2",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6518,7 +6474,7 @@ syscfg_dict = {
             },
         },
         "uart3_pty": {
-            "doc": "Legacy (v1) uart console. USART4: PA0/PA1 - " "Servo UART3",
+            "doc": "Legacy (v1) uart console. USART4: PA0/PA1 - Servo UART3",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6611,8 +6567,7 @@ syscfg_dict = {
             },
         },
         "uart4_pty": {
-            "doc": "Pseudo-terminal (pty) thats connnected to "
-            "the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6681,8 +6636,7 @@ syscfg_dict = {
             },
         },
         "usb_arb_key_config": {
-            "doc": "Set the arbitrary key that "
-            "usb_arb_key control will send",
+            "doc": "Set the arbitrary key that usb_arb_key control will send",
             "get_params": {
                 "cmd": "get",
                 "control_name": "usb_arb_key_config",
@@ -6705,7 +6659,7 @@ syscfg_dict = {
             },
         },
         "usb_keyboard_enter_key": {
-            "doc": "Send enter key via USB KB " "emulation",
+            "doc": "Send enter key via USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "usb_keyboard_enter_key",
@@ -6802,7 +6756,7 @@ syscfg_dict = {
             },
         },
         "usbpd_console_bits": {
-            "doc": "Number of data bits for gsc uart " "console",
+            "doc": "Number of data bits for gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6852,7 +6806,7 @@ syscfg_dict = {
             },
         },
         "usbpd_console_sbits": {
-            "doc": "Number of stop bits for gsc uart " "console",
+            "doc": "Number of stop bits for gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6983,8 +6937,7 @@ syscfg_dict = {
             },
         },
         "usbpd_uart_pty": {
-            "doc": "gsc UART console provided via EC-3PO "
-            "console interpreter.",
+            "doc": "gsc UART console provided via EC-3PO console interpreter.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -7087,8 +7040,7 @@ syscfg_dict = {
             },
         },
         "watchdog_add": {
-            "doc": "Servod will eventually shutdown if the "
-            "device is disconnected.",
+            "doc": "Servod will eventually shutdown if the device is disconnected.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -7111,7 +7063,7 @@ syscfg_dict = {
             },
         },
         "watchdog_remove": {
-            "doc": "Servod won't shutdown if the device " "is disconnected.",
+            "doc": "Servod won't shutdown if the device is disconnected.",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -7136,7 +7088,7 @@ syscfg_dict = {
     },
     "map": {
         "asserted_re": {
-            "doc": "map asserted/deasserted for on/off using a " "regex",
+            "doc": "map asserted/deasserted for on/off using a regex",
             "map_params": {"off": "^deasserted", "on": "^asserted"},
         },
         "check": {
@@ -7148,8 +7100,7 @@ syscfg_dict = {
             "map_params": {"disabled": "0", "enabled": "1"},
         },
         "enabled_re": {
-            "doc": "map enabled/disabled/access denied to on and "
-            "off using a regex",
+            "doc": "map enabled/disabled/access denied to on and off using a regex",
             "map_params": {
                 "off": "dis",
                 "on": "ena",
@@ -7165,8 +7116,7 @@ syscfg_dict = {
             "map_params": {"ite_debugger_mode": "0"},
         },
         "idle_states": {
-            "doc": "Different levels of sleep the GSC enters "
-            "during idle time",
+            "doc": "Different levels of sleep the GSC enters during idle time",
             "map_params": {"active": "wfi", "sleep": "sleep"},
         },
         "ina219_cfg": {
@@ -7200,7 +7150,7 @@ syscfg_dict = {
             },
         },
         "keypress_duration": {
-            "doc": "short hand configs for keypress " "durations",
+            "doc": "short hand configs for keypress durations",
             "map_params": {
                 "long_press": "8.5",
                 "press": "1.2",
@@ -7221,12 +7171,11 @@ syscfg_dict = {
             "map_params": {"off": "1", "on": "0"},
         },
         "onoff_vref_sel": {
-            "doc": "Determine VREF between pp3300, pp1800 and "
-            "off. Default is off",
+            "doc": "Determine VREF between pp3300, pp1800 and off. Default is off",
             "map_params": {"off": "0", "pp1800": "2", "pp3300": "1"},
         },
         "pac_samples": {
-            "doc": "Shorthand for sample/second for pac family " "ADCs",
+            "doc": "Shorthand for sample/second for pac family ADCs",
             "map_params": {"default": "1024", "highest": "1024", "lowest": "8"},
         },
         "press": {
@@ -7238,7 +7187,7 @@ syscfg_dict = {
             "map_params": {"press": "1", "release": "0"},
         },
         "press_re": {
-            "doc": "map for press and release of buttons using a " "regex",
+            "doc": "map for press and release of buttons using a regex",
             "map_params": {"press": "press", "release": "release"},
         },
         "print": {"doc": "debug print map", "map_params": {"print": "0"}},

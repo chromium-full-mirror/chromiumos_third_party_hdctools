@@ -49,6 +49,23 @@ steps:
     - /workspace/servo/ec3po/run_tests.sh
   waitFor: ['src-prep']
 
+- name: 'pyfound/black:latest_release'
+  id: 'test-black-formatting'
+  entrypoint: 'black'
+  args:
+    - --check
+    - --config=/workspace/pyproject.toml
+    - /workspace
+  waitFor: ['src-prep']
+
+- name: 'xcgd/isort'
+  id: 'test-isort-formatting'
+  entrypoint: 'isort'
+  args:
+    - --check
+    - /workspace
+  waitFor: ['src-prep']
+
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: bash
   args:

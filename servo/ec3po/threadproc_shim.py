@@ -37,6 +37,7 @@ from multiprocessing import Pipe
 from queue import Queue
 from threading import Thread as ThreadOrProcess
 
+
 # True if this module has ec3po using subprocesses, False if using threads.
 USING_SUBPROCS = False
 

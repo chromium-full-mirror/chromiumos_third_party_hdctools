@@ -9,6 +9,7 @@ Presently tested for:
   INA3221
 """
 from __future__ import print_function
+
 import logging
 
 from servo.drv import base_pwr_adc
@@ -17,254 +18,255 @@ from servo.drv import base_pwr_adc
 # pylint: disable=invalid-name
 # servod drv identification follows this naming convention.
 class Ina2xxError(base_pwr_adc.BasePWRADCError):
-  """Error occurred accessing INA219."""
+    """Error occurred accessing INA219."""
 
 
 class ina2xx(base_pwr_adc.basePWRADC):
-  """class definition.
+    """class definition.
 
-  Note, instances of this object get dispatched via base class,
-  HwDriver's get/set method.  That method ulitimately calls:
-    "_[GS]et_%s" % params['subtype'] below.
+    Note, instances of this object get dispatched via base class,
+    HwDriver's get/set method.  That method ulitimately calls:
+      "_[GS]et_%s" % params['subtype'] below.
 
-  For example, a control to read the millivolts of an ADC would be
-  dispatched to call _Get_millivolts.
-  """
-  # maximum number of re-reads of bus voltage to do before raising
-  # exception for failing to see a data conversion.  Note the CNVR bit
-  # is affected by averaging and multiplication as well. I decided on
-  # 100 by sampling the number average retries during calibration and
-  # multiplying by 2x to be on the safe side
-  BUSV_READ_RETRY = 100
-
-  # sign bit of current output register
-  CUR_SIGN = 0x8000
-  # maximum value of current output register.
-  CUR_MAX = 0x7fff
-
-  # maximum value of power output register.
-  PWR_MAX = 0xffff
-  # sign bit of the power output register.
-  PWR_SIGN = 0
-
-  # mask ( 3-bits ) for ina219 configuration modes
-  CFG_MODE_MASK = 0x7
-  # continuous mode
-  CFG_MODE_CONT = 0x7
-  # sleep mode
-  CFG_MODE_SLEEP = 0
-
-  @property
-  def millivolts_per_lsb(self):
-    """Bus voltage mv per lsb.
-
-    Value is defined in the subclasses.
-
-    Returns:
-      float of bus voltage per lsb in millivolts
+    For example, a control to read the millivolts of an ADC would be
+    dispatched to call _Get_millivolts.
     """
-    return self.BUSV_MV_PER_LSB
 
-  @property
-  def milliamps_per_lsb(self):
-    """Calculate milliamps per least significant bit of the current register.
+    # maximum number of re-reads of bus voltage to do before raising
+    # exception for failing to see a data conversion.  Note the CNVR bit
+    # is affected by averaging and multiplication as well. I decided on
+    # 100 by sampling the number average retries during calibration and
+    # multiplying by 2x to be on the safe side
+    BUSV_READ_RETRY = 100
 
-    Returns:
-      float of current per lsb value in milliamps.
-    """
-    self._logger.debug('')
-    self._calibrate()
-    lsb = self.CUR_LSB_COEFFICIENT / (self._calib_reg * self._rsense)
-    self._logger.debug('lsb = %f' % lsb)
-    return lsb
+    # sign bit of current output register
+    CUR_SIGN = 0x8000
+    # maximum value of current output register.
+    CUR_MAX = 0x7FFF
 
-  @property
-  def milliwatts_per_lsb(self):
-    """Calculate milliwatts per least significant bit of the power register.
+    # maximum value of power output register.
+    PWR_MAX = 0xFFFF
+    # sign bit of the power output register.
+    PWR_SIGN = 0
 
-    Returns:
-      float of power per lsb value in milliwatts.
-    """
-    self._logger.debug('')
-    lsb = self.PWR_LSB_COEFFICIENT * self.milliamps_per_lsb
-    self._logger.debug('lsb = %f' % lsb)
-    return lsb
+    # mask ( 3-bits ) for ina219 configuration modes
+    CFG_MODE_MASK = 0x7
+    # continuous mode
+    CFG_MODE_CONT = 0x7
+    # sleep mode
+    CFG_MODE_SLEEP = 0
 
-  def _read_cnvr_ovf(self):
-    raise NotImplementedError('Must be defined by child class')
+    @property
+    def millivolts_per_lsb(self):
+        """Bus voltage mv per lsb.
 
-  def _read_cnvr(self):
-    (is_cnvr, _) = self._read_cnvr_ovf()
-    return is_cnvr
+        Value is defined in the subclasses.
 
-  def _read_ovf(self):
-    (_, is_ovf) = self._read_cnvr_ovf()
-    return is_ovf
+        Returns:
+          float of bus voltage per lsb in millivolts
+        """
+        return self.BUSV_MV_PER_LSB
 
-  def _reset(self):
-    """Reset object state when device is transistioned to certain modes."""
-    # TODO(tbroch) Not clear from data sheet what power-down makes IC forget
-    # so I'm whacking everything stateful
-    self._calib_reg = None
-    self._reg_cache = None
+    @property
+    def milliamps_per_lsb(self):
+        """Calculate milliamps per least significant bit of the current register.
 
-  def _get_next_ovf(self):
-    """Watch conversion ready bit assertion then return overflow status.
+        Returns:
+          float of current per lsb value in milliamps.
+        """
+        self._logger.debug("")
+        self._calibrate()
+        lsb = self.CUR_LSB_COEFFICIENT / (self._calib_reg * self._rsense)
+        self._logger.debug("lsb = %f" % lsb)
+        return lsb
 
-    Note datasheet doesn't spell this out but it seems logical.
+    @property
+    def milliwatts_per_lsb(self):
+        """Calculate milliwatts per least significant bit of the power register.
 
-    Returns:
-      is_ovf: Boolean of whether overflow has occurred
+        Returns:
+          float of power per lsb value in milliwatts.
+        """
+        self._logger.debug("")
+        lsb = self.PWR_LSB_COEFFICIENT * self.milliamps_per_lsb
+        self._logger.debug("lsb = %f" % lsb)
+        return lsb
 
-    Raises:
-      Ina2xxError: if conversion didn't assert after self.BUSV_READ_RETRY times
-    """
-    for _ in range(self.BUSV_READ_RETRY):
-      is_cnvr = self._read_cnvr()
-      if is_cnvr:
-        break
+    def _read_cnvr_ovf(self):
+        raise NotImplementedError("Must be defined by child class")
 
-    # if we didn't _break_ from for loop
-    if not is_cnvr:
-      raise Ina2xxError('Failed to see conversion (CNVR) while calibrating')
-    return self._read_ovf()
+    def _read_cnvr(self):
+        (is_cnvr, _) = self._read_cnvr_ovf()
+        return is_cnvr
 
-  def _calibrate(self):
-    """Calibrate the INA219.
+    def _read_ovf(self):
+        (_, is_ovf) = self._read_cnvr_ovf()
+        return is_ovf
 
-    Proper calibration of adc is paramount in successful sampling of the current
-    and power measurements.
+    def _reset(self):
+        """Reset object state when device is transistioned to certain modes."""
+        # TODO(tbroch) Not clear from data sheet what power-down makes IC forget
+        # so I'm whacking everything stateful
+        self._calib_reg = None
+        self._reg_cache = None
 
-    As such, if overflow occurs re-calibration is done.  The calibration
-    register is inversely proportional to precision of the adc's lsb for current
-    and power conversion.
+    def _get_next_ovf(self):
+        """Watch conversion ready bit assertion then return overflow status.
 
-    For example, for a 50mOhm sense resistor with the calibration register set
-    to its maximum (MAX_CALIB), the adc is capable of 800mA range @ ~12.5uA/lsb.
-    Dividing the calibration by two would provide 1600mA range @ 25uA/lsb.
+        Note datasheet doesn't spell this out but it seems logical.
 
-    Raises:
-      Ina2xxError: If calibration failed or doesn't have register.
-    """
-    self._logger.debug('')
-    if not self._has_reg('cal'):
-      raise Ina2xxError('ADC does NOT have calibration register')
+        Returns:
+          is_ovf: Boolean of whether overflow has occurred
 
-    # TODO(tbroch): remove read of calibration below once instantiation of INA
-    # controls resolves that there is only one device for many controls.
-    # Currently it is possible to overflow and adjust calibration say for the
-    # milliwatts but be  unaware of the change for the milliamps calculations as
-    # each control has a separate instance of ina219 object and therefore a
-    # private copy of the calibration register.
-    self._read_reg('cal')
+        Raises:
+          Ina2xxError: if conversion didn't assert after self.BUSV_READ_RETRY times
+        """
+        for _ in range(self.BUSV_READ_RETRY):
+            is_cnvr = self._read_cnvr()
+            if is_cnvr:
+                break
 
-    # (b/199008947) INA231 may have the CVRF (Conversion Ready Flag) bit set
-    # somewhere prior to this point, and we cannot be sure whether the
-    # calculation was overflowed if the bit is not consumed before we rewrite
-    # the calib register. Adding a CNVR read to ensure the bit is cleared.
-    self._read_cnvr()
+        # if we didn't _break_ from for loop
+        if not is_cnvr:
+            raise Ina2xxError("Failed to see conversion (CNVR) while calibrating")
+        return self._read_ovf()
 
-    # None value means this is the first calibration after the reset, so we
-    # attempt the highest resolution (maximum calibration value).
-    # Otherwise, we just use the cached value.
-    # TODO(b/206879189): implement the bounce-back mechanism so the calibration
-    # value can gradually climb up when it's safe to.
-    if self._calib_reg is None:
-      self._calib_reg = self.MAX_CALIB
+    def _calibrate(self):
+        """Calibrate the INA219.
 
-    self._write_reg('cal', self._calib_reg)
-    is_ovf = self._get_next_ovf()
+        Proper calibration of adc is paramount in successful sampling of the current
+        and power measurements.
 
-    while is_ovf:
-      if self._calib_reg == self.MIN_CALIB:
-        raise Ina2xxError('Failed to calibrate for lowest precision')
-      self._calib_reg = (self._calib_reg >> 1) & self.MAX_CALIB
-      self._logger.debug('writing calibrate to 0x%04x' % (self._calib_reg))
-      self._write_reg('cal', self._calib_reg)
-      is_ovf = self._get_next_ovf()
+        As such, if overflow occurs re-calibration is done.  The calibration
+        register is inversely proportional to precision of the adc's lsb for current
+        and power conversion.
 
-  def _Set_ez_config(self, _):
-    """Set the config register to be 'low_power'.
+        For example, for a 50mOhm sense resistor with the calibration register set
+        to its maximum (MAX_CALIB), the adc is capable of 800mA range @ ~12.5uA/lsb.
+        Dividing the calibration by two would provide 1600mA range @ 25uA/lsb.
 
-    low_power is a short-hand on the INA chips in servod to say
-    - high sample rate
-    - high resolution
-    - hardware averaging
-    """
-    self._write_reg('cfg', 'low_power')
+        Raises:
+          Ina2xxError: If calibration failed or doesn't have register.
+        """
+        self._logger.debug("")
+        if not self._has_reg("cal"):
+            raise Ina2xxError("ADC does NOT have calibration register")
 
-  def _get_shunt_millivolts(self):
-    """Retrieve shunt voltage measurement for ADC.
+        # TODO(tbroch): remove read of calibration below once instantiation of INA
+        # controls resolves that there is only one device for many controls.
+        # Currently it is possible to overflow and adjust calibration say for the
+        # milliwatts but be  unaware of the change for the milliamps calculations as
+        # each control has a separate instance of ina219 object and therefore a
+        # private copy of the calibration register.
+        self._read_reg("cal")
 
-    Returns:
-      float of shunt voltage in millivolts.
+        # (b/199008947) INA231 may have the CVRF (Conversion Ready Flag) bit set
+        # somewhere prior to this point, and we cannot be sure whether the
+        # calculation was overflowed if the bit is not consumed before we rewrite
+        # the calib register. Adding a CNVR read to ensure the bit is cleared.
+        self._read_cnvr()
 
-    Raises:
-      Ina2xxError: if shunt voltage overflowed.
-    """
-    vshunt_reg = self._read_reg('shv')
-    logging.debug('shv = 0x%x', vshunt_reg)
+        # None value means this is the first calibration after the reset, so we
+        # attempt the highest resolution (maximum calibration value).
+        # Otherwise, we just use the cached value.
+        # TODO(b/206879189): implement the bounce-back mechanism so the calibration
+        # value can gradually climb up when it's safe to.
+        if self._calib_reg is None:
+            self._calib_reg = self.MAX_CALIB
 
-    # its negative ... two's complement
-    if vshunt_reg & 0x8000:
-      vshunt_reg = ~vshunt_reg & self.SHV_MASK
-      vshunt_reg += 1 << self.SHV_OFFSET
-      vshunt_reg *= -1
-      logging.debug('shv = 0x%04x after negate', vshunt_reg)
+        self._write_reg("cal", self._calib_reg)
+        is_ovf = self._get_next_ovf()
 
-    if abs(vshunt_reg) >= self.SHV_MASK:
-      raise Ina2xxError('vshunt overflow 0x%04x' % vshunt_reg)
+        while is_ovf:
+            if self._calib_reg == self.MIN_CALIB:
+                raise Ina2xxError("Failed to calibrate for lowest precision")
+            self._calib_reg = (self._calib_reg >> 1) & self.MAX_CALIB
+            self._logger.debug("writing calibrate to 0x%04x" % (self._calib_reg))
+            self._write_reg("cal", self._calib_reg)
+            is_ovf = self._get_next_ovf()
 
-    vshunt_reg = vshunt_reg >> self.SHV_OFFSET
-    return vshunt_reg * self.SHV_UV_PER_LSB / 1000.
+    def _Set_ez_config(self, _):
+        """Set the config register to be 'low_power'.
 
-  def _Get_shuntmv(self):
-    """Retrieve shunt voltage measurement for ADC in millivolts.
+        low_power is a short-hand on the INA chips in servod to say
+        - high sample rate
+        - high resolution
+        - hardware averaging
+        """
+        self._write_reg("cfg", "low_power")
 
-    Returns:
-      float of shunt voltage in millivolts.
-    """
-    return self._get_shunt_millivolts()
+    def _get_shunt_millivolts(self):
+        """Retrieve shunt voltage measurement for ADC.
 
-  def _get_milliamps_calc(self):
-    """Retrieve current measurement for ADC in milliamps by calculation.
+        Returns:
+          float of shunt voltage in millivolts.
 
-    Calculation is I = Vshunt / Rsense
+        Raises:
+          Ina2xxError: if shunt voltage overflowed.
+        """
+        vshunt_reg = self._read_reg("shv")
+        logging.debug("shv = 0x%x", vshunt_reg)
 
-    Returns:
-      float of current in milliamps
-    """
-    logging.debug('')
+        # its negative ... two's complement
+        if vshunt_reg & 0x8000:
+            vshunt_reg = ~vshunt_reg & self.SHV_MASK
+            vshunt_reg += 1 << self.SHV_OFFSET
+            vshunt_reg *= -1
+            logging.debug("shv = 0x%04x after negate", vshunt_reg)
 
-    vshunt_mv = self._get_shunt_millivolts()
-    logging.debug('vshunt_mv = %2.2f', vshunt_mv)
-    return vshunt_mv / self._rsense
+        if abs(vshunt_reg) >= self.SHV_MASK:
+            raise Ina2xxError("vshunt overflow 0x%04x" % vshunt_reg)
 
-  def _wake(self):
-    """Wake up the INA219 adc from sleep."""
-    self._logger.debug('')
-    if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_CONT):
-      self._set_cfg_mode(self.CFG_MODE_CONT)
+        vshunt_reg = vshunt_reg >> self.SHV_OFFSET
+        return vshunt_reg * self.SHV_UV_PER_LSB / 1000.0
 
-  def _sleep(self):
-    """Place device in low-power ( no measurement state )."""
-    self._logger.debug('')
-    if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_SLEEP):
-      self._reset()
-      self._set_cfg_mode(self.CFG_MODE_SLEEP)
+    def _Get_shuntmv(self):
+        """Retrieve shunt voltage measurement for ADC in millivolts.
 
-  def _set_cfg_mode(self, mode):
-    """Set the configuration mode of the INA219.
+        Returns:
+          float of shunt voltage in millivolts.
+        """
+        return self._get_shunt_millivolts()
 
-    Setting the configuration mode allows device to operate in different modes.
-    Presently only plan to implemented sleep & continuous.  By default, the
-    device powers on in continuous mode.
+    def _get_milliamps_calc(self):
+        """Retrieve current measurement for ADC in milliamps by calculation.
 
-    Args:
-      mode: integer value to write to configuration register to change the mode.
-    """
-    self._logger.debug('')
-    cfg_reg = self._read_reg('cfg')
-    self._write_reg('cfg', (cfg_reg & ~self.CFG_MODE_MASK) | mode)
+        Calculation is I = Vshunt / Rsense
 
-    self._cfg_mode = mode
+        Returns:
+          float of current in milliamps
+        """
+        logging.debug("")
+
+        vshunt_mv = self._get_shunt_millivolts()
+        logging.debug("vshunt_mv = %2.2f", vshunt_mv)
+        return vshunt_mv / self._rsense
+
+    def _wake(self):
+        """Wake up the INA219 adc from sleep."""
+        self._logger.debug("")
+        if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_CONT):
+            self._set_cfg_mode(self.CFG_MODE_CONT)
+
+    def _sleep(self):
+        """Place device in low-power ( no measurement state )."""
+        self._logger.debug("")
+        if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_SLEEP):
+            self._reset()
+            self._set_cfg_mode(self.CFG_MODE_SLEEP)
+
+    def _set_cfg_mode(self, mode):
+        """Set the configuration mode of the INA219.
+
+        Setting the configuration mode allows device to operate in different modes.
+        Presently only plan to implemented sleep & continuous.  By default, the
+        device powers on in continuous mode.
+
+        Args:
+          mode: integer value to write to configuration register to change the mode.
+        """
+        self._logger.debug("")
+        cfg_reg = self._read_reg("cfg")
+        self._write_reg("cfg", (cfg_reg & ~self.CFG_MODE_MASK) | mode)
+
+        self._cfg_mode = mode

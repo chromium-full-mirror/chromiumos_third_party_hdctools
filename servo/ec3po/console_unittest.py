@@ -73,7 +73,6 @@ BACKSPACE_STRING += b" "
 BACKSPACE_STRING += OutputStream.MoveCursorLeft(1)
 
 
-
 def CheckConsoleOutput(test_case, exp_console_out):
     """Verify what was sent out the console matches what we expect.
 

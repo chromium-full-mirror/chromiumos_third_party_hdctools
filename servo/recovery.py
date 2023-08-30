@@ -8,11 +8,11 @@ RECOVERY_ACTIVE = False
 
 
 def set_recovery_active():
-  """Activate recovery mode on the instance."""
-  global RECOVERY_ACTIVE
-  RECOVERY_ACTIVE = True
+    """Activate recovery mode on the instance."""
+    global RECOVERY_ACTIVE
+    RECOVERY_ACTIVE = True
 
 
 def is_recovery_active():
-  """Report whether recovery mode is active."""
-  return RECOVERY_ACTIVE
+    """Report whether recovery mode is active."""
+    return RECOVERY_ACTIVE

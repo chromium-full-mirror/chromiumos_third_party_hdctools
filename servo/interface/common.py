@@ -8,7 +8,9 @@ import logging
 
 
 class InterfaceError(Exception):
-  """Base error class for interfaces."""
-  pass
+    """Base error class for interfaces."""
 
-build_logger = logging.getLogger('Interface.Build')
+    pass
+
+
+build_logger = logging.getLogger("Interface.Build")

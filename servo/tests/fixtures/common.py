@@ -2,27 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from enum import Enum
 import glob
+from itertools import count
 import logging
 import os
 import time
-import pytest
 
-from enum import Enum
-from itertools import count
+import pytest
 
 import servo.servo_dev_templates as tmpl
 
-device_types = ['servo_v4p1', 'ccd_cr50', 'servo_micro', 'c2d2']
+
+device_types = ["servo_v4p1", "ccd_cr50", "servo_micro", "c2d2"]
 device_details = {}
 for type in device_types:
-    device_details[type] = {"idVendor": tmpl.GetVID(type), "idProduct": tmpl.GetPID(type)}
+    device_details[type] = {
+        "idVendor": tmpl.GetVID(type),
+        "idProduct": tmpl.GetPID(type),
+    }
 
 DEFAULT_SERIALS = {
-    'servo_v4p1': "SERVOV4P1-S-%s%d",
-    'ccd_cr50': "1002303D-%s%d",
-    'servo_micro': "MICRO-S-%s%d",
-    'c2d2': "100860-%s%d",
+    "servo_v4p1": "SERVOV4P1-S-%s%d",
+    "ccd_cr50": "1002303D-%s%d",
+    "servo_micro": "MICRO-S-%s%d",
+    "c2d2": "100860-%s%d",
 }
 
 PTY_END_LINE = b""
@@ -62,16 +66,16 @@ def board_supports_servo_type(board, servo_type):
         True if the servo type is valid for the given board.
     """
     c2d2_boards = [
-        'brya',
-        'cherry',
-        'dedede',
-        'guybrush',
-        'nissa',
-        'skyrim',
+        "brya",
+        "cherry",
+        "dedede",
+        "guybrush",
+        "nissa",
+        "skyrim",
     ]
     # C2D2 servos are only usable on C2D2 boards. All other boards use the
     # 50 pin servo header (servo micro).
-    return ('c2d2' in servo_type) == (board in c2d2_boards)
+    return ("c2d2" in servo_type) == (board in c2d2_boards)
 
 
 def get_board_model_pairs(board_exclude_list=[]):
@@ -86,21 +90,21 @@ def get_board_model_pairs(board_exclude_list=[]):
         list if string tuples: board model pairs.
     """
     exclude_list = [
-        "servo_nissa_nirwen_ufs_overlay.xml",   # File not in correct format
-        "servo_fpmcu_dev_board_common_overlay.xml", # File not in correct format
-        "servo_fpmcu_dev_board_uart_common_overlay.xml", # File not in correct format
+        "servo_nissa_nirwen_ufs_overlay.xml",  # File not in correct format
+        "servo_fpmcu_dev_board_common_overlay.xml",  # File not in correct format
+        "servo_fpmcu_dev_board_uart_common_overlay.xml",  # File not in correct format
         "servo_bloonchipper_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_dartmonkey_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_dragonclaw_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_dragontalon_overlay.xml",   # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_helipilot_overlay.xml",     # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_icetower_overlay.xml",      # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_quincy_overlay.xml",        # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_zerblebarn_overlay.xml",    # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_chocodile_overlay.xml",     # Not working as it includes servo_micro.xml
+        "servo_dartmonkey_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragonclaw_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragontalon_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_helipilot_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_icetower_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_quincy_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_zerblebarn_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_chocodile_overlay.xml",  # Not working as it includes servo_micro.xml
         "servo_hana_overlay.xml",  # Not working
-        "servo_elm_overlay.xml",   # Not working
-        "servo_oak_overlay.xml",   # Not working
+        "servo_elm_overlay.xml",  # Not working
+        "servo_oak_overlay.xml",  # Not working
     ]
     filenames = glob.glob("/usr/local/lib/*/*-packages/servo/data/servo_*_overlay.xml")
     board_model_list = []
@@ -110,7 +114,7 @@ def get_board_model_pairs(board_exclude_list=[]):
         if basename in exclude_list:
             continue
 
-        parts = basename[:-4].split('_')
+        parts = basename[:-4].split("_")
 
         if parts[1] in board_exclude_list:
             continue
@@ -120,7 +124,10 @@ def get_board_model_pairs(board_exclude_list=[]):
         elif len(parts) == 4:
             board_model_list.append((parts[1], parts[2]))
         else:
-            raise Exception("Data file %s not in correct format - untested" % os.path.basename(filename))
+            raise Exception(
+                "Data file %s not in correct format - untested"
+                % os.path.basename(filename)
+            )
 
     if not board_model_list:
         raise Exception("Failed to find ANY boards, likely there is a test bug.")

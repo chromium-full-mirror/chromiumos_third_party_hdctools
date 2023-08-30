@@ -6,15 +6,17 @@
 # This file provides a mock version of each of the main entities that the
 # PyUSB interface provides.  Device, Configuration, Interface, Endpoint
 
+from functools import partial
 import logging
 import queue
 import tempfile
 import time
-from functools import partial
 
 import pytest
+
 from servo.tests.data import mocked_pty_data
 from servo.tests.fixtures import common
+
 
 _logger = logging.getLogger("mock_pyusb")
 
@@ -62,7 +64,9 @@ def mock_endpoint(mocker):
                     if command not in ep.parent.mocked_data:
                         # Store any command we do not have mocked data so the
                         # test data can report this.
-                        ep.parent.no_data_command_queue.put("%s: %s" % (description, command))
+                        ep.parent.no_data_command_queue.put(
+                            "%s: %s" % (description, command)
+                        )
                         _logger.debug(
                             "%s Missing mock data for command %s"
                             % (description, command)
@@ -273,14 +277,14 @@ def mock_pyusb(mocker):
 
 
 def clear_interfaces(device):
-    for (no, interface) in device.configuration.interfaces.items():
+    for no, interface in device.configuration.interfaces.items():
         while not interface.executed_command_queue.empty():
             interface.executed_command_queue.get()
 
 
 def dump_interfaces(device):
     result = {}
-    for (no, interface) in device.configuration.interfaces.items():
+    for no, interface in device.configuration.interfaces.items():
         result[no] = list(interface.executed_command_queue.queue)
         result["missing"] = list(interface.no_data_command_queue.queue)
     return result

@@ -3,33 +3,45 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from __future__ import print_function
+
 import argparse
 import datetime
 import getpass
 import sys
 
-default_outfile = 'new_ina_map'
+
+default_outfile = "new_ina_map"
 
 year = datetime.datetime.now().year
 user = getpass.getuser()
 
-copyright_string = """\
+copyright_string = (
+    """\
 # Copyright %d The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-""" % year
+"""
+    % year
+)
 
-config_tag_str = """
+config_tag_str = (
+    """
 # TODO(%s): fill in to generate servod or sweetberry configuration.
 config_type  = 'sweetberry' | 'servod'
-""" % user
+"""
+    % user
+)
 
-rev_tag_str = """
+rev_tag_str = (
+    """
 # TODO(%s): fill in which revisions use this INA map.
 revs  = [ 'REV_ID(int)']
-""" % user
+"""
+    % user
+)
 
-ina_tag_str = """
+ina_tag_str = (
+    """
 # TODO(%s): for each ina control fill in tuple as example below. Examples
 # include all types of supported tuples, depending on your needs.
 # See other .py files for examples.
@@ -52,23 +64,25 @@ inas = [
         ('ina231', (1,3),       'ppvar_sb_pins',  3.3,   0.1,  'j2',  True),
         ('ina231', '0x40:3',    'ppvar_sb_addr',  3.3,   0.1,  'j2',  True),
 ]
-""" % user
+"""
+    % user
+)
 
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser(description='Measure power using servod.')
-  parser.add_argument('-n', '--name', default='')
-  args = parser.parse_args(sys.argv[1:])
-  outfile = args.name
-  if not len(outfile):
-    outfile = default_outfile
-  outfile += '.py'
-  with open(outfile, 'w') as f:
-    f.write(copyright_string)
-    f.write('\n')
-    f.write(config_tag_str)
-    f.write('\n')
-    f.write(rev_tag_str)
-    f.write('\n')
-    f.write(ina_tag_str)
-    f.write('\n')
-  print("Finished creating ina skeleton file at:\n%s" % outfile)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Measure power using servod.")
+    parser.add_argument("-n", "--name", default="")
+    args = parser.parse_args(sys.argv[1:])
+    outfile = args.name
+    if not len(outfile):
+        outfile = default_outfile
+    outfile += ".py"
+    with open(outfile, "w") as f:
+        f.write(copyright_string)
+        f.write("\n")
+        f.write(config_tag_str)
+        f.write("\n")
+        f.write(rev_tag_str)
+        f.write("\n")
+        f.write(ina_tag_str)
+        f.write("\n")
+    print("Finished creating ina skeleton file at:\n%s" % outfile)

@@ -8,6 +8,7 @@ import sys
 
 import docker
 
+
 class RunCommandBase(object):
     def parse_args(self):
         parser = argparse.ArgumentParser(add_help=False)
@@ -34,9 +35,11 @@ class RunCommandBase(object):
         if not containers:
             print("Can not find a container that matches name %s" % name_search)
         elif len(containers) == 1:
-            exit_code, output = self.execute_command(containers[0], args.passthrough[1:])
+            exit_code, output = self.execute_command(
+                containers[0], args.passthrough[1:]
+            )
             if output:
-               print(output.decode("utf-8"), end="")
+                print(output.decode("utf-8"), end="")
             sys.exit(exit_code)
         else:
             print(

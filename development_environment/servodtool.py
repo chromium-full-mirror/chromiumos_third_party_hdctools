@@ -8,9 +8,7 @@ import run_command
 
 class DutControlCommand(run_command.RunCommandBase):
     def execute_command(self, container, unknown_args):
-        return container.exec_run(
-            "servodtool " + (" ".join(unknown_args))
-        )
+        return container.exec_run("servodtool " + (" ".join(unknown_args)))
 
 
 if __name__ == "__main__":

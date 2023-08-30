@@ -3,12 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import docker
-import logging
 import argparse
 from datetime import datetime
-import time
+import logging
 import sys
+import time
+
+import docker
+
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
@@ -113,6 +115,7 @@ def start_servod(
             else:
                 for line in log_lines:
                     print(line.decode("utf-8"), end="")
+
 
 def parse_args():
     parser = argparse.ArgumentParser(add_help=False)

@@ -12,54 +12,60 @@ from servo import tools
 
 
 class ServodToolError(Exception):
-  """Servodtool error class."""
-  pass
+    """Servodtool error class."""
+
+    pass
 
 
 def setup_logging(debug=False):
-  """Setup logging for the command line tool."""
-  root_logger = logging.getLogger()
-  stdout_handler = logging.StreamHandler(sys.stdout)
-  level = logging.DEBUG if debug else logging.INFO
-  stdout_handler.setLevel(level)
-  root_logger.setLevel(logging.DEBUG)
-  root_logger.addHandler(stdout_handler)
+    """Setup logging for the command line tool."""
+    root_logger = logging.getLogger()
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    level = logging.DEBUG if debug else logging.INFO
+    stdout_handler.setLevel(level)
+    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(stdout_handler)
 
 
 # TODO(coconutruben): phase this out. For now, users are still expecting this
 # tool, and some autotest code might still rely on this. Once all the
 # dependencies are eliminated for servodtool, then remove this.
 def servodutil(cmdline=sys.argv[1:]):
-  """Legacy, to keep the old command-line tool in place."""
-  setup_logging()
-  parser = argparse.ArgumentParser()
-  instance_tool = tools.instance.Instance()
-  instance_tool.add_args(parser)
-  args = parser.parse_args(cmdline)
-  instance_tool.run(args)
+    """Legacy, to keep the old command-line tool in place."""
+    setup_logging()
+    parser = argparse.ArgumentParser()
+    instance_tool = tools.instance.Instance()
+    instance_tool.add_args(parser)
+    args = parser.parse_args(cmdline)
+    instance_tool.run(args)
 
 
 # pylint: disable=dangerous-default-value
 def main(cmdline=sys.argv[1:]):
-  """Entry function for cmdline servodtool utility."""
-  # pylint: disable=protected-access
-  parser = argparse.ArgumentParser()
-  parser.add_argument('-d', '--debug', action='store_true', default=False,
-                      help='enable debug messages')
-  subparsers = parser.add_subparsers(dest='tool')
-  # Make a dictionary of tool names and the actual tool.
-  tool_dict = {}
-  for tool_cls in tools.REGISTERED_TOOLS:
-    t = tool_cls()
-    tool_dict[t.name] = t
-  for tname in tool_dict:
-    t = tool_dict[tname]
-    tparser = subparsers.add_parser(tname, help=t.help)
-    tool_dict[tname].add_args(tparser)
-  args = parser.parse_args(cmdline)
-  setup_logging(args.debug)
-  tool_dict[args.tool].run(args)
+    """Entry function for cmdline servodtool utility."""
+    # pylint: disable=protected-access
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        default=False,
+        help="enable debug messages",
+    )
+    subparsers = parser.add_subparsers(dest="tool")
+    # Make a dictionary of tool names and the actual tool.
+    tool_dict = {}
+    for tool_cls in tools.REGISTERED_TOOLS:
+        t = tool_cls()
+        tool_dict[t.name] = t
+    for tname in tool_dict:
+        t = tool_dict[tname]
+        tparser = subparsers.add_parser(tname, help=t.help)
+        tool_dict[tname].add_args(tparser)
+    args = parser.parse_args(cmdline)
+    setup_logging(args.debug)
+    tool_dict[args.tool].run(args)
 
 
-if __name__ == '__main__':
-  main()
+if __name__ == "__main__":
+    main()

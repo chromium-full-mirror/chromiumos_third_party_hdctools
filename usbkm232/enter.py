@@ -11,9 +11,9 @@ from usbkm232 import usbkm232
 def main():
     """Main method."""
     try:
-        kbd = usbkm232(os.environ['USBKM232_UART_DEVICE'])
+        kbd = usbkm232(os.environ["USBKM232_UART_DEVICE"])
     except KeyError:
-        print('-E- Must set environment variable USBKM232_UART_DEVICE')
+        print("-E- Must set environment variable USBKM232_UART_DEVICE")
         sys.exit(-1)
     count = 1
     if len(sys.argv) > 1:

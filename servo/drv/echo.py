@@ -7,23 +7,24 @@ from servo.drv import hw_driver
 
 
 class echo(hw_driver.HwDriver):
-  """Driver to echo values back."""
-  # pylint: disable=invalid-name
-  # naming convention needed for servod driver query.
+    """Driver to echo values back."""
 
-  def __init__(self, interface, params, servod):
-    """Constructor.
-
-    Args:
-      interface: hardware interface for low-level communication; ignored here
-      params: dictionary of params
-      servod: Servod that is used for cross-servo-device communication
-    """
     # pylint: disable=invalid-name
-    # Class name format needed for drv class routing in servod.
-    super(echo, self).__init__(interface, params, servod)
-    self._val = self._params.get('value', 'unknown')
+    # naming convention needed for servod driver query.
 
-  def _get(self):
-    """Return the value."""
-    return self._val
+    def __init__(self, interface, params, servod):
+        """Constructor.
+
+        Args:
+          interface: hardware interface for low-level communication; ignored here
+          params: dictionary of params
+          servod: Servod that is used for cross-servo-device communication
+        """
+        # pylint: disable=invalid-name
+        # Class name format needed for drv class routing in servod.
+        super(echo, self).__init__(interface, params, servod)
+        self._val = self._params.get("value", "unknown")
+
+    def _get(self):
+        """Return the value."""
+        return self._val
