@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: isort
         name: isort (python)
+
   - repo: https://github.com/psf/black
     rev: 23.7.0
     hooks:
@@ -12,8 +13,9 @@ repos:
         # supported by your project here, or alternatively use
         # pre-commit's default_language_version, see
         # https://pre-commit.com/#top_level-default_language_version
-         exclude: servo/data/.*
         language_version: python3.11
+        exclude: servo/data/.*
+
   - repo: local
     hooks:
     - id: pylint

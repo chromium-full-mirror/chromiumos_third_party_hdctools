@@ -24,17 +24,6 @@ RUN install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d
 RUN sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
 RUN rm -f packages.microsoft.gpg
 
-# Install extensions
-RUN code --install-extension ms-azuretools.vscode-docker
-RUN code --install-extension ms-python.black-formatter
-RUN code --install-extension ms-python.isort
-RUN code --install-extension ms-python.pylint
-RUN code --install-extension ms-python.python
-RUN code --install-extension ms-python.vscode-pylance
-RUN code --install-extension SanderRonde.vscode--gerrit
-RUN code --install-extension streetsidesoftware.code-spell-checker
-RUN code --install-extension Tyriar.sort-lines
-
 # Install gcloud
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] \
     https://packages.cloud.google.com/apt cloud-sdk main" | \
