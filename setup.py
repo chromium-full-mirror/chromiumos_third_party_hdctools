@@ -7,8 +7,6 @@
 # ...with a mix of bits from pymox.
 
 import imp
-import os
-import sys
 
 from setuptools import setup
 from setuptools.command import build_py

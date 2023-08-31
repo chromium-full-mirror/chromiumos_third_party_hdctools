@@ -18,13 +18,11 @@ import time
 import weakref
 from xmlrpc.server import SimpleXMLRPCServer
 
-import pkg_resources
 import usb
 
 from servo import recovery
 from servo import servo_dev
 from servo import servo_dev_finder
-from servo import servo_dev_templates
 from servo import servo_logging
 from servo import servo_parsing
 from servo import servo_server

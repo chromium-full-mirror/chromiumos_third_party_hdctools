@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# These imports are necessary for pytest dependency injection.
+# pylint: disable=unused-import
+
 import pytest
 
 from servo.tests.fixtures.mock_pyusb import mock_endpoint

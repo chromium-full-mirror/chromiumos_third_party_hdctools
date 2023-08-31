@@ -14,9 +14,6 @@ import time
 
 import pytest
 
-from servo.tests.data import mocked_pty_data
-from servo.tests.fixtures import common
-
 
 _logger = logging.getLogger("mock_pyusb")
 

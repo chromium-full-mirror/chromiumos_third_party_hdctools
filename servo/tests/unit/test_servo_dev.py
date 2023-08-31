@@ -13,10 +13,8 @@ from servo import servo_dev_templates as tmpl
 from servo import servo_interfaces
 from servo import servo_server
 from servo import system_config
-from servo.drv import cr50
 from servo.drv import na
 from servo.utils import servo_dev_hierarchy
-from servo.utils import usb_hierarchy
 
 
 class TestServoDevice(unittest.TestCase):

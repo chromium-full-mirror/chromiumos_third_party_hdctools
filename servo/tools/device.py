@@ -13,7 +13,6 @@ from servo_mfg import tiny_servod
 import usb
 
 from servo.drv.pty_driver import ptyError
-import servo.servo_interfaces
 from servo.tools import tool
 import servo.utils.usb_hierarchy as uh
 

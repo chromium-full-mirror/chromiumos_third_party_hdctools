@@ -5,9 +5,7 @@
 
 import argparse
 from datetime import datetime
-import logging
 import sys
-import time
 
 import docker
 

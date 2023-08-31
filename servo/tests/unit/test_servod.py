@@ -4,7 +4,6 @@
 
 import argparse
 import errno
-import signal
 import socket
 import threading
 import unittest
@@ -22,7 +21,6 @@ from servo import servod
 from servo import system_config
 from servo import watchdog
 from servo.utils import scratch
-from servo.utils import servo_dev_hierarchy
 from servo.utils import servo_dev_prober
 
 

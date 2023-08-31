@@ -4,7 +4,6 @@
 
 import logging
 
-from mock import call
 import pytest
 
 from servo import servod as sd

@@ -2,14 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from enum import Enum
 import glob
-from itertools import count
-import logging
 import os
 import time
-
-import pytest
 
 import servo.servo_dev_templates as tmpl
 

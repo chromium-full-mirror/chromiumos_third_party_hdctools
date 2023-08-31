@@ -16,7 +16,6 @@ import sys
 import time
 
 import numpy
-import pkg_resources
 
 from servo import client
 from servo import servo_parsing

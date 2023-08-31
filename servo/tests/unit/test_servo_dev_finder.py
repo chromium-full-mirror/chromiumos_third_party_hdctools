@@ -5,7 +5,6 @@
 """Servo device finder class tests."""
 
 import argparse
-import logging
 import os
 import shutil
 import tempfile

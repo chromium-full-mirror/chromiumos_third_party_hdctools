@@ -21,7 +21,6 @@ import re
 import select
 import stat
 import sys
-import traceback
 
 from ec3po import interpreter
 from ec3po import threadproc_shim

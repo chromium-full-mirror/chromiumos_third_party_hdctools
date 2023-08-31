@@ -3,14 +3,10 @@
 # found in the LICENSE file.
 """Allow creation of uart interface via libftdiuart library for FTDI devices."""
 import ctypes
-import errno
 import logging
 import os
 import sys
-import termios
-import threading
 import time
-import tty
 
 from servo.interface import common as c
 from servo.interface import ftdi_common

@@ -5,7 +5,6 @@
 
 import argparse
 import logging
-import os
 import shutil
 import signal
 import sys

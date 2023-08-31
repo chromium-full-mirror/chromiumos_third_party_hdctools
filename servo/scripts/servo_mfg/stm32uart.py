@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Allow creation of uart/console interface via stm32 usb endpoint."""
-import errno
 import os
-import pty
 import select
 import sys
 import termios

@@ -12,7 +12,6 @@ import unittest.mock
 from servo import client
 from servo import measure_power
 from servo.utils import stats_manager
-from servo.utils import timelined_stats_manager
 
 
 class TestServodPowerTracker(unittest.TestCase):

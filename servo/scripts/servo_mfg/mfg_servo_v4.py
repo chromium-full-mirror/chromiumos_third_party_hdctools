@@ -16,8 +16,6 @@ import re
 import subprocess
 import time
 
-import servo_updater
-
 from servo.scripts.servo_mfg import mfg_servo_common as c
 
 

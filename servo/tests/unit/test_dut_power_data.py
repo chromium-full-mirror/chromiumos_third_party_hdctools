@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Test dut_power_data works as intended."""
 
-import time
 import unittest
 import unittest.mock
 

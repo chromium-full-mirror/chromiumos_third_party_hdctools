@@ -3,11 +3,8 @@
 # found in the LICENSE file.
 """Allows creation of gpio interface via stm32 usb."""
 
-import array
 import logging
 import struct
-
-import usb
 
 from servo.interface import common as c
 from servo.interface import gpio_interface

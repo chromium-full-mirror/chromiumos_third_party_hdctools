@@ -4,7 +4,6 @@
 """Unit-tests to ensure that servodtool device works as intended."""
 
 import argparse
-import os
 import subprocess
 import time
 import unittest
@@ -13,7 +12,6 @@ import unittest.mock
 import usb
 
 import servo.drv.pty_driver as pty_driver
-import servo.interface.stm32uart as stm32uart
 from servo.tools import device
 from servo.utils import usb_hierarchy
 

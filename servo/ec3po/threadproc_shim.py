@@ -33,6 +33,7 @@ wait until after completing the TODO above to stop using multiprocessing.Pipe!
 """
 
 # Imports to bring objects into this namespace for users of this module.
+# pylint: disable=unused-import
 from multiprocessing import Pipe
 from queue import Queue
 from threading import Thread as ThreadOrProcess
