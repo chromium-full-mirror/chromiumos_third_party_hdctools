@@ -93,8 +93,6 @@ def _SendShutdown(pipe_wr):
 class EC3POInterfaceError(c.InterfaceError):
     """Error class to raise in ec3po interface issues."""
 
-    pass
-
 
 class EC3PO(uart.Uart):
     """Class for an EC-3PO console interpreter instance.

@@ -99,4 +99,3 @@ class SerialProgrammer(programmer.Programmer):
 
     def _verify_programming_env(self):
         """No special tools needed for serial programming - just skip."""
-        pass

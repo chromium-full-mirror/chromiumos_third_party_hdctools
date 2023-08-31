@@ -64,7 +64,6 @@ class Suart:
 
     def __del__(self):
         """Suart destructor."""
-        pass
 
     def run_rx_thread(self):
         ep = select.epoll()

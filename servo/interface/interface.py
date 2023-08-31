@@ -28,8 +28,6 @@ class Interface(object):
 
     def reinitialize(self):
         """Base reinitialization logic is a noop. Implement in child if needed."""
-        pass
 
     def close(self):
         """Default closer is a noop if nothing has to be done."""
-        pass

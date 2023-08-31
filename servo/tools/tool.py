@@ -12,8 +12,6 @@ import sys
 class ToolError(Exception):
     """General tool error class."""
 
-    pass
-
 
 class Tool(object):
     """Base class implementing the tool interface.

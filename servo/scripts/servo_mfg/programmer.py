@@ -92,7 +92,6 @@ class Programmer(object):
         self._verify_programming_env()
         if self._force:
             self.info("--force is set, not checking, will program regardless.")
-            pass
         else:
             if not self._no_precheck and self._verify(**kwargs):
                 # See __init__ for the |self._no_precheck| flag.
@@ -184,7 +183,6 @@ class Programmer(object):
                     self._parent_hub_vid,
                     self._parent_hub_pid,
                 )
-                pass
         # |wait_for_usb_device| supports finding a device with either pid or pid3.
         # However, it only returns one sysfs path - the first one it finds. We need
         # both paths (if they exist) as we don't know if the device enumerates as
@@ -213,7 +211,6 @@ class Programmer(object):
                     self._parent_hub_vid,
                     self._parent_hub_pid3,
                 )
-                pass
         if self._vid and pid:
             try:
                 path = device_util.wait_for_usb_device(

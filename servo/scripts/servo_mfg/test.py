@@ -47,7 +47,6 @@ class Test(object):
         all prompts at once, and then asks for confirmation that everything is setup
         *once*.
         """
-        pass
 
     def prep(self, client):
         """This is the phase to do any prep.

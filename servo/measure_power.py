@@ -144,7 +144,6 @@ class ServodPowerTracker(threading.Thread):
           fast: flag to indicate if pre-run work should be "fast" (e.g. no UART)
           powerstate: powerstate to allow for conditional preps based on powerstate
         """
-        pass
 
     def verify(self):
         """Verify by trying to query all ctrls once.

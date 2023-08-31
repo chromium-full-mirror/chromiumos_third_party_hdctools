@@ -10,7 +10,5 @@ import logging
 class InterfaceError(Exception):
     """Base error class for interfaces."""
 
-    pass
-
 
 build_logger = logging.getLogger("Interface.Build")

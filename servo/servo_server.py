@@ -396,7 +396,6 @@ class Servod(object):
                 value = self.get(name)
             except Exception:
                 value = "ERR"
-                pass
             if verbose:
                 rsp.append("GET %s = %s :: %s" % (name, value, self.doc(name)))
             else:

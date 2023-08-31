@@ -14,8 +14,6 @@ from servo import tools
 class ServodToolError(Exception):
     """Servodtool error class."""
 
-    pass
-
 
 def setup_logging(debug=False):
     """Setup logging for the command line tool."""

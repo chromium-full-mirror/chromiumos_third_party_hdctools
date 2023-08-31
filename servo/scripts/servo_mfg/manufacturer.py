@@ -87,27 +87,21 @@ class Manufacturer(object):
 
     def _pre_dfu_prep(self):
         """Use this slot to do anything before pre-dfu tasks are running."""
-        pass
 
     def _pre_dfu_post(self):
         """Use this slot to do anything after pre-dfu tasks have run."""
-        pass
 
     def _dfu_prep(self):
         """Use this slot to do anything before dfu has run."""
-        pass
 
     def _dfu_post(self):
         """Use this slot to do anything after dfu has run."""
-        pass
 
     def _post_dfu_prep(self):
         """Use this slot to do anything before post-dfu has run."""
-        pass
 
     def _post_dfu_post(self):
         """Use this slot to do anything after post-dfu has run."""
-        pass
 
     def manufacture(self, report, **kwargs):
         """Main manufacturing flow.

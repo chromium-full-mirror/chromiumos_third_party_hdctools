@@ -1,3 +1,7 @@
+# Copyright 2021 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 [MAIN]
 
 # Analyse import fallback blocks. This can be used to support both Python 2 and
@@ -542,8 +546,6 @@ disable=
     unknown-option-value,
     unnecessary-lambda,
     unnecessary-lambda-assignment,
-    unnecessary-pass,
-    unreachable,
     unspecified-encoding,
     unsubscriptable-object,
     unused-argument,

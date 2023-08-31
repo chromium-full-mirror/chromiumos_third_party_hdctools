@@ -58,7 +58,6 @@ class Manager(object):
     def check_args(self, namespace):
         """Check the parsed arguments, perform modifications, or raise error."""
         # The default implementation just gives a thumbs up.
-        pass
 
     def _req_arg_missing(self, args):
         """Helper to raise standard error when required args are missing."""

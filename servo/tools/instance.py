@@ -15,8 +15,6 @@ from servo.utils import scratch
 class InstanceError(Exception):
     """Instance tool error class."""
 
-    pass
-
 
 def _format_info(info):
     """Output format helper that turns a dictionary into 'key: value' lines."""

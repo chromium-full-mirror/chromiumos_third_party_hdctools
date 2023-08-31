@@ -446,7 +446,6 @@ def StartLoop(interp, shutdown_pipe=None):
                             interp.logger.debug(
                                 "ec3po interpreter error accessing ecuart_pty, probably it is closed."
                             )
-                            pass
                         # Handle any debug prints from the EC.
                         if fileno == ec_uart_pty_fileno:
                             interp.HandleECData()

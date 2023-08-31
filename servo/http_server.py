@@ -166,4 +166,3 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def log_request(self, format):
         """This function helps avoid showing the http.server's logging on the console"""
-        pass

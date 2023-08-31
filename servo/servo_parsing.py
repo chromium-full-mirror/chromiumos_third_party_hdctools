@@ -124,13 +124,9 @@ class ServodParserHelpFormatter(
     which each argument.
     """
 
-    pass
-
 
 class ServodParserError(Exception):
     """Error class for Servod parsing errors."""
-
-    pass
 
 
 class _BaseServodParser(argparse.ArgumentParser):

@@ -29,8 +29,6 @@ PWR_CYCLE_PIDS = [0x520D, 0x501B]
 class DeviceError(Exception):
     """Device tool error class."""
 
-    pass
-
 
 class Device(tool.Tool):
     """Class to implement various subtools to manage a servo devices."""

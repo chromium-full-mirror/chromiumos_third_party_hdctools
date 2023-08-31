@@ -37,8 +37,6 @@ LONG_UNIT = {
 class StatsManagerError(Exception):
     """Errors in StatsManager class."""
 
-    pass
-
 
 class StatsManager(object):
     """Calculates statistics for several lists of data(float).
