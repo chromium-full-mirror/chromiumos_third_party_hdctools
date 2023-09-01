@@ -279,7 +279,7 @@ class Fuart(uart.Uart):
 
 
 def test():
-    (options, args) = ftdi_utils.parse_common_args(interface=3)
+    options = ftdi_utils.parse_common_args(interface=3)
 
     log_format = "%(asctime)s - %(name)s - %(levelname)s"
     loglevel = logging.INFO

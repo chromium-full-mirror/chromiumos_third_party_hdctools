@@ -8,10 +8,10 @@ This script holds functionality shared between
 various servo manufacturiong scripts.
 """
 
-from distutils import sysconfig
 import errno
 import os
 import subprocess
+import sysconfig
 import time
 
 import servo_updater
@@ -128,7 +128,7 @@ def do_dfu(bin_name):
     Must have 'dfu-util' and 'flash_stm32.sh' present
     in the current directory to work.
     """
-    mfg_dir = os.path.join(sysconfig.get_python_lib(standard_lib=False), "servo_mfg")
+    mfg_dir = os.path.join(sysconfig.get_path("purelib"), "servo_mfg")
     dfu_sh = os.path.join(mfg_dir, "flash_stm32.sh")
     if subprocess.call("%s %s" % (dfu_sh, bin_name), shell=True):
         log("Flash, Failed to flash stm32: %s" % bin_name)

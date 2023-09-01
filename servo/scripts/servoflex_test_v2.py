@@ -7,9 +7,9 @@
 See usage ( -h ) for more details
 """
 
+import argparse
 from ast import literal_eval
 import logging
-import optparse
 import os
 import select
 import string
@@ -85,7 +85,7 @@ def launch_servod(options):
     """Launches servod.
 
     Args:
-      options: options from optparse
+      options: options from argparse
 
     Returns:
       retval: None|False|True, see do_cmd's retval.
@@ -154,7 +154,7 @@ def test_jtag(options):
     """Test JTAG interface.
 
     Args:
-      options: options from optparse
+      options: options from argparse
 
     Returns True if passes, Fail otherwise
     """
@@ -203,7 +203,7 @@ def test_spi(dev_id, options):
     Args:
       dev_id: integer, number corresponding to servod controls that operate this
         SPI interface.  Should be 0 | 1 | 2.
-      options: options from optparse
+      options: options from argparse
 
     Returns True if passes, Fail otherwise
     """
@@ -247,7 +247,7 @@ def test_uart(dev_id, options):
     Args:
       dev_id: integer, number corresponding to servod controls that operate this
         UART interface.  Should be 1 | 2 | 3
-      options: options from optparse
+      options: options from argparse
 
     Returns True if passes, Fail otherwise
     """
@@ -365,7 +365,7 @@ def test_gpios(options):
       emulation of OD style GPIO's.
 
     Args:
-      options: options from optparse
+      options: options from argparse
 
     Returns, True if passes, Fail otherwise
     """
@@ -445,27 +445,26 @@ def parse_args():
         "\t\t\tservoflex_test.py\n"
         "\t\t50 -> 50 pin servoflex V2 cables (connector:DUT_CONN_V2) via:\n"
         "\t\t\tservoflex_test.py -p 50\n"
+        "version:%s\n" % VERSION
     )
-    parser = optparse.OptionParser(version="%prog " + VERSION)
-    parser.description = description
-    parser.add_option(
+    parser = argparse.ArgumentParser(description=examples)
+    parser.add_argument(
         "-d",
         "--debug",
         action="store_true",
         default=False,
         help="enable debug messages",
     )
-    parser.add_option(
+    parser.add_argument(
         "-p",
         "--pins",
         type=int,
         default=42,
         help="Pin width of flex on DUT side.  Either 42 | 50",
     )
-    parser.add_option(
+    parser.add_argument(
         "-t", "--tests", type=str, default=None, help="Tests to run.  Default is all"
     )
-    parser.set_usage(parser.get_usage() + examples)
     return parser.parse_args()
 
 
@@ -474,7 +473,7 @@ V2_TESTS = ["jtag(", "uart(1,", "uart(2,", "spi(1,", "spi(2,", "gpios("]
 
 def main():
     errors = 0
-    (options, _) = parse_args()
+    options = parse_args()
     loglevel = logging.INFO
     log_format = "%(asctime)s - %(name)s - %(levelname)s"
     if options.debug:

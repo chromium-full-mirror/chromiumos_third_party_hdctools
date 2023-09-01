@@ -183,7 +183,7 @@ def test():
     (TODO) tbroch: enhance and make Googley & pythonic from a unittest
     perspective.
     """
-    (options, args) = ftdi_utils.parse_common_args()
+    options = ftdi_utils.parse_common_args()
     loglevel = logging.INFO
     if options.debug:
         loglevel = logging.DEBUG

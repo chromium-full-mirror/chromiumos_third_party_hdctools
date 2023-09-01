@@ -6,7 +6,7 @@
 # Based on suggestions in http://guide.python-distribute.org/creation.html
 # ...with a mix of bits from pymox.
 
-import imp
+import importlib
 import os
 
 from setuptools import setup
@@ -34,10 +34,12 @@ class servo_build_py(build_py.build_py):
         # giving the file an output directory?
         data_dir = self.get_package_dir(self.packages.pop(1))
         module_name = "generate_ina_controls"
-        ina_generator = imp.load_module(
-            module_name, *imp.find_module(module_name, [data_dir])
+        spec = importlib.util.spec_from_file_location(
+            module_name, "%s/%s.py" % (data_dir, module_name)
         )
-        ina_generator.GenerateINAControls(data_dir)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        module.GenerateINAControls(data_dir)
 
     def run(self):
         """Build INA maps."""

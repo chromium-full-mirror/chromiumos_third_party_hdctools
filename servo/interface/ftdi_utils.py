@@ -3,10 +3,10 @@
 # found in the LICENSE file.
 """Common functions for tools and libraries related to FTDI devices."""
 
+import argparse
 import ctypes
 import ctypes.util
 import logging
-import optparse
 import os
 import sys
 
@@ -109,24 +109,24 @@ def parse_common_args(
       (values, args) where 'values' is a optparse.Values instance and 'args' is
       the list of arguments left over after parsing options.
     """
-    parser = optparse.OptionParser()
-    parser.add_option(
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
         "-d",
         "--debug",
         help="enable debug messages",
         action="store_true",
         default=False,
     )
-    parser.add_option(
+    parser.add_argument(
         "-v", "--vendor", help="vendor id of ftdi device", default=vendor, type=int
     )
-    parser.add_option(
+    parser.add_argument(
         "-p", "--product", help="product id of ftdi device", default=product, type=int
     )
-    parser.add_option(
+    parser.add_argument(
         "-i", "--interface", help="ftdi interface to use", type=int, default=interface
     )
-    parser.add_option(
+    parser.add_argument(
         "-s",
         "--serialname",
         default=None,
