@@ -5,7 +5,6 @@
 """Python version of Servo hardware debug & control board server."""
 
 # pkg_resources is erroneously suggested to be in the 3rd party segment
-from __future__ import print_function
 
 import errno
 import itertools

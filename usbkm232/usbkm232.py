@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Class to control and interact with USBKM232 USB keyboard emulator."""
-from __future__ import print_function
 
 import sys
 import time

@@ -10,7 +10,6 @@ consisting of barcode scan, flash, provision, test.
 It will produce logfiles in a logfile/ directory for
 each servo and for the full run.
 """
-from __future__ import print_function
 
 import argparse
 import re

@@ -33,7 +33,6 @@ For example:
 
 TODO(tbroch) Work with vendor to resolve discrepancies in measurements
 """
-from __future__ import print_function
 
 import logging
 import sys

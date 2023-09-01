@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Servo interface for the EC-3PO console interpreter."""
 
-from __future__ import print_function
 
 import collections
 import ctypes

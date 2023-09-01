@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Base class to provide access to Texas Instruments INA-based ADCs."""
 
-from __future__ import print_function
 
 from servo.drv import hw_driver
 

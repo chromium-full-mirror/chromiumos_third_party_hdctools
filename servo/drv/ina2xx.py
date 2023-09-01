@@ -8,7 +8,6 @@ Presently tested for:
   INA231
   INA3221
 """
-from __future__ import print_function
 
 import logging
 

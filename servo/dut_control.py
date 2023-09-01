@@ -6,7 +6,6 @@
 
 # pylint: disable=g-bad-import-order
 # pkg_resources is erroneously suggested to be in the 3rd party segment
-from __future__ import print_function
 
 import collections
 import logging

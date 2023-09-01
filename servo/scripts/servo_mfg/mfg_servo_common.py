@@ -7,7 +7,6 @@
 This script holds functionality shared between
 various servo manufacturiong scripts.
 """
-from __future__ import print_function
 
 from distutils import sysconfig
 import errno

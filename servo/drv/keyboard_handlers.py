@@ -4,7 +4,6 @@
 #
 # Expects to be run in an environment with sudo and no interactive password
 # prompt, such as within the ChromiumOS development chroot.
-from __future__ import print_function
 
 import logging
 import os

@@ -4,7 +4,6 @@
 
 """Calculates statistics for lists of data and pretty print them."""
 
-from __future__ import print_function
 
 import copy
 import logging

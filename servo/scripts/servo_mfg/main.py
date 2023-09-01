@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 """Main module to coordinate servo mfg."""
 
-from __future__ import print_function
 
 import argparse
 import collections
