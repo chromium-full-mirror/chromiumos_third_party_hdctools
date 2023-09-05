@@ -7,6 +7,7 @@
 See usage ( -h ) for more details
 """
 
+from ast import literal_eval
 import logging
 import optparse
 import os
@@ -500,7 +501,7 @@ def main():
             test_fn = "test_%soptions)" % test
             logging.info("<------  START :: %s ------>", test_fn)
 
-            retval = eval(test_fn)
+            retval = literal_eval(test_fn)
             if not retval:
                 logging.error("%s FAILED", test_fn)
                 errors += 1
