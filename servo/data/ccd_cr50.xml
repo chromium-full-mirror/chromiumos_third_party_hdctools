@@ -106,6 +106,12 @@
     init="force_off" />
   </control>
   <control>
+    <name>fw_wp_atboot_state</name>
+    <doc>Used to turn fw wp off and on persistently</doc>
+    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    atboot="yes" />
+  </control>
+  <control>
     <name>ccd_cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over CCD</doc>
     <params interface="servo" drv="macro" map="onoff">
