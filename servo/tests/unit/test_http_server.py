@@ -28,7 +28,6 @@ class TestHttpRequestHandler(unittest.TestCase):
         self.http_handler.wfile = io.BufferedIOBase()
         self.http_handler.wfile.write = unittest.mock.MagicMock()
         self.http_handler.wfile.flush = unittest.mock.MagicMock()
-        self.http_handler.send_response.assert_called
 
     def test_do_POST(self):
         """Test do_POST."""

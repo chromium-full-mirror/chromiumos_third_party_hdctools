@@ -110,7 +110,6 @@ def start_servod(
             try:
                 cont.reload()
             except docker.errors.APIError:
-                cont.status == "failed"
                 sys.exit(0)
             else:
                 for line in log_lines:

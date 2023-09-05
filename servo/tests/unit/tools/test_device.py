@@ -92,7 +92,7 @@ class TestDevice(unittest.TestCase):
         d.usb_path(args)
 
         d._usb_path.assert_called_once_with("id")
-        d._logger.info.assert_not_called
+        d._logger.info.assert_not_called()
         d.error.assert_called_once_with("Device with serial %r not found.", "id")
 
     @unittest.mock.patch(

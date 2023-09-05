@@ -177,7 +177,6 @@ def mock_endpoint(mocker):
         mock_endpoint.bEndpointAddress = bEndpointAddress
         mock_endpoint.read.side_effect = partial(mock_read, mock_endpoint, description)
         mock_endpoint.write.side_effect = partial(mock_write, mock_endpoint)
-        mock_endpoint._ttyname
         mock_endpoint.parent = parent
         return mock_endpoint
 
