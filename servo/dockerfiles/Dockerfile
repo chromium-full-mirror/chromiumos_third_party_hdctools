@@ -45,9 +45,9 @@ ENV BUILDCC_PREFIX=
 ######################################################################
 FROM clang-builder as cbfstool
 
-RUN wget https://coreboot.org/releases/coreboot-4.14.tar.xz && tar xf coreboot-4.14.tar.xz && rm /coreboot-4.14.tar.xz
-RUN cd /coreboot-4.14/util/cbfstool && make
-RUN strip /coreboot-4.14/util/cbfstool/cbfstool
+RUN wget https://coreboot.org/releases/coreboot-4.21.tar.xz && tar xf coreboot-4.21.tar.xz && rm /coreboot-4.21.tar.xz
+RUN cd /coreboot-4.21/util/cbfstool && make
+RUN strip /coreboot-4.21/util/cbfstool/cbfstool
 
 ######################################################################
 FROM clang-builder as libusb-builder
@@ -66,13 +66,10 @@ RUN sed -i 's/Libs: -L\${libdir} -lusb-1.0/Libs: -L\${libdir} -lusb-1.0 -lpthrea
 #####################################################################
 FROM clang-builder as libftdi
 
-RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2 \
-    && tar xf libftdi1-1.2.tar.bz2 \
-    && rm libftdi1-1.2.tar.bz2
+RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.5.tar.bz2 \
+    && tar xf libftdi1-1.5.tar.bz2 \
+    && rm libftdi1-1.5.tar.bz2
 
-COPY --from=chromiumos_overlays \
-    /chromiumos-overlay/dev-embedded/libftdi/files/libftdi-1.2-getopts.patch \
-    /libftdi1-1.2/
 
 COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
@@ -81,6 +78,7 @@ COPY --from=chromiumos_overlays \
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
     cmake \
+    libconfuse-dev \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -89,14 +87,7 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
 COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 
-WORKDIR /libftdi1-1.2
-
-RUN git apply libftdi-1.2-getopts.patch
-
-# The examples have a linking issue, not used for anything, disable them.
-RUN sed -i s/.*examples.*//g CMakeLists.txt
-RUN sed -i s/.*examples.*//g libftdi1.spec.in
-
+WORKDIR /libftdi1-1.5
 
 RUN mkdir build \
     && cd build \
@@ -401,7 +392,7 @@ RUN ln -s /usr/bin/futility /usr/bin/dump_fmap; \
     ln -s /usr/bin/futility /usr/bin/vbutil_keyblock
 
 # Install cbfstool for flashrom and ec.
-COPY --link --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
+COPY --link --from=cbfstool /coreboot-4.21/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
 
 # Install shflags
