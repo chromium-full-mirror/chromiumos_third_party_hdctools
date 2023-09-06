@@ -9,6 +9,8 @@ import os
 import pexpect
 from pexpect import fdpexpect
 
+from servo.drv import ec
+
 
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms
 
@@ -197,7 +199,7 @@ class ptyDriver:
           regexp: A string which contains a list of regular expressions.
         """
         if not isinstance(regexp, str):
-            raise ecError("The argument regexp should be a string.")
+            raise ec.ecError("The argument regexp should be a string.")
         self._dict["uart_regexp"] = ast.literal_eval(regexp)
 
     def _Get_uart_regexp(self):

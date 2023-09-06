@@ -308,14 +308,14 @@ class V4Flasher(object):
             # Fetch barcode values
             if args.serial and not serialno:
                 while not serialno:
-                    serialno = raw_input("Scan serial number barcode: ")
+                    serialno = input("Scan serial number barcode: ")
                     if RE_SERIALNO.match(serialno):
                         print("Scanned sn %s" % serialno)
                     else:
                         serialno = None
             if args.mac and not macaddr:
                 while not macaddr:
-                    macaddr = raw_input("Scan mac addr barcode: ")
+                    macaddr = input("Scan mac addr barcode: ")
                     if RE_MACADDR.match(macaddr):
                         print("Scanned mac %s" % macaddr)
                     else:

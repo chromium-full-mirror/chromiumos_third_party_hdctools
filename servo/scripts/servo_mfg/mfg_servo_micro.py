@@ -46,7 +46,7 @@ def main():
         if not serialno:
             done = False
             while not done:
-                serialno = raw_input("Scan serial number barcode: ")
+                serialno = input("Scan serial number barcode: ")
                 if RE_SERIALNO.match(serialno):
                     print("Scanned sn %s" % serialno)
                     done = True

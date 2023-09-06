@@ -212,7 +212,7 @@ class usbkm232(object):
             count += 1
 
         if count == self.MAX_RSP_RETRIES:
-            raise Usbkm232Error("Failed to get correct response from usbkm232")
+            raise usbkm232Error("Failed to get correct response from usbkm232")
         print("usbkm232: response [-] = \\0%03o 0x%02x" % (ord(rsp), ord(rsp)))
 
     def _write(self, mylist, check=False, clear=True):
@@ -290,7 +290,7 @@ def main():
     kbd = usbkm232(sys.argv[1])
     try:
         while True:
-            user_input = raw_input("Enter string to type: ")
+            user_input = input("Enter string to type: ")
             kbd.writestr(user_input)
     except KeyboardInterrupt:
         kbd.close()
