@@ -52,7 +52,7 @@ class V4Tester(V4P1Tester):
 
         # Add USB hub testing for the two usb3 ports, and the uservo port.
         name = "image USB-A port (J2.0)"
-        test = usb_device_test.UsbDeviceTest(
+        usb_test = usb_device_test.UsbDeviceTest(
             name=name,
             prompt="%s %s" % (base_prompt, name),
             port_number=4,
@@ -62,9 +62,9 @@ class V4Tester(V4P1Tester):
             mux_ctrl="image_usbkey_mux",
             mux_val="servo_sees_usbkey",
         )
-        self._register_test(test)
+        self._register_test(usb_test)
         # No promp on the second one, as it's essentially the same test again.
-        test2 = usb_device_test.UsbDeviceTest(
+        usb_test2 = usb_device_test.UsbDeviceTest(
             name=name,
             port_number=2,
             hub_vid=V4Manufacturer.DH_VID,
@@ -74,9 +74,9 @@ class V4Tester(V4P1Tester):
             mux_ctrl="image_usbkey_mux",
             mux_val="dut_sees_usbkey",
         )
-        self._register_test(test2)
+        self._register_test(usb_test2)
         name = "uservo USB-A port (J4)"
-        test = usb_device_test.UsbDeviceTest(
+        usb_test3 = usb_device_test.UsbDeviceTest(
             name=name,
             prompt="%s %s" % (base_prompt, name),
             port_number=3,
@@ -84,4 +84,4 @@ class V4Tester(V4P1Tester):
             hub_pid=V4Manufacturer.HH_PID,
             pwr_ctrl="uservo_pwr_en",
         )
-        self._register_test(test)
+        self._register_test(usb_test3)

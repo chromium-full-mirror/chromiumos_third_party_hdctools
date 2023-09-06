@@ -150,7 +150,7 @@ class ServoDeviceFinder(object):
 
         # Then pull in all the devices connecting to the devices included in command
         # line invocation
-        dev_list = invocation_devs.copy()
+        devices = invocation_devs.copy()
         if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
             for dev_entry in invocation_devs:
                 # For a root hub device, include all cluster members.
@@ -160,24 +160,24 @@ class ServoDeviceFinder(object):
                     or self.discover_mode == ServoDeviceDiscoveryMode.FULL_AUTO
                 ):
                     for member in sorted(dev_entry.cluster_root.cluster_members):
-                        if member not in dev_list:
+                        if member not in devices:
                             self._logger.info(
                                 "Pulling in device %s as it is a member of the same cluster as %s.",
                                 member,
                                 dev_entry,
                             )
                             self._complete_devopts(member, dev_entry)
-                            dev_list.add(member)
-                elif dev_entry.cluster_root not in dev_list:
+                            devices.add(member)
+                elif dev_entry.cluster_root not in devices:
                     self._logger.info(
                         "Pulling in device %s as it is the parent hub of device %s.",
                         dev_entry.cluster_root,
                         dev_entry,
                     )
                     self._complete_devopts(dev_entry.cluster_root, dev_entry)
-                    dev_list.add(dev_entry.cluster_root)
+                    devices.add(dev_entry.cluster_root)
 
-        dev_list = list(dev_list)
+        dev_list = list(devices)
         self.validate_device_availability(dev_list)
         return dev_list
 
