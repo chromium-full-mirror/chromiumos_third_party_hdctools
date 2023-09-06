@@ -223,6 +223,13 @@ RUN make
 RUN strip  /uhubctl/uhubctl
 
 ######################################################################
+FROM alpine/git as shflags-builder
+
+RUN git clone https://github.com/kward/shflags.git
+WORKDIR /shflags
+RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
+
+######################################################################
 FROM debian:bookworm-slim as firmware-installer
 
 RUN apt-get update --no-install-recommends  \
@@ -363,8 +370,8 @@ COPY --link --from=ec-builder \
     /usr/lib/libftdi* \
     /usr/lib/
 
-RUN wget https://raw.githubusercontent.com/kward/shflags/master/shflags --output-document /usr/share/misc/shflags
 COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
+
 #TODO(b/287265152): Fetch token database from GCS
 #COPY --from=ec-builder /ec/tokens.bin /tmp/tokens.bin
 
@@ -394,6 +401,9 @@ RUN ln -s /usr/bin/futility /usr/bin/dump_fmap; \
 # Install cbfstool for flashrom and ec.
 COPY --link --from=cbfstool /coreboot-4.14/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
+
+# Install shflags
+COPY --link --from=shflags-builder shflags /usr/share/misc/shflags
 
 RUN mkdir -p /usr/share/ec-devutils
 
