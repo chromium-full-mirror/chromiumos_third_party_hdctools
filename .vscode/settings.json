@@ -1,0 +1,13 @@
+{
+    "gerrit.auth.url": "chromium-review.googlesource.com",
+    "cSpell.userWords": [
+        "hdctool",
+        "servod"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "editor.formatOnPaste": true,
+    "editor.formatOnSave": true,
+    "files.autoSave": "afterDelay"
+}

@@ -26,18 +26,6 @@ done
 cd hdctools
 pre-commit install
 
-# Install extensions
-mkdir -p /usr/local/vscode
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension ms-azuretools.vscode-docker
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension ms-python.black-formatter
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension ms-python.isort
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension ms-python.pylint
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension ms-python.python
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension ms-python.vscode-pylance
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension SanderRonde.vscode--gerrit
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension streetsidesoftware.code-spell-checker
-/usr/bin/code --extensions-dir=/usr/local/vscode --install-extension Tyriar.sort-lines
-
 # Let the user know to set up git credentials
 printf "\n\n\e[6;33mIn a browser go to\e[0m\e[33m https://www.googlesource.com/new-password\e[6;33m and paste\e[0m"
 printf "\e[6;33m the generated code into this shell.\n\n\e[0m"
