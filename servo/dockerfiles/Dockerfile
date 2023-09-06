@@ -226,6 +226,7 @@ RUN strip  /uhubctl/uhubctl
 ######################################################################
 FROM alpine/git as shflags-builder
 
+WORKDIR /
 RUN git clone https://github.com/kward/shflags.git
 WORKDIR /shflags
 RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
