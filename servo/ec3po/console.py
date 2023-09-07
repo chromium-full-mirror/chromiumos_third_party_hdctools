@@ -945,7 +945,7 @@ def IsPrintable(byte):
     Returns:
       A boolean indicating whether the byte is a printable character.
     """
-    return byte >= ord(" ") and byte <= ord("~")
+    return ord(" ") <= byte <= ord("~")
 
 
 def StartLoop(console, command_active, shutdown_pipe=None):

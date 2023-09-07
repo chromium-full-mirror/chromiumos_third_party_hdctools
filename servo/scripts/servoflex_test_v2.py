@@ -207,7 +207,7 @@ def test_spi(dev_id, options):
 
     Returns True if passes, Fail otherwise
     """
-    assert dev_id >= 0 and dev_id <= 2, "SPI dev_id should be 0 | 1 | 2"
+    assert 0 <= dev_id <= 2, "SPI dev_id should be 0 | 1 | 2"
     id_str = "%d" % dev_id
     errors = 0
     cmd = "sudo flashrom -V -p ft2232_spi:divisor=60,type=google-servo-v2"
@@ -252,7 +252,7 @@ def test_uart(dev_id, options):
     Returns True if passes, Fail otherwise
     """
     errors = 0
-    assert dev_id >= 1 and dev_id <= 3, "UART dev_id should be 1 | 2 | 3"
+    assert 1 <= dev_id <= 3, "UART dev_id should be 1 | 2 | 3"
 
     id_str = "%d" % dev_id
     ctrls = ["uart{id}_en:{val}"]

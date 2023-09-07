@@ -448,7 +448,6 @@ disable=
     bare-except,
     broad-exception-caught,
     broad-exception-raised,
-    chained-comparison,
     consider-using-dict-items,
     consider-using-enumerate,
     consider-using-f-string,
