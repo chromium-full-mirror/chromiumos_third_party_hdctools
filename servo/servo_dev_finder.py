@@ -404,10 +404,10 @@ class ServoDeviceFinder(object):
             )
 
         # auto generate prefix based on device type
-        for dev_type, devs in dev_type_map.items():
-            for dev in devs:
+        for dev_type, devices in dev_type_map.items():
+            for dev in devices:
                 # use the device type as the prefix if it is the only 1 device of the kind
-                if len(devs) == 1 and dev_type not in known_prefixes:
+                if len(devices) == 1 and dev_type not in known_prefixes:
                     prefix = dev_type
                 # otherwise, use device type and the last 4 digit of serial
                 else:

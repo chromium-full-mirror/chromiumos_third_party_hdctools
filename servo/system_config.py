@@ -884,7 +884,7 @@ class SystemConfig(object):
                         )
         return reformat_value
 
-    def display_config(self, tag=None, prefix=None):
+    def display_config(self, tag_param=None, prefix=None):
         """Display human-readable values of a map or control
 
         Args:
@@ -895,10 +895,10 @@ class SystemConfig(object):
           string to be displayed.
         """
         rsp = []
-        if tag is None:
+        if tag_param is None:
             tag_list = SYSCFG_TAG_LIST
         else:
-            tag_list = [tag]
+            tag_list = [tag_param]
         for tag in sorted(tag_list):
             prefix_str = ""
             if tag == CONTROL_TAG and prefix:

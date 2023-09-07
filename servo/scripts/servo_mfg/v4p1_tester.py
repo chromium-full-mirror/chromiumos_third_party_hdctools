@@ -17,12 +17,12 @@ class V4P1Tester(tester.Tester):
 
     PHASE = 1
 
-    def _gen_ina_tests(self, name, i2c_addr, sch_hint=None):
+    def _gen_ina_tests(self, name_param, i2c_addr, sch_hint=None):
         # Helper to format INA tests.
         regex = r"\d+\.\d+"
         # Note: careful when editing this. The controls line up with the
         # error messages below.
-        ctrls = ["%s_%s" % (name, v) for v in ["mv", "ma", "mw"]]
+        ctrls = ["%s_%s" % (name_param, v) for v in ["mv", "ma", "mw"]]
         testnames = ctrls
         if sch_hint:
             testnames = ["%s %s" % (ctrl, sch_hint) for ctrl in ctrls]
