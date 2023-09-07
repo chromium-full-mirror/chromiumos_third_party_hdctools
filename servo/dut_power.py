@@ -340,7 +340,7 @@ class DutPower(object):
             )
             if server_port == 0:
                 _, server_port = self.visualization_server.server_address
-        except:
+        except Exception:
             self.pm_logger.error(
                 "Failed to start http server. You may try to switch to"
                 "another port by Use --visualization-port"

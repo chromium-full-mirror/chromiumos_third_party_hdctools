@@ -444,7 +444,6 @@ disable=
     access-member-before-definition,
     arguments-differ,
     attribute-defined-outside-init,
-    bare-except,
     broad-exception-caught,
     consider-using-dict-items,
     consider-using-enumerate,

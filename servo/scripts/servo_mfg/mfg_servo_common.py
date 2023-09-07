@@ -108,7 +108,7 @@ def check_usb_sn(vidpid):
             "lsusb -d %s -v | grep iSerial" % vidpid, shell=True
         )
         sn = lsusbstr.split()[2]
-    except:
+    except Exception:
         pass
 
     return sn

@@ -47,7 +47,7 @@ def _OsPipeFiles():
     try:
         return os.fdopen(rd_fd, "r"), os.fdopen(wr_fd, "w")
     # If anything went wrong with fdopen(), do our best to clean up.
-    except:
+    except OSError:
         # Save original exception for re-raising, in case os.close() triggers an
         # exception.  Note that saving exc_traceback here creates a circular
         # reference.
@@ -55,11 +55,11 @@ def _OsPipeFiles():
         try:
             try:
                 os.close(rd_fd)
-            except:
+            except OSError:
                 pass
             try:
                 os.close(wr_fd)
-            except:
+            except OSError:
                 pass
             # Re-raise the original exception.
             raise exc_type(exc_value, exc_traceback)

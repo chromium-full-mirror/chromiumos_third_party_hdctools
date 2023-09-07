@@ -297,7 +297,7 @@ def test():
     for cnt in range(1000):
         try:
             rbuf = fobj.wr_rd(child, [], 1)
-        except:
+        except Exception:
             errcnt += 1
             logging.error("errs = %d cnt = %d", errcnt, cnt)
 
