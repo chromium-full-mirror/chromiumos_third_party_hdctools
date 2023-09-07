@@ -278,7 +278,7 @@ def test_uart(dev_id, options):
             (rfds, _, _) = select.select([fd], [], [], 1)
             reread_count += 1
 
-        rsp_str = "".join(filter(lambda x: x in string.printable, rsp_str))
+        rsp_str = [character for character in rsp_str if character in string.printable]
         if rsp_str != send_str:
             logging.error("Sent(%s) != Rcv(%s) for UART %s", send_str, rsp_str, id_str)
             errors += 1

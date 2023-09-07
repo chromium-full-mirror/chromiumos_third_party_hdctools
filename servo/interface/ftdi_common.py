@@ -13,14 +13,12 @@ MAX_FTDI_INTERFACES_PER_DEVICE = 4
 DEFAULT_VID = servo_dev_templates.GetVID("servo_v4")
 DEFAULT_PID = servo_dev_templates.GetPID("servo_v4")
 
-(
-    INTERFACE_TYPE_ANY,
-    INTERFACE_TYPE_GPIO,
-    INTERFACE_TYPE_I2C,
-    INTERFACE_TYPE_JTAG,
-    INTERFACE_TYPE_SPI,
-    INTERFACE_TYPE_UART,
-) = map(ctypes.c_int, range(6))
+INTERFACE_TYPE_ANY = ctypes.c_int(0)
+INTERFACE_TYPE_GPIO = ctypes.c_int(1)
+INTERFACE_TYPE_I2C = ctypes.c_int(2)
+INTERFACE_TYPE_JTAG = ctypes.c_int(3)
+INTERFACE_TYPE_SPI = ctypes.c_int(4)
+INTERFACE_TYPE_UART = ctypes.c_int(5)
 
 
 class FtdiContext(ctypes.Structure):
