@@ -442,7 +442,6 @@ confidence=HIGH,
 # --disable=W".
 disable=
     access-member-before-definition,
-    anomalous-backslash-in-string,
     arguments-differ,
     attribute-defined-outside-init,
     bare-except,

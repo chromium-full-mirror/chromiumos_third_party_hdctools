@@ -99,6 +99,7 @@ class ptyDriver:
         self._issue_cmd_get_results(cmds, [])
 
     def _issue_cmd_get_results(self, cmds, regex_list, timeout=DEFAULT_UART_TIMEOUT):
+        # pylint: disable=anomalous-backslash-in-string
         """Send command to the device and wait for response.
 
         This function waits for response message matching a regular
@@ -125,6 +126,7 @@ class ptyDriver:
         Raises:
           ptyError: If timed out waiting for a response
         """
+        # pylint: enable=anomalous-backslash-in-string
         result_list = []
         self._open()
         try:
