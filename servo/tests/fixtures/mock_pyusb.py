@@ -6,6 +6,8 @@
 # This file provides a mock version of each of the main entities that the
 # PyUSB interface provides.  Device, Configuration, Interface, Endpoint
 
+# pylint: disable=redefined-outer-name
+
 from functools import partial
 import logging
 import queue

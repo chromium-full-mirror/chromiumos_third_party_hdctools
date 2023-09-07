@@ -478,7 +478,6 @@ disable=
     protected-access,
     raise-missing-from,
     redefined-argument-from-local,
-    redefined-outer-name,
     simplifiable-if-expression,
     singleton-comparison,
     super-init-not-called,

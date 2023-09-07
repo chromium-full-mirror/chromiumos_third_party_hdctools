@@ -15,11 +15,10 @@ ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
 
 
 def setup():
-    client = docker.from_env()
-    return client
+    return docker.from_env()
 
 
-def get_image(channel):
+def get_image(client, channel):
     if channel != "local":
         image = ARTIFACT_URL_TEMPLATE % channel
         client.images.pull(image)
@@ -166,10 +165,10 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main():
     client = setup()
     args = parse_args()
-    image = get_image(args.channel)
+    image = get_image(client, args.channel)
     start_servod(
         client=client,
         container_name=args.container_name,
@@ -183,3 +182,7 @@ if __name__ == "__main__":
         sleep=args.sleep,
         test=args.run_tests,
     )
+
+
+if __name__ == "__main__":
+    main()

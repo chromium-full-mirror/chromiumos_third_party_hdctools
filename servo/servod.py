@@ -410,7 +410,7 @@ class ServodStarter(object):
             devopts=devopts_list,
             devopts_generator=self.devopts_generator,
             dev_hierarchy=dev_hierarchy,
-            scratch=self._scratchutil,
+            servo_scratch=self._scratchutil,
             discover_mode=discover_mode,
         )
         try:

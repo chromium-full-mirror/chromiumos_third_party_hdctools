@@ -209,7 +209,7 @@ class EC3PO(uart.Uart):
         os.close(user_pty)
 
         # Create a console.
-        c = console.Console(
+        new_console = console.Console(
             main_pty,
             user_pty_name,
             interface_pty,
@@ -217,8 +217,8 @@ class EC3PO(uart.Uart):
             dbg_pipe_interactive,
             self._source,
         )
-        self._console = c
-        c._logger = logging.getLogger("Console")
+        self._console = new_console
+        new_console._logger = logging.getLogger("Console")
         # Spawn a console process.
         v = threadproc_shim.Value(ctypes.c_bool, False)
         self._command_active = v
@@ -229,7 +229,10 @@ class EC3PO(uart.Uart):
                 threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_wr.close),
                 threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_wr.close),
                 functools.partial(
-                    console.StartLoop, c, v, shutdown_pipe=self._c_shutdown_pipe_rd
+                    console.StartLoop,
+                    new_console,
+                    v,
+                    shutdown_pipe=self._c_shutdown_pipe_rd,
                 ),
             ),
         )

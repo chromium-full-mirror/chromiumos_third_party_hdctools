@@ -76,7 +76,7 @@ class ServoDeviceFinder(object):
         devopts,
         devopts_generator,
         dev_hierarchy,
-        scratch,
+        servo_scratch,
         discover_mode,
         choose_device=None,
     ):
@@ -97,7 +97,7 @@ class ServoDeviceFinder(object):
         self._devopts = devopts
         self._devopts_generator = devopts_generator
         self._dev_hierarchy = dev_hierarchy
-        self._scratch = scratch
+        self._scratch = servo_scratch
         self.discover_mode = discover_mode
         self.choose_device = (
             choose_device if choose_device is not None else self._choose_device
