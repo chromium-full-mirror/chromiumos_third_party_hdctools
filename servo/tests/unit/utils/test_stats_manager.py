@@ -156,7 +156,7 @@ class TestStatsManager(unittest.TestCase):
             set(os.listdir(os.path.join(self.tempdir, dirname))), files_returned
         )
         for fname in fnames:
-            with open(fname, "r") as f:
+            with open(fname, "r", encoding="utf-8") as f:
                 if "A_mW" in fname:
                     self.assertEqual("99999.50", f.readline().strip())
                     self.assertEqual("100000.50", f.readline().strip())
@@ -246,7 +246,7 @@ class TestStatsManager(unittest.TestCase):
     def test_MakeUniqueFName(self):
         data = stats_manager.StatsManager()
         testfile = os.path.join(self.tempdir, "testfile.txt")
-        with open(testfile, "w") as f:
+        with open(testfile, "w", encoding="utf-8") as f:
             f.write("")
         expected_fname = os.path.join(self.tempdir, "testfile0.txt")
         self.assertEqual(expected_fname, data._MakeUniqueFName(testfile))
@@ -261,7 +261,7 @@ class TestStatsManager(unittest.TestCase):
         self.assertEqual(expected_fname, fname)
         # Assert only the reported fname is output (in the tempdir)
         self.assertEqual(set([os.path.basename(fname)]), set(os.listdir(self.tempdir)))
-        with open(fname, "r") as f:
+        with open(fname, "r", encoding="utf-8") as f:
             self.assertEqual(
                 "@@   NAME  COUNT       MEAN  STDDEV        MAX       MIN\n",
                 f.readline(),
@@ -293,7 +293,7 @@ class TestStatsManager(unittest.TestCase):
         self.assertEqual(expected_fname, fname)
         # Assert only the reported fname is output (in the tempdir)
         self.assertEqual(set([os.path.basename(fname)]), set(os.listdir(self.tempdir)))
-        with open(fname, "r") as f:
+        with open(fname, "r", encoding="utf-8") as f:
             summary = json.load(f)
             self.assertAlmostEqual(100000.0, summary["A"]["mean"])
             self.assertEqual("milliwatt", summary["A"]["unit"])
@@ -314,7 +314,7 @@ class TestStatsManager(unittest.TestCase):
         self.data.CalculateStats()
         fname = "unittest_summary.json"
         fname = self.data.SaveSummaryJSON(self.tempdir, fname)
-        with open(fname, "r") as f:
+        with open(fname, "r", encoding="utf-8") as f:
             summary = json.load(f)
             self.assertEqual("blue", summary["A"]["unit"])
             # if no unit is specified, JSON should save 'N/A' as the unit.

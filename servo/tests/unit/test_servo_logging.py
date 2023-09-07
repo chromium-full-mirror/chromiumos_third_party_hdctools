@@ -131,7 +131,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         )
         self.test_logger.addHandler(handler)
         self.test_logger.info(test_str)
-        with open(handler.baseFilename, "r") as log:
+        with open(handler.baseFilename, "r", encoding="utf-8") as log:
             assert log.read().strip() == test_str
 
     def test_RotationOccursWhenFileGrowsTooLarge(self):

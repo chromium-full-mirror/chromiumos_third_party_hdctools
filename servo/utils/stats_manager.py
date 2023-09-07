@@ -388,7 +388,7 @@ class StatsManager(object):
         if not os.path.exists(directory):
             os.makedirs(directory)
         fname = self._MakeUniqueFName(os.path.join(directory, fname))
-        with open(fname, "w") as f:
+        with open(fname, "w", encoding="utf-8") as f:
             f.write(output_str)
         return fname
 
@@ -416,7 +416,7 @@ class StatsManager(object):
             if not domain.endswith(self._unit[domain]):
                 domain = "%s_%s" % (domain, self._unit[domain])
             fname = self._MakeUniqueFName(os.path.join(dirname, "%s.txt" % domain))
-            with open(fname, "w") as f:
+            with open(fname, "w", encoding="utf-8") as f:
                 f.write("\n".join("%.2f" % sample for sample in data) + "\n")
             fnames.append(fname)
         return fnames

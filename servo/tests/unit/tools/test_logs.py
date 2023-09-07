@@ -145,7 +145,9 @@ class TestLogs(unittest.TestCase):
     def test_extract_mcu_logs(self):
         """Test _extract_mcu_logs()."""
         temp_dir = tempfile.mkdtemp()
-        with open(os.path.join(temp_dir, logs.OUTPUT_JOINT_DEBUG_LOG), "w+") as file:
+        with open(
+            os.path.join(temp_dir, logs.OUTPUT_JOINT_DEBUG_LOG), "w+", encoding="utf-8"
+        ) as file:
             file.write("testing\n")
             file.write(
                 "2020-01-23 13:15:12,223 - servo_v4 - EC3PO.Console - DEBUG - "
@@ -155,7 +157,9 @@ class TestLogs(unittest.TestCase):
 
         l = logs.Logs()
         l._extract_mcu_logs(temp_dir)
-        with open(os.path.join(temp_dir, "servo_v4.txt"), "r") as mcu_f:
+        with open(
+            os.path.join(temp_dir, "servo_v4.txt"), "r", encoding="utf-8"
+        ) as mcu_f:
             self.assertEqual(mcu_f.read(), "cc polarity: cc1\n")
         shutil.rmtree(temp_dir)
 

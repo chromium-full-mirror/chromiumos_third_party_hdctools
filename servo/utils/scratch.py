@@ -140,7 +140,7 @@ class Scratch(object):
     def _WriteEntry(self, entry):
         """Write entry to file."""
         entryf = self._EntryF(entry)
-        with open(entryf, "w") as f:
+        with open(entryf, "w", encoding="utf-8") as f:
             json.dump(entry, f)
 
     def GetAllEntries(self):
@@ -154,7 +154,7 @@ class Scratch(object):
             entryf = os.path.join(self._dir, f)
             if os.path.islink(entryf):
                 continue
-            with open(entryf, "r") as f:
+            with open(entryf, "r", encoding="utf-8") as f:
                 try:
                     entries.append(json.load(f))
                 except ValueError:
@@ -220,7 +220,7 @@ class Scratch(object):
         entryf = os.path.join(self._dir, str(identifier))
         if not os.path.exists(entryf):
             raise ScratchError(self._NO_FOUND_WARNING % identifier)
-        with open(entryf, "r") as f:
+        with open(entryf, "r", encoding="utf-8") as f:
             try:
                 entry = json.load(f)
             except ValueError:

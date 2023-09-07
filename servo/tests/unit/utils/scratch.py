@@ -62,7 +62,7 @@ class TestScratch(unittest.TestCase):
             # Ensure serial number entry is a link to the port entry
             assert os.path.realpath(serial_entry) == port_entry
         # Load entry
-        with open(port_entry, "r") as entryf:
+        with open(port_entry, "r", encoding="utf-8") as entryf:
             entry = json.load(entryf)
         # Compare entry loaded with entry saved
         assert entry == {
@@ -118,7 +118,7 @@ class TestScratch(unittest.TestCase):
         files_added = []
         entryfn = os.path.join(self._scratchdir, str(entry["port"]))
         # Manually add an entry and the symlinks
-        with open(entryfn, "w") as entryf:
+        with open(entryfn, "w", encoding="utf-8") as entryf:
             json.dump(entry, entryf)
             files_added.append(entryfn)
         for serial in entry["serials"]:
@@ -210,7 +210,7 @@ class TestScratch(unittest.TestCase):
         """Verify FindById raises ScratchError when id points to invalid JSON."""
         identifier = "nonsense"
         entryfn = os.path.join(self._scratchdir, identifier)
-        with open(entryfn, "w") as entryf:
+        with open(entryfn, "w", encoding="utf-8") as entryf:
             entryf.write("This is not JSON")
         assert os.path.exists(entryfn)
         with self.assertRaisesRegex(

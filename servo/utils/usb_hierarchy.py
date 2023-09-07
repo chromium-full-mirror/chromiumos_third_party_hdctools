@@ -84,7 +84,7 @@ class Hierarchy(object):
         if not os.path.exists(dev_path):
             raise HierarchyError("No device at %r but expected." % dev_path)
         try:
-            with open(dev_path, "w") as f:
+            with open(dev_path, "w", encoding="utf-8") as f:
                 fcntl.ioctl(f, Hierarchy.USBDEVFS_RESET, 0)
         except Exception as e:
             # We want to repackage any issue here as HierarchyError to allow for
@@ -255,7 +255,7 @@ class Hierarchy(object):
                 "Requested sysfs attribute at %r cannot be read "
                 "because the file cannot be found." % dev_file_full
             )
-        with open(dev_file_full, "r") as devf:
+        with open(dev_file_full, "r", encoding="utf-8") as devf:
             try:
                 content = devf.read().strip()
                 return cast(content)

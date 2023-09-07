@@ -773,7 +773,7 @@ def add_fake_usb_entry(
     ]:
         if attr:
             attr_path = os.path.join(dev_dir_path_full, attr_file)
-            with open(attr_path, "w") as f:
+            with open(attr_path, "w", encoding="utf-8") as f:
                 f.write(format(attr, fmt))
     return dev_dir_path_full
 

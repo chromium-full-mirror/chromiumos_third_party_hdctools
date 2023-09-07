@@ -464,7 +464,7 @@ class TestUsbHierarchy(unittest.TestCase):
         # ourselves here.
         devnum_f = os.path.join(devd, Hierarchy.DEV_FILE)
         content = "not-int-castable"
-        with open(devnum_f, "w") as f:
+        with open(devnum_f, "w", encoding="utf-8") as f:
             f.write(content)
         with self.assertRaisesRegex(
             HierarchyError,
@@ -490,7 +490,7 @@ class TestUsbHierarchy(unittest.TestCase):
         # the cast for us.
         vid = "fe"
         vid_f = os.path.join(devd, Hierarchy.VID_FILE)
-        with open(vid_f, "w") as f:
+        with open(vid_f, "w", encoding="utf-8") as f:
             f.write(vid)
         retrieved_vid = Hierarchy.VendorIDFromSysfs(devd)
         assert isinstance(retrieved_vid, int)
@@ -513,7 +513,7 @@ class TestUsbHierarchy(unittest.TestCase):
         # ourselves here.
         bad_vid = "ge"
         vid_f = os.path.join(devd, Hierarchy.VID_FILE)
-        with open(vid_f, "w") as f:
+        with open(vid_f, "w", encoding="utf-8") as f:
             f.write(bad_vid)
         with self.assertRaisesRegex(
             HierarchyError,
@@ -561,7 +561,7 @@ def AddFakeUsbEntry(
     ]:
         if attr:
             attr_path = os.path.join(dev_dir_path_full, attr_file)
-            with open(attr_path, "w") as f:
+            with open(attr_path, "w", encoding="utf-8") as f:
                 f.write(format(attr, fmt))
     return dev_dir_path_full
 

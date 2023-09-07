@@ -428,7 +428,7 @@ class ServodRCParser(_BaseServodParser):
         attributes = ["name", "sn", "port", "board", "model"]
         # These attributes have to be defined for a line to be valid.
         required_attributes = ["name", "sn"]
-        with open(rc_file) as f:
+        with open(rc_file, encoding="utf-8") as f:
             for rc_line in f:
                 line = rc_line.split("#")[0].strip()
                 if not line:

@@ -46,7 +46,7 @@ def open_logfile(filename):
         except OSError as exc:
             if exc.errno != errno.EEXIST:
                 raise
-    return open(filename, "a")
+    return open(filename, "a", encoding="utf-8")
 
 
 def finish_logfile():

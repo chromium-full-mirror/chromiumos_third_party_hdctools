@@ -188,9 +188,11 @@ class Logs(tool.Tool):
 
                 logs.sort(reverse=True, key=sortkey)
                 joint_log = os.path.join(output_subdir, OUTPUT_JOINT_LOG % log_level)
-                with open(joint_log, "a+") as joint_f:
+                with open(joint_log, "a+", encoding="utf-8") as joint_f:
                     for log in logs:
-                        with open(os.path.join(log_dir, log), "r") as log_f:
+                        with open(
+                            os.path.join(log_dir, log), "r", encoding="utf-8"
+                        ) as log_f:
                             for line in log_f:
                                 joint_f.write(line)
             res += [output_subdir]
@@ -216,7 +218,7 @@ class Logs(tool.Tool):
             return
         mcu_files = {}
         mcu_file_template = "%s.txt"
-        with open(mcu_lines_file, "r") as mcu_f:
+        with open(mcu_lines_file, "r", encoding="utf-8") as mcu_f:
             for line in mcu_f:
                 match = MCU_EXTRACTOR.match(line)
                 if match:
@@ -224,7 +226,7 @@ class Logs(tool.Tool):
                     line = match.group(LINE_GROUP)
                     if mcu not in mcu_files:
                         mcu_file = os.path.join(log_subdir, mcu_file_template % mcu)
-                        mcu_files[mcu] = open(mcu_file, "a")
+                        mcu_files[mcu] = open(mcu_file, "a", encoding="utf-8")
                     file = mcu_files[mcu]
                     file.write(line + "\n")
         for file in mcu_files:

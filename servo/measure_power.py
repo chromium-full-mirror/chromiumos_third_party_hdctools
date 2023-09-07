@@ -918,7 +918,7 @@ class PowerMeasurement(object):
         outfiles = [stat.SaveSummary(outdir) for stat in stats_managers]
         if message:
             for fname in outfiles:
-                with open(fname, "a") as f:
+                with open(fname, "a", encoding="utf-8") as f:
                     f.write("\n%s\n" % message)
         # Also, output a markdown version of each summary
         md_outfiles = [stat.SaveSummaryMD(outdir) for stat in stats_managers]

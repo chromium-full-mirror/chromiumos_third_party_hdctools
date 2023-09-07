@@ -131,7 +131,7 @@ class RTKEthProgrammer(programmer.Programmer):
         dst = os.path.join(dst, os.path.basename(src))
         macaddr_out = self._macaddr_for_cfg(macaddr)
         output = []
-        with open(src, "r") as s:
+        with open(src, "r", encoding="utf-8") as s:
             for line in s:
                 # Goal of this loop is to copy all lines that have
                 # nothing to do with macaddr, and modify the macaddr ones so that
@@ -154,7 +154,7 @@ class RTKEthProgrammer(programmer.Programmer):
                         # This is one of the lines that requires us to rewrite it to the
                         # macaddr. Do so here.
                         output.append("%s%s%s\n" % (k, self.KEY_VALUE_SEP, macaddr_out))
-        with open(dst, "w") as d:
+        with open(dst, "w", encoding="utf-8") as d:
             for line in output:
                 d.write(line)
 
@@ -242,7 +242,7 @@ class RTKEthProgrammer(programmer.Programmer):
                 )
             address_paths = glob.glob(wildcard)
         candidate = address_paths[0]
-        with open(candidate, "r") as f:
+        with open(candidate, "r", encoding="utf-8") as f:
             addr = self._standardize_macaddr(f.read().strip())
             self.debug("Retrieved %r from %r", addr, candidate)
             return addr

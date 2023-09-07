@@ -14,7 +14,7 @@ import time
 
 def PIDNamespaceUsed():
     """Checks to see if we are running with PID namespaces."""
-    with open("/proc/1/cmdline") as f:
+    with open("/proc/1/cmdline", encoding="utf-8") as f:
         if "cros_sdk" in f.readline():
             return True
     return False
@@ -51,7 +51,7 @@ class TerminalFreezer(object):
         # Don't kill servod, we need that.
         servod_processes = []
         for p in self._processes:
-            with open("/proc/%s/cmdline" % p) as f:
+            with open("/proc/%s/cmdline" % p, encoding="utf-8") as f:
                 if "servod" in f.readline():
                     servod_processes.append(p)
 

@@ -30,7 +30,7 @@ class TestRCFile(unittest.TestCase):
         if not tempdir:
             tempdir = tempfile.mkdtemp()
         rc_file = os.path.join(tempdir, "rc")
-        with open(rc_file, "w") as f:
+        with open(rc_file, "w", encoding="utf-8") as f:
             # 0 as PORT is no longer supported, but the slot is still there for
             # legacy reasons.
             entry_pieces = [name, serial, "0"]
@@ -78,7 +78,7 @@ class TestRCFile(unittest.TestCase):
 
     def test_RCFileMisconfigured(self):
         """RC file is misconfigured (no commas): return empy runtime config dict."""
-        with open(self._rc_file, "w") as f:
+        with open(self._rc_file, "w", encoding="utf-8") as f:
             # Extra space is just for padding
             f.write(
                 "%s %s %s %s      \n" % (self._name, self._serialname, "0", self._board)

@@ -425,10 +425,10 @@ class Report(object):
             line = "%s\n" % line
         # Write to device specific report only if enabled.
         if self._path is not None and not skip_dev_report:
-            with open(self._path, "a") as f:
+            with open(self._path, "a", encoding="utf-8") as f:
                 f.write(line)
         # Write to global report
-        with open(self._rpath, "a") as f:
+        with open(self._rpath, "a", encoding="utf-8") as f:
             f.write(line)
         self._lines.append(line)
 

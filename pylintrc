@@ -499,7 +499,6 @@ disable=
     unknown-option-value,
     unnecessary-lambda,
     unnecessary-lambda-assignment,
-    unspecified-encoding,
     unused-argument,
     unused-variable,
     use-a-generator,
