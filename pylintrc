@@ -506,7 +506,6 @@ disable=
     use-dict-literal,
     useless-object-inheritance,
     useless-parent-delegation,
-    useless-return,
     using-constant-test,
 
 

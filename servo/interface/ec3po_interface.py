@@ -314,7 +314,6 @@ class EC3PO(uart.Uart):
             self._cmd_pipe_int.send(b"reconnect")
         else:
             self._cmd_pipe_int.send(b"disconnect")
-        return
 
     def get_interp_connect(self):
         """Get the state of the interpreter connection to the UART."""
