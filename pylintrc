@@ -504,7 +504,6 @@ disable=
     use-a-generator,
     use-dict-literal,
     useless-object-inheritance,
-    useless-parent-delegation,
     using-constant-test,
 
 

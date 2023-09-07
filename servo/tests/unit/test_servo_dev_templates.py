@@ -11,14 +11,6 @@ from servo.tests.data.device_info import SERVO_DEVICE_DATA
 
 
 class TestServoDevTemplates(unittest.TestCase):
-    def setUp(self):
-        """Set up a ServoDevTemplate object to use. Cache module values."""
-        super(TestServoDevTemplates, self).setUp()
-
-    def tearDown(self):
-        """Restore module values."""
-        super(TestServoDevTemplates, self).tearDown()
-
     def test_GetID(self):
         """Tests retrieval of IDs for a variety of devices."""
         for dev in SERVO_DEVICE_DATA:
