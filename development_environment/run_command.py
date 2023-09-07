@@ -47,5 +47,5 @@ class RunCommandBase(object):
                 % name_search
             )
 
-    def execute_command(self, passthrough, unknown_args):
+    def execute_command(self, container, passthrough):
         raise NotImplementedError

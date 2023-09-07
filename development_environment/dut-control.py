@@ -7,8 +7,8 @@ import run_command
 
 
 class DutControlCommand(run_command.RunCommandBase):
-    def execute_command(self, container, unknown_args):
-        return container.exec_run("dut-control " + (" ".join(unknown_args)))
+    def execute_command(self, container, passthrough):
+        return container.exec_run("dut-control " + (" ".join(passthrough)))
 
 
 if __name__ == "__main__":

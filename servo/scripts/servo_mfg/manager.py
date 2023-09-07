@@ -55,7 +55,7 @@ class Manager(object):
             help="validate the environment and exit.",
         )
 
-    def check_args(self, namespace):
+    def check_args(self, args):
         """Check the parsed arguments, perform modifications, or raise error."""
         # The default implementation just gives a thumbs up.
 
