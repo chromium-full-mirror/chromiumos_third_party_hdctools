@@ -49,7 +49,7 @@ def do_cmd(cmd, timeout, plist=None, flist=None):
     """
     retval = None
     logging.debug("cmd = %s", cmd)
-    if type(cmd) is str:
+    if isinstance(cmd, str):
         cmd = cmd.split()
     cmd_obj = subprocess.Popen(cmd, 0, None, None, subprocess.PIPE, subprocess.PIPE)
     assert cmd_obj.stderr and cmd_obj.stdout, "Failed to get stdout & stderr"

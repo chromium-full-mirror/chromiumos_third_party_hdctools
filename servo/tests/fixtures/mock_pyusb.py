@@ -74,7 +74,7 @@ def mock_endpoint(mocker):
                     else:
                         if not result:
                             result = ep.parent.mocked_data[command]
-                            if type(result) == list:
+                            if isinstance(result, list):
                                 if len(result) > 1:
                                     result = result.pop(0)
                                 else:
@@ -168,7 +168,7 @@ def mock_endpoint(mocker):
             Returns:
                 int: the length of the data written.
             """
-            if type(data) == list:
+            if isinstance(data, list):
                 return _mock_write_list_ep(ep, data)
 
             return _mock_write_str_ep(ep, data)

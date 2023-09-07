@@ -302,7 +302,7 @@ class TPS65090Power(object):
                 "Unable to measure current.  Did you register the power?"
             )
 
-        if type(self._voltage[name]) is float:
+        if isinstance(self._voltage[name], float):
             voltage = self._voltage[name]
         else:
             voltage = self._voltage[name].read_adc()
