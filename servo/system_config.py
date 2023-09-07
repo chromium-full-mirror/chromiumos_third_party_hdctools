@@ -972,6 +972,10 @@ class SystemConfig(object):
         return board_config, board_id
 
 
+class ServoConfigTestError(Exception):
+    """Raised in the case of a test failure."""
+
+
 def test():
     """Integration test.
 
@@ -996,7 +1000,7 @@ def test():
         map_name = control_params["map"]
         map_dict = scfg._lookup("map", map_name)
         if not map_dict:
-            raise Exception("Unable to find map %s", map_name)
+            raise ServoConfigTestError("Unable to find map %s", map_name)
 
         logging.info("")
         for keyname, val in map_dict["map_params"].items():

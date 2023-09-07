@@ -446,7 +446,6 @@ disable=
     attribute-defined-outside-init,
     bare-except,
     broad-exception-caught,
-    broad-exception-raised,
     consider-using-dict-items,
     consider-using-enumerate,
     consider-using-f-string,

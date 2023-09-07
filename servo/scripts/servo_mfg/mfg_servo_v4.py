@@ -19,6 +19,10 @@ import time
 from servo.scripts.servo_mfg import mfg_servo_common as c
 
 
+class ServoMfgV4Error(Exception):
+    """Generic error for issues in this module."""
+
+
 LOGNAME = "/var/log/mfg_servo_v4"
 TESTERLOGNAME = "/var/log/mfg_servo_v4_run"
 
@@ -77,7 +81,7 @@ class V4Flasher(object):
             time.sleep(1)
             subprocess.check_call(["/bin/bash", "-c", authorize_cmd])
         except subprocess.CalledProcessError as e:
-            raise Exception("Failed to reenumerate v4. %s" % str(e))
+            raise ServoMfgV4Error("Failed to reenumerate v4. %s" % str(e))
 
     def do_macaddr(self, macaddr, check_only=False):
         """Provision macaddr to Realtek r8152 chip.
@@ -110,7 +114,7 @@ class V4Flasher(object):
                 ["/bin/bash", "-c", orig_mac_cmd]
             ).strip()
         except subprocess.CalledProcessError as e:
-            raise Exception("Failed to query original mac address. %s" % str(e))
+            raise ServoMfgV4Error("Failed to query original mac address. %s" % str(e))
 
         if original_macaddr.upper() == macaddr.upper():
             # Mac is already at the right value. Skip.
@@ -123,7 +127,7 @@ class V4Flasher(object):
 
             if subprocess.call(cmd, shell=True):
                 c.log("Failed to set mac %s" % macaddr)
-                raise Exception("Enet", "Failed to set mac %s" % macaddr)
+                raise ServoMfgV4Error("Enet", "Failed to set mac %s" % macaddr)
 
             c.log("Set macaddr to %r" % macaddr)
 
@@ -132,7 +136,7 @@ class V4Flasher(object):
             ["/bin/bash", "-c", orig_mac_cmd]
         ).strip()
         if programmed_macaddr.upper() != macaddr.upper():
-            raise Exception(
+            raise ServoMfgV4Error(
                 "Failed to set mac address to %r. Reporting as %r."
                 % (macaddr, programmed_macaddr)
             )
@@ -242,7 +246,7 @@ class V4Flasher(object):
         if enable_state is not enable:
             err = "Toggling atmega failed: rd: 0x%02x but wr: 0x%02x" % (rdreg, wr_val)
             c.log(err)
-            raise Exception("Atmega", err)
+            raise ServoMfgV4Error("Atmega", err)
 
     def run(self):
         parser = argparse.ArgumentParser(description=self.PARSER_DESCRIPTION)

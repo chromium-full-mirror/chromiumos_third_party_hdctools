@@ -17,6 +17,10 @@ MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes
 # when capturing.
 
 
+class UartDefaultException(Exception):
+    """Default exception type if no alternative is supplied."""
+
+
 class Uart(interface.Interface):
     """Base Class for UART interface implementations.
 
@@ -153,7 +157,7 @@ class Uart(interface.Interface):
         """
         raise NotImplementedError("get_uart_props not yet implemented.")
 
-    def _uart_props_validation(self, line_props, exception_type=Exception):
+    def _uart_props_validation(self, line_props, exception_type=UartDefaultException):
         """Validate the line_props.
 
         If they are invalid raise an exception of type exception_type.

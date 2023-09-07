@@ -9,6 +9,10 @@ import time
 import servo.servo_dev_templates as tmpl
 
 
+class TestFixtureError(Exception):
+    """Raised when there is an issue with test fixture code."""
+
+
 device_types = ["servo_v4p1", "ccd_cr50", "servo_micro", "c2d2"]
 device_details = {}
 for _device_type in device_types:
@@ -120,13 +124,13 @@ def get_board_model_pairs(board_exclude_list=[]):
         elif len(parts) == 4:
             board_model_list.append((parts[1], parts[2]))
         else:
-            raise Exception(
+            raise TestFixtureError(
                 "Data file %s not in correct format - untested"
                 % os.path.basename(filename)
             )
 
     if not board_model_list:
-        raise Exception("Failed to find ANY boards, likely there is a test bug.")
+        raise TestFixtureError("Failed to find ANY boards, likely there is a test bug.")
 
     return board_model_list
 

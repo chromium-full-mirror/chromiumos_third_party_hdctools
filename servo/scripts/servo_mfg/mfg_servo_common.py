@@ -24,6 +24,10 @@ logfile = None
 testerlogfile = None
 
 
+class ServoMfgCommonError(Exception):
+    """Generic error for errors identified in this module."""
+
+
 def full_servo_bin_path(board):
     """Get full servo binary path by servo board name."""
     _, bin_path, _ = servo_updater.get_files_and_version(board, None)
@@ -132,7 +136,7 @@ def do_dfu(bin_name):
     dfu_sh = os.path.join(mfg_dir, "flash_stm32.sh")
     if subprocess.call("%s %s" % (dfu_sh, bin_name), shell=True):
         log("Flash, Failed to flash stm32: %s" % bin_name)
-        raise Exception("Flash", "Failed to flash %s" % bin_name)
+        raise ServoMfgCommonError("Flash", "Failed to flash %s" % bin_name)
 
 
 def do_atmega(bin_name):
@@ -142,10 +146,10 @@ def do_atmega(bin_name):
     """
     if subprocess.call("dfu-programmer atmega32u4 erase --force", shell=True):
         log("Flash, Failed to erase atmega")
-        raise Exception("Flash", "Failed to erase atmega")
+        raise ServoMfgCommonError("Flash", "Failed to erase atmega")
     if subprocess.call("dfu-programmer atmega32u4 flash %s" % bin_name, shell=True):
         log("Flash, Failed to flash atmega: %s" % bin_name)
-        raise Exception("Flash", "Failed to flash atmega: %s" % bin_name)
+        raise ServoMfgCommonError("Flash", "Failed to flash atmega: %s" % bin_name)
 
 
 def do_serialno(serialno, pty, check_only=False):
@@ -169,7 +173,7 @@ def do_serialno(serialno, pty, check_only=False):
         log("Success !")
     else:
         log("Serial number set to %s but saved as %s." % (serialno, sn))
-        raise Exception(
+        raise ServoMfgCommonError(
             "Serial Number", "Serial number set to %s but saved as %s." % (serialno, sn)
         )
     log("Serial set to %s" % sn)
