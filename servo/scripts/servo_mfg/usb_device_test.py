@@ -161,7 +161,7 @@ class UsbDeviceTest(test.Test):
         if not paths_found:
             self._logger.debug("Device not on any known location.")
             return False
-        elif paths_found and len(paths_found) > 1:
+        if paths_found and len(paths_found) > 1:
             self._logger.error("A device showed up on the hubs USB3 and USB2 port.")
             self._logger.error(
                 "Device should only show up on one mode, but found: %r",

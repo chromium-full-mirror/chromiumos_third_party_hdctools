@@ -391,10 +391,8 @@ class Console(object):
             if byte == ord("["):
                 self.esc_state = EscState.ESC_BRACKET
                 return
-
-            else:
-                self.logger.error("Unexpected sequence. %c", byte)
-                self.esc_state = 0
+            self.logger.error("Unexpected sequence. %c", byte)
+            self.esc_state = 0
 
         elif self.esc_state is EscState.ESC_BRACKET:
             self.logger.debug("ESC_BRACKET")
@@ -406,14 +404,14 @@ class Console(object):
                 return
 
             # Right Arrow key.
-            elif byte == ord("C"):
+            if byte == ord("C"):
                 self.logger.debug("Right arrow key pressed.")
                 self.MoveCursor("right", 1)
                 self.esc_state = 0  # Reset the state.
                 return
 
             # Up Arrow key.
-            elif byte == ord("A"):
+            if byte == ord("A"):
                 self.logger.debug("Up arrow key pressed.")
                 self.ShowPreviousCommand()
                 # Reset the state.
@@ -421,7 +419,7 @@ class Console(object):
                 return
 
             # Down Arrow key.
-            elif byte == ord("B"):
+            if byte == ord("B"):
                 self.logger.debug("Down arrow key pressed.")
                 self.ShowNextCommand()
                 # Reset the state.
@@ -430,7 +428,7 @@ class Console(object):
 
             # For some reason, minicom sends a 1 instead of 7. /shrug
             # TODO(aaboagye): Figure out why this happens.
-            elif byte == ord("1") or byte == ord("7"):
+            if byte == ord("1") or byte == ord("7"):
                 self.esc_state = EscState.ESC_BRACKET_1
 
             elif byte == ord("3"):
@@ -476,10 +474,8 @@ class Console(object):
                 self.esc_state = 0  # Reset the state.
                 self.logger.debug("ESC sequence complete.")
                 return
-
-            else:
-                self.logger.error("Unexpected sequence. %c", byte)
-                self.esc_state = 0
+            self.logger.error("Unexpected sequence. %c", byte)
+            self.esc_state = 0
 
         else:
             self.logger.error("Unexpected sequence. %c", byte)

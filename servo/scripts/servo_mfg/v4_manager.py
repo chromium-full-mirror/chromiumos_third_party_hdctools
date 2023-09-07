@@ -109,16 +109,16 @@ class V4Manager(manager.Manager):
                 self._logger.info("Provided macaddr %r will be ignored.", args.macaddr)
                 args.macaddr = None
             return True
-        else:
-            if args.serialno and not user_input.serial_is_valid(
-                args.serialno, self.SERIALNO_RE
-            ):
-                self._logger.error("Provided serialno %r invalid.", args.serialno)
-                return self.abort(1)
-            if args.macaddr and not user_input.mac_is_valid(args.macaddr):
-                self._logger.error("Provided macaddr %r invalid.", args.macaddr)
-                return self.abort(1)
-            return True
+
+        if args.serialno and not user_input.serial_is_valid(
+            args.serialno, self.SERIALNO_RE
+        ):
+            self._logger.error("Provided serialno %r invalid.", args.serialno)
+            return self.abort(1)
+        if args.macaddr and not user_input.mac_is_valid(args.macaddr):
+            self._logger.error("Provided macaddr %r invalid.", args.macaddr)
+            return self.abort(1)
+        return True
 
     def wait_for_disconnect(self):
         # Simply wait for both hubs to be disconnected.

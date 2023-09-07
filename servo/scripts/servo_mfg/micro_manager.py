@@ -102,13 +102,13 @@ class MicroManager(manager.Manager):
                 )
                 args.serialno = None
             return True
-        else:
-            if args.serialno and not user_input.serial_is_valid(
-                args.serialno, self.SERIALNO_RE
-            ):
-                self._logger.error("Provided serialno %r invalid.", args.serialno)
-                return self.abort(1)
-            return True
+
+        if args.serialno and not user_input.serial_is_valid(
+            args.serialno, self.SERIALNO_RE
+        ):
+            self._logger.error("Provided serialno %r invalid.", args.serialno)
+            return self.abort(1)
+        return True
 
     def wait_for_disconnect(self):
         """Wait for the user to remove the servo micro."""

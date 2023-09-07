@@ -23,8 +23,7 @@ def get_image(client, channel):
         image = ARTIFACT_URL_TEMPLATE % channel
         client.images.pull(image)
         return image
-    else:
-        return DEFAULT_IMAGE
+    return DEFAULT_IMAGE
 
 
 def start_servod(

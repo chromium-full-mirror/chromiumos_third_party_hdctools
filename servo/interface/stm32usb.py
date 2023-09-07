@@ -263,8 +263,7 @@ class Susb:
             )
         if write:
             return self.DEV_EP_STORE[devid][self._interface].write_ep
-        else:
-            return self.DEV_EP_STORE[devid][self._interface].read_ep
+        return self.DEV_EP_STORE[devid][self._interface].read_ep
 
     def read_ep(self, *args, **kwargs):
         """Thread safe wrapper around reading the |read_ep|"""

@@ -471,7 +471,6 @@ disable=
     missing-function-docstring,
     missing-module-docstring,
     no-else-raise,
-    no-else-return,
     no-member,
     overlapping-except,
     pointless-string-statement,

@@ -183,8 +183,8 @@ class Interpreter(object):
             packed_cmd.append(raw_cmd)
             packed_cmd.append(b"\n\n")
             return b"".join(packed_cmd)
-        else:
-            return raw_cmd
+
+        return raw_cmd
 
     def ProcessCommand(self, command):
         """Captures the input determines what actions to take.
@@ -218,7 +218,7 @@ class Interpreter(object):
                 self.logger.debug("Disconnected from %s.", self.ec_uart_pty_name)
             return
 
-        elif command == b"reconnect":
+        if command == b"reconnect":
             if not self.connected:
                 self.logger.debug("UART reconnect request.")
                 # Reopen the PTY.
@@ -236,7 +236,7 @@ class Interpreter(object):
                 self.logger.debug("Connected to %s.", self.ec_uart_pty_name)
             return
 
-        elif command.startswith(b"enhanced"):
+        if command.startswith(b"enhanced"):
             self.enhanced_ec = command.split(b" ")[1] == b"True"
             return
 

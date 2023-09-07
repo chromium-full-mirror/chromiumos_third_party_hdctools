@@ -273,15 +273,14 @@ class Servod(object):
         if len(candidates) == 0:
             self._logger.info("'%s' not found!", control_name)
             return "unknown"
-        elif len(candidates) == 1:
+        if len(candidates) == 1:
             return candidates.pop()._serial
-        else:
-            self._logger.info(
-                "'%s' is ambiguous as there are multiple matching devices %s",
-                control_name,
-                candidates,
-            )
-            return "unknown"
+        self._logger.info(
+            "'%s' is ambiguous as there are multiple matching devices %s",
+            control_name,
+            candidates,
+        )
+        return "unknown"
 
     def set(self, name, wr_val_str):
         """Set control on servo device.

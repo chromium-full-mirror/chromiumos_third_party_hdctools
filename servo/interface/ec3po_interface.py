@@ -264,14 +264,14 @@ class EC3PO(uart.Uart):
         if servo_device.syscfg.is_control(raw_uart_name):
             raw_ec_uart = servo_device.get(raw_uart_name)
             return EC3PO(raw_ec_uart, raw_uart_source, device_info)
-        else:
-            # The overlay doesn't have the raw PTY defined, therefore we can skip
-            # initializing this interface since no control relies on it.
-            c.build_logger.debug(
-                "Skip initializing EC3PO for %s, no control specified.",
-                raw_uart_name,
-            )
-            return empty.Empty.Build()
+
+        # The overlay doesn't have the raw PTY defined, therefore we can skip
+        # initializing this interface since no control relies on it.
+        c.build_logger.debug(
+            "Skip initializing EC3PO for %s, no control specified.",
+            raw_uart_name,
+        )
+        return empty.Empty.Build()
 
     @staticmethod
     def name():

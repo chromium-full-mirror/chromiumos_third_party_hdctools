@@ -187,7 +187,7 @@ def wait_for_path_removal(path, timeout=USB_TIMEOUT_S):
     while True:
         if not os.path.exists(path):
             return True
-        elif time.time() > end:
+        if time.time() > end:
             break
         # If no exit condition has been met just sleep.
         time.sleep(GENERAL_POLL_RATE)
@@ -211,7 +211,7 @@ def wait_for_path(path, timeout=USB_TIMEOUT_S):
     while True:
         if os.path.exists(path):
             return True
-        elif time.time() > end:
+        if time.time() > end:
             break
         # If no exit condition has been met just sleep.
         time.sleep(GENERAL_POLL_RATE)
