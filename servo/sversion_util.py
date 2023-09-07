@@ -7,7 +7,6 @@
 UNKNOWN_VALUE = "unknown"
 
 try:
-    # pylint: disable=g-import-not-at-top
     # The sversion file might not exist if something goes wrong in the Makefile
     # This just ensures that the system does not break if for some reason
     # version information is missing.

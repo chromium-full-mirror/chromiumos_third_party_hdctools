@@ -4,13 +4,8 @@
 # found in the LICENSE file.
 """Client to control DUT hardware connected to servo debug board."""
 
-# pylint: disable=g-bad-import-order
-# pkg_resources is erroneously suggested to be in the 3rd party segment
-
 import collections
 import logging
-
-# pylint: disable=g-importing-member
 from socket import error as SocketError
 import sys
 import time

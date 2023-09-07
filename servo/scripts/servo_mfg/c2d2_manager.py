@@ -12,7 +12,6 @@ from servo_mfg.c2d2_manufacturer import C2D2Manufacturer
 from servo_mfg.c2d2_tester import C2D2Tester
 
 
-# pylint: disable=g-bad-exception-name
 class C2D2ManagerError(Exception):
     """Manager error class for c2d2."""
 

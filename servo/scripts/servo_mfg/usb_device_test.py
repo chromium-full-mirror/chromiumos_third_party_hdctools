@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 """Test to check usb device/port enumeration and power cycling."""
 
-# pylint: disable=g-bad-import-order
-# test here is local and not a global python package
 import os
 import time
 

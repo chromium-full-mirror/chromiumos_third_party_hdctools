@@ -374,8 +374,6 @@ class DutPower(object):
         sleep_waiting = threading.Event()
         sleep_sampling = threading.Event()
         setup_done = pm.MeasurePower(wait=args.wait, powerstate=args.powerstate)
-        # pylint: disable=g-long-lambda
-        # pylint: disable=g-backslash-continuation
         handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
             sw.set(),
             ss.set(),

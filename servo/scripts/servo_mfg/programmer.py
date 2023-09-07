@@ -9,7 +9,6 @@ import traceback
 from servo_mfg import device_util
 
 
-# pylint: disable=g-bad-exception-name
 class ProgrammerError(Exception):
     """Programmer error class."""
 

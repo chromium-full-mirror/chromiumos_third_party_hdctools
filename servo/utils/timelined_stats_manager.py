@@ -78,7 +78,6 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         super(TimelinedStatsManager, self).CalculateStats()
 
     def AddSample(self, domain, sample):
-        # pylint: disable=C6113
         """NotImplemented.
 
         In order to preserve the balanced timeline adding invidual samples is

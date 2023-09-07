@@ -6,7 +6,6 @@
 import logging
 
 
-# pylint: disable=g-bad-exception-name
 class TestError(Exception):
     """Test error class."""
 

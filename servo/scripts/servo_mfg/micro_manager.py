@@ -12,7 +12,6 @@ from servo_mfg.micro_manufacturer import MicroManufacturer
 from servo_mfg.micro_tester import MicroTester
 
 
-# pylint: disable=g-bad-exception-name
 class MicroManagerError(Exception):
     """Manager error class for micro."""
 

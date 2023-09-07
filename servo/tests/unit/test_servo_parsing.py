@@ -71,7 +71,6 @@ class TestRCFile(unittest.TestCase):
     def test_NoRCFile(self):
         """Passed in RC file does not exist: return empty runtime config dict."""
         rcd = servo_parsing.ServodRCParser.ParseRC("/tmp/this-is-a-fake-file")
-        # pylint: disable=g-explicit-bool-comparison
         # Expected return value is {} so this seems appropiate regardless of python
         # internals
         assert {} == rcd
@@ -84,7 +83,6 @@ class TestRCFile(unittest.TestCase):
                 "%s %s %s %s      \n" % (self._name, self._serialname, "0", self._board)
             )
         rcd = servo_parsing.ServodRCParser.ParseRC(self._rc_file)
-        # pylint: disable=g-explicit-bool-comparison
         # Expected return value is {} so this seems appropiate regardless of python
         # internals
         assert {} == rcd

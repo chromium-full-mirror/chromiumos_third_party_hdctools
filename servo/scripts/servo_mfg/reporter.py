@@ -129,7 +129,6 @@ def setup_logging_and_reporting(debug=False):
     return outdir
 
 
-# pylint: disable=g-bad-exception-name
 class ReporterError(Exception):
     """Reporter error class."""
 
@@ -184,7 +183,6 @@ class Reporter(object):
         # generate statistics for the run, and write them out
         summary = self.new_report(dev_report=False, topic="summary")
         # Report statistic per section that each device went through.
-        # pylint: disable=g-complex-comprehension
         # comprehension is to extract all sections from all results.
         known_sections = set([k for r in self._results for k in r])
         for section in known_sections:

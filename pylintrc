@@ -495,7 +495,6 @@ disable=
     too-many-statements,
     undefined-loop-variable,
     unidiomatic-typecheck,
-    unknown-option-value,
     unnecessary-lambda,
     unnecessary-lambda-assignment,
     unused-argument,

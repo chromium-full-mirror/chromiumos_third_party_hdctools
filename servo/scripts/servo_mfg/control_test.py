@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 """A servod test issuing a control and checking the output."""
 
-# pylint: disable=g-bad-import-order
-# test here is local and not a global python package
 import re
 
 from servo_mfg import test

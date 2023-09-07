@@ -11,7 +11,6 @@ from servo_mfg.serial_programmer import SerialProgrammer
 from servo_mfg.servo_programmer import ServoProgrammer
 
 
-# pylint: disable=g-bad-exception-name
 class V4ManufacturerError(Exception):
     """V4Manufacturer error class."""
 

@@ -20,7 +20,6 @@ USB_TIMEOUT_S = 180
 GENERAL_POLL_RATE = 0.1
 
 
-# pylint: disable=g-bad-exception-name
 class DeviceUtilError(Exception):
     """Device util error class."""
 

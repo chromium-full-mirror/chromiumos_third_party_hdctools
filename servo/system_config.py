@@ -36,7 +36,6 @@ UNDEF_CONTROL_DICT = {"drv": "undefined", "interface": "servo", "input_type": "s
 IDENTIFIER_RE = re.compile(r"[a-z][a-z0-9_]+")
 
 
-# pylint: disable=g-bad-exception-name
 # TODO(coconutruben): figure out if it's worth it to rename this so that it
 # removes the 'stutter'
 class SystemConfigError(Exception):
@@ -981,7 +980,6 @@ def test():
 
     TODO(tbroch) Enhance integration test and add unittest (see mox)
     """
-    # pylint: disable=protected-access,raising-format-tuple,g-doc-exception
     # Test method that's likely to be removed as more unit-tests roll out.
     logging.basicConfig(
         level=logging.DEBUG,
@@ -1000,7 +998,7 @@ def test():
         map_name = control_params["map"]
         map_dict = scfg._lookup("map", map_name)
         if not map_dict:
-            raise ServoConfigTestError("Unable to find map %s", map_name)
+            raise ServoConfigTestError("Unable to find map %s" % map_name)
 
         logging.info("")
         for keyname, val in map_dict["map_params"].items():

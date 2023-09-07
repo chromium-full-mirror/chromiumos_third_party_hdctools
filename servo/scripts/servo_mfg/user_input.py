@@ -11,7 +11,6 @@ import signal
 from servo_mfg import color_mode as cm
 
 
-# pylint: disable=g-bad-exception-name
 class UserInputError(Exception):
     """Error class for util functions."""
 

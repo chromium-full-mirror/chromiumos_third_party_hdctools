@@ -13,7 +13,6 @@ import servo.client as client
 import servo.utils.scratch as scratch
 
 
-# pylint: disable=g-bad-exception-name
 class TesterError(Exception):
     """Tester error class."""
 

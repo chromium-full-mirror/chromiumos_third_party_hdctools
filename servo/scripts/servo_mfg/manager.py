@@ -12,7 +12,6 @@ from servo_mfg import reporter
 from servo_mfg import user_input
 
 
-# pylint: disable=g-bad-exception-name
 class ManagerError(Exception):
     """Manager error class."""
 

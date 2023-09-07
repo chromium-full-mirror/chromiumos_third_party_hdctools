@@ -7,7 +7,6 @@
 import os
 
 
-# pylint: disable=g-bad-exception-name
 class UtilError(Exception):
     """Error class for util functions."""
 

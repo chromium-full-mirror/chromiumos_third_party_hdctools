@@ -12,7 +12,6 @@ from servo_mfg.v4_manufacturer import V4Manufacturer
 from servo_mfg.v4_tester import V4Tester
 
 
-# pylint: disable=g-bad-exception-name
 class V4ManagerError(Exception):
     """Manager error class for v4."""
 

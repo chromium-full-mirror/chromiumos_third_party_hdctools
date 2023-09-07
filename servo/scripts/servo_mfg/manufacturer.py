@@ -8,7 +8,6 @@ import logging
 from servo_mfg import tiny_servod as _tiny_servod
 
 
-# pylint: disable=g-bad-exception-name
 class ManufacturerError(Exception):
     """Manufacturer error class."""
 
