@@ -257,12 +257,35 @@ class usbImageManager(hw_driver.HwDriver):
                         os.path.realpath(active_storage_candidate)
                     ):
                         devpath = "/dev/%s" % os.path.basename(candidate)
-                        with open(devpath, "rb") as f:
-                            # ensure that the block device is readable
-                            if len(f.read(512)) < 512:
+                        try:
+                            f = open(devpath, "rb")
+                        except FileNotFoundError:
+                            continue
+                        # ensure that the block device is readable
+                        # by reading the first sector.
+                        read_bytes = 512
+                        read_len = 0
+                        with f:
+                            try:
+                                read_len = len(f.read(read_bytes))
+                            except OSError as error:
+                                self._logger.warning(
+                                    "open() or read() of {!r} failed with errno {:d} {} ({}), skipping it as a USB mux drive candidate.".format(
+                                        devpath,
+                                        error.errno,
+                                        errno.errorcode.get(error.errno, "UNKNOWN"),
+                                        os.strerror(error.errno),
+                                    )
+                                )
                                 continue
-                        if os.path.exists(devpath):
-                            return devpath
+                        if read_len < read_bytes:
+                            self._logger.warning(
+                                "read() returned only {:d} bytes out of {:d} requested from {!r}, the drive is likely not functional, skipping it as a USB mux drive candidate.".format(
+                                    read_len, read_bytes, devpath
+                                )
+                            )
+                            continue
+                        return devpath
             # Enqueue the candidate again in hopes that it will eventually enumerate.
             image_location_candidates.append(active_storage_candidate)
             if time.time() >= end:
