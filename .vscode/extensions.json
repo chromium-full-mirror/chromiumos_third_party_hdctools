@@ -1,13 +1,18 @@
+// Copyright 2023 The ChromiumOS Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 {
     "recommendations": [
+
+        "SanderRonde.vscode--gerrit",
+        "Tyriar.sort-lines",
+        "eamodio.gitlens",
         "ms-azuretools.vscode-docker",
         "ms-python.black-formatter",
         "ms-python.isort",
         "ms-python.pylint",
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "SanderRonde.vscode--gerrit",
         "streetsidesoftware.code-spell-checker",
-        "Tyriar.sort-lines",
     ]
 }
