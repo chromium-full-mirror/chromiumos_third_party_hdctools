@@ -67,8 +67,11 @@ class Suart(uart.Uart):
         self._logger = logging.getLogger("Suart")
         self._logger.debug("")
         self._logger.debug(
-            "Suart opening %04x:%04x, intf %d, sn: %s"
-            % (vendor, product, interface, serialname)
+            "Suart opening %04x:%04x, intf %d, sn: %s",
+            vendor,
+            product,
+            interface,
+            serialname,
         )
         self._props = {}
 
@@ -121,7 +124,7 @@ class Suart(uart.Uart):
         return self._susb.get_device_info()
 
     def run_rx_thread(self):
-        self._logger.debug("rx thread started on %s" % self.get_pty())
+        self._logger.debug("rx thread started on %s", self.get_pty())
 
         ep = select.epoll()
         ep.register(self._ptym, select.EPOLLHUP)
@@ -144,7 +147,7 @@ class Suart(uart.Uart):
                 self._done.wait(0.1)
 
     def run_tx_thread(self):
-        self._logger.debug("tx thread started on %s" % self.get_pty())
+        self._logger.debug("tx thread started on %s", self.get_pty())
         try:
             ep = select.epoll()
             readp = select.epoll()
@@ -164,7 +167,7 @@ class Suart(uart.Uart):
                                 self._susb.write_ep(r, self._susb.TIMEOUT_MS)
 
                     except IOError as e:
-                        self._logger.debug("tx %s: %s" % (self.get_pty(), e))
+                        self._logger.debug("tx %s: %s", self.get_pty(), e)
                         if e.errno == errno.ENODEV:
                             self._logger.error(
                                 "USB disconnected 0x%04x:%04x, servod failed.",
@@ -172,7 +175,7 @@ class Suart(uart.Uart):
                                 self._susb._product,
                             )
                     except Exception as e:
-                        self._logger.debug("tx %s: %s" % (self.get_pty(), e))
+                        self._logger.debug("tx %s: %s", self.get_pty(), e)
                 else:
                     self._done.wait(0.1)
         finally:
@@ -184,7 +187,7 @@ class Suart(uart.Uart):
 
         m, s = os.openpty()
         self._ptyname = os.ttyname(s)
-        self._logger.debug("PTY name: %s" % self._ptyname)
+        self._logger.debug("PTY name: %s", self._ptyname)
 
         self._ptym = m
         self._ptys = s
@@ -208,7 +211,7 @@ class Suart(uart.Uart):
         # Generate a HUP flag on pty child fd.
         os.fdopen(s).close()
 
-        self._logger.debug("stm32 uart pty is %s" % self.get_pty())
+        self._logger.debug("stm32 uart pty is %s", self.get_pty())
 
         self._rx_thread = threading.Thread(target=self.run_rx_thread, args=[])
         self._rx_thread.daemon = True

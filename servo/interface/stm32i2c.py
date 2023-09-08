@@ -55,7 +55,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
         self._logger.debug("")
 
         self._port = port
-        self._logger.debug("Set port %d" % port)
+        self._logger.debug("Set port %d", port)
 
         self._susb = stm32usb.Susb(
             vendor=vendor,
@@ -115,9 +115,11 @@ class Si2cBus(i2c_base.BaseI2CBus):
           Si2cError on transaction failure.
         """
         self._logger.debug(
-            "Si2c.wr_rd("
-            "port=%d, child_address=0x%x, write_list=%s, read_count=%s)"
-            % (self._port, child_address, write_list, read_count)
+            "Si2c.wr_rd(" "port=%d, child_address=0x%x, write_list=%s, read_count=%s)",
+            self._port,
+            child_address,
+            write_list,
+            read_count,
         )
 
         # Clean up args from python style to correct types.
@@ -173,7 +175,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
             raise Si2cError("Read status failed: 0x%02x%02x" % (data[1], data[0]))
 
         self._logger.debug(
-            "Si2c.wr_rd result 0x%02x%02x, read %s" % (data[1], data[0], data[4:])
+            "Si2c.wr_rd result 0x%02x%02x, read %s", data[1], data[0], data[4:]
         )
         return data[4:]
 

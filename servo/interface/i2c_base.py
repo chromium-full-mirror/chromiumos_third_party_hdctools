@@ -69,15 +69,15 @@ class BaseI2CBus(interface.Interface):
             pseudo_ctrlr_path = i2c_pseudo.default_controller_path()
             if not os.path.exists(pseudo_ctrlr_path):
                 self.__logger.info(
-                    "path %r not found, cannot start I2C pseudo adapter"
-                    % (pseudo_ctrlr_path,)
+                    "path %r not found, cannot start I2C pseudo adapter",
+                    pseudo_ctrlr_path,
                 )
                 return
             # TODO(b/79684405): This circular reference is less than ideal.  Find a
             # better way to hook i2c_pseudo.I2cPseudoAdapter into servod.  For now
             # weakref is used to avoid a reference count cycle.
             self.__logger.info(
-                "path %r found, starting I2C pseudo adapter" % (pseudo_ctrlr_path,)
+                "path %r found, starting I2C pseudo adapter", pseudo_ctrlr_path
             )
             self.__pseudo_adap = i2c_pseudo.I2cPseudoAdapter(
                 pseudo_ctrlr_path, weakref.proxy(self)
@@ -146,13 +146,18 @@ class BaseI2CBus(interface.Interface):
         """
         with self.__lock:
             self.__logger.debug(
-                "i2c_base.BaseI2CBus.wr_rd(0x%02X, %s, %s) called"
-                % (child_address, _format_write_list(write_list), read_count)
+                "i2c_base.BaseI2CBus.wr_rd(0x%02X, %s, %s) called",
+                child_address,
+                _format_write_list(write_list),
+                read_count,
             )
             retval = self._raw_wr_rd(child_address, write_list, read_count)
             self.__logger.debug(
-                "i2c_base.BaseI2CBus.wr_rd(0x%02X, %r, %s) returning %s"
-                % (child_address, _format_write_list(write_list), read_count, retval)
+                "i2c_base.BaseI2CBus.wr_rd(0x%02X, %r, %s) returning %s",
+                child_address,
+                _format_write_list(write_list),
+                read_count,
+                retval,
             )
         return retval
 
@@ -209,8 +214,9 @@ class BaseI2CBus(interface.Interface):
         sysfs_path = "/sys/module/%s/" % (module.replace("-", "_"),)
         if os.path.exists(sysfs_path):
             logging.info(
-                "Skipping modprobe of %s: it is already loaded per existence"
-                " of: %s" % (module, sysfs_path)
+                "Skipping modprobe of %s: it is already loaded per existence" " of: %s",
+                module,
+                sysfs_path,
             )
             return 0
         args = []
@@ -226,10 +232,11 @@ class BaseI2CBus(interface.Interface):
             args.append("--quiet")
         args.append("--")
         args.append(module)
-        logging.info("Executing command: %r" % (args,))
+        logging.info("Executing command: %r", args)
         ret = subprocess.call(args)
         logging.debug(
-            "Exit status was %d (negative is killed by signal) for "
-            "command: %r" % (ret, args)
+            "Exit status was %d (negative is killed by signal) for " "command: %r",
+            ret,
+            args,
         )
         return ret

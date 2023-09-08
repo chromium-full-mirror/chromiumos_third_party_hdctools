@@ -57,7 +57,7 @@ def diagnose_ccd(servo_dev):
     # Check for obsolete firmware.
     if servo_fw != servo_latest_fw:
         logger.error("servo firmware version doesn't match latest.")
-        logger.error("latest available firmware: %s" % servo_latest_fw)
+        logger.error("latest available firmware: %s", servo_latest_fw)
         logger.error(
             "  Run 'sudo servo_updater -b %s' to correct.", servo_dev.template.TYPE
         )
@@ -94,8 +94,8 @@ def diagnose_ccd(servo_dev):
 
     # Check if Cr50 orientation seems flipped from SuzyQ.
     if cr50_orientation:
-        logger.error("Cr50 USB detected in %s orientation" % cr50_orientation)
-        logger.error("SuzyQ in %s orientation" % suzyq_orientation)
+        logger.error("Cr50 USB detected in %s orientation", cr50_orientation)
+        logger.error("SuzyQ in %s orientation", suzyq_orientation)
         logger.error("")
 
     # Check if SuzyQ routed to DUT.
@@ -104,12 +104,10 @@ def diagnose_ccd(servo_dev):
         logger.error("")
 
     # Dump raw voltages and settings.
-    logger.error("DUT CC: %4dmV %4dmV" % (dut_cc1, dut_cc2))
-    logger.error("CHG CC: %4dmV %4dmV" % (chg_cc1, chg_cc2))
-    logger.error("SBU:    %4dmV %4dmV" % (sbu1, sbu2))
-    logger.error(
-        "SuzyQ enabled: %s, SuzyQ orientation: %s" % (sbu_en, suzyq_orientation)
-    )
+    logger.error("DUT CC: %4dmV %4dmV", dut_cc1, dut_cc2)
+    logger.error("CHG CC: %4dmV %4dmV", chg_cc1, chg_cc2)
+    logger.error("SBU:    %4dmV %4dmV", sbu1, sbu2)
+    logger.error("SuzyQ enabled: %s, SuzyQ orientation: %s", sbu_en, suzyq_orientation)
     logger.error("")
 
     return faults

@@ -390,7 +390,7 @@ class Servod(object):
                 "%s." % servo_dev_templates.MAIN_DEV_PREFIX
             ) or name.startswith("%s." % servo_dev_templates.ROOT_DEV_PREFIX):
                 continue
-            self._logger.debug("name = %s" % name)
+            self._logger.debug("name = %s", name)
             try:
                 value = self.get(name)
             except Exception:
@@ -407,7 +407,7 @@ class Servod(object):
         Args:
           echo: string to echo back to client
         """
-        self._logger.debug("echo(%s)" % (echo))
+        self._logger.debug("echo(%s)", echo)
         return "ECH0ING: %s" % (echo)
 
     def get_board(self):

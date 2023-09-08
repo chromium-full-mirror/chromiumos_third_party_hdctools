@@ -466,7 +466,6 @@ disable=
     invalid-unary-operand-type,
     line-too-long,
     logging-format-interpolation,
-    logging-not-lazy,
     missing-class-docstring,
     missing-function-docstring,
     missing-module-docstring,

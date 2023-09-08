@@ -67,8 +67,7 @@ def mock_endpoint(mocker):
                             "%s: %s" % (description, command)
                         )
                         _logger.debug(
-                            "%s Missing mock data for command %s"
-                            % (description, command)
+                            "%s Missing mock data for command %s", description, command
                         )
                         ep.parent.command_queue.get()
                     else:

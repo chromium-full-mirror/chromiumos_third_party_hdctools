@@ -203,7 +203,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         rbuf_type = ctypes.c_ubyte * rcnt
         rbuf = rbuf_type()
         for i, wval in enumerate(wbuf):
-            self._logger.debug("wbuf[%i] = 0x%02x" % (i, wval))
+            self._logger.debug("wbuf[%i] = 0x%02x", i, wval)
 
         err = self._lib.fi2c_wr_rd(
             ctypes.byref(self._fic), ctypes.byref(wbuf), wcnt, ctypes.byref(rbuf), rcnt
@@ -213,7 +213,7 @@ class Fi2c(i2c_base.BaseI2CBus):
             raise Fi2cError("fi2c_wr_rd", err_str)
 
         for i, rval in enumerate(rbuf):
-            self._logger.debug("rbuf[%i] = 0x%02x" % (i, rval))
+            self._logger.debug("rbuf[%i] = 0x%02x", i, rval)
         return list(rbuf)
 
     def gpio_wr_rd(self, offset, width, dir_val=None, wr_val=None):
@@ -263,8 +263,7 @@ class Fi2c(i2c_base.BaseI2CBus):
                 ftdi_common.INTERFACE_TYPE_I2C,
             )
         self._logger.debug(
-            "mask:0x%x val:%s returned %d"
-            % (self._gpio.mask, str(wr_val), rd_val.value)
+            "mask:0x%x val:%s returned %d", self._gpio.mask, str(wr_val), rd_val.value
         )
         return (rd_val.value & self._gpio.mask) >> offset
 

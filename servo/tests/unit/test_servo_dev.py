@@ -572,7 +572,7 @@ class TestServoDevice(unittest.TestCase):
         )
 
         self.assertEqual(self.v4_dev.doc("control"), "controldoc")
-        self.v4_dev._logger.debug.assert_called_once_with("name(%s)" % "control")
+        self.v4_dev._logger.debug.assert_called_once_with("name(%s)", "control")
 
     def test_doc_error(self):
         """Test doc() in case of error."""
@@ -581,7 +581,7 @@ class TestServoDevice(unittest.TestCase):
 
         with self.assertRaisesRegex(NameError, "No control ctrl"):
             self.v4_dev.doc("ctrl")
-        self.v4_dev._logger.debug.assert_called_once_with("name(%s)" % "ctrl")
+        self.v4_dev._logger.debug.assert_called_once_with("name(%s)", "ctrl")
 
     def test_hwinit(self):
         """Test hwinit()."""

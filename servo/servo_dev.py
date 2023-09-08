@@ -543,7 +543,7 @@ class ServoDevice(object):
         Raises:
           NameError: if fails to locate control
         """
-        self._logger.debug("name(%s)" % (name))
+        self._logger.debug("name(%s)", name)
         if self.syscfg.is_control(name):
             return self.syscfg.get_control_docstring(name)
         raise NameError("No control %s" % name)

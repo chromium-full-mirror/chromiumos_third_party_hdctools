@@ -95,7 +95,9 @@ class I2cPseudoAdapter(object):
         self._logger = logging.getLogger("i2c_pseudo")
         self._logger.info(
             "attempting to initialize (not start yet!) I2C pseudo adapter "
-            "controller_device_path=%r i2c_bus=%r" % (controller_device_path, i2c_bus)
+            "controller_device_path=%r i2c_bus=%r",
+            controller_device_path,
+            i2c_bus,
         )
 
         self._i2c_bus = i2c_bus
@@ -301,7 +303,7 @@ class I2cPseudoAdapter(object):
         try:
             retval = self._i2c_bus.wr_rd(addr, write_list, read_count)
         except (OSError, IOError) as error:
-            self._logger.exception("self._i2c_bus.wr_rd() raised %s" % (error,))
+            self._logger.exception("self._i2c_bus.wr_rd() raised %s", error)
             errnum = error.errno or 1
 
         writes = []
@@ -361,7 +363,7 @@ class I2cPseudoAdapter(object):
           line: str - The I2C_ADAPTER_NUM line read from the i2c-pseudo device.
         """
         self._i2c_adapter_num = int(line.split(_HEADER_SEP_CHAR, 2)[1])
-        self._logger.info("I2C adapter number: %d" % (self._i2c_adapter_num,))
+        self._logger.info("I2C adapter number: %d", self._i2c_adapter_num)
 
     def _cmd_i2c_pseudo_id(self, line):
         """Record the I2C pseudo ID of this I2C pseudo controller.
@@ -370,7 +372,7 @@ class I2cPseudoAdapter(object):
           line: str - The I2C_PSEUDO_ID line read from the i2c-pseudo device.
         """
         self._i2c_pseudo_id = int(line.split(_HEADER_SEP_CHAR, 2)[1])
-        self._logger.info("I2C pseudo ID: %d" % (self._i2c_pseudo_id,))
+        self._logger.info("I2C pseudo ID: %d", self._i2c_pseudo_id)
 
     def _do_ctrlr_cmd(self, line):
         """Dispatch an I2C pseudo controller command to the appropriate handler.
@@ -395,8 +397,7 @@ class I2cPseudoAdapter(object):
             self._cmd_i2c_pseudo_id(line)
         else:
             self._logger.warning(
-                "unrecognized I2C pseudo controller device command name %r"
-                % (cmd_name,)
+                "unrecognized I2C pseudo controller device command name %r", cmd_name
             )
 
     def _do_device_reads(self):

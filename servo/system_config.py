@@ -507,16 +507,16 @@ class SystemConfig(object):
                 if clobber_ok == CLOBBER_NEVER:
                     if name in self.syscfg_dict[tag]:
                         self._logger.debug(
-                            "Quietly refusing to clobber existing %s %r" % (tag, name)
+                            "Quietly refusing to clobber existing %s %r", tag, name
                         )
                         continue
                 if clobber_ok == CLOBBER_PATCH:
                     if name not in self.syscfg_dict[tag]:
                         self._logger.debug(
-                            "Ignoring clobber patch for nonexistent %s %r" % (tag, name)
+                            "Ignoring clobber patch for nonexistent %s %r", tag, name
                         )
                         continue
-                    self._logger.debug("Applying clobber patch to %s %r" % (tag, name))
+                    self._logger.debug("Applying clobber patch to %s %r", tag, name)
                 elif clobber_ok is None and name in self.syscfg_dict[tag]:
                     raise SystemConfigError(
                         "Duplicate %s %r without %r key\n%s"

@@ -189,7 +189,7 @@ class Manufacturer(object):
                 else:
                     s = True
                     suffix = ": skipped."
-                self._logger.info(task.task_desc + suffix)
+                self._logger.info("%s%s", task.task_desc, suffix)
                 success = success & s
         return success
 
