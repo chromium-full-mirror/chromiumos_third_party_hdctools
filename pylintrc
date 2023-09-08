@@ -475,7 +475,6 @@ disable=
     protected-access,
     raise-missing-from,
     simplifiable-if-expression,
-    singleton-comparison,
     super-init-not-called,
     super-with-arguments,
     superfluous-parens,

@@ -463,7 +463,7 @@ class ServoDevice(object):
                 )
             # Store map params in params
             map_name = params.get("map")
-            if map_name != None:
+            if map_name is not None:
                 map_params = self.syscfg.lookup_map_params(map_name)
                 params["map_params"] = map_params
 

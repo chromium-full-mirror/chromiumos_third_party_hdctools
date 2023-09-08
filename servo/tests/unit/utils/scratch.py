@@ -158,7 +158,7 @@ class TestScratch(unittest.TestCase):
         self._manually_add_entry()
         self._scratch.MarkActive(self._dport)
         entry_from_file = self._scratch.FindById(self._dport)
-        assert entry_from_file["active"] == True
+        assert entry_from_file["active"] is True
 
     def test_MarkActiveSerial(self):
         """Marking active marks the entry as active accessed through serial."""
@@ -169,7 +169,7 @@ class TestScratch(unittest.TestCase):
         # Still access the entry through the port as we want to make sure that
         # the latch retrieved the right entry (and not a parallel serial entry.
         entry_from_file = self._scratch.FindById(self._dport)
-        assert entry_from_file["active"] == True
+        assert entry_from_file["active"] is True
 
     def test_MarkActiveAlreadyActive(self):
         """Marking already active entry active is a noop."""
@@ -182,7 +182,7 @@ class TestScratch(unittest.TestCase):
         self._manually_add_entry(entry)
         self._scratch.MarkActive(self._dport)
         entry_from_file = self._scratch.FindById(self._dport)
-        assert entry_from_file["active"] == True
+        assert entry_from_file["active"] is True
 
     def test_MarkActiveEntryUnvailable(self):
         """Marking active an unknown entry fails."""

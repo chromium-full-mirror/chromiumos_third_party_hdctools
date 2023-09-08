@@ -81,7 +81,7 @@ class Manager(object):
         # it into the general flow, though the work can initially be unblocked and
         # tested by simply overwriting this method in the device specific subclass.
         sargs = self.extract_single_device_data(args)
-        if sargs == False:
+        if sargs is False:
             # Required arguments are missing. Abort.
             return self.abort(1)
         report = self.reporter.new_report(**sargs)

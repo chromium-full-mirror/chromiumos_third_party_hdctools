@@ -111,7 +111,7 @@ class Sgpio(gpio_interface.GpioInterface):
         set_mask = 0
         clear_mask = 0
 
-        if wr_val != None:
+        if wr_val is not None:
             set_mask = (wr_val & width_mask) << offset
             clear_mask = (~wr_val & width_mask) << offset
 

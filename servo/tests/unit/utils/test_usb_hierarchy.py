@@ -587,7 +587,7 @@ class TestUsbHierarchyPyTest:
         found_device = Hierarchy.GetUsbDevice(
             device.idVendor, device.idProduct, "garbage"
         )
-        assert found_device == None
+        assert found_device is None
 
     def test_GetUsbDeviceMultiple(self, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
@@ -636,7 +636,7 @@ class TestUsbHierarchyPyTest:
         found_device = Hierarchy.GetUsbDevice(
             device.idVendor, device.idProduct, device.iSerial
         )
-        assert found_device == None
+        assert found_device is None
 
     def test_GetUsbDeviceAllBadCoreUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
@@ -650,4 +650,4 @@ class TestUsbHierarchyPyTest:
         found_device = Hierarchy.GetUsbDevice(
             device.idVendor, device.idProduct, device.iSerial
         )
-        assert found_device == None
+        assert found_device is None
