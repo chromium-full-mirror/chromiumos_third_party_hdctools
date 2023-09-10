@@ -1068,8 +1068,8 @@ class ChromeECDelbinHandler(ChromeECHandler):
         super(ChromeECDelbinHandler, self).__init__(servo)
 
         # Try to query SKU_ID or FW_CONFIG from EC Uart
-        servo.set("ec_uart_regexp", '["SKU_ID:\\s+(\\d+)\\s+"]')
-        # servo.set('ec_uart_regexp', '["FW_CONFIG:\\s+(\\d+)\\s+"]')
+        servo.set("ec_uart_regexp", r'["SKU_ID:\\s+(\\d+)\\s+"]')
+        # servo.set('ec_uart_regexp', 'r["FW_CONFIG:\\s+(\\d+)\\s+"]')
         servo.set("ec_uart_cmd", "cbi")
 
         sku_id = servo.get("ec_uart_cmd")
