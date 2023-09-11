@@ -67,13 +67,13 @@ class Servod(object):
                     "ServoDevice prefix %s alredy represents device %s and cannot be added as %s."
                     % (prefix, self._devices[prefix], device)
                 )
-            else:
-                self._logger.debug(
-                    "ServoDevice prefix %s is already added as %s.",
-                    prefix,
-                    self._devices[prefix],
-                )
-                return
+            self._logger.debug(
+                "ServoDevice prefix %s is already added as %s.",
+                prefix,
+                self._devices[prefix],
+            )
+            return
+
         self._unique_devices[device.get_id()] = device
         self._devices[prefix] = device
         self.add_serial_number(prefix, device._serial)
