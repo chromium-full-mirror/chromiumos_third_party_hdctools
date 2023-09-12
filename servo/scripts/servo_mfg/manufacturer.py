@@ -12,7 +12,7 @@ class ManufacturerError(Exception):
     """Manufacturer error class."""
 
 
-class Manufacturer(object):
+class Manufacturer:
     """Class go through flow instructing user and programming devices."""
 
     # The default interface that the servo console is on is 0.
@@ -194,7 +194,7 @@ class Manufacturer(object):
         return success
 
 
-class Task(object):
+class Task:
     """Holder object for a programmer and some metadata."""
 
     def __init__(self, task_desc, programmer=None):

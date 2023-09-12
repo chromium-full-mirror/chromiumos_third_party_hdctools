@@ -75,7 +75,7 @@ class TestProgressPrinter(unittest.TestCase):
 class TestDutPower(unittest.TestCase):
     """Test DutPower."""
 
-    class MockGroup(object):
+    class MockGroup:
         """Mock group of argparse."""
 
         def add_argument(self):

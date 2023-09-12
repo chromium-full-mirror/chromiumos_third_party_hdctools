@@ -14,7 +14,7 @@ import serial
 from servo.drv import hw_driver
 
 
-class _HandlerTemplate(object):
+class _HandlerTemplate:
     """Template for all handlers to support common open/close operations."""
 
     def __init__(self):

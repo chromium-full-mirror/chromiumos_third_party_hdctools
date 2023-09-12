@@ -18,7 +18,7 @@ class HierarchyError(Exception):
     """Hierarchy error class."""
 
 
-class Hierarchy(object):
+class Hierarchy:
     """A helper class to analyze the sysfs hierarchy of USB devices."""
 
     # Default sysfs path to use to for USB device information.

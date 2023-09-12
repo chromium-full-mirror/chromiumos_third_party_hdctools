@@ -10,7 +10,7 @@ class TestError(Exception):
     """Test error class."""
 
 
-class Test(object):
+class Test:
     """Class to encapsulate one test to run on the servo device."""
 
     def __init__(self, name):

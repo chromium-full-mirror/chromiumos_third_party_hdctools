@@ -34,7 +34,7 @@ class StatsManagerError(Exception):
     """Errors in StatsManager class."""
 
 
-class StatsManager(object):
+class StatsManager:
     """Calculates statistics for several lists of data(float).
 
     Example usage:

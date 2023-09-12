@@ -22,7 +22,7 @@ class EepromError(hw_driver.HwDriverError):
     pass
 
 
-class M24C02Device(object):
+class M24C02Device:
     """Defines a M24C02 device shared among many M24C02 drivers."""
 
     def __init__(self, offset, read_count):

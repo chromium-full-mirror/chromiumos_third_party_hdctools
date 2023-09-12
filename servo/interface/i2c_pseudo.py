@@ -55,7 +55,7 @@ def default_controller_path():
     return path
 
 
-class I2cPseudoAdapter(object):
+class I2cPseudoAdapter:
     """This class implements a Linux I2C adapter for the servo I2C bus.
 
     This class is a controller for the i2c-pseudo Linux kernel module.  See its

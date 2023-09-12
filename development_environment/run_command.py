@@ -9,7 +9,7 @@ import sys
 import docker
 
 
-class RunCommandBase(object):
+class RunCommandBase:
     def parse_args(self):
         parser = argparse.ArgumentParser(add_help=False)
         parser.add_argument(

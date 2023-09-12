@@ -66,7 +66,7 @@ class ProgressPrinter(threading.Thread):
             self.stop.wait(self._rate)
 
 
-class DutPower(object):
+class DutPower:
     """Dut-power class to execute dut-power cmdline."""
 
     def _add_mutually_exclusive_action(self, name, parser, default=True, action="save"):

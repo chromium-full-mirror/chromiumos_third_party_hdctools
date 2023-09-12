@@ -478,7 +478,7 @@ class ECPowerTracker(ServodPowerTracker):
         super(ECPowerTracker, self).run()
 
 
-class RegexFilter(object):
+class RegexFilter:
     """Filter out control names based on regex."""
 
     def __init__(self, rgx_to_keep, rgx_to_remove):
@@ -524,7 +524,7 @@ class PowerMeasurementError(Exception):
     """Error class to invoke on PowerMeasurement errors."""
 
 
-class PowerMeasurement(object):
+class PowerMeasurement:
     """Class to perform power measurements using servod.
 
     PowerMeasurement allows the user to perform synchronous and asynchronous

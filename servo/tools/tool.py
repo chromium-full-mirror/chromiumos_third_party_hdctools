@@ -13,7 +13,7 @@ class ToolError(Exception):
     """General tool error class."""
 
 
-class Tool(object):
+class Tool:
     """Base class implementing the tool interface.
 
     A tool is a tool invoked through servodtool [tool] [args...] and provides

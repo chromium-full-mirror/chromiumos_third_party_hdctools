@@ -8,7 +8,7 @@ import servo.drv.pty_driver as pty_driver
 import servo.interface.stm32uart as stm32uart
 
 
-class TinyServod(object):
+class TinyServod:
     """Helper class to wrap a pty_driver with interface."""
 
     def __init__(self, vid, pid, interface, serialname=None):

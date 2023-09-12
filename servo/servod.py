@@ -47,7 +47,7 @@ class ServodError(Exception):
     """Exception class for servod server."""
 
 
-class ServodStarter(object):
+class ServodStarter:
     """Class to manage servod instance and rpc server its being served on."""
 
     # Timeout period after which to just turn down, regardless of threads

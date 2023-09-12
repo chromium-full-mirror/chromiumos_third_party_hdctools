@@ -68,7 +68,7 @@ def _ClusterSortKey(servo_dev_entry):
     return (not servo_dev_entry.is_cluster_root(),) + servo_dev_entry.key
 
 
-class ServoDeviceFinder(object):
+class ServoDeviceFinder:
     """Discover devices to be served by a servod instance."""
 
     def __init__(

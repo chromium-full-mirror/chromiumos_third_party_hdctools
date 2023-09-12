@@ -20,7 +20,7 @@ def PIDNamespaceUsed():
     return False
 
 
-class TerminalFreezer(object):
+class TerminalFreezer:
     """SIGSTOP all processes (and their parents) that have the TTY open."""
 
     def __init__(self, tty):

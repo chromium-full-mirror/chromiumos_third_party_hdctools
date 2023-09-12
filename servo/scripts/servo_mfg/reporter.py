@@ -133,7 +133,7 @@ class ReporterError(Exception):
     """Reporter error class."""
 
 
-class Reporter(object):
+class Reporter:
     """Class to encompass a full reporter.
 
     A reporter keeps track of all the reports (one per device manufacturing)
@@ -225,7 +225,7 @@ class Reporter(object):
         return self._current_report
 
 
-class Report(object):
+class Report:
     """Individual report for one device programming/flashing cycle."""
 
     # The following class variables are all the formatting bits for the

@@ -25,7 +25,7 @@ class ServoDeviceError(Exception):
     """General servo device error class."""
 
 
-class ServoDevice(object):
+class ServoDevice:
     """Device class that each corresponds to a physical servo device."""
 
     # Reinit capable devices.

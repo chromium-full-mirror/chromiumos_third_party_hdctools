@@ -71,7 +71,7 @@ class LcmError(hw_driver.HwDriverError):
     pass
 
 
-class Lcm2004Device(object):
+class Lcm2004Device:
     """Defines a LCM2004 device shared among many LCM2004 drivers.
 
     Public Attributes:

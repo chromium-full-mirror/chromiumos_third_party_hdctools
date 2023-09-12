@@ -10,7 +10,7 @@ DEFAULT_POLLING_INTERVAL = 0.0
 DEFAULT_POLLING_TIMEOUT = None  # meaning no timeout
 
 
-class PollingControl(object):
+class PollingControl:
     """Object to poll a control on a servo until it reaches an expected result"""
 
     def _found_expected_result(self, servod, control, expected_results, logger):

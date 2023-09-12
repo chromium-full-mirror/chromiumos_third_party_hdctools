@@ -52,7 +52,7 @@ def build_cmd_get_vid_pid_dir(vid, pid):
     return " ".join(orig_base_cmd)
 
 
-class V4Flasher(object):
+class V4Flasher:
     NAME = "servo_v4"
 
     BIN = "servo_v4.bin"

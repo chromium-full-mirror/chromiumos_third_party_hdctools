@@ -26,7 +26,7 @@ PARENT_HUB_TIMEOUT_S = 0.1
 DEV_TIMEOUT_S = 3
 
 
-class Programmer(object):
+class Programmer:
     """Class to program one device for the servo manufacturing.
 
     In this context, a device is one one of the chips on the board e.g.

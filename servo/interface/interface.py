@@ -7,7 +7,7 @@
 import logging
 
 
-class Interface(object):
+class Interface:
     """Base servo interface interface."""
 
     def __init__(self, logger_name=None):

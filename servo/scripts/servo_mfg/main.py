@@ -29,7 +29,7 @@ DESC = "Flashing and programming tool for cros servo devices."
 SIGNAL_COUNT_TO_QUIT = 1
 
 
-class Coordinator(object):
+class Coordinator:
     """Helper class to manage parsing and handing off to right manager."""
 
     def __init__(self, cmdline):

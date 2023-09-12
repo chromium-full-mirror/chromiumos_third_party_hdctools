@@ -33,7 +33,7 @@ class INAConfigGeneratorError(Exception):
     pass
 
 
-class INAConfigGenerator(object):
+class INAConfigGenerator:
     """Base class for any INA Configuration Generator.
 
     Shared base class that handles file name logic.

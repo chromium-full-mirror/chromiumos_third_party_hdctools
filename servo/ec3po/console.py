@@ -60,7 +60,7 @@ INTERROGATION_MODES = [b"never", b"always", b"auto"]
 HOST_STRFTIME = "%y-%m-%d %H:%M:%S.%f"
 
 
-class EscState(object):
+class EscState:
     """Class which contains an enumeration for states of ESC sequences."""
 
     ESC_START = 1
@@ -70,7 +70,7 @@ class EscState(object):
     ESC_BRACKET_8 = 5
 
 
-class ControlKey(object):
+class ControlKey:
     """Class which contains codes for various control keys."""
 
     BACKSPACE = 0x08
@@ -86,7 +86,7 @@ class ControlKey(object):
     ESC = 0x1B
 
 
-class Console(object):
+class Console:
     """Class which provides the console interface between the EC and the user.
 
     This class essentially represents the console interface between the user and

@@ -18,7 +18,7 @@ from ec3po import threadproc_shim
 ESC_STRING = bytes([console.ControlKey.ESC])
 
 
-class Keys(object):
+class Keys:
     """A class that contains the escape sequences for special keys."""
 
     LEFT_ARROW = [console.ControlKey.ESC, ord("["), ord("D")]
@@ -30,7 +30,7 @@ class Keys(object):
     DEL = [console.ControlKey.ESC, ord("["), ord("3"), ord("~")]
 
 
-class OutputStream(object):
+class OutputStream:
     """A class that has methods which return common console output."""
 
     @staticmethod

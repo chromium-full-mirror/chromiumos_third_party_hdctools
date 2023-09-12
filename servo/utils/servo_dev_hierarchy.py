@@ -28,7 +28,7 @@ class ServoDeviceHierarchyError(Exception):
     """ServoDeviceHierarchy error class."""
 
 
-class ServoDeviceEntry(object):
+class ServoDeviceEntry:
     """A summarized entry for a servo device on the system.
 
     Attributes:
@@ -231,7 +231,7 @@ class ServoDeviceEntry(object):
             )
 
 
-class ServoDeviceHierarchy(object):
+class ServoDeviceHierarchy:
     """A usb hierarchy of servo devices."""
 
     def __init__(self):

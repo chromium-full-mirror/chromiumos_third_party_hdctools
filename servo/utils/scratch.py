@@ -30,7 +30,7 @@ class ScratchError(Exception):
     """Error class for servo scratch utility."""
 
 
-class Scratch(object):
+class Scratch:
     """Class to manage servod instance breadcrumbs used to query and control.
 
     Attributes:

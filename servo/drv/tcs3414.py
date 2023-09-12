@@ -80,7 +80,7 @@ class Tcs3414Error(hw_driver.HwDriverError):
     pass
 
 
-class Tcs3414Device(object):
+class Tcs3414Device:
     """Define a TCS3414 device shared among many tcs3414 drivers.
 
     Note: public members are directly accessible by tcs3414 class.

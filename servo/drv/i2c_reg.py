@@ -19,7 +19,7 @@ class I2cRegError(hw_driver.HwDriverError):
     """Exception class for I2cRegError."""
 
 
-class I2cReg(object):
+class I2cReg:
     """Provides methods for devices with registered indexing over i2c."""
 
     def __init__(

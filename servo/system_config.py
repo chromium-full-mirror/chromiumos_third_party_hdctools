@@ -42,7 +42,7 @@ class SystemConfigError(Exception):
     """Error class for SystemConfig."""
 
 
-class SystemConfig(object):
+class SystemConfig:
     """SystemConfig Class.
 
     System config files describe how to talk to various pieces on the device under

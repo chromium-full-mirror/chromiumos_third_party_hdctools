@@ -16,7 +16,7 @@ class ManagerError(Exception):
     """Manager error class."""
 
 
-class Manager(object):
+class Manager:
     """Class to handle one manufacteuring round for one device type."""
 
     def __init__(self, outdir, validation=False):

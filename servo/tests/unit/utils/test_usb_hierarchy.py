@@ -20,7 +20,7 @@ from servo.utils.usb_hierarchy import HierarchyError
 class TestUsbHierarchy(unittest.TestCase):
     """Test UsbHierarchy code logic."""
 
-    class FakePyUSBCoreDevice(object):
+    class FakePyUSBCoreDevice:
         """Fake usb.core.Device object exposing dev/bus num to test interaction."""
 
         def __init__(self, busnum, devnum):

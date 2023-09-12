@@ -17,7 +17,7 @@ class ServodError(Exception):
     """Exception class for servod."""
 
 
-class Servod(object):
+class Servod:
     """Main class for Servo debug/controller Daemon."""
 
     # Separator for control strings between servo device prefix and control name

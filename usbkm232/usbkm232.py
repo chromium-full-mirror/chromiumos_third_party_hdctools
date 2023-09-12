@@ -16,7 +16,7 @@ class usbkm232Error(Exception):
     """Exception class for usbkm232."""
 
 
-class usbkm232(object):
+class usbkm232:
     """usbkm232 Class."""
 
     MAX_RSP_RETRIES = 10

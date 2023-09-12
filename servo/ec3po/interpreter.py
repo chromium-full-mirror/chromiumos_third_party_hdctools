@@ -34,7 +34,7 @@ class LoggerAdapter(logging.LoggerAdapter):
         return "%s - %s" % (self.extra["pty"], msg), kwargs
 
 
-class Interpreter(object):
+class Interpreter:
     """Class which provides the interpretation layer between the EC and user.
 
     This class essentially performs all of the intepretation for the EC and the

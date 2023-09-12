@@ -47,7 +47,7 @@ class ServoClientError(Exception):
             self.message = text
 
 
-class ServoClient(object):
+class ServoClient:
     """Class to link client to servod via xmlrpc.
 
     Beyond method initialize, the remaining methods (doc_all, doc, get, get_all,

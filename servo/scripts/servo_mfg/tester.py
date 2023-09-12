@@ -17,7 +17,7 @@ class TesterError(Exception):
     """Tester error class."""
 
 
-class Tester(object):
+class Tester:
     """Class to start servod and run registered tests.
 
     Each device should specific their own tester (subclass) and register

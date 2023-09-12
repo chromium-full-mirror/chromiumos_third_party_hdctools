@@ -104,7 +104,7 @@ class TPS65090Error(Exception):
     """Exception class for TPS65090."""
 
 
-class TPS65090I2c(object):
+class TPS65090I2c:
     """Class for TPS65090 I2c communication."""
 
     # -f to force, -y to respond 'yes' to interactive queries
@@ -172,7 +172,7 @@ class TPS65090I2c(object):
         self._do_cmd(cmd)
 
 
-class TPS65090ADC(object):
+class TPS65090ADC:
     """Class for TPS65090 ADC."""
 
     # Number of times to retry read of AD_CTRL for EOC
@@ -221,7 +221,7 @@ class TPS65090ADC(object):
         return adc_val
 
 
-class TPS65090Power(object):
+class TPS65090Power:
     """Class for TPS65090 PMIC Power.
 
     Attributes:

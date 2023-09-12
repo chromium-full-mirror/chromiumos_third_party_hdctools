@@ -7,7 +7,7 @@
 import logging
 
 
-class DeviceProber(object):
+class DeviceProber:
     """Class to probe servo attached DUT's EC for information."""
 
     RETRY_ATTEMPTS = 3

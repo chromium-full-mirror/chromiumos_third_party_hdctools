@@ -39,7 +39,7 @@ def _get_io_type(params):
     return False
 
 
-class HwDriver(object):
+class HwDriver:
     """Base class for all hardware drivers."""
 
     # The list of params that an overlay needs to specific for the drv to be
