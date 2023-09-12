@@ -487,7 +487,6 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
-    undefined-loop-variable,
     unnecessary-lambda,
     unnecessary-lambda-assignment,
     unused-argument,

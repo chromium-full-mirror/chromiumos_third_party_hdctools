@@ -287,6 +287,8 @@ class I2cPseudoAdapter:
         read_flags = 0
         retval = None
         errnum = 0
+        addr = None
+        xfer_id = None
 
         for xfer_id, idx, addr, flags, length, data in self._xfer_reqs:
             # This option is not supported by the self._i2c_bus interface.
