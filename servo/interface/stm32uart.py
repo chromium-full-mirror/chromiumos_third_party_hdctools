@@ -298,10 +298,8 @@ class Suart(uart.Uart):
 
 def test():
     log_format = "%(asctime)s - %(name)s - %(levelname)s"
-    loglevel = logging.INFO
-    if True:
-        loglevel = logging.DEBUG
-        log_format += " - %(filename)s:%(lineno)d:%(funcName)s"
+    loglevel = logging.DEBUG
+    log_format += " - %(filename)s:%(lineno)d:%(funcName)s"
     log_format += " - %(message)s"
     logging.basicConfig(level=loglevel, format=log_format)
     logger = logging.getLogger(os.path.basename(sys.argv[0]))

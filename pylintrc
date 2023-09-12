@@ -495,7 +495,6 @@ disable=
     use-a-generator,
     use-dict-literal,
     useless-object-inheritance,
-    using-constant-test,
 
 
 # Enable the message, report, category or checker with the given id(s). You can
