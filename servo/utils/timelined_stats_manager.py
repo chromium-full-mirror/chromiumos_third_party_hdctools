@@ -139,7 +139,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         # samples are NaN, though that requires a larger rework of that logic, and
         # potentially pulling in data interpolation into this class.
 
-        return all([k in [TIME_KEY, TLINE_KEY] for k in self._data.keys()])
+        return all(k in [TIME_KEY, TLINE_KEY] for k in self._data.keys())
 
     def TrimmedCopy(self, tag="", tstart=None, tend=None, offset=0):
         """Return a (trimmed) copy of this stats manager.

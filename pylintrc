@@ -492,7 +492,6 @@ disable=
     unnecessary-lambda-assignment,
     unused-argument,
     unused-variable,
-    use-a-generator,
 
 
 # Enable the message, report, category or checker with the given id(s). You can

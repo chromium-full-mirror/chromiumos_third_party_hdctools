@@ -225,7 +225,7 @@ class Programmer:
         # TODO(coconutruben): add an error if there were parent candidates provided,
         # but none were found
         if parent_candidates and not any(
-            [p and path.startswith(p) for p in parent_candidates]
+            p and path.startswith(p) for p in parent_candidates
         ):
             # TODO(coconutruben): log what the candidates were here.
             # pylint: disable=bad-string-format-type

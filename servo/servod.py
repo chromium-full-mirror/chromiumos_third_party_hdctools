@@ -317,7 +317,7 @@ class ServodStarter:
             dev: holds all the device flags (serialname, interfaces, configs etc -
                  see below) necessary to configure a servo device.
         """
-        if any([True for argstr in cmdline if argstr in ["-h", "--help"]]):
+        if any(True for argstr in cmdline if argstr in ["-h", "--help"]):
             self.help_displayer.print_help()
             self.help_displayer.exit()
         server_args, dev_cmdline = self.server_pars.parse_known_args(cmdline)
