@@ -30,7 +30,7 @@ UART_PARAMS = {
 class ptyDriver:
     """."""
 
-    def __init__(self, interface, params, fast=False):
+    def __init__(self, interface, _params, fast=False):
         """."""
         self._child = None
         self._fd = None

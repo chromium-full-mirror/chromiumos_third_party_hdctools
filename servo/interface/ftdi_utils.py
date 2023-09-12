@@ -129,7 +129,7 @@ def parse_common_args(
     parser.add_argument(
         "-s",
         "--serialname",
-        default=None,
+        default=serialname,
         type=str,
         help="device serialname stored in eeprom",
     )

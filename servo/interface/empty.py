@@ -10,7 +10,7 @@ from servo.interface import interface
 
 class Empty(interface.Interface):
     @staticmethod
-    def Build(**kwargs):
+    def Build(**_kwargs):
         """Factory method to implement the interface."""
         return Empty()
 

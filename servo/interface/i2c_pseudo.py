@@ -236,7 +236,7 @@ class I2cPseudoAdapter:
         del self._xfer_reqs[:]
         self._in_tx = in_tx
 
-    def _cmd_i2c_begin_xfer(self, line):
+    def _cmd_i2c_begin_xfer(self, _line):
         """Allow queueing of I2C transfer requests.
 
         This always resets the internal transaction state to be in a transaction and
@@ -264,7 +264,7 @@ class I2cPseudoAdapter:
         finally:
             self._reset_tx(False)
 
-    def _cmd_i2c_commit_xfer_internal(self, line):
+    def _cmd_i2c_commit_xfer_internal(self, _line):
         """Perform the queued I2C transaction.
 
         Invocations to this should be wrapped in try:/finally: to always reset the

@@ -36,7 +36,7 @@ class Susb:
     TIMEOUT_MS = 100
 
     def __init__(
-        self, vendor=0x18D1, product=0x500F, interface=1, serialname=None, logger=None
+        self, vendor=0x18D1, product=0x500F, interface=1, _serialname=None, _logger=None
     ):
         """Susb constructor.
 

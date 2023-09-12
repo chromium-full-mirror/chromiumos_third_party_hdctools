@@ -63,7 +63,7 @@ class Sgpio(gpio_interface.GpioInterface):
         self._logger.debug("Set up stm32 gpio")
 
     @staticmethod
-    def Build(vid, pid, sid, interface_data, **kwargs):
+    def Build(vid, pid, sid, interface_data, **_kwargs):
         """Factory method to implement the interface."""
         c.build_logger.info("Sgpio: interface: %s", interface_data)
         return Sgpio(
@@ -83,7 +83,7 @@ class Sgpio(gpio_interface.GpioInterface):
         self._logger.debug("Close")
 
     def wr_rd(
-        self, offset, width=1, dir_val=None, wr_val=None, chip=None, muxfile=None
+        self, offset, width=1, dir_val=None, wr_val=None, _chip=None, _muxfile=None
     ):
         """Write and/or read GPIO bit.
 

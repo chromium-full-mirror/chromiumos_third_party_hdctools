@@ -7,6 +7,7 @@
 # PyUSB interface provides.  Device, Configuration, Interface, Endpoint
 
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 
 from functools import partial
 import logging

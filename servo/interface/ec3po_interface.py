@@ -256,7 +256,14 @@ class EC3PO(uart.Uart):
         )
 
     @staticmethod
-    def Build(index, vid, pid, sid, interface_data, servo_device):
+    def Build(
+        index,  # pylint: disable=unused-argument
+        vid,
+        pid,
+        sid,
+        interface_data,
+        servo_device,
+    ):
         """Factory method to implement the interface."""
         device_info = DeviceInfo(vid, pid, sid)
         raw_uart_name = interface_data["raw_pty"]

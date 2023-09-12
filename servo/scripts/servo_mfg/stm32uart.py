@@ -40,7 +40,7 @@ class Suart:
         product=0x501A,
         interface=0,
         serialname=None,
-        ftdi_context=None,
+        _ftdi_context=None,
     ):
         """Suart contstructor.
 

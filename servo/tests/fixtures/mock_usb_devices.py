@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 # pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
 
 from functools import partial
 import logging

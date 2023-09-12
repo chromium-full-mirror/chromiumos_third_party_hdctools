@@ -134,7 +134,7 @@ class Fuart(uart.Uart):
             raise FuartError("doing fuart_init", err)
 
     @staticmethod
-    def Build(index, vid, pid, sid, **kwargs):
+    def Build(index, vid, pid, sid, **_kwargs):
         """Factory method to implement the interface."""
         interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
         fobj = Fuart(vendor=vid, product=pid, interface=interface, serialname=sid)
@@ -144,7 +144,7 @@ class Fuart(uart.Uart):
         return fobj
 
     @staticmethod
-    def BuildGPIOUart(index, vid, pid, sid, **kwargs):
+    def BuildGPIOUart(index, vid, pid, sid, **_kwargs):
         """Initialize special gpio + uart interface and open for use."""
         fgpio = ftdigpio.Fgpio.Build(index=index, vid=vid, pid=pid, sid=sid)
         interface, pid = ftdi_utils.get_interface_and_pid(index, pid)

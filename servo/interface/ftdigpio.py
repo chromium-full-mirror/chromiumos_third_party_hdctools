@@ -95,7 +95,7 @@ class Fgpio(gpio_interface.GpioInterface):
             raise FgpioError("doing fgpio_init")
 
     @staticmethod
-    def Build(index, vid, pid, sid, **kwargs):
+    def Build(index, vid, pid, sid, **_kwargs):
         """Factory method to implement the interface."""
         interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
         fobj = Fgpio(vendor=vid, product=pid, interface=interface, serialname=sid)
@@ -135,7 +135,9 @@ class Fgpio(gpio_interface.GpioInterface):
             raise FgpioError("doing fgpio_close", err)
         self._is_closed = True
 
-    def wr_rd(self, offset, width, dir_val=None, wr_val=None, chip=None, muxfile=None):
+    def wr_rd(
+        self, offset, width, dir_val=None, wr_val=None, _chip=None, _muxfile=None
+    ):
         """Write and/or read GPIO bit.
 
         Args:

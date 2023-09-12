@@ -47,7 +47,7 @@ class Suart(uart.Uart):
         product=0x501A,
         interface=0,
         serialname=None,
-        ftdi_context=None,
+        _ftdi_context=None,
     ):
         """Suart contstructor.
 
@@ -87,7 +87,7 @@ class Suart(uart.Uart):
         self._logger.debug("Set up stm32 uart")
 
     @staticmethod
-    def Build(vid, pid, sid, interface_data, **kwargs):
+    def Build(vid, pid, sid, interface_data, **_kwargs):
         """Factory method to implement the interface."""
         c.build_logger.info("Suart: interface: %s" % interface_data)
         sobj = Suart(

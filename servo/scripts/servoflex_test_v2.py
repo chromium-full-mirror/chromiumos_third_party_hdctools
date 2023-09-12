@@ -152,7 +152,7 @@ jtag newtap auto0 tap -irlen 16 -expected-id 0xd5044093
 
 
 # TODO(tbroch) Must sudo USE=ftdi emerge openocd
-def test_jtag(options):
+def test_jtag(_options):
     """Test JTAG interface.
 
     Args:
@@ -196,7 +196,7 @@ FLASHROM_PASS = ["probe_spi_rems: id1 0xbf, id2 0x48", "Found Generic flash chip
 FLASHROM_FAIL = None
 
 
-def test_spi(dev_id, options):
+def test_spi(dev_id, _options):
     """Test SPI interface.
 
     TODO(tbroch) actual part is SST25VF512A.  See about adding it
@@ -243,7 +243,7 @@ def test_spi(dev_id, options):
     return errors == 0
 
 
-def test_uart(dev_id, options):
+def test_uart(dev_id, _options):
     """Test UART interface.
 
     Args:

@@ -425,7 +425,7 @@ class ServodStarter:
             sys.exit(-1)
         return (dev_entries, main_dev_entry)
 
-    def _setup_servos(self, dev_entries, main_dev_entry, prober):
+    def _setup_servos(self, dev_entries, _main_dev_entry, prober):
         """Setup servo devices for this servod instance.
 
         Args:
