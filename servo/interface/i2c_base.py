@@ -214,7 +214,7 @@ class BaseI2CBus(interface.Interface):
         sysfs_path = "/sys/module/%s/" % (module.replace("-", "_"),)
         if os.path.exists(sysfs_path):
             logging.info(
-                "Skipping modprobe of %s: it is already loaded per existence" " of: %s",
+                "Skipping modprobe of %s: it is already loaded per existence of: %s",
                 module,
                 sysfs_path,
             )
@@ -235,7 +235,7 @@ class BaseI2CBus(interface.Interface):
         logging.info("Executing command: %r", args)
         ret = subprocess.call(args)
         logging.debug(
-            "Exit status was %d (negative is killed by signal) for " "command: %r",
+            "Exit status was %d (negative is killed by signal) for command: %r",
             ret,
             args,
         )

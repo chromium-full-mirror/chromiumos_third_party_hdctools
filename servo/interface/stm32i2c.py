@@ -115,7 +115,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
           Si2cError on transaction failure.
         """
         self._logger.debug(
-            "Si2c.wr_rd(" "port=%d, child_address=0x%x, write_list=%s, read_count=%s)",
+            "Si2c.wr_rd(port=%d, child_address=0x%x, write_list=%s, read_count=%s)",
             self._port,
             child_address,
             write_list,

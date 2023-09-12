@@ -7,7 +7,7 @@ import run_command
 
 
 class StopCommand(run_command.RunCommandBase):
-    def execute_command(self, container, _):
+    def execute_command(self, container, passthrough):
         container.kill()
         return (0, None)
 
