@@ -477,7 +477,6 @@ disable=
     simplifiable-if-expression,
     super-init-not-called,
     super-with-arguments,
-    superfluous-parens,
     too-few-public-methods,
     too-many-arguments,
     too-many-branches,

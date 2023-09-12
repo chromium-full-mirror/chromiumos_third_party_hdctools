@@ -414,7 +414,7 @@ class ServoDeviceFinder(object):
                     prefix = "%s-%s" % (dev_type, dev.serial[-4:])
                 if prefix in known_prefixes:
                     suffix = 2
-                    while ("%s-%s" % (prefix, suffix)) in known_prefixes:
+                    while "%s-%s" % (prefix, suffix) in known_prefixes:
                         suffix += 1
                     prefix = "%s-%s" % (prefix, suffix)
                 dev.devopts.prefix.append(prefix)

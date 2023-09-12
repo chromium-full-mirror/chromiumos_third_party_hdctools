@@ -206,7 +206,7 @@ class TPS65090ADC(object):
 
         rd_val = self._i2c.get(REG_IDX_AD_CTRL)
         retry = self._RETRY_MAX
-        while retry and not (rd_val & AD_CTRL_EOC):
+        while retry and not rd_val & AD_CTRL_EOC:
             time.sleep(0.01)
             rd_val = self._i2c.get(REG_IDX_AD_CTRL)
             retry -= 1
