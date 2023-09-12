@@ -99,7 +99,7 @@ def ctrl_param(config, cname, pname, pval):
 
 def ctrl_param_get(config, cname, pname, pval):
     """Check in |config|, ctrl |cname| has |pname| as |pval| on get."""
-    cparams, _ = config.lookup_control_params(cname)
+    cparams, _unused = config.lookup_control_params(cname)
     # NOTE: passing None means checking that that the param does not exist
     if pname not in cparams:
         return pval is None
@@ -108,7 +108,7 @@ def ctrl_param_get(config, cname, pname, pval):
 
 def ctrl_param_set(config, cname, pname, pval):
     """Check in |config|, ctrl |cname| has |pname| as |pval| on set."""
-    _, cparams = config.lookup_control_params(cname)
+    _unused, cparams = config.lookup_control_params(cname)
     # NOTE: passing None means checking that that the param does not exist
     if pname not in cparams:
         return pval is None

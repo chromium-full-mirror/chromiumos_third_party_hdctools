@@ -208,7 +208,7 @@ class Susb:
         # Get an endpoint instance.
         try:
             cfg = dev.get_active_configuration()
-        except usb.core.USBError as e:
+        except usb.core.USBError:
             self._logger.error(
                 "You may have run out of endpoints on your machine "
                 "due to running too many servos simultaneously. "
@@ -295,7 +295,7 @@ class Susb:
             | usb.util.CTRL_TYPE_VENDOR
             | usb.util.CTRL_RECIPIENT_INTERFACE
         )
-        ret = self._dev.ctrl_transfer(
+        self._dev.ctrl_transfer(
             bmRequestType=reqtype,
             bRequest=request,
             wIndex=self._interface,

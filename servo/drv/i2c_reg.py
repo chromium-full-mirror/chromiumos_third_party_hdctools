@@ -128,7 +128,7 @@ class I2cReg:
         # Set potential overwrites from default.
         no_read = no_read if no_read is not None else self._no_read
         reg_len = reg_len if reg_len is not None else self._reg_len
-        for _ in range(reg_len):
+        for _unused in range(reg_len):
             wlist.append(value & 0xFF)
             value = value >> 8
         if value != 0:

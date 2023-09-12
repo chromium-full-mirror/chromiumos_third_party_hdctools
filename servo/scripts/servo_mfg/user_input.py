@@ -93,7 +93,7 @@ def prompt_for_mac():
     return _prompt_and_validate("macaddr", MACADDR_RE)
 
 
-def _timeout_handler(sig, _):
+def _timeout_handler(_sig, _unused):
     """Helper to log a timeout and raise the error. Installed as sig handler."""
     logging.error("Timeout waiting for input. Timeout is %ds", INPUT_TIMEOUT_S)
     raise UserInputError("Timeout on input.")

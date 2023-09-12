@@ -155,7 +155,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
         # Send wr_rd command to stm32.
         cmd.extend(write_list)
         try:
-            ret = self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
+            self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
         except IOError as e:
             if e.errno == errno.ENODEV:
                 self._logger.error(

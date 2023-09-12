@@ -145,7 +145,7 @@ class pi4Ioe5(hw_driver.HwDriver):
             1 for pullup resistor
         """
 
-        _, mask = self._get_offset_mask()
+        _unused, mask = self._get_offset_mask()
         if mask is None:
             raise Pi4Ioe5Error("Unable to determine mask. Is offset declared?")
 
@@ -197,7 +197,7 @@ class pi4Ioe5(hw_driver.HwDriver):
           opendrain: 0 for push-pull and 1 for open drain configuration
         """
 
-        _, mask = self._get_offset_mask()
+        _unused, mask = self._get_offset_mask()
         if mask is None:
             raise Pi4Ioe5Error("Unable to determine mask. Is offset declared?")
 

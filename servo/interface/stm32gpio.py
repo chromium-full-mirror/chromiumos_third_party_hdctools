@@ -162,7 +162,7 @@ def test():
 
     logging.debug("Starting")
     sobj = Sgpio()
-    for i in range(1, 2):
+    for _unused in range(1, 2):
         rd_val = sobj.wr_rd(2, wr_val=0)
         logging.debug("rd_val = %d after <2> -> 0", (rd_val))
         if rd_val != 0:

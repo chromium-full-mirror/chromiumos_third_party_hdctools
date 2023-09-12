@@ -200,7 +200,7 @@ class basePWRADC(hw_driver.HwDriver):
         """
         raise NotImplementedError()
 
-    def _Set_ez_config(self, _):
+    def _Set_ez_config(self, _unused):
         """Go through routine to configure the ADC for common use-case."""
         # NOTE: subclass should implement this if they want to configure anything
         # for common users or dut-power automation

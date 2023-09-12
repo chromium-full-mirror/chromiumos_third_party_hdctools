@@ -36,7 +36,7 @@ class ftdii2cCmd(hw_driver.HwDriver):
         # pylint: disable=protected-access
         super(ftdii2cCmd, self).__init__(interface, params, servod)
         self._logger.debug("")
-        for _, interface in servod.get_interface_list():
+        for _unused, interface in servod.get_interface_list():
             if isinstance(interface, ftdii2c.Fi2c):
                 self._ftdii2c = interface
                 break

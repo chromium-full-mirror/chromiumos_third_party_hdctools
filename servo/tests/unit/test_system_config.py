@@ -251,7 +251,7 @@ class TestSystemConfig(unittest.TestCase):
         assert not found_tagged_controls
 
     def _LoadConfigs(self, servo_type, board, model):
-        overlay_file, overlay_name = self.syscfg.get_board_model_config(
+        overlay_file, _unused = self.syscfg.get_board_model_config(
             board=board, model=model
         )
         self.assertTrue(servo_type)

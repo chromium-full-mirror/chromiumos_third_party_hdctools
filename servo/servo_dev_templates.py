@@ -94,7 +94,7 @@ def GetTemplateClass(vid, pid, serial=None):
         # Might need the lotid to distinguish what device is used.
         if serial:
             try:
-                lotid, _ = serial.split("-")
+                lotid, _unused = serial.split("-")
                 logging.info("Retrieved lot-id %r for sid: %r.", lotid, serial)
             except ValueError:
                 logging.debug("Could not retrieve lot-id for sid: %r.", serial)

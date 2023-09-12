@@ -270,7 +270,7 @@ class HighResServodPowerTracker(ServodPowerTracker):
         while not self._stop_signal.is_set():
             # Discarding the duration_ms since the difference between the current
             # time and the start time are being used.
-            sample_tuples, _ = self._sample_ctrls(self._ctrls)
+            sample_tuples, _unused = self._sample_ctrls(self._ctrls)
             temp_stats = stats_manager.StatsManager()
             temp_sample_data = []
 

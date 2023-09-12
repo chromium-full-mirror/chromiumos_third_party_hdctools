@@ -168,7 +168,7 @@ class Device(tool.Tool):
             self.error("Device with serial %r not found on pyusb.", args.serial)
         # The real experiment - reading some data.
         try:
-            _ = usb.util.get_string(dev, dev.iSerialNumber)
+            _unused = usb.util.get_string(dev, dev.iSerialNumber)
         except (ValueError, usb.core.USBError) as e:
             self.error("Device with serial %r has USB comms issues. %s", args.serial, e)
 

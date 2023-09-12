@@ -57,7 +57,7 @@ class GenesysHubProgrammer(programmer.Programmer):
         # At this stage, we have already validated that |FW_BIN| exists. So create
         # the full command.
         write_cmd = self.WRITE_CMD + [util.find_binfile(self.FW_BIN)]
-        ret, _, _ = exec_util.exec_blocking(write_cmd, hint="writing")
+        ret, _unused, _unused = exec_util.exec_blocking(write_cmd, hint="writing")
         # Switch back to the regular wd.
         os.chdir(wd)
         if ret:
@@ -82,7 +82,7 @@ class GenesysHubProgrammer(programmer.Programmer):
         os.chdir(program_dir)
         # At this stage, we have already validated that |FW_BIN| exists. So create
         # the full command.
-        ret, stdout, _ = exec_util.exec_blocking(self.READ_CMD, hint="reading")
+        ret, stdout, _unused = exec_util.exec_blocking(self.READ_CMD, hint="reading")
         # Switch back to the regular wd.
         os.chdir(wd)
         if ret:

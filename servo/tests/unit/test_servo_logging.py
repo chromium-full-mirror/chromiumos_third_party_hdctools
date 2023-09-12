@@ -164,7 +164,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
             fmt=self.fmt,
             level=self.loglevel,
         )
-        for _ in range(2 * new_count):
+        for _unused in range(2 * new_count):
             handler.doRollover()
             # The assertion checks that there are at most new_count files.
             assert len(os.listdir(handler.logdir)) <= (
@@ -185,7 +185,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
             fmt=self.fmt,
             level=self.loglevel,
         )
-        for _ in range(new_count):
+        for _unused in range(new_count):
             handler.doRollover()
             # The assertion checks that there are at most new_count files.
             assert len(os.listdir(handler.logdir)) <= (
@@ -205,7 +205,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
             fmt=self.fmt,
             level=self.loglevel,
         )
-        for _ in range(new_count):
+        for _unused in range(new_count):
             handler.doRollover()
             # The assertion checks that there are at most new_count files.
             assert len(os.listdir(handler.logdir)) <= (

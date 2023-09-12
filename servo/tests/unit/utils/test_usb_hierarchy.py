@@ -267,7 +267,7 @@ class TestUsbHierarchy(unittest.TestCase):
         )
         vid, pid, sid = self._vid, self._pid, self._serial
         with self.assertRaisesRegex(HierarchyError, "Found 2 devices with"):
-            _ = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
+            _unused = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
 
     def test_GetDevPortPath(self):
         """Retrieving the /sys/bus/usb/devices path for a device works."""
@@ -470,7 +470,7 @@ class TestUsbHierarchy(unittest.TestCase):
             HierarchyError,
             "Unexpected content %r at sysfs file %r" % (content, devnum_f),
         ):
-            _ = Hierarchy.DevNumFromSysfs(devd)
+            _unused = Hierarchy.DevNumFromSysfs(devd)
 
     def test_VendorIDFromSysfs(self):
         """idVendor is read out correctly and cast to be an int with base 16."""
@@ -519,7 +519,7 @@ class TestUsbHierarchy(unittest.TestCase):
             HierarchyError,
             "Unexpected content %r at sysfs file %r" % (bad_vid, vid_f),
         ):
-            _ = Hierarchy.VendorIDFromSysfs(devd)
+            _unused = Hierarchy.VendorIDFromSysfs(devd)
 
 
 def AddFakeUsbEntry(
@@ -607,13 +607,10 @@ class TestUsbHierarchyPyTest:
         _mock_usb.devices.append(device)
         _mock_usb.devices.append(device2)
         with pytest.raises(HierarchyError):
-            found_device = Hierarchy.GetUsbDevice(
-                device.idVendor, device.idProduct, device.iSerial
-            )
+            Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
 
     def test_GetUsbDeviceBadUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
-        current_get_string = usb.util.get_string
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
         device2.iSerial = ValueError("This is a test")
@@ -626,7 +623,6 @@ class TestUsbHierarchyPyTest:
 
     def test_GetUsbDeviceAllBadUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
-        current_get_string = usb.util.get_string
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
         device2.iSerial = ValueError("This is a test")
@@ -640,7 +636,6 @@ class TestUsbHierarchyPyTest:
 
     def test_GetUsbDeviceAllBadCoreUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
-        current_get_string = usb.util.get_string
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
         device2.iSerial = usb.core.USBError("This is a test")

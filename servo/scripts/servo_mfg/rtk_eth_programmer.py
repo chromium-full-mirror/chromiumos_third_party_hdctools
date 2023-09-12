@@ -146,7 +146,7 @@ class RTKEthProgrammer(programmer.Programmer):
                     # - the line is not a macaddr line: transcribe the whole line again
                     # - the line is a macaddr line: we need to write |macaddr| as the
                     # value anyways
-                    k, _ = line.split(self.KEY_VALUE_SEP)
+                    k, _unused = line.split(self.KEY_VALUE_SEP)
                     if k not in self.MACADDR_FIELDS:
                         # This is a different field. Just write it over as is.
                         output.append(line)
@@ -176,10 +176,14 @@ class RTKEthProgrammer(programmer.Programmer):
             # Need to be in that directory to program.
             os.chdir(program_dir)
             self._move_config(program_dir, macaddr)
-            ret, _, _ = exec_util.exec_blocking(self.ERASE_CMD, hint="erasing")
+            ret, _unused, _unused = exec_util.exec_blocking(
+                self.ERASE_CMD, hint="erasing"
+            )
             if ret:
                 self.throw_error("Failed to erase.")
-            ret, _, _ = exec_util.exec_blocking(self.WRITE_CMD, hint="writing")
+            ret, _unused, _unused = exec_util.exec_blocking(
+                self.WRITE_CMD, hint="writing"
+            )
             if ret:
                 self.throw_error("Failed to write.")
             # If everything went well so far, then we can write the macaddr

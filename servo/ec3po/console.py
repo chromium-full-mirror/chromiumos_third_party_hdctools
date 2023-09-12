@@ -291,7 +291,7 @@ class Console:
             self.partial_cmd = self.input_buffer
 
         # Backspace the line.
-        for _ in range(self.input_buffer_pos):
+        for _unused in range(self.input_buffer_pos):
             self.SendBackspace()
 
         # Print the last entry in the history buffer.
@@ -324,7 +324,7 @@ class Console:
         if self.history_pos == len(self.history):
             self.logger.debug("Restoring partial command of %r", self.partial_cmd)
             # Backspace the line.
-            for _ in range(self.input_buffer_pos):
+            for _unused in range(self.input_buffer_pos):
                 self.SendBackspace()
             # Print the partially entered command if any.
             os.write(fd, self.partial_cmd)
@@ -344,7 +344,7 @@ class Console:
             return
 
         # Backspace the line.
-        for _ in range(self.input_buffer_pos):
+        for _unused in range(self.input_buffer_pos):
             self.SendBackspace()
 
         # Print the newer entry from the history buffer.
@@ -802,7 +802,7 @@ class Console:
             return
         if diff:
             self.MoveCursor("right", diff)
-            for _ in range(diff):
+            for _unused in range(diff):
                 self.SendBackspace()
             self.input_buffer_pos -= diff
             self.input_buffer = self.input_buffer[0 : self.input_buffer_pos]
@@ -1000,7 +1000,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                 if not events:
                     continue
 
-                for fileno, _ in events:
+                for fileno, _unused in events:
                     if fileno == console.controller_pty:
                         if not command_active.value:
                             # Convert to bytes so we can look for non-printable chars such as

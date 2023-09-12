@@ -529,7 +529,7 @@ class SystemConfig:
                     if clobber_ok is not None:
                         # if we clobbered an alias, look for its hwinit under its real name
                         realname = self.aliases.get(name, name)
-                        for i, (hwinit_name, _) in enumerate(self.hwinit):
+                        for i, (hwinit_name, _unused) in enumerate(self.hwinit):
                             if hwinit_name == realname:
                                 self.hwinit[i] = (realname, set_dict["init"])
                                 hwinit_found = True

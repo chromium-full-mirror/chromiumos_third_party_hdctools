@@ -475,7 +475,7 @@ class ec(pty_driver.ptyDriver):
                 return
             self._issue_cmd("pd %d swap data" % port)
             time.sleep(self._role_swap_delay)
-            role, _ = self._read_port_role(port)
+            role, _unused = self._read_port_role(port)
             if role != value:
                 raise ecError(
                     "Failed to set port %d to PD role %s, got: %s" % (port, value, role)

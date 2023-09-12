@@ -111,7 +111,7 @@ class Coordinator:
             self._logger.info("The data is also compressed at %r", outdir_tar)
         sys.exit(code)
 
-    def handle_sig(self, sig, _):
+    def handle_sig(self, sig, _unused):
         """Helper to handle ctrl-c logic.
 
         This function allow the code to have a two step system where the user can

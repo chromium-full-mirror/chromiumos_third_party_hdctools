@@ -493,7 +493,9 @@ class studEvb(hw_driver.HwDriver):
                 continue
 
             # Find a control with particular pin/port/i2c_addr
-            params, _, _ = self.servod.get_main_device()._get_param_drv(control_name)
+            params, _unused, _unused = self.servod.get_main_device()._get_param_drv(
+                control_name
+            )
             if int(params.get("child"), base=16) != ioex_addr:
                 continue
 

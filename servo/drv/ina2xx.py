@@ -95,7 +95,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         raise NotImplementedError("Must be defined by child class")
 
     def _read_cnvr(self):
-        (is_cnvr, _) = self._read_cnvr_ovf()
+        (is_cnvr, _unused) = self._read_cnvr_ovf()
         return is_cnvr
 
     def _read_ovf(self):
@@ -120,7 +120,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         Raises:
           Ina2xxError: if conversion didn't assert after self.BUSV_READ_RETRY times
         """
-        for _ in range(self.BUSV_READ_RETRY):
+        for _unused in range(self.BUSV_READ_RETRY):
             is_cnvr = self._read_cnvr()
             if is_cnvr:
                 break
@@ -184,7 +184,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
             self._write_reg("cal", self._calib_reg)
             is_ovf = self._get_next_ovf()
 
-    def _Set_ez_config(self, _):
+    def _Set_ez_config(self, _unused):
         """Set the config register to be 'low_power'.
 
         low_power is a short-hand on the INA chips in servod to say

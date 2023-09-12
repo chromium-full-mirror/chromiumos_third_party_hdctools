@@ -333,7 +333,7 @@ class Report:
           space: number of spaces to add
           skip_dev_report: whether to skip writing to |self._path|
         """
-        for _ in range(space):
+        for _unused in range(space):
             self.write_line("\n", skip_dev_report=skip_dev_report)
 
     def _mark_section(self, outcome):

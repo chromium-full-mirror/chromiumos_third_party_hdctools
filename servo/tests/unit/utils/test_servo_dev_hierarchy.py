@@ -384,7 +384,7 @@ class TestServoDeviceHierarchy(unittest.TestCase):
             "Currently servod does not support chaining "
             "3 or more levels of servo devices",
         ):
-            hierarchy = ServoDeviceHierarchy()
+            ServoDeviceHierarchy()
 
     def test_generate_device_priority_no_main(self):
         """Generate device priority for a list of device entries without a user chosen main device."""

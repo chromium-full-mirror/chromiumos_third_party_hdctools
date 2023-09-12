@@ -43,7 +43,7 @@ class fluffy(pty_driver.ptyDriver):
 
         # If it's not just a string, it's a tuple with the match of the active
         # charge port.
-        _, active_port = result
+        _unused, active_port = result
         return active_port
 
     def _Set_active_chg_port(self, port):
@@ -68,7 +68,7 @@ class fluffy(pty_driver.ptyDriver):
           A string ('on' or 'off') indicating whether CC flip is enabled.
         """
         result = self._issue_cmd_get_results("status", [CC_FLIP_RE])[0]
-        _, enable = result
+        _unused, enable = result
         return "on" if enable.lower() == "yes" else "off"
 
     def _Set_cc_flip_en(self, enable):
@@ -87,5 +87,5 @@ class fluffy(pty_driver.ptyDriver):
         Returns:
           A string indicating the voltage present at the DUT connector in mV.
         """
-        _, voltage = self._issue_cmd_get_results("status", [DUT_VOLTAGE_RE])[0]
+        _unused, voltage = self._issue_cmd_get_results("status", [DUT_VOLTAGE_RE])[0]
         return voltage

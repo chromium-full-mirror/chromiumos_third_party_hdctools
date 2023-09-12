@@ -148,7 +148,7 @@ class tcs3414(hw_driver.HwDriver):
         def w2f(b):
             return float(b) / 65535.0
 
-        h, s, _ = colorsys.rgb_to_hsv(w2f(r), w2f(g), w2f(b))
+        h, s, _unused = colorsys.rgb_to_hsv(w2f(r), w2f(g), w2f(b))
 
         return [h, s, w2f(i)]
 

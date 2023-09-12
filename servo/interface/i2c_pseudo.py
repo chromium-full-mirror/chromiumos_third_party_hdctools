@@ -277,8 +277,24 @@ class I2cPseudoAdapter:
         if not self._xfer_reqs:
             return
         assert len(self._xfer_reqs) <= 2
-        assert len(set(xfer_id for xfer_id, _, _, _, _, _ in self._xfer_reqs)) == 1
-        assert len(set(addr for _, _, addr, _, _, _ in self._xfer_reqs)) == 1
+        assert (
+            len(
+                set(
+                    xfer_id
+                    for xfer_id, _unused, _unused, _unused, _unused, _unused in self._xfer_reqs
+                )
+            )
+            == 1
+        )
+        assert (
+            len(
+                set(
+                    addr
+                    for _unused, _unused, addr, _unused, _unused, _unused in self._xfer_reqs
+                )
+            )
+            == 1
+        )
 
         write_idx = None
         write_list = None

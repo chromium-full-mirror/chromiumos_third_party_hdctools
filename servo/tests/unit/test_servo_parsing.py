@@ -127,7 +127,7 @@ class TestServodRCParser(unittest.TestCase):
         # Regenerate the parser as this test modifies the os.environ map.
         self.SetupParser()
         cmdline = []
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._serialname == opts.serialname
 
     def test_EnvNameSerialNoName(self):
@@ -136,7 +136,7 @@ class TestServodRCParser(unittest.TestCase):
         # Regenerate the parser as this test modifies the os.environ map.
         self.SetupParser()
         cmdline = ["--serialname", self._serialname]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._serialname == opts.serialname
 
     def test_EnvNameNoSerialNameInCmdline(self):
@@ -145,27 +145,27 @@ class TestServodRCParser(unittest.TestCase):
         # Regenerate the parser as this test modifies the os.environ map.
         self.SetupParser()
         cmdline = ["--name", self._valid_name]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._serialname == opts.serialname
 
     def test_NameSerial(self):
         """Serial and name defined: raise an error."""
         cmdline = ["--name", self._valid_name, "--serialname", self._serialname]
         with self.assertRaisesRegex(SystemExit, "2"):
-            _ = self._parser.parse_known_args(cmdline)
+            _unused = self._parser.parse_known_args(cmdline)
 
     def test_NameNoSerialBoard(self):
         """Name, and board defined: name maps to serial but no board overwrite."""
         new_board = "new-board"
         cmdline = ["--name", self._valid_name, "--board", new_board]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._serialname == opts.serialname
         assert new_board == opts.board
 
     def test_NameNoSerialNoBoard(self):
         """Only name defined: name maps to serial and adds board."""
         cmdline = ["--name", self._valid_name]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._serialname == opts.serialname
         assert self._board == opts.board
 
@@ -175,12 +175,12 @@ class TestServodRCParser(unittest.TestCase):
         with self.assertRaisesRegex(
             servo_parsing.ServodParserError, "Name %r not in rc" % self._invalid_name
         ):
-            _ = self._parser.parse_known_args(cmdline)
+            _unused = self._parser.parse_known_args(cmdline)
 
     def test_NoNameSerialInRCNoBoard(self):
         """Serial shows up in the RC, & no board specified: take the rc's board."""
         cmdline = ["--serialname", self._serialname]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._board == opts.board
 
 
@@ -234,7 +234,7 @@ class TestServodClientParser(unittest.TestCase):
     def test_NoPortSerial(self):
         """No port but serialname in cmdline: look for the port in scratch."""
         cmdline = ["--serialname", self._serial]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._scratchport == opts.port
 
     def test_EnvPortSerial(self):
@@ -243,7 +243,7 @@ class TestServodClientParser(unittest.TestCase):
         # Regenerate the parser as this test modifies the os.environ map.
         self.SetupParser()
         cmdline = ["--serialname", self._serial]
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._scratchport == opts.port
 
     def test_EnvPortInvalidEnvName(self):
@@ -257,7 +257,7 @@ class TestServodClientParser(unittest.TestCase):
         with self.assertRaisesRegex(
             servo_parsing.ServodParserError, "Name %r not in rc" % rc_name
         ):
-            _ = self._parser.parse_known_args(cmdline)
+            _unused = self._parser.parse_known_args(cmdline)
 
     def test_EnvPortValidEnvNameInScratch(self):
         """Env port and known name. Name is used to lookup port in scratch."""
@@ -269,7 +269,7 @@ class TestServodClientParser(unittest.TestCase):
         # Regenerate the parser as this test modifies the os.environ map.
         self.SetupParser()
         cmdline = []
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert self._scratchport == opts.port
 
     def test_EnvPortValidEnvNameNotInScratch(self):
@@ -285,12 +285,12 @@ class TestServodClientParser(unittest.TestCase):
         self.SetupParser()
         cmdline = []
         with self.assertRaisesRegex(SystemExit, "2"):
-            _ = self._parser.parse_known_args(cmdline)
+            _unused = self._parser.parse_known_args(cmdline)
 
     def test_NoPortNoSerial(self):
         """No port and no serialname in cmdline: revert to default port."""
         cmdline = []
-        opts, _ = self._parser.parse_known_args(cmdline)
+        opts, _unused = self._parser.parse_known_args(cmdline)
         assert client.DEFAULT_PORT == opts.port
 
     def test_NoPortSerialNoDutOnSerial(self):
@@ -298,7 +298,7 @@ class TestServodClientParser(unittest.TestCase):
         cmdline = ["--serialname", self._invalid_serial]
         # Argparse raises sys.exit(2) on error.
         with self.assertRaisesRegex(SystemExit, "2"):
-            _ = self._parser.parse_known_args(cmdline)
+            _unused = self._parser.parse_known_args(cmdline)
 
 
 if __name__ == "__main__":

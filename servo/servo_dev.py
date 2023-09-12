@@ -327,7 +327,7 @@ class ServoDevice:
 
     def reinitialize(self):
         """Reinitialize all interfaces that support reinitialization"""
-        for _, interface in enumerate(self._interface_list):
+        for _unused, interface in enumerate(self._interface_list):
             interface.reinitialize()
         # Indicate interfaces are safe to use again.
         self.connect()
@@ -503,8 +503,8 @@ class ServoDevice:
         # left to do is to pass each one of them a weak reference to the other.
         # This ensures that if a control needs to do read/modify/write for
         # instance it can do so without much overhead.
-        _, set_drv, _ = self._drv_dict[control_name]["set"]
-        _, get_drv, _ = self._drv_dict[control_name]["get"]
+        _unused, set_drv, _unused = self._drv_dict[control_name]["set"]
+        _unused, get_drv, _unused = self._drv_dict[control_name]["get"]
         set_drv.set_complement(get_drv)
         # Run the method again, as it will find the entries now in the cache.
         return self._get_param_drv(control_name, is_get)

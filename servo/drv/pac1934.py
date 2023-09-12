@@ -79,7 +79,7 @@ class pac1934(ina2xx.ina2xx):
 
     def busv_fsr(self):
         """Retrieve the bus voltage full scale range (fsr) signed."""
-        _, v_signed = self._signed()
+        _unused, v_signed = self._signed()
         return self._busv_fsr, v_signed
 
     def pwr_fsr(self):
@@ -89,7 +89,7 @@ class pac1934(ina2xx.ina2xx):
 
     def fsc(self):
         """Retrieve full scale current (fsc) and signed."""
-        c_signed, _ = self._signed()
+        c_signed, _unused = self._signed()
         return self._fsc, c_signed
 
     def _refresh(self, clear=False):
@@ -104,7 +104,7 @@ class pac1934(ina2xx.ina2xx):
         self._write_reg(reg, 0x0, refresh=None)
         time.sleep(self.REFRESH_STABLE_S)
 
-    def _Set_ez_config(self, _):
+    def _Set_ez_config(self, _unused):
         """Configure for standard usage on pac family.
 
         on the PAC family, standard usage means
@@ -119,7 +119,7 @@ class pac1934(ina2xx.ina2xx):
         self._set_ctrl("samples", "highest")
         self._refresh(clear=True)
 
-    def _Set_resolution(self, _):
+    def _Set_resolution(self, _unused):
         """The resolution is always the same on pac1934."""
         pass
 
@@ -320,6 +320,6 @@ class pac1934(ina2xx.ina2xx):
         # register.
         return self._Get_milliwatts(raw_pwr=acc_pwr // acc_count)
 
-    def _Set_acc_clear(self, _):
+    def _Set_acc_clear(self, _unused):
         """Clear the accumulator values (and refresh)."""
         self._refresh(clear=True)

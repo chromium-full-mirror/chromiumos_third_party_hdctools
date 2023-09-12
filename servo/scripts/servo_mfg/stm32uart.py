@@ -95,7 +95,7 @@ class Suart:
                     if r:
                         self._susb._write_ep.write(r, self._susb.TIMEOUT_MS)
 
-                except Exception as e:
+                except Exception:
                     pass
             else:
                 time.sleep(0.1)

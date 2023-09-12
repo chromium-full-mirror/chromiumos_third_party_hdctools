@@ -138,11 +138,11 @@ class AtmegaKBEmulatorProgrammer(programmer.Programmer):
           result of self._verify after programming
         """
         self._reboot_in_dfu_mode(tiny_servod)
-        ret, _, _ = exec_util.exec_blocking(self.ERASE_CMD, hint="erasing")
+        ret, _unused, _unused = exec_util.exec_blocking(self.ERASE_CMD, hint="erasing")
         if ret:
             self.throw_error("Issue on erase. Giving up.")
         write_cmd = self.WRITE_CMD + [util.find_binfile(self.BIN)]
-        ret, _, _ = exec_util.exec_blocking(write_cmd, hint="writing")
+        ret, _unused, _unused = exec_util.exec_blocking(write_cmd, hint="writing")
         if ret:
             self.throw_error("Issue on write. Giving up.")
         self._reboot_in_normal_mode(tiny_servod)

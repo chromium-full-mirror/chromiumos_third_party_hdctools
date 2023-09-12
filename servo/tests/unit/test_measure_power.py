@@ -676,7 +676,7 @@ class TestPowerMeasurement(unittest.TestCase):
     def test_init_no_tracker(self):
         """Test __init__()."""
         with self.assertRaises(measure_power.NoSourceError) as cm:
-            pm = measure_power.PowerMeasurement("localhost", 9996, 0, 0, 0)
+            measure_power.PowerMeasurement("localhost", 9996, 0, 0, 0)
         self.assertEqual(
             str(cm.exception), "No power measurement source successfully setup."
         )
@@ -1162,7 +1162,7 @@ class TestPowerMeasurement(unittest.TestCase):
         self.assertEqual(stats_manager1._title, "adc(tag)")
         self.assertEqual(stats_manager2._title, "ec")
         pm._SaveSummary.assert_called_once()
-        _, kwargs = pm._SaveSummary.call_args
+        _unused, kwargs = pm._SaveSummary.call_args
         self.assertEqual(kwargs["stats_managers"], [stats_manager1])
         self.assertEqual(res, ["file1.txt"])
 
@@ -1189,7 +1189,7 @@ class TestPowerMeasurement(unittest.TestCase):
         res = pm.SaveSummary()
 
         pm._SaveSummary.assert_called_once()
-        _, kwargs = pm._SaveSummary.call_args
+        _unused, kwargs = pm._SaveSummary.call_args
         self.assertEqual(
             list(kwargs["stats_managers"]), [stats_manager1, stats_manager2]
         )

@@ -215,7 +215,7 @@ class DataSample:
         try:
             for sample_pos, sample_element in enumerate(samples):
                 self._samples[sample_pos].append(sample_element)
-        except Exception as e:
+        except Exception:
             if len(self._samples) != len(samples):
                 self._logger.error(
                     "The number of new samples"

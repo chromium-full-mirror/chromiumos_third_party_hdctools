@@ -71,14 +71,14 @@ class Tester:
 
     def start_servod(self):
         """Start servod as a subprocess."""
-        ret, _, _ = exec_util.exec_blocking(
+        ret, _unused, _unused = exec_util.exec_blocking(
             ["servodtool", "device", "-s", self._serial, "usb-path"]
         )
         if ret:
             self._logger.error("No servo device with serial %r found", self._serial)
             return None
         servodp = exec_util.exec_nonblocking(["servod", "-s", self._serial])
-        ret, _, _ = exec_util.exec_blocking(
+        ret, _unused, _unused = exec_util.exec_blocking(
             [
                 "servodtool",
                 "instance",

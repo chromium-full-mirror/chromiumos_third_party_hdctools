@@ -358,7 +358,7 @@ class TestServoStarter(unittest.TestCase):
                 "xmlrpc.server.SimpleXMLRPCServer.__init__",
                 unittest.mock.MagicMock(side_effect=err),
             ):
-                port = starter._start_xml_server(sopts)
+                starter._start_xml_server(sopts)
                 self.assertEqual(
                     SimpleXMLRPCServer.__init__.call_count, 9999 - 9200 + 1
                 )

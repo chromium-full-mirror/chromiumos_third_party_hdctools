@@ -339,7 +339,7 @@ class DutPower:
                 ("localhost", server_port), self.http_server_handler
             )
             if server_port == 0:
-                _, server_port = self.visualization_server.server_address
+                _unused, server_port = self.visualization_server.server_address
         except Exception:
             self.pm_logger.error(
                 "Failed to start http server. You may try to switch to"
@@ -374,18 +374,20 @@ class DutPower:
         sleep_waiting = threading.Event()
         sleep_sampling = threading.Event()
         setup_done = pm.MeasurePower(wait=args.wait, powerstate=args.powerstate)
-        handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
+        handler = lambda signal, _unused, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
             sw.set(),
             ss.set(),
             pm.FinishMeasurement(),
         )
         if args.visualization:
-            handler = lambda signal, _, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
-                sw.set(),
-                ss.set(),
-                pm.FinishMeasurement(),
-                self.visualization_server.server_close(),
-                self.visualization_server.shutdown(),
+            handler = (
+                lambda signal, _unused, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
+                    sw.set(),
+                    ss.set(),
+                    pm.FinishMeasurement(),
+                    self.visualization_server.server_close(),
+                    self.visualization_server.shutdown(),
+                )
             )
         # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
         signal.signal(signal.SIGINT, handler)

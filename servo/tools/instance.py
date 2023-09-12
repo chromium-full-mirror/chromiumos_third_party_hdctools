@@ -61,7 +61,7 @@ class Instance(tool.Tool):
         except scratch.ScratchError as e:
             self.error(str(e))
 
-    def show_all(self, _):
+    def show_all(self, _unused):
         """Print info of all registered servod instances."""
         output_lines = [_format_info(entry) for entry in self._scratch.GetAllEntries()]
         if output_lines:

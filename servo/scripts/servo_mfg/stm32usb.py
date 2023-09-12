@@ -57,7 +57,6 @@ class Susb:
         if dev is None:
             raise SusbError("USB device not found")
 
-        serial = "(%s)" % serialname if serialname else ""
         # If we can't set configuration, it's already been set.
         try:
             dev.set_configuration()

@@ -200,7 +200,7 @@ class Servod:
             skip_controls = set()
             for dev in servo_device.get_child_devices():
                 skip_controls.update(
-                    set(control_name for control_name, _ in dev.syscfg.hwinit)
+                    set(control_name for control_name, _unused in dev.syscfg.hwinit)
                 )
             servo_device.hwinit(verbose=verbose, skip_controls=skip_controls)
 
@@ -262,7 +262,7 @@ class Servod:
             dev_type = dev_type.split("_for_")[0]
 
         candidates = set()
-        for _, dev in self._unique_devices.items():
+        for _unused, dev in self._unique_devices.items():
             if dev_type not in dev.template.TYPE:
                 continue
             if not board_model:

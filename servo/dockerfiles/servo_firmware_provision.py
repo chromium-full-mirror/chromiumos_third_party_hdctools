@@ -75,7 +75,7 @@ def create_sym_link(src, dst):
     """Creates the symbolic link."""
     try:
         os.symlink(src, dst)
-    except FileExistsError as e:
+    except FileExistsError:
         print(dst, "symlink already exists. Update it to ", src)
         os.unlink(dst)
         os.symlink(src, dst)

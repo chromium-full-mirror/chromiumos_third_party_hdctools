@@ -68,7 +68,7 @@ class servoMetadata(hw_driver.HwDriver):
             raise metadataError("tag needs to be specified in params.")
         return self._servod.get_controls_for_tag(self._params["tag"])
 
-    def _Set_rotate_logs(self, _):
+    def _Set_rotate_logs(self, _unused):
         """Force a servo log rotation."""
         handlers = [
             h

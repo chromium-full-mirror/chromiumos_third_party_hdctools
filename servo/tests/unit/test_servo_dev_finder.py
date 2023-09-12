@@ -349,7 +349,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         with self.assertRaisesRegex(
             ServoDeviceFinderError, "User did not choose a valid device for"
         ):
-            entries = finder.discover_servos()
+            finder.discover_servos()
 
     def test_discover_servos_no_device(self):
         """Test discover_servos error out when there are no devices connected."""
@@ -366,7 +366,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         with self.assertRaisesRegex(
             ServoDeviceFinderError, "Cannot find a servo device with"
         ):
-            entries = finder.discover_servos()
+            finder.discover_servos()
 
     def test_choose_main_device_1_user_main(self):
         """Test choose_main_device return the only main device chosen by the user."""
@@ -459,7 +459,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         with self.assertRaisesRegex(
             ServoDeviceFinderError, "No device is picked as the main device"
         ):
-            main = finder.choose_main_device(devs)
+            finder.choose_main_device(devs)
 
     def test_choose_main_device_no_user_main(self):
         """Test choose_main_device smartly choose a main device when user does not choose one."""
@@ -548,7 +548,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         with self.assertRaisesRegex(
             ServoDeviceFinderError, "No device is picked as the main device"
         ):
-            main = finder.choose_main_device(devs)
+            finder.choose_main_device(devs)
 
     def test_generate_prefixes_main_device(self):
         """Test generate_prefixes generate correct prefixes for the main device and non-main devices."""
@@ -666,7 +666,7 @@ class TestServoDeviceFinder(unittest.TestCase):
             self._testing_choose_device,
         )
         with self.assertRaisesRegex(ServoDeviceFinderError, "does not have a prefix"):
-            main = finder.validate_devopts([test_entry])
+            finder.validate_devopts([test_entry])
 
     def test_validate_devopts_multiple_main_devices(self):
         """Test validate_devopts error out if there are multiple devices chosen as the main device."""
@@ -698,7 +698,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         with self.assertRaisesRegex(
             ServoDeviceFinderError, "Multiple devices are chosen as the main device."
         ):
-            main = finder.validate_devopts([test_entry, test_entry2])
+            finder.validate_devopts([test_entry, test_entry2])
 
     def test_validate_device_availability(self):
         """Test validate_device_availability error out when some device is not available."""
@@ -726,7 +726,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         with self.assertRaisesRegex(
             ServoDeviceFinderError, "Not all devices requested are available right now."
         ):
-            main = finder.validate_device_availability([test_entry, test_entry2])
+            finder.validate_device_availability([test_entry, test_entry2])
 
 
 class MockScratch(Scratch):

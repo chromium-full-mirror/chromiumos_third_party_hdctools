@@ -61,7 +61,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         latest = self._servod_get(self._latest_fw_cmd)
         return int(latest == current)
 
-    def _set(self, _):
+    def _set(self, _unused):
         """Print what the current firmware is, what the latest available is."""
         current = self._servod_get(self._current_fw_cmd)
         latest = self._servod_get(self._latest_fw_cmd)

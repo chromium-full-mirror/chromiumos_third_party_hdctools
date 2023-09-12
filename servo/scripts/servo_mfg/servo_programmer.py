@@ -63,11 +63,11 @@ class ServoProgrammer(programmer.Programmer):
         erase_cmd = self.BASE_CMD + id_cmd + ["-s", erase_address] + file_cmd
         write_cmd = self.BASE_CMD + id_cmd + ["-s", image_address] + file_cmd
 
-        ret, _, _ = exec_util.exec_blocking(erase_cmd, hint="erasing")
+        ret, _unused, _unused = exec_util.exec_blocking(erase_cmd, hint="erasing")
         if ret:
             self.throw_error("Failed to erase.")
         time.sleep(1)
-        ret, _, _ = exec_util.exec_blocking(write_cmd, hint="writing")
+        ret, _unused, _unused = exec_util.exec_blocking(write_cmd, hint="writing")
         if ret:
             self.throw_error("Failed to write.")
 
@@ -81,7 +81,9 @@ class ServoProgrammer(programmer.Programmer):
         """Helper to validate that programming tools are available."""
         # Find the binary file and get the full path, and the size
         # find the programming tool
-        _, self._bin, _ = servo_updater.get_files_and_version(self._board, None)
+        _unused, self._bin, _unused = servo_updater.get_files_and_version(
+            self._board, None
+        )
         self._size = os.path.getsize(self._bin)
         if not util.validate_exec_available(self.PROGRAMMER_BIN):
             self.exec_missing(self.PROGRAMMER_BIN)

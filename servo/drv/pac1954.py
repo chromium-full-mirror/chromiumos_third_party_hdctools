@@ -53,7 +53,7 @@ class pac1954(pac1934.pac1934):
 
     def busv_fsr(self):
         """Retrieve the bus voltage full scale range (fsr)."""
-        _, v_signed, _, v_fsr2 = self._signed_and_fsr()
+        _unused, v_signed, _unused, v_fsr2 = self._signed_and_fsr()
         fsr = self._busv_fsr
         if v_signed and not v_fsr2:
             fsr = self._busv_fsr / 2.0
@@ -69,7 +69,7 @@ class pac1954(pac1934.pac1934):
 
     def fsc(self):
         """Retrieve full scale current (fsc)."""
-        c_signed, _, c_fsr2, _ = self._signed_and_fsr()
+        c_signed, _unused, c_fsr2, _unused = self._signed_and_fsr()
         fsr = self._fsc
         if c_signed and not c_fsr2:
             fsr = self._fsc / 2.0
@@ -130,7 +130,7 @@ class pac1954(pac1934.pac1934):
         Raises:
           Pac1954Error: when failing to set current and voltage both to fsr/2
         """
-        _, _, c_fsr2, v_fsr2 = self._signed_and_fsr()
+        _unused, _unused, c_fsr2, v_fsr2 = self._signed_and_fsr()
         # If they are not the same, make them the same. Bias towards high
         # resolution.
         if c_fsr2 != v_fsr2:
@@ -143,7 +143,7 @@ class pac1954(pac1934.pac1934):
                 vs,
             )
             self._Set_resolution(self.HIGH_RESOLUTION)
-            _, _, c_fsr2, v_fsr2 = self._signed_and_fsr()
+            _unused, _unused, c_fsr2, v_fsr2 = self._signed_and_fsr()
         if c_fsr2 != v_fsr2:
             raise Pac1954Error("Failed to synchronize current and voltage fsr2.")
         return int(c_fsr2)

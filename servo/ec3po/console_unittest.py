@@ -228,7 +228,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Now backspace 1 more than what we sent.
         input_stream = []
-        for _ in range(len(test_str) + 1):
+        for _unused in range(len(test_str) + 1):
             input_stream.append(console.ControlKey.BACKSPACE)
 
         # Send that sequence out.
@@ -240,7 +240,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Next, examine the output stream for the correct sequence.
         exp_console_out = test_str
-        for _ in range(len(test_str)):
+        for _unused in range(len(test_str)):
             exp_console_out += BACKSPACE_STRING
 
         # Now, verify that we got what we expected.
@@ -708,7 +708,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         # Jump to end of line.
         exp_console_out += OutputStream.MoveCursorRight(len(test_str))
         # Replace line with spaces, which looks like backspaces.
-        for _ in range(len(test_str)):
+        for _unused in range(len(test_str)):
             exp_console_out += BACKSPACE_STRING
 
         # Verify the console output.
@@ -719,7 +719,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         test_str = b"accelread 0 1"
         input_stream = list(test_str)
         len_to_kill = 5
-        for _ in range(len_to_kill):
+        for _unused in range(len_to_kill):
             # Move cursor left
             input_stream.extend(Keys.LEFT_ARROW)
         # Now kill
@@ -740,13 +740,13 @@ class TestConsoleEditingMethods(unittest.TestCase):
         # move left of len_to_kill, then a jump to the end of the line and backspace
         # of len_to_kill.
         exp_console_out = test_str
-        for _ in range(len_to_kill):
+        for _unused in range(len_to_kill):
             # Move left 1 column.
             exp_console_out += OutputStream.MoveCursorLeft(1)
         # Then jump to the end of the line
         exp_console_out += OutputStream.MoveCursorRight(len_to_kill)
         # Backspace of len_to_kill
-        for _ in range(len_to_kill):
+        for _unused in range(len_to_kill):
             exp_console_out += BACKSPACE_STRING
 
         # Verify console output.
@@ -979,10 +979,10 @@ class TestConsoleEditingMethods(unittest.TestCase):
         # clearing of the command entered, and then the partial command.
         exp_console_out = test_str + b"\r\n" + self.console.prompt
         exp_console_out += partial_cmd
-        for _ in range(len(partial_cmd)):
+        for _unused in range(len(partial_cmd)):
             exp_console_out += BACKSPACE_STRING
         exp_console_out += test_str
-        for _ in range(len(test_str)):
+        for _unused in range(len(test_str)):
             exp_console_out += BACKSPACE_STRING
         exp_console_out += partial_cmd
 

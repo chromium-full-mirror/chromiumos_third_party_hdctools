@@ -19,7 +19,7 @@ def main():
     if len(sys.argv) > 1:
         count = int(sys.argv[1])
 
-    for _ in range(count):
+    for _unused in range(count):
         kbd.ctrl_u()
     kbd.close()
 

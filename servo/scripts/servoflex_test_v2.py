@@ -57,7 +57,9 @@ def do_cmd(cmd, timeout, plist=None, flist=None):
     all_str = ""
     while (time.time() - start_time) < timeout:
         if plist or flist:
-            (rfds, _, _) = select.select([cmd_obj.stdout, cmd_obj.stderr], [], [], 0.01)
+            (rfds, _unused, _unused) = select.select(
+                [cmd_obj.stdout, cmd_obj.stderr], [], [], 0.01
+            )
             if len(rfds) > 0:
                 log_str = rfds[0].readline().rstrip()
                 all_str = all_str + log_str + "\n"
@@ -99,7 +101,7 @@ def launch_servod(options):
         xml_files += "-c servoflex_v2_r0_p50.xml "
     pid = V2_PID
     cmd = "sudo servod -p 0x%x %s" % (pid, xml_files)
-    (retval, servod, _) = do_cmd(cmd, 5, plist=["Listening"], flist=["Errno"])
+    (retval, servod, _unused) = do_cmd(cmd, 5, plist=["Listening"], flist=["Errno"])
     logging.info("launch servod via %s", cmd)
     time.sleep(3)
     return (retval, servod)
@@ -111,7 +113,7 @@ def set_ctrls(controls, timeout=0.2):
     Returns retval output from do_cmd
     """
     cmd = "dut-control %s" % controls
-    (retval, _, _) = do_cmd(cmd, timeout, flist=["Errno", "- ERROR -"])
+    (retval, _unused, _unused) = do_cmd(cmd, timeout, flist=["Errno", "- ERROR -"])
     return retval
 
 
@@ -119,7 +121,7 @@ def get_ctrls(controls, timeout=10):
     """Get various servod controls."""
     get_dict = {}
     cmd = "dut-control %s" % controls
-    (retval, _, out) = do_cmd(cmd, timeout, flist=["Errno", "- ERROR -"])
+    (retval, _unused, out) = do_cmd(cmd, timeout, flist=["Errno", "- ERROR -"])
     if retval:
         for ctrl_line in out.split("\n"):
             ctrl_line = ctrl_line.strip()
@@ -174,7 +176,7 @@ def test_jtag(options):
     os.write(fd, openocd)
     os.close(fd)
     cmd = "sudo openocd -f %s" % fname
-    (retval, openocd, _) = do_cmd(cmd, 10, plist=OPENOCD_PASS, flist=OPENOCD_FAIL)
+    (retval, openocd, _unused) = do_cmd(cmd, 10, plist=OPENOCD_PASS, flist=OPENOCD_FAIL)
 
     if not retval:
         logging.error("Testing JTAG")
@@ -228,7 +230,7 @@ def test_spi(dev_id, options):
     if dev_id == 1:
         cmd += ",port=b"
     cmd += " -c SST25VF040"
-    (retval, flash, _) = do_cmd(cmd, 5, plist=FLASHROM_PASS, flist=FLASHROM_FAIL)
+    (retval, flash, _unused) = do_cmd(cmd, 5, plist=FLASHROM_PASS, flist=FLASHROM_FAIL)
     if not retval:
         logging.error("reading eeprom for spi %s", id_str)
         errors += 1
@@ -270,12 +272,12 @@ def test_uart(dev_id, options):
         fd = os.open(get_dict["uart%s_pty" % id_str], os.O_RDWR)
         send_str = "hello %s" % id_str
         os.write(fd, send_str)
-        (rfds, _, _) = select.select([fd], [], [], 1)
+        (rfds, _unused, _unused) = select.select([fd], [], [], 1)
         rsp_str = ""
         reread_count = 0
         while len(rfds) > 0 and reread_count < 1000:
             rsp_str += os.read(fd, len(send_str))
-            (rfds, _, _) = select.select([fd], [], [], 1)
+            (rfds, _unused, _unused) = select.select([fd], [], [], 1)
             reread_count += 1
 
         rsp_str = [character for character in rsp_str if character in string.printable]
@@ -395,10 +397,10 @@ def test_gpios(options):
     for ctrl_name in all_ctrls:
         for prefix in gpio_prefix:
             if ctrl_name.startswith(prefix):
-                (_, real_gpio) = ctrl_name.split(prefix)
+                (_unused, real_gpio) = ctrl_name.split(prefix)
                 gpios_to_test[real_gpio] = ctrl_name
 
-    for _ in range(2):
+    for _unused in range(2):
         for set_name, get_name in gpios_to_test.items():
             set_val = GPIO_MAPS[all_ctrls[set_name]]
             logging.debug("Trying %s %s -> %s", set_name, all_ctrls[set_name], set_val)
@@ -437,7 +439,6 @@ VERSION = "0.0.1"
 
 
 def parse_args():
-    description = ""
     examples = (
         "\nScript to test servoflex cables attached to Servo V2 rev1|rev0.\n"
         "\n\tCan be used to test:\n"

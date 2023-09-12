@@ -338,7 +338,7 @@ class ServoDeviceFinder:
             logging.warning("No stdin exists for user to choose a device.")
             return None
 
-        (rlist, _, _) = select.select(
+        (rlist, _unused, _unused) = select.select(
             [sys.stdin], [], [], INTERATIVE_MENU_TIMEOUT_SECONDS
         )
         if not rlist:

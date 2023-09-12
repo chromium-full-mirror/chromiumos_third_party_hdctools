@@ -89,7 +89,7 @@ def start_servod(
     if not test and not sleep:
         while not started:
             try:
-                (ec, _) = cont.exec_run(
+                (ec, _unused) = cont.exec_run(
                     "servodtool instance wait-for-active --timeout 1 -p 9999"
                 )
             except docker.errors.APIError:

@@ -274,7 +274,7 @@ def mock_pyusb(mocker):
 
 
 def clear_interfaces(device):
-    for no, interface in device.configuration.interfaces.items():
+    for _unused, interface in device.configuration.interfaces.items():
         while not interface.executed_command_queue.empty():
             interface.executed_command_queue.get()
 

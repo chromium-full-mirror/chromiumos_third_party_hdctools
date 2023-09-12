@@ -44,7 +44,7 @@ class servoUpdaterReader(hw_driver.HwDriver):
         try:
             # Pass None for the |fname| argument to let the updater get the default
             # files for |self._board|.
-            _, _, vers = servo_updater.get_files_and_version(
+            _unused, _unused, vers = servo_updater.get_files_and_version(
                 self._board, None, self._channel
             )
             return vers

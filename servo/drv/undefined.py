@@ -19,6 +19,6 @@ class undefined(hw_driver.HwDriver):
         """raise error that |get| is undefined."""
         raise undefinedCtrl("get undefined for %r." % self._params["control_name"])
 
-    def _set(self, _):
+    def _set(self, _unused):
         """raise error that |set| is undefined."""
         raise undefinedCtrl("set undefined for %r." % self._params["control_name"])
