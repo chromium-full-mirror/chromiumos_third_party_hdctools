@@ -12,21 +12,21 @@
   <control>
     <name>cpu_temp</name>
     <doc>CPU temperature reading in degC. Only works when device is powered on.</doc>
-    <params cmd="get" uart_cmd="temps" 
-    regex="PECI[ \t]*:[ \t]*[0-9]* K[ \t]*=[ \t]*([0-9]*)[ \t]*C" 
+    <params cmd="get" uart_cmd="temps"
+    regex="PECI[ \t]*:[ \t]*[0-9]* K[ \t]*=[ \t]*([0-9]*)[ \t]*C"
     group="1" interface="10" drv="simple_ec"></params>
   </control>
   <control>
     <name>fan_actual_rpm</name>
     <doc>Actual fan RPM.</doc>
-    <params cmd="get" uart_cmd="faninfo" regex="Actual:[ \t]*(\d+) rpm" 
+    <params cmd="get" uart_cmd="faninfo" regex="Actual:[ \t]*(\d+) rpm"
     group="1" formatting="int" interface="10" drv="simple_ec"></params>
   </control>
   <control>
     <name>fan_target_rpm</name>
     <doc>Target fan RPM. Set this value to -1 to max out fan speed.
     Set to -2 to enable auto fan speed control.</doc>
-    <params cmd="get" uart_cmd="faninfo" regex="Target:[ \t]*(\d+) rpm" 
+    <params cmd="get" uart_cmd="faninfo" regex="Target:[ \t]*(\d+) rpm"
     group="1" formatting="int" interface="10" drv="simple_ec"></params>
     <params cmd="set" subtype="fan_target_rpm" interface="10" drv="ec"
     map="fan_target_rpm"></params>
@@ -34,7 +34,7 @@
   <control>
     <name>fan_duty</name>
     <doc>Current fan duty cycle.</doc>
-    <params cmd="get" uart_cmd="faninfo" regex="Duty:[ \t]*(\d+)%" 
+    <params cmd="get" uart_cmd="faninfo" regex="Duty:[ \t]*(\d+)%"
     group="1" formatting="int" interface="10" drv="simple_ec"></params>
   </control>
   <control>

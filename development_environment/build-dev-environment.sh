@@ -12,4 +12,3 @@ for s in "start-dev-environment.sh"; do
 done
 # Install a script to start the container that has the servod build environment.
 sudo install start-dev-environment.sh /usr/local/bin
-

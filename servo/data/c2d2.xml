@@ -301,7 +301,7 @@
     <name>warm_reset</name>
     <doc>warm_reset (active low)</doc>
     <params cmd="get" uart_cmd="sysrst"
-    regex="SYS_RST_L is (asserted|deasserted)" group="1" 
+    regex="SYS_RST_L is (asserted|deasserted)" group="1"
     interface="9" drv="cr50" map="asserted_re"></params>
     <params cmd="set" subtype="warm_reset" interface="9" drv="cr50"
     map="onoff_i"></params>

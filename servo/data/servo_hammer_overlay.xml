@@ -23,4 +23,3 @@
     drv="cros_chip" chip="stm32"/>
   </control>
 </root>
-

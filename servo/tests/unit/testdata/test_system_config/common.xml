@@ -143,8 +143,8 @@
   </control>
   <control>
     <name>servo_type</name>
-    <doc>What type of servo devices are set up for the servod instance. 
-    NOTE: please avoid assuming the format of servo_type and parsing it. 
+    <doc>What type of servo devices are set up for the servod instance.
+    NOTE: please avoid assuming the format of servo_type and parsing it.
     Use 'devices' to fetch all servo devices of this servod instance instead.</doc>
     <params drv="servo_metadata" subtype="type" interface="servo" />
   </control>

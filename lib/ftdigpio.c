@@ -44,7 +44,7 @@ int fgpio_open(struct fgpio_context *fgc, struct ftdi_common_args *fargs) {
   return rv;
 }
 
-int fgpio_wr_rd(struct fgpio_context *fgc, struct gpio_s *new_gpio, 
+int fgpio_wr_rd(struct fgpio_context *fgc, struct gpio_s *new_gpio,
                 uint8_t *rd_val, enum ftdi_interface_type itype) {
   uint8_t buf[4]; /* only three bytes used */
   int dir_chg = 0;
