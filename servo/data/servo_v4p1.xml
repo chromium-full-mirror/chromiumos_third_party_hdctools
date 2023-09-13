@@ -331,7 +331,7 @@
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_servo_v4p1_uart_pty</name>
-    <alias>raw_servo_v4_uart_pty</alias>
+    <alias>raw_servo_v4_uart_pty,raw_servo_uart_pty</alias>
     <doc>Servo V4P1's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="22" drv="uart">
     </params>
@@ -351,7 +351,7 @@
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_v4p1_uart</name>
-    <alias>servo_v4p1_uart_pty,servo_v4_uart_pty</alias>
+    <alias>servo_v4p1_uart_pty,servo_v4_uart_pty,servo_uart_pty,ec3po_servo_uart</alias>
     <doc>Servo v4p1 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
@@ -366,6 +366,7 @@
   </control>
   <control>
     <name>servo_v4p1_uart_raw_debug</name>
+    <alias>servo_uart_raw_debug</alias>
     <doc>Turn on per-message-received logs to the servo v4p1 console
       messages.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="off"
@@ -373,6 +374,7 @@
   </control>
   <control>
     <name>servo_v4p1_uart_timestamp</name>
+    <alias>servo_uart_timestamp</alias>
     <doc>Add timestamps to the servo v4p1 console messages</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp"></params>
@@ -407,6 +409,7 @@
   </control>
   <control>
     <name>servo_v4p1_uart_timeout</name>
+    <alias>servo_uart_timeout</alias>
     <doc>Timeout value for waiting servo v4p1 console response of issuing
     an EC command.</doc>
     <params subtype="uart_timeout" interface="26" drv="uart"
@@ -414,6 +417,7 @@
   </control>
   <control>
     <name>servo_v4p1_uart_multicmd</name>
+    <alias>servo_uart_multicmd</alias>
     <doc>Set to send multiple commands to the servo v4p1 console.</doc>
     <params interface="26" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
@@ -421,6 +425,7 @@
   </control>
   <control>
     <name>servo_v4p1_uart_regexp</name>
+    <alias>servo_uart_regexp</alias>
     <doc>List of regular expressions to match the response of
     servo_v4p1_uart_cmd.</doc>
     <params subtype="uart_regexp" interface="26" drv="uart"
@@ -428,12 +433,14 @@
   </control>
   <control>
     <name>servo_v4p1_uart_capture</name>
+    <alias>servo_uart_capture</alias>
     <doc>enable servo v4p1 console capture</doc>
     <params subtype="uart_capture" interface="26" drv="uart"
     map="onoff"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_stream</name>
+    <alias>servo_uart_stream</alias>
     <doc>servo v4p1 console stream collected while servo_v4p1_uart_capture on</doc>
     <params cmd="get" subtype="uart_stream" interface="26" drv="uart"></params>
   </control>
