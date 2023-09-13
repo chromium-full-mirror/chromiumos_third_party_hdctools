@@ -38,4 +38,8 @@
         "Unpowered",
         "unshrouded"
     ],
+    "gitlens.advanced.blame.customArguments": [
+        "--ignore-revs-file",
+        ".git-blame-ignore-revs"
+    ],
 }
