@@ -270,12 +270,14 @@
   </control>
   <control>
     <name>servo_v4p1_firmware_channel</name>
+    <alias>servo_firmware_channel</alias>
     <doc>which channel the current servo v4 firmware is from</doc>
     <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
       board="servo_v4p1"/>
   </control>
   <control>
     <name>servo_v4p1_firmware_uptodate</name>
+    <alias>servo_firmware_uptodate</alias>
     <doc>whether servo v4 firmware is to update</doc>
     <params cmd="get" interface="servo" drv="servo_firmware_checker"
       board="servo_v4p1" map="yesno"/>
@@ -359,6 +361,7 @@
   </control>
   <control>
     <name>servo_v4p1_ec3po_interp_connect</name>
+    <alias>servo_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the servo
     console.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
@@ -381,6 +384,7 @@
   </control>
   <control>
     <name>servo_v4p1_loglevel</name>
+    <alias>servo_loglevel</alias>
     <doc>servo v4p1 console loglevel</doc>
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
@@ -529,6 +533,7 @@
   <!-- Debug helper controls -->
   <control>
     <name>servo_v4p1_panicinfo</name>
+    <alias>servo_panicinfo</alias>
     <doc>Get panicinfo output for servo v4p1.</doc>
     <params interface="26" drv="simple_ec"
       uart_cmd="panicinfo" regex="panicinfo(.*)>" group="1"
