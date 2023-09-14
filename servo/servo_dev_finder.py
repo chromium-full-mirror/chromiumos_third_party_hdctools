@@ -18,7 +18,7 @@ from servo.utils import servo_dev_hierarchy
 
 
 # Timeout in seconds of user interactive menu
-INTERATIVE_MENU_TIMEOUT_SECONDS = 30
+INTERACTIVE_MENU_TIMEOUT_SECONDS = 30
 
 
 class ServoDeviceFinderError(Exception):
@@ -83,11 +83,12 @@ class ServoDeviceFinder:
         """Set up the servo device finder.
 
         Args:
-          devopts: a list of device opts parsed from the servod starting commandline
+          devopts: a list of device opts parsed from the servod starting
           devopts_generator: a function that generates a default devopts
             for devices pulled in during device auto-discovery.
           dev_hierarchy: a ServoDeviceHierarchy generated when the servod starts
-          scratch: ServoSratch that manages information across different servod instances.
+          scratch: ServoScratch that manages information across different servod
+                   instances.
           discover_mode: ServoDeviceDiscoveryMode that indicates how much auto discovery
             can be performed by the finder when discovering devices.
           choose_device: a param used to mock behavior for user interactively choose
@@ -104,33 +105,37 @@ class ServoDeviceFinder:
         )
 
     def discover_servos(self):
-        """Complete the device list of servod from servod commandline device opts
+        """Complete the device list of servod from servod command line device opts
         and servo device hierarchy.
 
-        The complete device list is derived from the invocation_devs (parsed from the servod
-        starting commandline) and the servo device hierarchy in the following ways:
-        (1) If invocation_devs is empty or all-inclusive, return all the devices in the hierarchy.
-        (2) If discover_mode is FULL_AUTO, all member devices in a cluster will be served
-            with this servod instance.
-            For any device (e.g. ServoV4) in invocation_devs, all its cluster member (i.e. servo
-            devices attached to it and its root hub) get pulled into the device list.
+        The complete device list is derived from the invocation_devs (parsed from the
+        servod starting command line) and the servo device hierarchy in the following
+        ways:
+        (1) If invocation_devs is empty or all-inclusive, return all the devices in the
+            hierarchy.
+        (2) If discover_mode is FULL_AUTO, all member devices in a cluster will be
+            served with this servod instance.
+            For any device (e.g. ServoV4) in invocation_devs, all its cluster member
+            (i.e. servo devices attached to it and its root hub) get pulled into the
+            device list.
         (3) If discover_mode is MIN_AUTO, only the bare minimum devices are pulled into
             this servod instance.
-            For any cluster root device (e.g. ServoV4) in invocation_devs, all its cluster member
-            get pulled into the device list. For any non-root device in invocation_devs, only its
-            cluster root gets pulled in. Other devices in the same cluster are not pulled
-            in, uless they are already specified in invocation_devs.
+            For any cluster root device (e.g. ServoV4) in invocation_devs, all its
+            cluster member get pulled into the device list. For any non-root device in
+            invocation_devs, only its cluster root gets pulled in. Other devices in the
+            same cluster are not pulled in, unless they are already specified in
+            invocation_devs.
         (4) If discover_mode is NO_AUTO, only pull in the devices in invocation_devs.
-        (5) If any device cannot be pulled in because it is already used in another servod
-            instance, we throw an error and exit servod.
+        (5) If any device cannot be pulled in because it is already used in another
+            servod instance, we throw an error and exit servod.
 
         Returns:
           A list representing the complete device list of servo. Each entry is a
           ServoDeviceEntry.
 
         Raises:
-          ServoDeviceFinderError: if a device cannot be pulled because it is already served
-          by another servod instance
+          ServoDeviceFinderError: if a device cannot be pulled because it is already
+          served by another servod instance
         """
         self._logger.info("Start discovering all devices for this servod instance.")
         # First pull in all the devices included in the command line invocation
@@ -162,7 +167,10 @@ class ServoDeviceFinder:
                     for member in sorted(dev_entry.cluster_root.cluster_members):
                         if member not in devices:
                             self._logger.info(
-                                "Pulling in device %s as it is a member of the same cluster as %s.",
+                                (
+                                    "Pulling in device %s as it is a member of"
+                                    " the same cluster as %s."
+                                ),
                                 member,
                                 dev_entry,
                             )
@@ -196,7 +204,8 @@ class ServoDeviceFinder:
 
         Raises:
           ServoDeviceFinderError: no device can be found
-          ServoDeviceFinderError: multiple devices are found and user fail to pick one from them
+          ServoDeviceFinderError: multiple devices are found and user fail to pick
+                                  one from them
         """
         input_str = "vid: %s pid: %s serial: %s" % (vid, pid, serial)
         if (not vid) and (not pid) and (not serial):
@@ -231,8 +240,9 @@ class ServoDeviceFinder:
         candidate = candidates[0]
         if len(candidates) > 1:
             self._logger.info("Found > 1 servo devices with %s", input_str)
-            # when user does not provide enough information for picking a device (e.g. when
-            # vid/pid/serial is None), try selecting a device based on each device's priority.
+            # when user does not provide enough information for picking a device
+            # (e.g. when vid/pid/serial is None), try selecting a device based on\
+            # each device's priority.
             if self.discover_mode != ServoDeviceDiscoveryMode.NO_AUTO:
                 self._logger.info("Selecting a servo device among the candidates...")
                 prioritized_devs = (
@@ -241,7 +251,7 @@ class ServoDeviceFinder:
                     )
                 )
                 candidates = (
-                    servo_dev_hierarchy.ServoDeviceHierarchy.most_prirotized_devices(
+                    servo_dev_hierarchy.ServoDeviceHierarchy.most_prioritized_devices(
                         prioritized_devs
                     )
                 )
@@ -275,17 +285,19 @@ class ServoDeviceFinder:
     def choose_main_device(self, devs):
         """Choose the main device of the servod instance.
 
-        The main device is the servo device that processes controls sent to the servod instance
-        by default. It receives the prefix '' and 'main'.
+        The main device is the servo device that processes controls sent to the
+        servod instance by default. It receives the prefix '' and 'main'.
 
         Args:
-          devs: a list representing the complete device list of servo. Each entry is a ServoDeviceEntry.
+          devs: a list representing the complete device list of servo. Each entry
+                is a ServoDeviceEntry.
 
         Returns:
           A device as the main device.
 
         Raises:
-          ServoDeviceFinderError: User does not pick a main device from multiple candidates
+          ServoDeviceFinderError: User does not pick a main device from multiple
+                                  candidates
         """
         prioritized_devs = (
             servo_dev_hierarchy.ServoDeviceHierarchy.generate_device_priority(devs)
@@ -304,7 +316,7 @@ class ServoDeviceFinder:
                 "User did not select the main device. Servod will try to choose one."
             )
             candidates = (
-                servo_dev_hierarchy.ServoDeviceHierarchy.most_prirotized_devices(
+                servo_dev_hierarchy.ServoDeviceHierarchy.most_prioritized_devices(
                     prioritized_devs
                 )
             )
@@ -339,7 +351,7 @@ class ServoDeviceFinder:
             return None
 
         (rlist, _unused, _unused) = select.select(
-            [sys.stdin], [], [], INTERATIVE_MENU_TIMEOUT_SECONDS
+            [sys.stdin], [], [], INTERACTIVE_MENU_TIMEOUT_SECONDS
         )
         if not rlist:
             logging.warning("Timed out waiting for your choice\n")
@@ -406,7 +418,8 @@ class ServoDeviceFinder:
         # auto generate prefix based on device type
         for dev_type, devices in dev_type_map.items():
             for dev in devices:
-                # use the device type as the prefix if it is the only 1 device of the kind
+                # use the device type as the prefix if it is the only 1 device
+                # of the kind
                 if len(devices) == 1 and dev_type not in known_prefixes:
                     prefix = dev_type
                 # otherwise, use device type and the last 4 digit of serial
@@ -438,13 +451,14 @@ class ServoDeviceFinder:
                     )
 
     def validate_device_availability(self, devs):
-        """Check against ServoScratch that all devices are not served by another servod instance.
+        """Check against ServoScratch that all devices are not served by another
+           servod instance.
 
         Args:
           devs: a list of ServoDeviceEntry devices
 
         Raises:
-          ServoDeviceFinderError: some device is servoed by another servod instance.
+          ServoDeviceFinderError: some device is served by another servod instance.
         """
         has_error = False
         for servod_instance in self._scratch.GetAllEntries():

@@ -51,8 +51,8 @@ def mock_endpoint(mocker):
                 ep (Mock): Mock endpoint object used to access / store data.
                 description (str): Name of the endpoint, example "CR50 Uart" used
                                for logging.
-                size_or_buffer:  Either the number of bytes to read or an array object where
-                                 the data will be put in
+                size_or_buffer:  Either the number of bytes to read or an array
+                                 object where the data will be put in
             Returns:
                 string: mocked data for the last command issued.
             """
@@ -85,7 +85,8 @@ def mock_endpoint(mocker):
                         else:
                             new_result = ep.parent.mocked_data[command]
                             if len(result) + len(new_result) + 1 > size_or_buffer:
-                                # Total results exceeds the size so stop generating a result.
+                                # Total results exceeds the size so stop generating
+                                # a result.
                                 break
 
                             if new_result:

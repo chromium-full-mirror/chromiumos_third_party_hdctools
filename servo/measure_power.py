@@ -1023,6 +1023,8 @@ class PowerMeasurement:
         return sampleData
 
     def CleanSampleData(self):
-        """This function will clean the current data structure which saves the power data"""
+        """This function will clean the current data structure which saves
+        the power data.
+        """
         for trackers in self._power_trackers:
             trackers.clean_sample_data()

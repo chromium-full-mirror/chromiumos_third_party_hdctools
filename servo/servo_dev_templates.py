@@ -31,8 +31,8 @@ ROOT_DEV_PREFIX = "root"
 
 
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP, SERVO_ID_DEFAULTS,
-# and SERVO_NAME_TEMPLATE_MAP, get populated when protobufs are read from to keep a single
-# source of truth about the device information - their template classes.
+# and SERVO_NAME_TEMPLATE_MAP, get populated when protobufs are read from to keep
+# a single source of truth about the device information - their template classes.
 #
 # A 2d map to fetch a servo device template given a vendor id and a product id.
 SERVO_VID_PID_TEMPLATE_MAP = collections.defaultdict(
@@ -87,7 +87,8 @@ def GetTemplateClass(vid, pid, serial=None):
       servo dev template protobuf message class associated with (vid, pid, serial)
 
     Raises:
-      DeviceTemplateError if template message class not found, or not uniquely identified
+      DeviceTemplateError: If template message class not found, or not uniquely
+                           identified
     """
     dev_class_candidates = SERVO_VID_PID_TEMPLATE_MAP[vid][pid].copy()
     if len(dev_class_candidates) > 1:

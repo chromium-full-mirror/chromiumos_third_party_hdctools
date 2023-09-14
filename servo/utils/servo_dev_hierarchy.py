@@ -352,7 +352,7 @@ class ServoDeviceHierarchy:
           serial: device serial name
 
         Returns:
-          List with device and any other devices in its cluste
+          List with device and any other devices in its cluster
           List with only device if device not part of a cluster
           Empty list if device not found
         """
@@ -381,14 +381,15 @@ class ServoDeviceHierarchy:
 
         Each device gets an integer as the priority to be the targeting device.
         A higher priority indicates that the device is
-        (1) more likely to be the main device that by default handles all requests to servod
-        (2) more likely to be the device targeted by the user when they only provide partial
-            information for selecting a device
+        (1) more likely to be the main device that by default handles all requests to
+            servod
+        (2) more likely to be the device targeted by the user when they only provide
+            partial information for selecting a device
 
         Currently priority is decided in the following way:
-        0: the device chosen to be the main device in the commandline. If the main device
-           chosen by the user is a cluster root, then we substitute with the device with
-          the highest priority in the cluster.
+        0: the device chosen to be the main device in the command line. If the main
+           device chosen by the user is a cluster root, then we substitute with the
+           device with the highest priority in the cluster.
         1: Debug header servos, e.g. Servo Micro, C2D2, Servo V2
         2: CCD DUT controllers, e.g. CCD CR50, CCD TI50
         3. Other DUT controllers (currently there are no such controllers)
@@ -408,12 +409,13 @@ class ServoDeviceHierarchy:
                   - list[1] has 2 entries "servo micro 1" and "servo micro 2", so they
                   share the highest priority to be the main device. We will let the user
                   decide which one is the main device through an interactive menu.
-                  - list[2] only contains "c2d2". Its priority to be the main device is lower
-                  than the debug headers but higher than other dut controllers.
+                  - list[2] only contains "c2d2". Its priority to be the main device is
+                    lower than the debug headers but higher than other dut controllers.
                   - list[3] contains nothing. Its priority to be the main device is
                   the lowest among all dut controllers.
-                  - list[4] only contains "sweetberry". Its priority to be the main device
-                  is lower than all dut controllers and higher than the cluster root hub
+                  - list[4] only contains "sweetberry". Its priority to be the main
+                    device is lower than all dut controllers and higher than the cluster
+                    root hub
                   servo v4.
                   - list[5] only contains "servo v4". Its priority to be the main device
                   is the lowest.
@@ -444,11 +446,13 @@ class ServoDeviceHierarchy:
         # Do substitution if the main device chosen by the user is a cluster root
         for root in user_chosen_main_roots:
             for idx, devs in enumerate(prioritized_devs):
-                # Only do substitution for children of the main root devices not yet chosen as main devices
+                # Only do substitution for children of the main root devices not
+                # yet chosen as main devices
                 if idx in (PRIORITY_MAIN_DEV, PRIORITY_CLUSTER_ROOT_DEV):
                     continue
                 root_children = [dev for dev in devs if dev in root.cluster_members]
-                # Substitution is done when some children are chosen to substitute the main root devices
+                # Substitution is done when some children are chosen to substitute the
+                # main root devices
                 if root_children:
                     prioritized_devs[PRIORITY_MAIN_DEV].extend(root_children)
                     prioritized_devs[idx] = [
@@ -459,12 +463,13 @@ class ServoDeviceHierarchy:
         return prioritized_devs
 
     @staticmethod
-    def most_prirotized_devices(prioritized_devs):
+    def most_prioritized_devices(prioritized_devs):
         """Choose the devices with the highest priority from generate_device_priority.
 
         Args:
-          prioritized_devs: A list of lists representing the priority of devices. The list index
-            indicates the priority for a device to be the main device.
+          prioritized_devs: A list of lists representing the priority of devices.
+                            The list index indicates the priority for a device to
+                            be the main device.
 
         Returns:
           A list representing the devices with the highest priority.

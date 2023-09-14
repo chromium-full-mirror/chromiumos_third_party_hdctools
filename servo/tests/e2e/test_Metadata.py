@@ -73,7 +73,8 @@ class TestMetadata:
                 },
                 results,
             )
-        finally:  # tear down servo_host immediately after the test to release all the tty
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
             servo_host.stop()
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
@@ -133,7 +134,8 @@ class TestMetadata:
                 },
                 results,
             )
-        finally:  # tear down servo_host immediately after the test to release all the tty
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
             servo_host.stop()
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
@@ -204,7 +206,8 @@ class TestMetadata:
                 },
                 results,
             )
-        finally:  # tear down servo_host immediately after the test to release all the tty
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
             servo_host.stop()
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
@@ -265,7 +268,8 @@ class TestMetadata:
                 },
                 results,
             )
-        finally:  # tear down servo_host immediately after the test to release all the tty
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
             servo_host.stop()
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
@@ -335,5 +339,6 @@ class TestMetadata:
                 },
                 results,
             )
-        finally:  # tear down servo_host immediately after the test to release all the tty
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
             servo_host.stop()

@@ -102,7 +102,7 @@ class Console:
         bidirectional pipe.  Console commands and responses utilize this pipe.
       dbg_pipe: A socket.socket or multiprocessing.Connection object which
         represents the console's read-only side of the debug pipe.  This must be a
-        unidirectional pipe attached to the intepreter.  EC debug messages use
+        unidirectional pipe attached to the interpreter.  EC debug messages use
         this pipe.
       oobm_queue: A queue.Queue or multiprocessing.Queue which is used for out of
         band management for the interactive console.
@@ -111,7 +111,7 @@ class Console:
         to insert a char.
       partial_cmd: A string representing the command entered on a line before
         pressing the up arrow keys.
-      esc_state: An integer represeting the current state within an escape
+      esc_state: An integer representing the current state within an escape
         sequence.
       line_limit: An integer representing the maximum number of characters on a
         line.
@@ -144,7 +144,7 @@ class Console:
         dbg_pipe,
         name=None,
     ):
-        """Initalises a Console object with the provided arguments.
+        """Initializes a Console object with the provided arguments.
 
         Args:
         controller_pty: File descriptor to the controller side of the PTY. Used for
@@ -157,7 +157,7 @@ class Console:
           bidirectional pipe.  Console commands and responses utilize this pipe.
         dbg_pipe: A socket.socket or multiprocessing.Connection object which
           represents the console's read-only side of the debug pipe.  This must be a
-          unidirectional pipe attached to the intepreter.  EC debug messages use
+          unidirectional pipe attached to the interpreter.  EC debug messages use
           this pipe.
         name: the console source name
         """
@@ -948,7 +948,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
     """Starts the infinite loop of console processing.
 
     Args:
-      console: A Console object that has been properly initialzed.
+      console: A Console object that has been properly initialized.
       command_active: ctypes data object or multiprocessing.Value indicating if
         servod owns the console, or user owns the console. This prevents input
         collisions.
@@ -1003,8 +1003,8 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                 for fileno, _unused in events:
                     if fileno == console.controller_pty:
                         if not command_active.value:
-                            # Convert to bytes so we can look for non-printable chars such as
-                            # Ctrl+A, Ctrl+E, etc.
+                            # Convert to bytes so we can look for non-printable
+                            # chars such as Ctrl+A, Ctrl+E, etc.
                             try:
                                 line = bytearray(
                                     os.read(console.controller_pty, CONSOLE_MAX_READ)
@@ -1020,7 +1020,8 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                         console.HandleChar(i)
                                     except EOFError:
                                         console.logger.debug(
-                                            "ec3po console received EOF from dbg_pipe in HandleChar()"
+                                            "ec3po console received EOF from dbg_pipe "
+                                            "in HandleChar()"
                                             " while reading console.controller_pty"
                                         )
                                         continue_looping = False
@@ -1032,8 +1033,8 @@ def StartLoop(console, command_active, shutdown_pipe=None):
 
                     elif fileno == console.interface_pty:
                         if command_active.value:
-                            # Convert to bytes so we can look for non-printable chars such as
-                            # Ctrl+A, Ctrl+E, etc.
+                            # Convert to bytes so we can look for non-printable
+                            # chars such as Ctrl+A, Ctrl+E, etc.
                             line = bytearray(
                                 os.read(console.interface_pty, CONSOLE_MAX_READ)
                             )
@@ -1048,7 +1049,8 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                     console.HandleChar(i)
                                 except EOFError:
                                     console.logger.debug(
-                                        "ec3po console received EOF from dbg_pipe in HandleChar()"
+                                        "ec3po console received EOF from dbg_pipe "
+                                        "in HandleChar()"
                                         " while reading console.interface_pty"
                                     )
                                     continue_looping = False
@@ -1100,7 +1102,8 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             if controller_connected:
                                 end = len(data) - 1
                                 if console.timestamp_enabled:
-                                    # A timestamp is required at the beginning of this line
+                                    # A timestamp is required at the beginning of
+                                    # this line
                                     if tm_req is True:
                                         now = datetime.now()
                                         tm = CanonicalizeTimeString(
@@ -1109,8 +1112,9 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                         os.write(console.controller_pty, tm)
                                         tm_req = False
 
-                                    # Insert timestamps into the middle where appropriate
-                                    # except if the last character is a newline
+                                    # Insert timestamps into the middle where
+                                    # appropriate except if the last character is a
+                                    # newline
                                     nls_found = data.count(b"\n", 0, end)
                                     now = datetime.now()
                                     tm = CanonicalizeTimeString(
@@ -1129,7 +1133,10 @@ def StartLoop(console, command_active, shutdown_pipe=None):
 
                     elif fileno == shutdown_pipe.fileno():
                         console.logger.debug(
-                            "ec3po console received shutdown pipe unblocked notification"
+                            (
+                                "ec3po console received shutdown pipe"
+                                " unblocked notification"
+                            )
                         )
                         continue_looping = False
 

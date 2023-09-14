@@ -111,13 +111,13 @@ class Susb:
 
         When endpoints are being read in a (tight) loop like in the UART interfaces,
         a race might happen between the reinitialization threads and the UART threads
-        and the reinitialization threads keep losing out on the lock. The reinitialization
-        threads might not be UART threads, and the UART threads should still give the
-        right-of-way to the reinitialization threads regardless.
+        and the reinitialization threads keep losing out on the lock. The
+        reinitialization threads might not be UART threads, and the UART threads should
+        still give the right-of-way to the reinitialization threads regardless.
 
-        With this helper, the thread can indicate that a reinit is about to happen on the
-        same device, encouraging other threads that are performing read/write to stop asking
-        for the lock, and wait until reinit is done.
+        With this helper, the thread can indicate that a reinit is about to happen on
+        the same device, encouraging other threads that are performing read/write to
+        stop asking for the lock, and wait until reinit is done.
         """
         # Set a very generous timeout for resetting to complete i.e the timeout
         # acquire both locks slowly, and one more lock timeout as buffer.
@@ -159,9 +159,10 @@ class Susb:
             dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
         if not dev:
             raise usb_hierarchy.HierarchyError(
-                "No device found for id {0.vid:02x}:{0.pid:02x} serial {0.serialname}".format(
-                    devid
-                )
+                (
+                    "No device found for id {0.vid:02x}:{0.pid:02x} "
+                    "serial {0.serialname}"
+                ).format(devid)
             )
 
         # TODO(crbug.com/1014672): investigate whether there is a better way not to

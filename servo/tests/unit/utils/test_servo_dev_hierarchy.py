@@ -19,7 +19,8 @@ from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
 
 
 def SetClusterRoot(device, root):
-    """Invote ServoDeviceEntry.set_cluster_root() in the same manner as ServoDeviceHierarchy.
+    """Invoke ServoDeviceEntry.set_cluster_root() in the same manner
+       as ServoDeviceHierarchy.
 
     This always calls root.set_cluster_root(root) prior to
     device.set_cluster_root(root) .
@@ -318,7 +319,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
         assert self.attrs_in_entries(self._root_servo_dev_attrs, root_servos)
 
     def test_get_cluster_non_root_servos(self):
-        """get_cluster_non_root_servos returns all non_root_servos devices in a cluster."""
+        """get_cluster_non_root_servos returns all non_root_servos devices
+        in a cluster.
+        """
         AddFakeUsbEntry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
         )
@@ -341,7 +344,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
             assert self.attrs_in_entries(attrs, non_root_servos)
 
     def test_get_cluster_non_root_servos_empty(self):
-        """get_cluster_non_root_servos is [] if no non_root_servos devices are in a cluster."""
+        """get_cluster_non_root_servos is [] if no non_root_servos devices
+        are in a cluster.
+        """
         AddFakeUsbEntry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
         )
@@ -387,7 +392,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
             ServoDeviceHierarchy()
 
     def test_generate_device_priority_no_main(self):
-        """Generate device priority for a list of device entries without a user chosen main device."""
+        """Generate device priority for a list of device entries without a user chosen
+        main device.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),
@@ -482,8 +489,8 @@ class TestServoDeviceHierarchy(unittest.TestCase):
         )
 
     def test_generate_device_priority_non_root_main(self):
-        """Generate device priority for a list of device entries with a user chosen main device.
-        The user chosen main device is not a cluster root.
+        """Generate device priority for a list of device entries with a user chosen
+        main device.  The user chosen main device is not a cluster root.
         """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
@@ -579,8 +586,8 @@ class TestServoDeviceHierarchy(unittest.TestCase):
         )
 
     def test_generate_device_priority_root_main(self):
-        """Generate device priority for a list of device entries with a user chosen main device.
-        The user chosen main device is a cluster root.
+        """Generate device priority for a list of device entries with a user chosen
+        main device.  The user chosen main device is a cluster root.
         """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
@@ -678,7 +685,9 @@ class TestServoDeviceHierarchy(unittest.TestCase):
         )
 
     def test_most_prioritized_devices(self):
-        """Given a list of device entries with priority, return the list of devices with the highest priority."""
+        """Given a list of device entries with priority, return the list of devices
+        with the highest priority.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),
@@ -686,11 +695,11 @@ class TestServoDeviceHierarchy(unittest.TestCase):
             dev_path="a-b-c",
         )
         prioritized_devs = [[], [], [], [], [test_entry], []]
-        most_prirotized_devs = ServoDeviceHierarchy.most_prirotized_devices(
+        most_prioritized_devs = ServoDeviceHierarchy.most_prioritized_devices(
             prioritized_devs
         )
-        assert 1 == len(most_prirotized_devs)
-        assert test_entry in most_prirotized_devs
+        assert 1 == len(most_prioritized_devs)
+        assert test_entry in most_prioritized_devs
 
 
 class TestServoDeviceEntry(unittest.TestCase):
@@ -725,7 +734,8 @@ class TestServoDeviceEntry(unittest.TestCase):
         assert not test_entry.is_cluster_root()
 
     def test_set_cluster_root_duplicate(self):
-        """Setting a ServoDeviceEntry's cluster_root_servo twice raises a ServoDeviceHierarchyError."""
+        """Setting a ServoDeviceEntry's cluster_root_servo twice raises
+        a ServoDeviceHierarchyError."""
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("ccd_cr50"),
             pid=dev_templates.GetPID("ccd_cr50"),
@@ -753,7 +763,9 @@ class TestServoDeviceEntry(unittest.TestCase):
             SetClusterRoot(test_entry, test_entry3)
 
     def test_set_cluster_root_self_non_hub(self):
-        """Setting a ServoDeviceEntry's cluster_root_servo to itself as a non-hub is valid."""
+        """Setting a ServoDeviceEntry's cluster_root_servo to itself as a
+        non-hub is valid.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("ccd_cr50"),
             pid=dev_templates.GetPID("ccd_cr50"),
@@ -765,7 +777,8 @@ class TestServoDeviceEntry(unittest.TestCase):
         assert test_entry.is_cluster_root()
 
     def test_set_cluster_root_too_many_levels_0(self):
-        """Setting a ServoDeviceEntry's cluster with more than 2 levels raises a ServoDeviceHierarchyError.
+        """Setting a ServoDeviceEntry's cluster with more than 2 levels raises
+           a ServoDeviceHierarchyError.
 
         This tests A->B->C by setting B->C and then expecting an error from A->B.
         """
@@ -796,7 +809,8 @@ class TestServoDeviceEntry(unittest.TestCase):
             SetClusterRoot(test_entry, test_entry2)
 
     def test_set_cluster_root_too_many_levels_1(self):
-        """Setting a ServoDeviceEntry's cluster with more than 2 levels raises a ServoDeviceHierarchyError.
+        """Setting a ServoDeviceEntry's cluster with more than 2 levels
+           raises a ServoDeviceHierarchyError.
 
         This tests A->B->C by setting A->B and then expecting an error from B->C.
         """

@@ -389,13 +389,17 @@ class TestUsbHierarchy(unittest.TestCase):
         assert not Hierarchy.DevOnHubPortFromSysfs(hub_port_stub, dev_port_path)
 
     def test_DevDirectOnHubPort(self):
-        """DevDirectOnHubPort is True when the device is a direct child of the hub stub."""
+        """DevDirectOnHubPort is True when the device is a direct child of
+        the hub stub.
+        """
         hub_port_stub = "2-1.2"
         dev_port_path = "2-1.2.3"
         assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
 
     def test_DevDirectOnRootHubPort(self):
-        """DevDirectOnHubPort is True when the device is a direct child of the root hub stub."""
+        """DevDirectOnHubPort is True when the device is a direct child of the
+        root hub stub.
+        """
         hub_port_stub = "2"
         dev_port_path = "2-1"
         assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)

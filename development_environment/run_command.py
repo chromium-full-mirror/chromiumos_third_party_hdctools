@@ -43,7 +43,10 @@ class RunCommandBase:
             sys.exit(exit_code)
         else:
             print(
-                "More than one container matches %s, please re-run with --container_name"
+                (
+                    "More than one container matches %s, "
+                    "please re-run with --container_name"
+                )
                 % name_search
             )
 

@@ -91,7 +91,10 @@ def _check_keywords_in_file(file_to_check, keywords):
 
 def main():
     response = request.urlopen(
-        "https://chromium.googlesource.com/chromiumos/repohooks/+/refs/heads/main/blocked_terms.txt?format=TEXT"
+        (
+            "https://chromium.googlesource.com/chromiumos/"
+            "repohooks/+/refs/heads/main/blocked_terms.txt?format=TEXT"
+        )
     )
     if response.getcode() != 200:
         print("Unable to get bad words list")

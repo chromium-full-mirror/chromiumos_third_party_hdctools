@@ -83,7 +83,8 @@ class TestDataSampler(unittest.TestCase):
             },
         )
 
-    # time.time is also used in unittest framework, so specifying side_effect will fail the test
+    # time.time is also used in unittest framework, so specifying side_effect
+    # will fail the test
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_generator(self):
         """Test sample_generator."""

@@ -48,7 +48,7 @@ def get_servo_serial(device_type):
         _type_: _description_
     """
     # PYTEST_XDIST_WORKER is a thread id when we are running the tests in
-    # parrallel. https://pypi.org/project/pytest-xdist/#identifying-the-worker-process-during-a-test
+    # parallel.
     return DEFAULT_SERIALS[device_type] % (
         os.environ.get("PYTEST_XDIST_WORKER", "Not_running_threaded"),
         round(time.time() * 1000),
@@ -84,7 +84,8 @@ def get_board_model_pairs(board_exclude_list=[]):
     If a test can not run for a specific board
 
     Args:
-        board_exclude_list (list, optional): List of boards to exclude from the returned list. Defaults to None.
+        board_exclude_list (list, optional): List of boards to exclude from the
+                                             returned list. Defaults to None.
 
     Returns:
         list if string tuples: board model pairs.
@@ -93,14 +94,22 @@ def get_board_model_pairs(board_exclude_list=[]):
         "servo_nissa_nirwen_ufs_overlay.xml",  # File not in correct format
         "servo_fpmcu_dev_board_common_overlay.xml",  # File not in correct format
         "servo_fpmcu_dev_board_uart_common_overlay.xml",  # File not in correct format
-        "servo_bloonchipper_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_dartmonkey_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_dragonclaw_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_dragontalon_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_helipilot_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_icetower_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_quincy_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
-        "servo_zerblebarn_overlay.xml",  # Not working as it includes servo_fpmcu_dev_board xmls
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_bloonchipper_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dartmonkey_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragonclaw_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_dragontalon_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_helipilot_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_icetower_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_quincy_overlay.xml",
+        # Not working as it includes servo_fpmcu_dev_board xmls
+        "servo_zerblebarn_overlay.xml",
         "servo_chocodile_overlay.xml",  # Not working as it includes servo_micro.xml
         "servo_hana_overlay.xml",  # Not working
         "servo_elm_overlay.xml",  # Not working
@@ -152,14 +161,14 @@ def compare_results(expected, results):
         for interface in expected[serial].keys():
             for index in range(0, len(expected[serial][interface])):
                 expected_command = expected[serial][interface][index]
-                result_commmand = None
+                result_command = None
                 if len(results[serial][interface]) > index:
-                    result_commmand = results[serial][interface][index]
+                    result_command = results[serial][interface][index]
 
-                if expected_command != result_commmand:
+                if expected_command != result_command:
                     print(
                         "Error Serial: %s EP: %d Command: %s Expected %s"
-                        % (serial, interface, result_commmand, expected_command),
+                        % (serial, interface, result_command, expected_command),
                         flush=True,
                     )
                     result = False

@@ -444,7 +444,10 @@ def StartLoop(interp, shutdown_pipe=None):
                             ec_uart_pty_fileno = interp.ec_uart_pty.fileno()
                         except ValueError:
                             interp.logger.debug(
-                                "ec3po interpreter error accessing ecuart_pty, probably it is closed."
+                                (
+                                    "ec3po interpreter error accessing ecuart_pty, "
+                                    "probably it is closed."
+                                )
                             )
                         # Handle any debug prints from the EC.
                         if fileno == ec_uart_pty_fileno:
@@ -463,7 +466,10 @@ def StartLoop(interp, shutdown_pipe=None):
 
                         elif fileno == shutdown_pipe.fileno():
                             interp.logger.debug(
-                                "ec3po interpreter received shutdown pipe unblocked notification"
+                                (
+                                    "ec3po interpreter received shutdown pipe unblocked"
+                                    " notification"
+                                )
                             )
                             continue_looping = False
 

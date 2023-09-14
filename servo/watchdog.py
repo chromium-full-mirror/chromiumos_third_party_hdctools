@@ -85,7 +85,7 @@ class DeviceWatchdog(threading.Thread):
         """Poll |_devices| every |_rate| seconds. Send SIGTERM if device lost."""
         # Devices that need to be reinitialized
         missing_devices = {}
-        # Keep track of device numbers to catch issues where a device reenumerates
+        # Keep track of device numbers to catch issues where a device re-enumerates
         # without the watchdog catching it.
         devnums = {dev.get_id(): dev.usb_devnum() for dev in self._devices}
         while not self.done.is_set():
@@ -95,13 +95,13 @@ class DeviceWatchdog(threading.Thread):
                 if device.is_connected():
                     # Device was found. If it is in the disconnected devices, then it
                     # needs to be reinitialized.
-                    # If the device's devnum has changed, then a reenumeration happened
-                    # that the watchdog missed. This is fine for reeinit capable devices,
-                    # but not for the rest.
+                    # If the device's devnum has changed, then a re-enumeration happened
+                    # that the watchdog missed. This is fine for re-init capable
+                    # devices, but not for the rest.
                     devnum = device.usb_devnum()
                     if devnum != devnums[dev_id]:
                         if not device.reinit_ok():
-                            # Reenumeration here is bad and not recoverable.
+                            # Re-enumeration here is bad and not recoverable.
                             self._logger.error(
                                 "Device - %s - changed devnum from %d to %d.",
                                 device,
@@ -117,14 +117,14 @@ class DeviceWatchdog(threading.Thread):
                         # so we know how many are still disconnected.
                         missing_devices.pop(dev_id, None)
                         if not missing_devices:
-                            # Once the last missing device has been found again, reinitialize
-                            # them all.
+                            # Once the last missing device has been found again,
+                            # reinitialize them all.
                             try:
                                 self._servod.reinitialize()
                             except Exception as e:
-                                # Has to be a broad except because we do not want to orphan the
-                                # watchdog thread, but rather make sure that we disconnect
-                                # or *any* reinit failure
+                                # Has to be a broad except because we do not want to
+                                # orphan the watchdog thread, but rather make sure that
+                                # we disconnect or *any* reinit failure
                                 self._logger.debug(
                                     "Failed to reinit servod: %s",
                                     e,

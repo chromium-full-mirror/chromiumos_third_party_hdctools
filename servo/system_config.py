@@ -427,7 +427,8 @@ class SystemConfig:
                                 )
                             get_dict = params.attrib
                         else:  # |cmd| is 'set'
-                            # We know from above that cmd is guaranteed to be 'set' or 'get'
+                            # We know from above that cmd is guaranteed to be 'set'
+                            # or 'get'
                             if set_dict:
                                 raise SystemConfigError(
                                     "%s %s multiple set params defined\n%s"
@@ -458,10 +459,10 @@ class SystemConfig:
                         get_dict = copy.copy(pd)
                         set_dict = copy.copy(pd)
                     if tag == CONTROL_TAG:
-                        # Lastly, to allow the |drv| full visibility in whether it's a set
-                        # or a get instance, make sure to store set and get in the dict
-                        # regardless of whether it was already there or has been inferred
-                        # here.
+                        # Lastly, to allow the |drv| full visibility in whether it's a
+                        # set or a get instance, make sure to store set and get in the
+                        # dict regardless of whether it was already there or has been
+                        # inferred here.
                         get_dict["cmd"] = "get"
                         set_dict["cmd"] = "set"
                 else:
@@ -527,7 +528,8 @@ class SystemConfig:
                     hwinit_found = False
                     # only allow one hwinit per control
                     if clobber_ok is not None:
-                        # if we clobbered an alias, look for its hwinit under its real name
+                        # if we clobbered an alias, look for its hwinit under its
+                        # real name
                         realname = self.aliases.get(name, name)
                         for i, (hwinit_name, _unused) in enumerate(self.hwinit):
                             if hwinit_name == realname:

@@ -487,7 +487,7 @@ class TestDutPower(unittest.TestCase):
                     pm.SaveRawData.assert_called_once_with("dir")
                     pm.SaveSummaryJSON.assert_called_once_with("dir")
                     shutil.move.assert_called_once_with(dp.tmplogfile.name, "logfile")
-                    dp.http_server_handler.save_visualization_html.assert_called_once_with(
+                    dp.http_server_handler.save_visualization_html.assert_called_once_with(  # pylint: disable=line-too-long
                         None
                     )
 

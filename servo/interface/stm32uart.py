@@ -160,8 +160,8 @@ class Suart(uart.Uart):
                     try:
                         if readp.poll(0.1):
                             r = os.read(self._ptym, 64)
-                            # TODO(crosbug.com/936182): Remove when the servo v4/micro console
-                            # issues are fixed.
+                            # TODO(b/154958780): Remove when the servo
+                            # v4/micro console issues are fixed.
                             time.sleep(0.001)
                             if r:
                                 self._susb.write_ep(r, self._susb.TIMEOUT_MS)

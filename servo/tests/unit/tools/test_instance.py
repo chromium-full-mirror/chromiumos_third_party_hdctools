@@ -77,7 +77,8 @@ class TestInstance(unittest.TestCase):
         i._scratch.GetAllEntries.assert_called_once()
         i._logger.info.assert_called_once_with(
             "port : 9998\nserials : sa2143\npid : 21411\n---\n"
-            "port : 9997\nserials : sa2142\npid : 21410\n---\nport : 9996\nserials : sa2141\npid : 21412"
+            "port : 9997\nserials : sa2142\npid : 21410\n---\n"
+            "port : 9996\nserials : sa2141\npid : 21412"
         )
 
     def test_show_all_no_entries(self):
@@ -292,7 +293,10 @@ class TestInstance(unittest.TestCase):
                     "SIGTERM sent to servod instance associated with id %r.", "id"
                 ),
                 unittest.mock.call(
-                    "Servod instance associated with %r (pid %r) did not turn down after SIGTERM. Sending SIGKILL.",
+                    (
+                        "Servod instance associated with %r (pid %r) did not turn down "
+                        "after SIGTERM. Sending SIGKILL."
+                    ),
                     "id",
                     "21411",
                 ),

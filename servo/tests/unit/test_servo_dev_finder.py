@@ -118,7 +118,8 @@ class TestServoDeviceFinder(unittest.TestCase):
         return False
 
     def test_discover_servos_full_auto(self):
-        """Test servod device list is completed and the device list does not contain partial clusters."""
+        """Test servod device list is completed and the device list does not
+        contain partial clusters."""
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
         )
@@ -150,7 +151,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             assert self.attrs_in_entries(attrs, entries)
 
     def test_discover_servos_min_auto(self):
-        """Test servod device list is completed and the device list can contain partial clusters."""
+        """Test servod device list is completed and the device list can
+        contain partial clusters.
+        """
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
         )
@@ -183,7 +186,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             assert self.attrs_in_entries(attrs, entries)
 
     def test_discover_servos_no_auto(self):
-        """Test servod device list is completed and the device list only contains devices in devopts."""
+        """Test servod device list is completed and the device list only contains
+        devices in devopts.
+        """
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
         )
@@ -248,8 +253,9 @@ class TestServoDeviceFinder(unittest.TestCase):
         assert self.attrs_belong_to_entry(self._solo_dev_attrs, entries[0])
 
     def test_discover_servos_multiple_devices_full_auto(self):
-        """Test discover_servos error out when there are multiple devices matched with invocation
-        arguments and user specifies which device they want through the interative menu.
+        """Test discover_servos error out when there are multiple devices
+        matched with invocation arguments and user specifies which device they
+        want through the interactive menu.
         """
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
@@ -287,8 +293,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             assert self.attrs_in_entries(attrs, entries)
 
     def test_discover_servos_multiple_devices_no_auto(self):
-        """Test discover_servos error out when there are multiple devices matched with invocation
-        arguments and user specifies which device they want through the interative menu.
+        """Test discover_servos error out when there are multiple devices
+        matched with invocation arguments and user specifies which device they
+        want through the interative menu.
         """
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
@@ -322,8 +329,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             assert self.attrs_in_entries(attrs, entries)
 
     def test_discover_servos_multiple_devices_no_user_input(self):
-        """Test discover_servos error out when there are multiple devices matched with invocation
-        arguments but user does not choose what they mean through the interative menu.
+        """Test discover_servos error out when there are multiple devices matched
+        with invocation arguments but user does not choose what they mean through
+        the interactive menu.
         """
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
@@ -400,8 +408,9 @@ class TestServoDeviceFinder(unittest.TestCase):
         assert main == test_entry
 
     def test_choose_main_device_multiple_user_main_no_user_input(self):
-        """Test choose_main_device ask for user input if user choose multiple main devices during
-        servod invocation."""
+        """Test choose_main_device ask for user input if user choose multiple
+        main devices during servod invocation.
+        """
         """Test choose_main_device return the only main device chosen by the user."""
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
@@ -430,8 +439,10 @@ class TestServoDeviceFinder(unittest.TestCase):
         assert main == test_entry
 
     def test_choose_main_device_multiple_user_main_no_user_input(self):
-        """Test choose_main_device ask for user input if user choose multiple main devices during
-        servod invocation. Error out if user does not provide any input."""
+        """Test choose_main_device ask for user input if user choose multiple main
+        devices during servod invocation. Error out if user does not provide any
+        input.
+        """
         """Test choose_main_device return the only main device chosen by the user."""
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
@@ -462,7 +473,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             finder.choose_main_device(devs)
 
     def test_choose_main_device_no_user_main(self):
-        """Test choose_main_device smartly choose a main device when user does not choose one."""
+        """Test choose_main_device smartly choose a main device when user does
+        not choose one.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),
@@ -490,8 +503,10 @@ class TestServoDeviceFinder(unittest.TestCase):
         assert main == test_entry
 
     def test_choose_main_device_multiple_candidates(self):
-        """Test choose_main_device tries smartly choose a main device, but there are multiple
-        candidates so user still needs to manually choose one."""
+        """Test choose_main_device tries smartly choose a main device,
+        but there are multiple candidates so user still needs to
+        manually choose one.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),
@@ -519,8 +534,9 @@ class TestServoDeviceFinder(unittest.TestCase):
         assert main == test_entry
 
     def test_choose_main_device_multiple_candidates_no_user_input(self):
-        """Test choose_main_device smartly choose a main device when user does not choose one
-        and there are multiple candidates, but user does not choose one from the candidates.
+        """Test choose_main_device smartly choose a main device when user
+        does not choose one and there are multiple candidates, but user
+        does not choose one from the candidates.
         """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
@@ -551,7 +567,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             finder.choose_main_device(devs)
 
     def test_generate_prefixes_main_device(self):
-        """Test generate_prefixes generate correct prefixes for the main device and non-main devices."""
+        """Test generate_prefixes generate correct prefixes for the main
+        device and non-main devices.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),
@@ -669,7 +687,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             finder.validate_devopts([test_entry])
 
     def test_validate_devopts_multiple_main_devices(self):
-        """Test validate_devopts error out if there are multiple devices chosen as the main device."""
+        """Test validate_devopts error out if there are multiple devices
+        chosen as the main device.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_v4"),
             pid=dev_templates.GetPID("servo_v4"),
@@ -701,7 +721,9 @@ class TestServoDeviceFinder(unittest.TestCase):
             finder.validate_devopts([test_entry, test_entry2])
 
     def test_validate_device_availability(self):
-        """Test validate_device_availability error out when some device is not available."""
+        """Test validate_device_availability error out when some
+        device is not available.
+        """
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_v4"),
             pid=dev_templates.GetPID("servo_v4"),

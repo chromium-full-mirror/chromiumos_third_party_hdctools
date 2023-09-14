@@ -138,7 +138,7 @@ def parse_args():
         "-d",
         "--sleep",
         action=argparse.BooleanOptionalAction,
-        help="Run the continer but do not start servod - best for debug.",
+        help="Run the container but do not start servod - best for debug.",
     )
     parser.add_argument(
         "-c",
@@ -146,14 +146,17 @@ def parse_args():
         type=str,
         choices=["local", "latest", "beta", "release"],
         default="local",
-        help="Run the continer but do not start servod - best for debug.",
+        help="Run the container but do not start servod - best for debug.",
     )
     parser.add_argument(
         "--mount",
         type=str,
         action="append",
         nargs="*",
-        help="Mount a host directory into the servod container in the format <hostdir>:<containerdir>.",
+        help=(
+            "Mount a host directory into the servod container in the format"
+            "<hostdir>:<containerdir>.",
+        ),
     )
     parser.add_argument(
         "-p", "--port", type=int, help="Host port number to map the servod service to"

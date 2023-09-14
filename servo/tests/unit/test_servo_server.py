@@ -40,7 +40,8 @@ class TestServod(unittest.TestCase):
         servod._devices["main"] = dev
 
         with self.assertRaisesRegex(
-            servo_server.ServodError, "ServoDevice prefix main alredy represents device"
+            servo_server.ServodError,
+            "ServoDevice prefix main already represents device",
         ):
             servod.add_device(dev2, "main")
 
@@ -497,7 +498,10 @@ class TestServod(unittest.TestCase):
                     "No Servo Micro, C2D2, or CCD detected for board %s", "atlas"
                 ),
                 unittest.mock.call(
-                    "Try flipping the USB type C cable if you were using servo v4 type C."
+                    (
+                        "Try flipping the USB type C cable if you were using servo v4"
+                        " type C."
+                    )
                 ),
                 unittest.mock.call(
                     "If flipping the cable allows CCD, please file a bug "
@@ -542,7 +546,10 @@ class TestServod(unittest.TestCase):
                     "No Servo Micro, C2D2, or CCD detected for board %s", "atlas"
                 ),
                 unittest.mock.call(
-                    "Try flipping the USB type C cable if you were using servo v4 type C."
+                    (
+                        "Try flipping the USB type C cable if you were using servo v4"
+                        " type C."
+                    )
                 ),
                 unittest.mock.call(
                     "If flipping the cable allows CCD, please file a bug "

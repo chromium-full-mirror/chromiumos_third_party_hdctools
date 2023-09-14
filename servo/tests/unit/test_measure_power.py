@@ -67,7 +67,10 @@ class TestServodPowerTracker(unittest.TestCase):
             self.tracker.verify()
         self.assertEqual(
             str(cm.exception),
-            "Failed to test servod commands. Tested: ['avg_rail_name_avg_mw', 'avg_rail_name2_avg_mw']",
+            (
+                "Failed to test servod commands. Tested: "
+                "['avg_rail_name_avg_mw', 'avg_rail_name2_avg_mw']"
+            ),
         )
 
     def test_run(self):
@@ -1080,10 +1083,10 @@ class TestPowerMeasurement(unittest.TestCase):
 
         pm.ProcessMeasurement(123, 456)
 
-        measure_power.OnboardADCPowerTracker.process_measurement.assert_called_once_with(
+        measure_power.OnboardADCPowerTracker.process_measurement.assert_called_once_with(  # pylint: disable=line-too-long
             123, 456
         )
-        measure_power.OnboardADCAccumPowerTracker.process_measurement.assert_called_once_with(
+        measure_power.OnboardADCAccumPowerTracker.process_measurement.assert_called_once_with(  # pylint: disable=line-too-long
             123, 456
         )
         measure_power.ECPowerTracker.process_measurement.assert_called_once_with(

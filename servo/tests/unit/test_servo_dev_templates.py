@@ -33,7 +33,9 @@ class TestServoDevTemplates(unittest.TestCase):
             self.assertEqual(expected_pid, output_pid)
 
     def test_GetTemplateClassByName(self):
-        """Tests retrieval of Template Class for a variety of devices and confirm that class has all expected values."""
+        """Tests retrieval of Template Class for a variety of devices and
+        confirm that class has all expected values.
+        """
         for dev in SERVO_DEVICE_DATA:
             expected_class = SERVO_DEVICE_DATA[dev]
             output_class = servo_dev_templates.GetTemplateClassByName(dev)
@@ -44,7 +46,9 @@ class TestServoDevTemplates(unittest.TestCase):
             self.assertEqual(expected_class[2], output_class.DEFAULT_CONFIG)
 
     def test_GetTemplateClass(self):
-        """Tests retrieval of Template Class using VID PID and SERIAL for a variety of devices and confirm that class has all expected values."""
+        """Tests retrieval of Template Class using VID PID and SERIAL for a variety
+        of devices and confirm that class has all expected values.
+        """
         for dev in SERVO_DEVICE_DATA:
             # retrieve expected class values
             expected_vals = SERVO_DEVICE_DATA[dev]
@@ -72,13 +76,16 @@ class TestServoDevTemplates(unittest.TestCase):
                 self.assertEqual(expected_vals[2], output_class.DEFAULT_CONFIG)
 
     def test_GetAllServoIDs(self):
-        """Tests that all servo devices in data are contained in the set returned by GetAllServoIDs function."""
+        """Tests that all servo devices in data are contained in the set returned by
+        GetAllServoIDs function.
+        """
         expected_ids = set()
         for dev in SERVO_DEVICE_DATA:
             servo_id = SERVO_DEVICE_DATA[dev][0]
             expected_ids.add(servo_id)
         output_ids = servo_dev_templates.GetAllServoIDs()
-        # only check for for the id values that existed at the time this unit test was written
+        # only check for for the id values that existed at the time this unit test
+        # was written
         output_ids &= expected_ids
         self.assertEqual(expected_ids, output_ids)
 

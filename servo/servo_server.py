@@ -57,14 +57,18 @@ class Servod:
         """Add a ServoDevice to Servod.
 
         Args:
-          device: a ServoDevice that can interact with Servod, dut, and other ServoDevices
+          device: a ServoDevice that can interact with Servod, dut, and other
+                  ServoDevices
           prefix: prefix of the ServoDevice recognized by Servod
         """
         self._logger.debug("Adding ServoDevice %s to instance.", device)
         if prefix in self._devices:
             if device != self._devices[prefix]:
                 raise ServodError(
-                    "ServoDevice prefix %s alredy represents device %s and cannot be added as %s."
+                    (
+                        "ServoDevice prefix %s already represents device %s and "
+                        "cannot be added as %s."
+                    )
                     % (prefix, self._devices[prefix], device)
                 )
             self._logger.debug(
@@ -181,7 +185,8 @@ class Servod:
         if not dev.syscfg.is_control(processed_name):
             error_msg = (
                 "No control named '%s' registered with any connected servo device.\n"
-                "Servo device %s (prefix: %s) is picked as the targed device for the control.\n"
+                "Servo device %s (prefix: %s) is picked as the targed device for "
+                "the control.\n"
             ) % (name, dev, dev.get_prefixes())
             candidates = [ctrl for ctrl in self._controls if name in ctrl]
             if candidates:
@@ -557,12 +562,12 @@ class Servod:
     def get_version(self):
         """Gets the type of the servo device setups.
 
-        DEPRECATED. External clients (e.g. autotest) should not directly call this method
-        of servo_server as it is an implementation detail. They should migrate to using
-        'servo_type' control.
+        DEPRECATED. External clients (e.g. autotest) should not directly call this
+        method of servo_server as it is an implementation detail. They should migrate
+        to using 'servo_type' control.
 
-        TODO(konmari): remove this public method after all clients move away from directly
-        calling methods.
+        TODO(konmari): remove this public method after all clients move away from
+        directly calling methods.
         """
         return self._get_version()
 
@@ -570,7 +575,8 @@ class Servod:
         """Gets the type of the servo device setups.
 
         NOTE: please avoid assuming the format of servo type string and parsing it.
-        Use 'devices' control to fetch all servo devices of this servod instance instead.
+        Use 'devices' control to fetch all servo devices of this servod instance
+        instead.
         """
         main_device = self.get_main_device()
         root_device = self.get_root_device()

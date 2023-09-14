@@ -30,25 +30,26 @@ def mock_servo_host(
     """Mock representation of a servo host - a machine that has servo USB devices.
 
     Servod runs on a servo host, it searches the USB devices on that host when it starts
-    up.  This is a mock represntation of a host so we can feed in data about the mocked
+    up.  This is a mock representation of a host so we can feed in data about the mocked
     USB devices we have generated for the test.
 
     The host has a list of the USB devices attached to it, constructed by the test and
-    has some helper functions to clear all the saved data in the mocked devices to enaure
-    a clear run to run
+    has some helper functions to clear all the saved data in the mocked devices to
+    ensure a clear run to run
 
     Args:
         class_mocker (_type_): Mocker module injected by pytest.
         mock_pyusb (_type_): Mock PyUSB fixture injected by pytest.
         mock_cr50_usb_device (_type_): Mock CR50 fixture injected by pytest.
         mock_v4p1_usb_device (_type_): Mock Servo 4.1 fixture injected by pytest.
-        mock_servo_micro_usb_device (_type_): Mock Servo micro fixture injected by pytest.
+        mock_servo_micro_usb_device (_type_): Mock Servo micro fixture injected
+                                              by pytest.
         mock_c2d2_usb_device (_type_): Mock C2D2 fixture injected by pytest.
     """
 
     def generate_servo_host():
         """Mock generator function.   This allows multiple tests to be run in
-        parrallel as it generates a new mock for each test vs sharing the same
+        parallel as it generates a new mock for each test vs sharing the same
         mock between tests.
 
         Returns:
@@ -179,7 +180,8 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
             model (string): model name of the DUT
 
         Yields:
-            Mock: mock host device with a servo 4.1, servo micro and servod started on it.
+            Mock: mock host device with a servo 4.1, servo micro and servod
+                  started on it.
         """
         servo_host = mock_servo_host()
         # Setup
@@ -193,7 +195,8 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
 
 @pytest.fixture()
 def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
-    """A host device with a single servo v4.1 connected to a DUT with CCD through a servo micro.
+    """A host device with a single servo v4.1 connected to a DUT with CCD through
+       a servo micro.
 
     Args:
         mock_servo_host (Mock): Mock host device
@@ -207,7 +210,8 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
             model (string): model name of the DUT
 
         Yields:
-            Mock: mock host device with a servo 4.1, servo micro and servod started on it.
+            Mock: mock host device with a servo 4.1, servo micro and servod
+                  started on it.
         """
         servo_host = mock_servo_host()
         # Setup
@@ -250,7 +254,8 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
 
 @pytest.fixture()
 def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
-    """A host device with a single servo v4.1 connected to a DUT with CCD through a C2D2.
+    """A host device with a single servo v4.1 connected to a DUT with CCD
+       through a C2D2.
 
     Args:
         mock_servo_host (Mock): Mock host device

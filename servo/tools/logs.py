@@ -94,8 +94,8 @@ class Logs(tool.Tool):
         Args:
           args.port: port(s) where the servod instance is listening
           args.directory: directory(s) that contains servod logs
-          args.previous: if true, extract logs of latest and previous deployments of servod.
-                         otherwise, only extract logs of the latest deployment
+          args.previous: if true, extract logs of latest and previous deployments of
+                         servod. otherwise, only extract logs of the latest deployment
         """
         log_dirs = set()
         if args.port is not None:
