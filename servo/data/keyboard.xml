@@ -133,9 +133,21 @@
     input_type="str" key=""/>
   </control>
   <control>
+    <name>arb_keys_config</name>
+    <doc>Set the arbitrary keys that arb_key control will send as a JSON encoded list. For example to press Ctrl-D, use: ["&lt;ctrl_l&gt;", "d"]</doc>
+    <params cmd="set" subtype="arb_keys_config" interface="servo" drv="kb"
+    input_type="str" key=""/>
+  </control>
+  <control>
     <name>usb_arb_key_config</name>
     <doc>Set the arbitrary key that usb_arb_key control will send</doc>
     <params cmd="set" subtype="arb_key_config" interface="servo" drv="kb"
+    input_type="str" handler="usb" key=""/>
+  </control>
+  <control>
+    <name>usb_arb_keys_config</name>
+    <doc>Set the arbitrary keys that usb_arb_key control will send as a JSON encoded list. For example to press Ctrl-D, use: ["&lt;ctrl_l&gt;", "d"]</doc>
+    <params cmd="set" subtype="arb_keys_config" interface="servo" drv="kb"
     input_type="str" handler="usb" key=""/>
   </control>
 </root>

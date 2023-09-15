@@ -5,13 +5,17 @@
 # Expects to be run in an environment with sudo and no interactive password
 # prompt, such as within the ChromiumOS development chroot.
 
+import json
 import logging
-import os
 import time
 
 import serial
 
 from servo.drv import hw_driver
+
+
+class InvalidJsonConfigError(hw_driver.HwDriverError):
+    """Exception class for JSON errors."""
 
 
 class _HandlerTemplate:
@@ -98,6 +102,7 @@ class _BaseHandler(_HandlerTemplate):
         """
         super(_BaseHandler, self).__init__()
         self._servo = servo
+        self._arb_keys = []
 
     def power_long_press(self):
         """Simulate a long power button press."""
@@ -265,7 +270,22 @@ class _BaseHandler(_HandlerTemplate):
 
     def arb_key_config(self, key):
         """Set key for an arbitrary key press."""
-        self._arb_key = key
+        self._arb_keys = [key]
+
+    def arb_keys_config(self, json_list):
+        """Set multiple keys for an arbitrary key press in JSON."""
+        key_list = json.loads(json_list)
+        if key_list is None:
+            self._arb_keys = []
+        elif isinstance(key_list, list):
+            for x in key_list:
+                if not isinstance(x, str):
+                    raise InvalidJsonConfigError(
+                        f"Cannot parse {json_list} as a list of keys"
+                    )
+            self._arb_keys = key_list
+        else:
+            raise InvalidJsonConfigError(f"Cannot parse {json_list} as a list of keys")
 
 
 class MatrixKeyboardHandler(_BaseHandler):
@@ -607,7 +627,7 @@ class ChromeECHandler(_BaseHandler):
 
     def arb_key(self, press_secs=""):
         """Simulate an arbitrary key press."""
-        self._press_and_release_keys([self._arb_key], press_secs)
+        self._press_and_release_keys(self._arb_keys, press_secs)
 
 
 class ChromeECMithraxHandler(ChromeECHandler):
@@ -1433,7 +1453,7 @@ class USBkm232Handler(_BaseHandler):
 
     def arb_key(self, press_secs=""):
         """Simulate an arbitrary key press."""
-        self._write([self._press(self._arb_key)])
+        self._write([self._press(key) for key in self._arb_keys])
 
     def tab(self):
         """Press and release tab"""

@@ -80,3 +80,11 @@ class kb(hw_driver.HwDriver):
           key: the key to press when arb_key is called
         """
         self._GetKeyboard().arb_key_config(key)
+
+    def _Set_arb_keys_config(self, key):
+        """Set the keys to be pressed when arb_key control is called
+
+        Args:
+          key: the key to press when arb_key is called
+        """
+        self._GetKeyboard().arb_keys_config(key)
