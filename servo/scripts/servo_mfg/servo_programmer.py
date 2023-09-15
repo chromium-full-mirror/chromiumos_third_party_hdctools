@@ -9,7 +9,8 @@ import time
 from servo_mfg import exec_util
 from servo_mfg import programmer
 from servo_mfg import util
-import servo_updater
+
+from servo_updater import servo_updater
 
 
 class ServoProgrammer(programmer.Programmer):

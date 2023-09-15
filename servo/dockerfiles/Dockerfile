@@ -124,8 +124,6 @@ RUN make build/host/util/iteflash BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
-RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
-RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="powerlog" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="console" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
@@ -184,6 +182,7 @@ RUN make install
 COPY /servo/dockerfiles/setup_hdctools.py .
 
 RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
+RUN PACKAGE="servo_updater" python3 setup_hdctools.py bdist_wheel
 
 #####################################################################
 FROM hdctools-builder as hdctools-usbkm232-builder
@@ -336,7 +335,6 @@ RUN rm -rf wheels
 # Install servo_firmware.
 RUN mkdir -p /usr/share/servo_updater/firmware/
 COPY --link --from=firmware-installer /usr/share/servo_updater/firmware/ /usr/share/servo_updater/firmware/
-RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
 
 COPY --link --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
@@ -458,3 +456,4 @@ RUN rm -rf wheels
 RUN ldconfig
 
 COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
+RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/

@@ -15,9 +15,8 @@ import argparse
 import re
 import time
 
-import servo_updater
-
 from servo.scripts.servo_mfg import mfg_servo_common as c
+from servo_updater import servo_updater
 
 
 STM_DFU_VIDPID = "0483:df11"

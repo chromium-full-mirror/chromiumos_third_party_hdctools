@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 """Driver to find which channel the latest firmware is running."""
 
-import servo_updater
-
 from servo.drv import hw_driver
+from servo_updater import servo_updater
 
 
 class servoUpdaterChannelParserError(hw_driver.HwDriverError):

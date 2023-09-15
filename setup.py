@@ -166,3 +166,29 @@ setup(
     py_modules=["ec3po.console", "ec3po.interpreter"],
     description="EC console interpreter.",
 )
+
+setup(
+    name="servo_updater",
+    version=__version__,
+    maintainer="chromium os",
+    maintainer_email="chromium-os-dev@chromium.org",
+    license="Chromium",
+    url="https://www.chromium.org/chromium-os/ec-development",
+    packages=["servo_updater", "servo_updater.ecusb"],
+    entry_points={
+        "console_scripts": ["servo_updater=servo_updater.servo_updater:main"],
+    },
+    data_files=[
+        (
+            "share/servo_updater/configs",
+            [
+                "servo_updater/c2d2.json",
+                "servo_updater/servo_v4.json",
+                "servo_updater/servo_v4p1.json",
+                "servo_updater/servo_micro.json",
+                "servo_updater/sweetberry.json",
+            ],
+        )
+    ],
+    description="Servo usb updater.",
+)

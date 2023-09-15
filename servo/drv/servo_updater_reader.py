@@ -3,9 +3,8 @@
 # found in the LICENSE file.
 """Driver to query information from servo_updater."""
 
-import servo_updater
-
 from servo.drv import hw_driver
+from servo_updater import servo_updater
 
 
 class servoUpdaterReaderError(hw_driver.HwDriverError):
