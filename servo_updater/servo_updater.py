@@ -18,6 +18,8 @@ import sys
 import time
 from typing import Tuple
 
+from packaging import version
+
 from servo_updater.ecusb import tiny_servod
 import servo_updater.ecusb.tiny_servo_common as c
 import servo_updater.fw_update as fw_update
@@ -265,21 +267,21 @@ def _extract_version(boardname, binfile):
     return newvers
 
 
-def get_firmware_channel(bname, version):
-    """Find out which channel |version| for |bname| came from.
+def get_firmware_channel(bname, fwversion):
+    """Find out which channel |fwversion| for |bname| came from.
 
     Args:
       bname: board name
-      version: current version string
+      fwversion: current version string
 
     Returns:
-      one of the channel names if |version| came from one of those, or None
+      one of the channel names if |fwversion| came from one of those, or None
     """
     for channel in CHANNELS:
         # Pass |bname| as cname to find the board specific file, and pass None as
         # fname to ensure the default directory is searched
         _unused, _unused, vers = get_files_and_version(bname, None, channel=channel)
-        if version == vers:
+        if fwversion == vers:
             return channel
     # None of the channels matched. This firmware is currently unknown.
     return None
@@ -365,6 +367,29 @@ def get_files_and_version(cname, fname=None, channel=DEFAULT_CHANNEL):
     return cname, fname, binvers
 
 
+def _normalize_version(fwversion: str) -> str:
+    """Simplify firmware version string
+
+    Takes a full firmware version string and return out the
+    major.minor.build triplet for consumption by python-packaging.
+
+    Args:
+        fwversion: A firmware version string of the form
+                   "{device_name}_v{major.minor.build}±{githash}".
+                   {device_name} may contain an arbitrary number of
+                   underscores (notable user of that quirk:
+                   servo_v4p1)
+
+    Returns:
+        string containing "v{major.minor.build}"
+
+    """
+    matches = re.findall(r"^[-0-9a-z_]+_v([0-9.]+)[-+][0-9a-f]+$", fwversion)
+    if len(matches) != 1:
+        raise ValueError(f"firmware version {fwversion} unsupported")
+    return matches[0]
+
+
 def update(dev, serialno, args, devmap):
     """Update |dev|'s firmware
 
@@ -388,6 +413,13 @@ def update(dev, serialno, args, devmap):
 
         if newvers == vers:
             print("No version update needed")
+            if args.reboot:
+                select(tinys, "ro")
+            return
+        if not args.allow_rollback and version.parse(
+            _normalize_version(vers)
+        ) > version.parse(_normalize_version(newvers)):
+            print("Installed version is newer than candidate, skipping.")
             if args.reboot:
                 select(tinys, "ro")
             return
@@ -549,6 +581,13 @@ def main():
         action="store_true",
         help="Update even if version match",
         default=False,
+    )
+    # TODO: Once fleet is ready, switch default to --no-allow-rollback (False)
+    parser.add_argument(
+        "--allow-rollback",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Allow firmware downgrades",
     )
     parser.add_argument(
         "-a",
