@@ -300,6 +300,7 @@ RUN apt-get update --no-install-recommends \
     python3 \
     python3-mock \
     python3-numpy \
+    python3-packaging \
     python3-pexpect \
     python3-protobuf \
     python3-serial \

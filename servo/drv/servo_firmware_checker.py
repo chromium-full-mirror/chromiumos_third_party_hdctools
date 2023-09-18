@@ -3,9 +3,12 @@
 # found in the LICENSE file.
 """Driver to check whether the firmware is up to date."""
 
+from __future__ import annotations
+
 import os
 import re
 
+from packaging import version
 import servo_updater
 
 from servo.drv import hw_driver
@@ -50,22 +53,25 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         self._fw_channel_cmd = "%s_firmware_channel" % (self._board,)
         self._always_warn = WARN_ONLY_ON_UNKNOWN_ENV not in os.environ
 
-    def _get(self):
+    def _fetch_versions(self) -> tuple[version, version]:
+        current = version.parse(self._servod_get(self._current_fw_cmd))
+        latest = version.parse(self._servod_get(self._latest_fw_cmd))
+        return current, latest
+
+    def _get(self) -> int:
         """Get available firmware version for |self._board| on |self._channel|.
 
         Returns:
-            True if |{self._board}_version| == |{self._board}_latest_version|
-            False otherwise
+            1 if |{self._board}_version| == |{self._board}_latest_version|
+            0 otherwise
         """
-        current = self._servod_get(self._current_fw_cmd)
-        latest = self._servod_get(self._latest_fw_cmd)
+        current, latest = self._fetch_versions()
         return int(latest == current)
 
     def _set(self, _unused):
         """Print what the current firmware is, what the latest available is."""
-        current = self._servod_get(self._current_fw_cmd)
-        latest = self._servod_get(self._latest_fw_cmd)
-        if self.get():
+        current, latest = self._fetch_versions()
+        if latest == current:
             self._logger.info("%s firmware up to date.", self._board)
         else:
             channel = self._servod_get(self._fw_channel_cmd)
@@ -75,11 +81,21 @@ class servoFirmwareChecker(hw_driver.HwDriver):
             if channel == "unknown" or self._always_warn:
                 # Send a more explicit warning and let the user know how to upgrade
                 self._logger.info("latest %r firmware: %s", self._board, latest)
-                # Warn the user to upgrade if needed.
-                self._logger.warning("======Warning======")
-                self._logger.warning("Not running latest stable firmware.")
-                self._logger.warning(
-                    "Please run %r if desired to rectify.",
-                    "sudo servo_updater --board %s" % self._board,
-                )
-                self._logger.warning("======Warning======")
+                # Check if the device's version is newer than the latest, and
+                # demote warning to info in that case.
+                if current > latest:
+                    # Tell user that they're not using an official version
+                    self._logger.info(
+                        "The device runs a newer firmware version "
+                        "than what is officially supported. Use "
+                        "servo_updater if this is not desired."
+                    )
+                else:
+                    # Warn the user to upgrade if needed.
+                    self._logger.warning("======Warning======")
+                    self._logger.warning("Not running latest stable firmware.")
+                    self._logger.warning(
+                        "Please run %r if desired to rectify.",
+                        "sudo servo_updater --board %s" % self._board,
+                    )
+                    self._logger.warning("======Warning======")
