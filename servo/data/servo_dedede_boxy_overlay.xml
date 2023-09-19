@@ -10,7 +10,7 @@
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params drv="cros_ec_softrec_power" clobber_ok="patch" reset_recovery="3.0"
-    shutdown_delay="15.0" boot_to_rec_screen_delay="10.0"
+    shutdown_delay="15.0" boot_to_rec_screen_delay="10.0" pd_reset_delay="8.0"
     warm_reset_can_hold_ap="no" pb_init_idle="yes"/>
   </control>
 </root>
