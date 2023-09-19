@@ -12,7 +12,7 @@ C2D2_NAME = "c2d2_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.40.0
 SERVO_MICRO_NAME = "servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.71.0
 SERVO_V4_NAME = "servo_v4_v2.4.58-c37246f9c"  # servo-firmware-R81-12768.74.0
 SERVO_V4P1_NAME = "servo_v4p1_v2.0.20646-1fb66a343"  # EC ToT from 03/15/2023
-SWEETBERRY_NAME = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011.14.0
+SWEETBERRY_NAME = "sweetberry_v2.4.76-01f828e3a6"  # servo-firmware-R81-12768.204.0
 
 # Prev channel firmware
 C2D2_NAME_PREV = "c2d2_v2.4.35-f1113c92b"  # servo-firmware-R81-12768.40.0
@@ -21,6 +21,7 @@ SERVO_V4_NAME_PREV = "servo_v4_v2.4.57-ce329f64f"  # servo-firmware-R81-12768.71
 SERVO_V4P1_NAME_PREV = (
     "servo_v4p1_v2.0.8584+1a7e7e64c"  # servo fw used since april 2021
 )
+SWEETBERRY_NAME_PREV = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011.14.0
 
 # Dev channel firmware
 SERVO_V4P1_NAME_DEV = "servo_v4p1_v2.0.18563-55348847f"  # EC ToT from 09/07/2022
@@ -39,14 +40,13 @@ SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.20646-1fb66a343"  # EC ToT from 03/15/2
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
 
 # Temporary solution to the different file extensions
-GZ_FILES = [C2D2_NAME_PREV, SWEETBERRY_NAME]
+GZ_FILES = [C2D2_NAME_PREV, SWEETBERRY_NAME_PREV]
 
 # Sets the paths for the shared binaries.
 SERVO_V4_NAME_ALPHA = SERVO_V4_NAME
 SERVO_V4_NAME_DEV = SERVO_V4_NAME
 SWEETBERRY_NAME_ALPHA = SWEETBERRY_NAME
 SWEETBERRY_NAME_DEV = SWEETBERRY_NAME
-SWEETBERRY_NAME_PREV = SWEETBERRY_NAME
 
 ALL_IMAGES = [
     ("c2d2.alpha", C2D2_NAME_ALPHA),
