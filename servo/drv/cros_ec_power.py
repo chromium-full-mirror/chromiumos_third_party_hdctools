@@ -29,6 +29,8 @@ class CrosECPower(power_state.PowerStateDriver):
             "shutdown_ec_commands", "apshutdown"
         )
         self._shutdown_delay = float(self._params.get("shutdown_delay", 11.0))
+        self._pd_reset_delay = float(self._params.get("pd_reset_delay", 8.0))
+        self._no_battery = "yes" == self._params.get("no_battery", "no")
 
     def _warm_reset(self):
         """Apply warm reset to the DUT."""
@@ -60,3 +62,10 @@ class CrosECPower(power_state.PowerStateDriver):
                     "Timeout waiting for '%s' to reach '%s' after '%f s'"
                     % (CONTROL_COMMAND, CONTROL_OUTPUT_EXPECTED, self._shutdown_delay)
                 )
+        # When shutdown in recovery mode, EC will sysjump from RO to RW. If the
+        # device is without battery and powered by USB-C adapter, e.g. Chromebox,
+        # EC will brown out and reset due to PD hard reset. In this case we need
+        # to give the EC the time it needs to re-initialize everything before
+        # return.
+        if self._no_battery:
+            time.sleep(self._pd_reset_delay)
