@@ -100,7 +100,7 @@ class Servod:
                 if not device.disconnect_is_ok():
                     raise
                 self._logger.info(
-                    "Ignoring failed re-initilization of device that "
+                    "Ignoring failed re-initialization of device that "
                     "is ok to be disconnected. %s error(%s).",
                     device,
                     e,
@@ -326,7 +326,7 @@ class Servod:
         return control in self._controls
 
     def doc_all(self):
-        """Return all documenation for controls.
+        """Return all documentation for controls.
 
         Returns:
           string of <doc> text in config file (xml) and the params dictionary for
@@ -345,7 +345,7 @@ class Servod:
         return "\n".join(rsp)
 
     def doc(self, name):
-        """Retreive doc string in system config file for given control name.
+        """Retrieve doc string in system config file for given control name.
 
         Args:
           name: name string of control to get doc string

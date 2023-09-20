@@ -56,7 +56,7 @@ class TestTimelinedStatsManager(unittest.TestCase):
     def test_TimelineIsRelativeToTime(self):
         """Timeline key has the same step-size as Time key, just starts at 0."""
         samples = [("A", 10), ("B", 10)]
-        # adding using copy to ensure that the same list doesn't get added mulitple
+        # adding using copy to ensure that the same list doesn't get added multiple
         # times.
         self.data.AddSamples(copy.copy(samples))
         self.data.AddSamples(copy.copy(samples))

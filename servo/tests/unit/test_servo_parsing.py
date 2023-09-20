@@ -71,7 +71,7 @@ class TestRCFile(unittest.TestCase):
     def test_NoRCFile(self):
         """Passed in RC file does not exist: return empty runtime config dict."""
         rcd = servo_parsing.ServodRCParser.ParseRC("/tmp/this-is-a-fake-file")
-        # Expected return value is {} so this seems appropiate regardless of python
+        # Expected return value is {} so this seems appropriate regardless of python
         # internals
         assert {} == rcd
 
@@ -83,7 +83,7 @@ class TestRCFile(unittest.TestCase):
                 "%s %s %s %s      \n" % (self._name, self._serialname, "0", self._board)
             )
         rcd = servo_parsing.ServodRCParser.ParseRC(self._rc_file)
-        # Expected return value is {} so this seems appropiate regardless of python
+        # Expected return value is {} so this seems appropriate regardless of python
         # internals
         assert {} == rcd
 
@@ -102,7 +102,7 @@ class TestServodRCParser(unittest.TestCase):
             name=self._valid_name, serial=self._serialname, board=self._board
         )
         self._original_env = copy.deepcopy(os.environ)
-        # Overwite default file to use the test's rc file
+        # Overwrite default file to use the test's rc file
         self._original_rc = servo_parsing.DEFAULT_RC_FILE
         servo_parsing.DEFAULT_RC_FILE = self._rc_file
         self.SetupParser()
@@ -211,7 +211,7 @@ class TestServodClientParser(unittest.TestCase):
         self._rc_file = TestRCFile.CreateFakeRCFile(
             name=self._rc_name, serial=self._serial, board="fake-board"
         )
-        # Overwite default file to use the test's rc file
+        # Overwrite default file to use the test's rc file
         self._original_rc = servo_parsing.DEFAULT_RC_FILE
         servo_parsing.DEFAULT_RC_FILE = self._rc_file
         self._fakesock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

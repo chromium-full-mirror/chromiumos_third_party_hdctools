@@ -18,7 +18,7 @@ class ps8742(hw_driver.HwDriver):
     USB_MUX_ADDR = 0x20
     # Control reg offset.
     USB_MUX_CTRL = 0
-    # USB3 line passthough enable.
+    # USB3 line passthrough enable.
     USB_MUX_CTRL_USB3_EN = 0x20
 
     def __init__(self, interface, params):

@@ -214,7 +214,7 @@ class Scratch:
           dictionary containing 'port', 'serials', and 'pid' of instance
 
         Raises:
-          ScratchError: if no entry found under |indentifier| or if entry found
+          ScratchError: if no entry found under |identifier| or if entry found
                         is invalid json
         """
         entryf = os.path.join(self._dir, str(identifier))

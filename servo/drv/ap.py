@@ -88,7 +88,7 @@ class ap(pty_driver.ptyDriver):
         """
         # TODO(coconutruben): the login/logout logic fails silently and user has
         # to call login command again to verify. Consider if raising an error on
-        # failure here is appropiate.
+        # failure here is appropriate.
         if value == 1:
             # 1 means login desired.
             if not self._Get_login():

@@ -122,7 +122,7 @@ class pac1954(pac1934.pac1934):
         """Whether current and voltage are using fsr/2.
 
         Note: while this can be controlled individually, in servod we simplify this
-        by saying either both are high res, or both are regualar resolution.
+        by saying either both are high res, or both are regular resolution.
 
         Returns:
           0 if regular resolution and 1 if high resolution

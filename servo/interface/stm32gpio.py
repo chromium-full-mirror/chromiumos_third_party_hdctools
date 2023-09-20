@@ -38,7 +38,7 @@ class Sgpio(gpio_interface.GpioInterface):
         """Sgpio constructor.
 
         Loads libraries for libusb.  Creates instance objects
-        and Gpio to iteract with the library and intializes them.
+        and Gpio to interact with the library and initializes them.
 
         Args:
           vendor    : usb vendor id of stm32 device

@@ -360,7 +360,7 @@ class SystemConfig:
                 name = element.find("name")
                 if name is None:
                     # TODO(tbroch) would rather have lineno but dumping element seems
-                    # better than nothing.  Utimately a DTD/XSD for the XML schema will
+                    # better than nothing.  Ultimately a DTD/XSD for the XML schema will
                     # catch these anyways.
                     raise SystemConfigError(
                         "%s: no name ... see XML\n%s" % (tag, element_str)
@@ -790,7 +790,7 @@ class SystemConfig:
         except ValueError:
             # No we know that nothing worked, and there was an error.
             err += (
-                " %r canot be cast to default input type %r or fallback input "
+                " %r can't be cast to default input type %r or fallback input "
                 "type %r" % (map_vstr, "int", "float")
             )
             raise SystemConfigError(err)
@@ -812,7 +812,7 @@ class SystemConfig:
         """Lowercase the output
 
         Args:
-          val: intput string
+          val: input string
 
         Returns:
           lowercased input
@@ -988,7 +988,7 @@ def test():
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
     scfg = SystemConfig()
-    # TODO(tbroch) make this a comprenhensive test xml file
+    # TODO(tbroch) make this a comprehensive test xml file
     scfg.add_cfg_file("", os.path.join("data", "servo.xml"))
     scfg.display_config()
 

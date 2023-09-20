@@ -100,7 +100,7 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
     def DumpADCs(self, adcs):
         """Dump json formatted INA231 configurations for powerlog configuration.
 
-        This uses the same adcs template formate as servod (for compatability)
+        This uses the same adcs template formate as servod (for compatibility)
         but sweetberry configuration only needs child, name, sense, and is_calib.
 
         Args:
@@ -109,7 +109,7 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
               child: string format '0xAA:B': AA is i2c child addr and B is i2c port
               name: string name of the power rail
               nom: float of nominal voltage of power rail
-              sense: float of sense resitor size in ohms
+              sense: float of sense resistor size in ohms
               mux: string name of bank on sweetberry these ADC's live on: j2, j3, j4
               is_calib: boolean to indicate if calibration is possible for this rail
                         if false, no config will be exported
@@ -244,7 +244,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
                      "0x40:1" : address 0x40, channel/port 1
               name: string name of the power rail
               nom: float of nominal voltage of power rail.
-              sense: float of sense resitor size in ohms
+              sense: float of sense resistor size in ohms
               mux: string name of i2c mux leg these ADC's live on
               is_calib: boolean to indicate if calibration is possible for this rail
           params: a dictionary of extra params to feed into servod control
@@ -304,7 +304,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
                     # on rails input specification.
                     continue
                 # Nominal voltage is just informational. Add it here to maintain
-                # same interface as before, but TODO: consider if this info is neded at
+                # same interface as before, but TODO: consider if this info is needed at
                 # all.
                 ctrl_params["nom"] = nom
                 # Let the controls know about their own channel
@@ -412,7 +412,7 @@ def main(cmdline=sys.argv[1:]):
     Args:
       cmdline: sys command line args (without the program name)
 
-    Note: This is mainly inteded as a development tool to verify a new or
+    Note: This is mainly intended as a development tool to verify a new or
     modified powermap before submitting it, and without having to build the full
     hdctools.
     """

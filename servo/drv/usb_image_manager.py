@@ -28,7 +28,7 @@ class UsbImageManagerError(hw_driver.HwDriverError):
 
 
 # pylint: disable=invalid-name
-# Servod driver discovery logic requires this naming convension
+# Servod driver discovery logic requires this naming convention
 class usbImageManager(hw_driver.HwDriver):
     """Driver to handle common tasks on the switchable usb port."""
 
@@ -327,7 +327,7 @@ class usbImageManager(hw_driver.HwDriver):
         # pylint: disable=broad-except
         # Ensure that any issue gets caught & reported as UsbImageError
         if not usb_dev_partition or not os.path.exists(usb_dev_partition):
-            msg = "Usb parition device file provided %r invalid." % usb_dev_partition
+            msg = "Usb partition device file provided %r invalid." % usb_dev_partition
             self._logger.error(msg)
             raise UsbImageManagerError(msg)
         # Create TempDirectory

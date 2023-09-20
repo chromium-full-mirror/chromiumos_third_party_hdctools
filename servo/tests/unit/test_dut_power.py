@@ -49,7 +49,7 @@ class TestProgressPrinter(unittest.TestCase):
 
     @unittest.mock.patch("sys.stdout.write", unittest.mock.MagicMock())
     @unittest.mock.patch("sys.stdout.flush", unittest.mock.MagicMock())
-    def test_run_duratoin(self):
+    def test_run_duration(self):
         """Test run() that terminates with a certain duration."""
         printer = dut_power.ProgressPrinter(max_duration=2)
         printer.stop.is_set = unittest.mock.MagicMock(return_value=False)

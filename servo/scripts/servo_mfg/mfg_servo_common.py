@@ -50,7 +50,7 @@ def open_logfile(filename):
 
 
 def finish_logfile():
-    """Finish a logfile and detetch logging."""
+    """Finish a logfile and detach logging."""
     global logfile
     logfile = None
 

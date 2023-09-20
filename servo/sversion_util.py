@@ -22,7 +22,7 @@ except ImportError:
 
 
 def setuptools_version():
-    """Geneate a version string given the vdict above."""
+    """Generate a version string given the vdict above."""
     # for setuptools, convert the marker into a '.dev' so that it gets converted
     # properly
     vbase = vdict["vbase"]

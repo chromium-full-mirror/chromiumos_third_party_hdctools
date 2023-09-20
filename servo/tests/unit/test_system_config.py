@@ -137,8 +137,8 @@ class TestSystemConfig(unittest.TestCase):
             float(map_val), self.syscfg.resolve_val(control_params, map_key)
         )
 
-    def test_ResolveValMapNonExistant(self):
-        """A non-existant map raises a SystemConfigError."""
+    def test_ResolveValMapNonExistent(self):
+        """A non-existent map raises a SystemConfigError."""
         fake_map_name = "fake_map"
         control_params = {"map": fake_map_name}
         with self.assertRaisesRegex(
@@ -147,8 +147,8 @@ class TestSystemConfig(unittest.TestCase):
             # 'random_key' passed as key as the key does not matter for this test.
             self.syscfg.resolve_val(control_params, "random_key")
 
-    def test_ResolveValMapKeyNonExistant(self):
-        """A non-existant map key raises a SystemConfigError."""
+    def test_ResolveValMapKeyNonExistent(self):
+        """A non-existent map key raises a SystemConfigError."""
         map_key = "mapped_float"
         map_val = "1.1"
         map_name = "sample_map"
@@ -237,7 +237,7 @@ class TestSystemConfig(unittest.TestCase):
             # Assert that the same controls are found that were fed in.
             assert sorted(found_tagged_controls) == sorted(tagged_controls)
 
-    def test_TagUnkown(self):
+    def test_TagUnknown(self):
         """System returns an empty list if the tag is unknown."""
         tagged_controls = ["test1", "test2", "test3"]
         tag = "testtag"

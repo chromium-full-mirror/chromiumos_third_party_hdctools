@@ -37,7 +37,7 @@ class TestTool(unittest.TestCase):
         t.add_args.assert_called_once_with(args)
         t.error.assert_not_called()
 
-    def test_run_faliure(self):
+    def test_run_failure(self):
         """Test run()."""
         t = tool.Tool()
         t.error = unittest.mock.MagicMock(side_effect=SystemExit(1))

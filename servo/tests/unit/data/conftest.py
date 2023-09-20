@@ -47,7 +47,7 @@ def build_system_config(cfile, setup):
     pulled into the SystemConfig.
 
     Since this is meant for unit testing, this functionality should be enough.
-    Should you find yourself in the positon of needing to test how more than
+    Should you find yourself in the position of needing to test how more than
     one configuration file works with underlying hardware, create one
     configuration file that includes all the ones you need to test, and write
     a test against that file.

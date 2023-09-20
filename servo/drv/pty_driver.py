@@ -73,7 +73,7 @@ class ptyDriver(hw_driver.HwDriver):
                 self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
                 try:
                     self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
-                    # pexpect dafaults to a 100ms delay before sending characters, to
+                    # pexpect defaults to a 100ms delay before sending characters, to
                     # work around race conditions in ssh. We don't need this feature
                     # so we'll change delaybeforesend from 0.1 to 0.001
                     # to speed things up.
@@ -91,7 +91,7 @@ class ptyDriver(hw_driver.HwDriver):
                 self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
                 try:
                     self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
-                    # pexpect dafaults to a 100ms delay before sending characters, to
+                    # pexpect defaults to a 100ms delay before sending characters, to
                     # work around race conditions in ssh. We don't need this feature
                     # so we'll change delaybeforesend from 0.1 to 0.001
                     # to speed things up.

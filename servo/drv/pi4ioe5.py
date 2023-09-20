@@ -8,7 +8,7 @@ from servo.drv import i2c_reg
 
 
 class Pi4Ioe5Error(hw_driver.HwDriverError):
-    """Error occured accessing Pi4Ioe5."""
+    """Error occurred accessing Pi4Ioe5."""
 
 
 class pi4Ioe5(hw_driver.HwDriver):

@@ -43,7 +43,7 @@ class ptyDriver:
         """Connect to serial device and create pexpect interface."""
         self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
         self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
-        # pexpect dafaults to a 100ms delay before sending characters, to
+        # pexpect defaults to a 100ms delay before sending characters, to
         # work around race conditions in ssh. We don't need this feature
         # so we'll change delaybeforesend from 0.1 to 0.001 to speed things up.
         if self._fast:
@@ -148,7 +148,7 @@ class ptyDriver:
     def _issue_cmd_get_multi_results(self, cmd, regex):
         """Send command to the device and wait for multiple response.
 
-        This function waits for arbitary number of response message
+        This function waits for arbitrary number of response message
         matching a regular expression.
 
         Args:

@@ -295,7 +295,7 @@ class TestServoDeviceFinder(unittest.TestCase):
     def test_discover_servos_multiple_devices_no_auto(self):
         """Test discover_servos error out when there are multiple devices
         matched with invocation arguments and user specifies which device they
-        want through the interative menu.
+        want through the interactive menu.
         """
         add_fake_usb_entry(
             usb_devices_dir=self._fake_sysfs_usb_path, **self._root_servo_dev_attrs
@@ -772,11 +772,11 @@ def add_fake_usb_entry(
       usb_devices_dir: directory mocking /sys/bus/usb/devices
       hub_port_path: the 'x.x.x' port path of the device on the root hub
       root_hub: the usb root hub number
-      devnum: content for the dev-num file. File not created if ommited
-      busnum: content for the bus-num file. File not created if ommited
-      serial: content for the serial file. File not created if ommited
-      vid: content for the idVendor file. File not created if ommited
-      pid: content for the idProduct file. File not created if ommited
+      devnum: content for the dev-num file. File not created if omitted
+      busnum: content for the bus-num file. File not created if omitted
+      serial: content for the serial file. File not created if omitted
+      vid: content for the idVendor file. File not created if omitted
+      pid: content for the idProduct file. File not created if omitted
 
     Returns:
       devdir: directory in |usb_devices_dir| that was created

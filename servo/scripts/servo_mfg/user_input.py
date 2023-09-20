@@ -154,7 +154,7 @@ def _prompt_and_validate(name, data_re=None):
         data = _raw_input_timeout("%r" % name)
         logging.debug("Input %r: %r", name, data)
         if data is None:
-            # This means a timeout occured. Simply return the None to the caller.
+            # This means a timeout occurred. Simply return the None to the caller.
             return None
         if (data_re is None and data) or data_is_valid(name, data, data_re):
             # Ensure that empty input does not get passed through.

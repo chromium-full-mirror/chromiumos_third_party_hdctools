@@ -61,8 +61,8 @@ class Fgpio(gpio_interface.GpioInterface):
         """Fgpio constructor.
 
         Loads libraries for libftdi, libftdigpio.  Creates instance objects
-        (Structures), FgpioContext, FtdiContext and Gpio to iteract with the library
-        and intializes them.
+        (Structures), FgpioContext, FtdiContext and Gpio to interact with the library
+        and initializes them.
 
         Args:
           vendor    : usb vendor id of FTDI device
@@ -143,7 +143,7 @@ class Fgpio(gpio_interface.GpioInterface):
         Args:
           offset  : bit offset of the gpio to read or write
           width   : integer, number of contiguous bits in gpio to read or write
-          dir_val : direction value of the gpio.  dir_val is interpretted as:
+          dir_val : direction value of the gpio.  dir_val is interpreted as:
                       None : read the pins via libftdi's ftdi_read_pins
                       0    : configure as input
                       1    : configure as output

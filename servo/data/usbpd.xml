@@ -2,7 +2,7 @@
   <!-- USB PD UART Controls -->
   <control>
     <name>raw_usbpd_uart_pty</name>
-    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's uart
+    <doc>Psuedo-terminal (pty) thats connected to USB PD MCU's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="6" drv="uart"
     clobber_ok="never">

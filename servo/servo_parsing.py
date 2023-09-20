@@ -137,7 +137,7 @@ class _BaseServodParser(argparse.ArgumentParser):
       element[1]: is a comment to explain what the invocation does.
 
     For example (loosely based on servod.)
-    ('-b board', 'Start servod with the configuation for board |board|')
+    ('-b board', 'Start servod with the configuration for board |board|')
     would print the following help message:
     ...
 

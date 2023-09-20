@@ -184,7 +184,7 @@ class TestScratch(unittest.TestCase):
         entry_from_file = self._scratch.FindById(self._dport)
         assert entry_from_file["active"] is True
 
-    def test_MarkActiveEntryUnvailable(self):
+    def test_MarkActiveEntryUnavailable(self):
         """Marking active an unknown entry fails."""
         self._manually_add_entry()
         with self.assertRaisesRegex(
@@ -233,7 +233,7 @@ class TestScratch(unittest.TestCase):
         assert self._scratch.GetAllEntries() == []
 
     def test_GetAllEntries(self):
-        """Verify GetAllEntries() retrives all entries."""
+        """Verify GetAllEntries() retrieves all entries."""
         # Dictionary to hold entries added
         mentries = collections.defaultdict(lambda: {"active": False})
         mentries[9999].update({"port": 9999, "serials": ["1999"], "pid": 1234})

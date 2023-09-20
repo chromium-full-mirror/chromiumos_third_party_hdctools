@@ -27,7 +27,7 @@ LOGNAME = "/var/log/mfg_servo_v4"
 TESTERLOGNAME = "/var/log/mfg_servo_v4_run"
 
 RE_MACADDR = re.compile("^([0-9A-Fa-f]{2}[:-]){5}([0-9A-F]{2})$")
-# Note: update this regex to accomodate for new serialname formats if necessary.
+# Note: update this regex to accommodate for new serialname formats if necessary.
 # Specifically note that the first letter is an indicator of the supplier,
 # so onboarding a new supplier likely requires a modification to that
 # character set.

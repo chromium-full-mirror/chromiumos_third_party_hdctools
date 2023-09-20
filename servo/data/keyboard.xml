@@ -13,7 +13,7 @@
   </control>
   <control>
     <name>imaginary_key</name>
-    <doc>Send non existant key either by servoflex or USB KB emulation</doc>
+    <doc>Send non existent key either by servoflex or USB KB emulation</doc>
     <params cmd="set" subtype="key" key="imaginary_key" interface="servo"
     drv="kb" input_type="float" map="keypress_duration"/>
   </control>

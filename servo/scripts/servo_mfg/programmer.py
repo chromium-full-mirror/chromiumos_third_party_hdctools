@@ -130,7 +130,7 @@ class Programmer:
 
         Note: this is just a default implementation, because it's the most common
         flow. If a new programmer requires a different way to find the device
-        or more information, please ovewrite, or extend this implementation.
+        or more information, please overwrite, or extend this implementation.
 
         If the vid/pid are stored in their self._ members, this method will find
         the /sys/bus/usb/devices folder of the device and return it, or raise

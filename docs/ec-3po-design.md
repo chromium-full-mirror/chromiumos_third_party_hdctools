@@ -254,7 +254,7 @@ request and response.
 When the user transmits a character on the PTY, the console begins to scan every
 byte and perform the appropriate actions. Since not every EC image will support
 these enhanced features, the console must perform an interrogation to determine
-what behaviour to take. If the interrogation mode is set to auto, this
+what behavior to take. If the interrogation mode is set to auto, this
 negotiation takes place every time the enter key is pressed. The interrogation
 is very simple 2 way handshake. The console sends down a byte, `EC_SYN` and
 waits a timeout period to receive a byte, `EC_ACK`. This timeout period is 300ms

@@ -90,7 +90,7 @@ class Console:
     """Class which provides the console interface between the EC and the user.
 
     This class essentially represents the console interface between the user and
-    the EC.  It handles all of the console editing behaviour
+    the EC.  It handles all of the console editing behavior
 
     Attributes:
       logger: A logger for this module.

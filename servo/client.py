@@ -51,7 +51,7 @@ class ServoClient:
     """Class to link client to servod via xmlrpc.
 
     Beyond method initialize, the remaining methods (doc_all, doc, get, get_all,
-    set) have a corresponding method implmented in servod's server.
+    set) have a corresponding method implemented in servod's server.
     """
 
     def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, verbose=False):

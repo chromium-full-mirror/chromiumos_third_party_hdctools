@@ -105,7 +105,7 @@ class pca9500(hw_driver.HwDriver):
         """Read the pca9500 control register.
 
         pca9500 has one register for its 8bit GPIO expander functionality.  This
-        control register can be read by peforming a 1 byte read to the child
+        control register can be read by performing a 1 byte read to the child
         address.  See datasheet for more detail.
 
         Returns:

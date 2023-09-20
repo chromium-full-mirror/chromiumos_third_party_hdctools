@@ -11,7 +11,7 @@ class sx1506V4(sx1506.sx1506):
 
     This class implements hardcoded defaults for servo v4's sx1506 io expander.
     Since sx1506 doesn't export its internal state, and the GPIOs must be
-    preserved on init to keep servo_micro up, we need to hardocode here.
+    preserved on init to keep servo_micro up, we need to hardcode here.
     """
 
     INIT_DATA = 0x0282

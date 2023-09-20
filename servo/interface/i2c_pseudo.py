@@ -390,7 +390,7 @@ class I2cPseudoAdapter:
 
         Args:
           line: A full read command line from the i2c-pseudo controller device.
-              Must NOT contain the commmand-terminating character (_CMD_END_CHAR).
+              Must NOT contain the command-terminating character (_CMD_END_CHAR).
         """
         if not line:
             return

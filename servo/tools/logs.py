@@ -202,7 +202,7 @@ class Logs(tool.Tool):
         """Extract MCU (EC, Cr50, etc) console output from servod debug logs.
 
         Using the MCU_EXTRACTOR regex to extract and split out MCU console
-        lines from the logs to generate invidiual console logs e.g. after
+        lines from the logs to generate individual console logs e.g. after
         this method, you can find an ec.txt and servo_v4.txt in |log_dir| if
         those MCUs had any console input/output.
 

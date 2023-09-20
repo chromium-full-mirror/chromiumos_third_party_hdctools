@@ -18,7 +18,7 @@ def GetBuiltins(func):
     return "builtins." + func
 
 
-class TestEnhancedECBehaviour(unittest.TestCase):
+class TestEnhancedECBehavior(unittest.TestCase):
     """Test case to verify all enhanced EC interpretation tasks."""
 
     def setUp(self):

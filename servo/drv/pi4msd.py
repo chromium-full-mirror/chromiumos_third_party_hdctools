@@ -49,7 +49,7 @@ class pi4Msd(hw_driver.HwDriver):
     def _get(self):
         """Get value of mux control register"""
 
-        # Cannot use dedicted _read_reg since muxer has only one register and there
+        # Cannot use dedicated _read_reg since muxer has only one register and there
         # is no extra i2c transaction with register addr"""
         rlist = self._i2c_obj._i2c.wr_rd(self.PI4MSD_I2C_ADDR, [], 1)
         return self._i2c_obj._convert_rd(rlist, True)

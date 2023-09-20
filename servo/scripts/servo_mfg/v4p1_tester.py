@@ -8,7 +8,7 @@ from servo_mfg import control_test
 from servo_mfg import tester
 from servo_mfg import usb_device_test
 
-# Import this for the right vid/pid informations.
+# Import this for the right vid/pid information.
 from servo_mfg.v4p1_manufacturer import V4P1Manufacturer
 
 

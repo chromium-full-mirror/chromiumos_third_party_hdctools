@@ -147,9 +147,9 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         # The second log is 40 bytes and should cause rotation.
         log2 = "This is an attempt to make 40 bytes laaa"
         self.test_logger.info(log1)
-        # No rolling should have occured yet.
+        # No rolling should have occurred yet.
         assert not os.path.exists(get_rolled_fn(handler.baseFilename, 1))
-        # Rolling should have occured by now.
+        # Rolling should have occurred by now.
         self.test_logger.info(log2)
         assert os.path.exists(get_rolled_fn(handler.baseFilename, 1))
 
@@ -173,7 +173,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         handler.close()
 
     def test_DeleteMultipleInstancesPastBackupCount(self):
-        """No more than backup count logs are kept across intances.
+        """No more than backup count logs are kept across instances.
 
         Additionally, this test validates that the oldest get deleted.
         """
@@ -227,7 +227,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
             servo_logging.LOG_FILE_PREFIX,
             servo_logging._generateTs(),
         )
-        # This mimicks the active, open logfile.
+        # This mimics the active, open logfile.
         logfiles = ["%s.%s" % (instance_tag, loglevel)]
         # suffix .0 will never be generated if the main file still exists.
         # Start here at suffix .1 to simulate proper rotation.
@@ -257,7 +257,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
                 datetime.datetime.now() + datetime.timedelta(seconds=1)
             ),
         )
-        # This mimicks the active, open logfiles.
+        # This mimics the active, open logfiles.
         logfiles = ["%s.%s" % (fresh_tag, loglevel)]
         logfiles.append("%s.%s" % (stale_tag, loglevel))
         for i in range(1, 6):

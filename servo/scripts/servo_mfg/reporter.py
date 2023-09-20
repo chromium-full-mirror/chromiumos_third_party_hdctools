@@ -83,7 +83,7 @@ def bundle(paths):
         for d in paths:
             arcname = "." if single_mode else os.path.basename(d)
             if not d or not os.path.exists(d):
-                logging.error("Cannot tar up non-existant outdir %r", d)
+                logging.error("Cannot tar up non-existent outdir %r", d)
             else:
                 tar.add(d, arcname=arcname)
     # Again, make sure this is all access

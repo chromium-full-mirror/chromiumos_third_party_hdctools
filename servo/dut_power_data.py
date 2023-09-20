@@ -54,10 +54,10 @@ class DataSampler:
         )
 
     def compare_data_sample_format(self, latest_sample_format):
-        """Compare the data foramt
+        """Compare the data format
 
         If the data we received from the power measurement changes, we need
-        to change the data fromat to avoid error and update the data we are
+        to change the data format to avoid error and update the data we are
         going to pass to the visualization UI. Therefore, we need this function
         to figure out if the data format is changed.
 

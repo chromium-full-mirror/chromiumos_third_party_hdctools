@@ -316,7 +316,7 @@ class pac1934(ina2xx.ina2xx):
             self._logger.debug("power accumulator %x after negation", acc_pwr)
         # Do not refresh again to avoid acc_count being different
         acc_count = self._read_reg("acc_count", refresh=None)
-        # Integer division as we want it to mimick the output of a normal pwr
+        # Integer division as we want it to mimic the output of a normal pwr
         # register.
         return self._Get_milliwatts(raw_pwr=acc_pwr // acc_count)
 

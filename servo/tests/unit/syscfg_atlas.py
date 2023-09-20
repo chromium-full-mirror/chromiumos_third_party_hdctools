@@ -4215,7 +4215,7 @@ syscfg_dict = {
             },
         },
         "imaginary_key": {
-            "doc": "Send non existant key either by servoflex or USB KB emulation",
+            "doc": "Send non existent key either by servoflex or USB KB emulation",
             "get_params": {
                 "cmd": "get",
                 "control_name": "imaginary_key",
@@ -4859,7 +4859,7 @@ syscfg_dict = {
             },
         },
         "raw_cr50_uart_pty": {
-            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4899,7 +4899,7 @@ syscfg_dict = {
             },
         },
         "raw_gsc_uart_pty": {
-            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -4939,7 +4939,7 @@ syscfg_dict = {
             },
         },
         "raw_usbpd_uart_pty": {
-            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",
@@ -6567,7 +6567,7 @@ syscfg_dict = {
             },
         },
         "uart4_pty": {
-            "doc": "Pseudo-terminal (pty) thats connnected to the gsc uart console",
+            "doc": "Pseudo-terminal (pty) thats connected to the gsc uart console",
             "get_params": {
                 "CONTENT": None,
                 "cmd": "get",

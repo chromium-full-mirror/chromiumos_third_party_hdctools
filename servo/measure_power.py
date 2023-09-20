@@ -409,7 +409,7 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
         self._sclient.set_get_all(self._clear_ctrls)
 
     def _sample_ctrls(self, ctrls):
-        """Overwite the base implementation to clear accumulator after reading."""
+        """Overwrite the base implementation to clear accumulator after reading."""
         ret = super(OnboardADCAccumPowerTracker, self)._sample_ctrls(ctrls)
         self._clear_accum()
         return ret
@@ -658,7 +658,7 @@ class PowerMeasurement:
                     "ADC tracker has no controls that are not already "
                     "covered by the ADC accum tracker. Removing."
                 )
-        # After preprocesssing is done, append the trackers.
+        # After preprocessing is done, append the trackers.
         for tracker in [adc_tracker, adc_accum_tracker, ec_tracker]:
             if tracker is not None:
                 if not tracker.empty:

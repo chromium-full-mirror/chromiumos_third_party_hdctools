@@ -45,7 +45,7 @@ import numpy
 # TODO(tbroch) maybe this should be optarg
 MAX_STATS = 20
 
-# Lower 2bits configureable via Texas Instruments
+# Lower 2bits configurable via Texas Instruments
 I2C_SLV_DEFAULT = 0x48
 
 REG_IDX_AD_CTRL = 0x16
@@ -359,7 +359,7 @@ def main():
             stats[name] = numpy.append(stats[name], mw_val)
             print("%s:%.f" % (name, stats[name].mean()))
         # delay in order to not raise power via the script
-        # TODO(tbroch) sleep should be configureable
+        # TODO(tbroch) sleep should be configurable
         time.sleep(2)
 
 

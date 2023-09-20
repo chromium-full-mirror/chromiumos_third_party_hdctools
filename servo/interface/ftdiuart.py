@@ -85,11 +85,11 @@ class Fuart(uart.Uart):
         serialname=None,
         ftdi_context=None,
     ):
-        """Fuart contstructor.
+        """Fuart constructor.
 
         Loads libraries for libftdi, libftdiuart.  Creates instance objects
-        (Structures), FuartContext, FtdiContext and Gpio to iteract with the library
-        and intializes them.
+        (Structures), FuartContext, FtdiContext and Gpio to interact with the library
+        and initializes them.
 
         Args:
           vendor: usb vendor id of FTDI device
@@ -115,7 +115,7 @@ class Fuart(uart.Uart):
             serialname=serialname.encode(),
             speed=115200,
             bits=8,  # BITS_8 in ftdi.h
-            partity=0,  # NONE in ftdi.h
+            parity=0,  # NONE in ftdi.h
             sbits=0,  # STOP_BIT_1 in ftdi.h
         )
         self._is_closed = True

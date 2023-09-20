@@ -71,7 +71,7 @@ class TestStatsManager(unittest.TestCase):
         summary = self.data.GetSummary()
         # assert that 'NaN' as added.
         self.assertEqual(4, summary["Test"]["count"])
-        # assert that mean, min, and max calculatings ignore the 'NaN'
+        # assert that mean, min, and max calculations ignore the 'NaN'
         self.assertEqual(10, summary["Test"]["min"])
         self.assertEqual(20, summary["Test"]["max"])
         self.assertEqual(15, summary["Test"]["mean"])

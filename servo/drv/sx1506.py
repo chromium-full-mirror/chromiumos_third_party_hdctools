@@ -73,7 +73,7 @@ class sx1506(hw_driver.HwDriver):
         self._reg_cache[(self._cacheindex, self.REG_DATA)] = outputs
         self.write16(self.REG_DATA, outputs)
 
-        # Initlialize pullup
+        # Initialize pullup
         if self._io_type == "PU":
             (offset, mask) = self._get_offset_mask()
 

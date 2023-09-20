@@ -895,7 +895,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         CheckHistoryBuffer(self, exp_history_buf)
 
         # We expect that the console output should only contain our entered command,
-        # a new prompt, and then our command aggain.
+        # a new prompt, and then our command again.
         exp_console_out = test_str + b"\r\n" + self.console.prompt
         # Pressing up should reprint the command we entered.
         exp_console_out += test_str

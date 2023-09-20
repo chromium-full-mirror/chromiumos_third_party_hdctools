@@ -50,7 +50,7 @@ class RTKEthProgrammer(programmer.Programmer):
 
     # .cfg files have ; as a comment delim
     COMMENT_DELIM = ";"
-    # .cfg files have ' = ' as a separator betweeen keys and values
+    # .cfg files have ' = ' as a separator between keys and values
     KEY_VALUE_SEP = " = "
 
     # This is a wildcard path to pass to glob to find the device file

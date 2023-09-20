@@ -83,9 +83,9 @@ class V4P1Manager(manager.Manager):
         """Check the parsed arguments, perform modifications, or raise error.
 
         Note: in single device mode, the required arguments are supplied through
-        the command line. In continious mode, they are supplied through continious
+        the command line. In continuous mode, they are supplied through continuous
         prompts to the user. This functions sets the required arguments (serialno,
-        macaddr) to None if they are provided in continious mode to force a
+        macaddr) to None if they are provided in continuous mode to force a
         prompting.
 
         Args:
@@ -97,7 +97,7 @@ class V4P1Manager(manager.Manager):
         if not args.single:
             if args.serialno or args.macaddr:
                 self._logger.info(
-                    "This is continious mode. Single device args are "
+                    "This is continuous mode. Single device args are "
                     "requested one at a time. These will be ignored."
                 )
             if args.serialno:
@@ -139,7 +139,7 @@ class V4P1Manager(manager.Manager):
         return {"serial": args.serialno, "macaddr": args.macaddr}
 
     def prompt_data(self, args):
-        """Helper to request data in continous mode. Serial and mac address.
+        """Helper to request data in continuous mode. Serial and mac address.
 
         Note: this method does not return anything but rather sets the
               - serialno

@@ -62,7 +62,7 @@ class fastEc(simple_ec.simpleEc):
         # Now, we need to inspect member 0 (the full match), and see whether
         # it matched with any of the known errors.
         if re.search(self.CROS_EC_ERROR_RX, results[0]):
-            # a known error occured, raise an error.
+            # a known error occurred, raise an error.
             # |e| is for extra info to log.
             e = "Ran into cros ec error: %r" % results[0]
             # pass |regex| and not |eregex| as that just pollutes the error logs.

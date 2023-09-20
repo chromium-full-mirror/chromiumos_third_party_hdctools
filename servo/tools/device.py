@@ -113,7 +113,7 @@ class Device(tool.Tool):
                 raise
             e = ex
         # Make sure the device comes back with a new devnum before attempting
-        # to comminucate with it.
+        # to communicate with it.
         self._check_devnum_reset(dev_path, devnum, "reboot")
         for i in range(self.REBOOT_TIMEOUT_ATTEMPTS):
             try:
@@ -212,7 +212,7 @@ class Device(tool.Tool):
             self.error("uhubctl not available. Be sure to run as sudo. %s", str(e))
         if hub is not None and port is not None:
             # expand the command to check for hub and port existing.
-            # casting port to str to ensure we don't accidently pass an int.
+            # casting port to str to ensure we don't accidentally pass an int.
             cmd = cmd + ["-l", hub, "-p", str(port)]
             try:
                 subprocess.check_output(cmd, stderr=subprocess.STDOUT)
@@ -332,7 +332,7 @@ class Device(tool.Tool):
         uhubctl exposes multiple knobs to control the power-cycling of a port.
         This method uses the 'reset' knob by default. However, if the user
         specifies |force|=True, it will issue an 'off' request, wait for
-        |PWR_OFF_SLEEP_S| seconds, before issueing an 'on' request. For some hubs
+        |PWR_OFF_SLEEP_S| seconds, before issuing an 'on' request. For some hubs
         this has proven itself more reliably than a reset request.
 
         Args:

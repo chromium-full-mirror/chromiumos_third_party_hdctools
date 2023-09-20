@@ -129,7 +129,7 @@ class Coordinator:
             if self.manager is not None:
                 self.manager.finish()
         self.signal_map[sig] -= 1
-        self._logger.info("Reiceived signal %d. Trying to turn down gracefully.", sig)
+        self._logger.info("Received signal %d. Trying to turn down gracefully.", sig)
         if self.signal_map[sig]:
             self._logger.info(
                 "Issue %d more times to exit right away.", self.signal_map[sig]
@@ -161,7 +161,7 @@ class Coordinator:
             "--single",
             action="store_true",
             default=False,
-            help="Whether to program a single device rather than a continous loop",
+            help="Whether to program a single device rather than a continuous loop",
         )
         parser.add_argument(
             "--developer",
@@ -281,7 +281,7 @@ class Coordinator:
             # it here.
             self.manager.abort(int(not ret))
         else:
-            self.manager.continious_mode(self.args)
+            self.manager.continuous_mode(self.args)
         self.exit(self.manager.exit_code)
 
 

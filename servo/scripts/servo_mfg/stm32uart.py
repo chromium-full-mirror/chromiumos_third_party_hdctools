@@ -42,7 +42,7 @@ class Suart:
         serialname=None,
         _ftdi_context=None,
     ):
-        """Suart contstructor.
+        """Suart constructor.
 
         Initializes stm32 USB stream interface.
 

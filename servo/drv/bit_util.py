@@ -16,7 +16,7 @@ def extract_bitfield(field, mask, shift):
 
     Args:
       field: int, entire bitfield content e.g. from a register
-      mask: int, mask identifiying the bits of interest
+      mask: int, mask identifying the bits of interest
       shift: int, right-shift to bring bits of interest to least significant bit
 
     Returns:
@@ -35,7 +35,7 @@ def set_bitfield(field, mask, shift, content):
 
     Args:
       field: int, entire bitfield content e.g. from a register
-      mask: int, mask identifiying the bits of interest
+      mask: int, mask identifying the bits of interest
       shift: int, left-shift to bring mask and value to the correct bit location
              in |field|
 

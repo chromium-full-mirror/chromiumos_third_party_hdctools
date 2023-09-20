@@ -145,7 +145,7 @@ def get_board_model_pairs(board_exclude_list=[]):
 
 
 def compare_results(expected, results):
-    """Compare two dicts of endpoint data to see if they are equivelent.
+    """Compare two dicts of endpoint data to see if they are equivalent.
 
     Args:
         expected (dict): The endpoint commands the test was expected to generate.

@@ -130,7 +130,7 @@ def mock_endpoint(mocker):
             by a line break.
 
             At times partial strings are sent, store these partial strings until
-            the next line break is recieved.
+            the next line break is received.
 
             Args:
                 ep (Mock): Mock endpoint object used to access / store data.

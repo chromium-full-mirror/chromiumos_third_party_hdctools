@@ -187,7 +187,7 @@ class lcm2004(hw_driver.HwDriver):
         Args:
           byte: 8 bits layout
             bit 7 - 4: High or low nibble of the data, which
-                comes from the 2nd paramter of _send().
+                comes from the 2nd parameter of _send().
             bit 3: Backlight on(1)/off(0).
             bit 2: The En pin high(1)/low(0).
             bit 1: Read from(1)/Write to(0) LCM.

@@ -40,7 +40,7 @@ class TestMfgServoV4(unittest.TestCase):
         # Check invalid day
         self.day = "00"
         assert not mfg.RE_SERIALNO.match(self.buildSerial())
-        # Check non-existant 2-digit day.
+        # Check non-existent 2-digit day.
         self.day = "32"
         assert not mfg.RE_SERIALNO.match(self.buildSerial())
         # Check ensure 3-digit day is rejected.
@@ -52,7 +52,7 @@ class TestMfgServoV4(unittest.TestCase):
         # Check invalid month
         self.month = "00"
         assert not mfg.RE_SERIALNO.match(self.buildSerial())
-        # Check non-existant 2-digit month.
+        # Check non-existent 2-digit month.
         self.month = "13"
         assert not mfg.RE_SERIALNO.match(self.buildSerial())
         # Check ensure 3-digit month is rejected.

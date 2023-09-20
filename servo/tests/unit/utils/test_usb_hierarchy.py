@@ -543,11 +543,11 @@ def AddFakeUsbEntry(
       usb_devices_dir: directory mocking /sys/bus/usb/devices
       hub_port_path: the 'x.x.x' port path of the device on the root hub
       root_hub: the usb root hub number
-      devnum: content for the dev-num file. File not created if ommited
-      busnum: content for the bus-num file. File not created if ommited
-      serial: content for the serial file. File not created if ommited
-      vid: content for the idVendor file. File not created if ommited
-      pid: content for the idProduct file. File not created if ommited
+      devnum: content for the dev-num file. File not created if omitted
+      busnum: content for the bus-num file. File not created if omitted
+      serial: content for the serial file. File not created if omitted
+      vid: content for the idVendor file. File not created if omitted
+      pid: content for the idProduct file. File not created if omitted
 
     Returns:
       devdir: directory in |usb_devices_dir| that was created

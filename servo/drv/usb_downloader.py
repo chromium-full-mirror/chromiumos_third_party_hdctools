@@ -26,7 +26,7 @@ class usbDownloaderError(hw_driver.HwDriverError):
 
 
 # pylint: disable=invalid-name
-# Servod driver discovery logic requires this naming convension
+# Servod driver discovery logic requires this naming convention
 class usbDownloader(hw_driver.HwDriver):
     """Driver download an image to the 'image usbkey'."""
 

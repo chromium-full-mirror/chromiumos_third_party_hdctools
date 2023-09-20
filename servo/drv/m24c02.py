@@ -169,7 +169,7 @@ class m24c02(hw_driver.HwDriver):
             offset = offset + 1
 
     def _Get_rom_params(self):
-        """Gets operating paramters.
+        """Gets operating parameters.
 
         Returns:
           Show child address, offset, and read count.

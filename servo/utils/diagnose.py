@@ -63,7 +63,7 @@ def diagnose_ccd(servo_dev):
         )
         logger.error("")
 
-    # Check if chargethrough is plugged in.
+    # Check if charge through is plugged in.
     if chg_cc1 < NC_LOW and chg_cc2 < NC_LOW:
         logger.error("No charger connected to servo")
         logger.error("")

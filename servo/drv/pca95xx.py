@@ -51,7 +51,7 @@ def pca95xx(interface, params):
         There are number of these I2c->GPIO expanders that all share similar
         functionality and unfortunately child addresses.  Two such are the pca9500
         (NXP) and pca953x (TI) devices.  They don't have any ID registers to
-        formally distiguish them but the pca9500 does have an EEPROM at + 0x30 from
+        formally distinguish them but the pca9500 does have an EEPROM at + 0x30 from
         the base child address which serves as a reasonable identifier.
 
         Returns:

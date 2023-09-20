@@ -82,7 +82,7 @@ COMPRESSION_SUFFIX = "tbz2"
 # Each servo-port receives its own log directory. This is the prefix for those
 # directory names.
 LOG_DIR_PREFIX = "servod"
-# This ensures when running e2e tests in parralel that each run has its own unique path.
+# This ensures when running e2e tests in parallel that each run has its own unique path.
 if "PYTEST_XDIST_TESTRUNUID" in os.environ:
     LOG_DIR_PREFIX += os.environ["PYTEST_XDIST_TESTRUNUID"]
 
@@ -100,7 +100,7 @@ TS_FILE = "ts"
 TS_FORMAT = "%Y-%m-%d--%H-%M-%S.%f"
 
 
-# Follows servod error naming convetion.
+# Follows servod error naming convention.
 class ServoLoggingError(Exception):
     """Error to throw on logging issues."""
 
@@ -324,7 +324,7 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
 
     @staticmethod
     def getCompressedPathname(path):
-        """Helper to encapsulte compressed filename logic.
+        """Helper to encapsulate compressed filename logic.
 
         If |path| does not have a number at its end, it means that it's the first,
         unrotated log to be compressed. In that case, append a 0, so that sorting

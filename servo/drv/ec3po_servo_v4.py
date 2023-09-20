@@ -87,7 +87,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         # TODO(waihong): Move the optional match to mandatory when the old
         # firmware is phased out.
         def _get_optional_field(rx, default, warn_str):
-            """Get the optional fields of comand cc.
+            """Get the optional fields of command cc.
 
             Returns 'default' if failed to parse the value.
 
@@ -225,14 +225,14 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         return info
 
     def _Get_servo_v4_pd_comm(self):
-        """Getter of servo_v4 DUT port PD communication capbility.
+        """Getter of servo_v4 DUT port PD communication capability.
 
         Returns: a string for 'on' or 'off'
         """
         return self.servo_cc_modes()["pd"]
 
     def _Set_servo_v4_pd_comm(self, value):
-        """Setter of servo_v4 DUT port PD communication capbility.
+        """Setter of servo_v4 DUT port PD communication capability.
 
         Args:
           value: 'on' or 'off'

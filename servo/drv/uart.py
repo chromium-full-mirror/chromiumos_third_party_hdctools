@@ -26,7 +26,7 @@ class uart(pty_driver.ptyDriver):
     def _Get_pty(self):
         """Get pty device attached to uart.
 
-        Retuns:
+        Returns:
           Path to pty attached to the uart.
         """
         self._logger.debug("")

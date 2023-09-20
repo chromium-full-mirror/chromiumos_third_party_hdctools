@@ -422,7 +422,7 @@ class Hierarchy:
     def GetSysfsParentHubStub(sysfs_dev_path):
         """Retrieve the usb port hub path up to and not including the device itself.
 
-        This helper retrievs the ParentHubStub. This is useful to determine if two
+        This helper retrieves the ParentHubStub. This is useful to determine if two
         devices hang on the same usb hub (e.g. the internal usb hub on a servo).
         The anatomy of a usb sysfs dev file name is:
 

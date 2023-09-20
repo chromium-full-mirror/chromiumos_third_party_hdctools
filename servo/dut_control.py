@@ -413,7 +413,7 @@ def real_main(cmdline):
 
 
 # pylint: disable=dangerous-default-value
-# Ability to pass an arbitrary or artifical cmdline for testing is desirable.
+# Ability to pass an arbitrary or artificial cmdline for testing is desirable.
 def main(cmdline=sys.argv[1:]):
     """main method exception wrapper."""
     try:

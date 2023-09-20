@@ -80,8 +80,8 @@ class TimelinedStatsManager(stats_manager.StatsManager):
     def AddSample(self, domain, sample):
         """NotImplemented.
 
-        In order to preserve the balanced timeline adding invidual samples is
-        discouraged as it might result in uninteded behavior. If you find yourself
+        In order to preserve the balanced timeline adding individual samples is
+        discouraged as it might result in unintended behavior. If you find yourself
         in need of this function, please implement it/raise a bug.
         """
         raise stats_manager.StatsManagerError(
@@ -165,7 +165,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
           stats manager
         """
         # trimmed stats manager. We want a deep-copy so that we carry all the data
-        # and don't accidently trim data from the original stats manager.
+        # and don't accidentally trim data from the original stats manager.
         # The logger inside the stats manager cannot be deep copied. This works
         # around that.
         old_logger = self._logger

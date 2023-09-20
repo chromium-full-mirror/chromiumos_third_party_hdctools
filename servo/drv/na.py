@@ -22,7 +22,7 @@ class na(hw_driver.HwDriver):
         super(na, self).__init__(interface, params, servod)
 
     def get(self):
-        """Return not_applicate"""
+        """Return not_applicable"""
         self._logger.debug("na drv called. returning 'not_applicable'.")
         return "not_applicable"
 

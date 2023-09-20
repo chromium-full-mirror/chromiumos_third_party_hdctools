@@ -519,7 +519,7 @@ class ServoDevice:
         self._drv_dict = {}
 
     def doc_all(self):
-        """Return all documenations for controls.
+        """Return all documentations for controls.
 
         Returns:
           string of <doc> text in config file (xml) and the params dictionary for

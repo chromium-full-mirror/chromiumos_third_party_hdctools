@@ -429,7 +429,7 @@ RUN apt-get remove --purge -y \
     && rm -rf /usr/share/zoneinfo/
 
 
-# Required for the name paramter for using .servorc.
+# Required for the name parameter for using .servorc.
 ENV SUDO_USER=docker
 # Required for the ftdi libraries to be found. ENV does not allow the
 # use of command to populate the results, to be less brittle it would

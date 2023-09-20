@@ -40,7 +40,7 @@ class Susb:
     ):
         """Susb constructor.
 
-        Disconvers and connects to stm32 USB endpoints.
+        Discovers and connects to stm32 USB endpoints.
 
         Args:
           vendor    : usb vendor id of stm32 device

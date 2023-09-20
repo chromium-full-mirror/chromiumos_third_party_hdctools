@@ -68,7 +68,7 @@ class sx1505(hw_driver.HwDriver):
         )
         self._reg_cache[(self._cacheindex, self.REG_DIR)] = dir
 
-        # Initlialize pullup
+        # Initialize pullup
         if self._io_type == "PU":
             (_, mask) = self._get_offset_mask()
             pu_reg = self._i2c_obj._read_reg(self.REG_PU)

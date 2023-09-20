@@ -13,7 +13,7 @@ from servo.drv import pi4msd
 
 
 class StudEvbError(hw_driver.HwDriverError):
-    """Error occured accessing StudEvb controls"""
+    """Error occurred accessing StudEvb controls"""
 
 
 class studEvb(hw_driver.HwDriver):
@@ -420,7 +420,7 @@ class studEvb(hw_driver.HwDriver):
           bank_data: Tuple (bank_type, bank_str)
         """
         if "bank_type" not in self._params or "bank_str" not in self._params:
-            raise StudEvbError("gettin bank_type and bank_str")
+            raise StudEvbError("getting bank_type and bank_str")
 
         bank_type = self._params["bank_type"]
         bank_str = self._params["bank_str"]

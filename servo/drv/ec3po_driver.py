@@ -29,7 +29,7 @@ class ec3poDriver(hw_driver.HwDriver):
 
         Args:
           state: A boolean indicating whether to connect or disconnect the
-            intepreter from the UART if the interface is valid.
+            interpreter from the UART if the interface is valid.
         """
         if self._interface is not None:
             self._interface.set_interp_connect(state)

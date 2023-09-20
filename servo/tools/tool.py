@@ -17,7 +17,7 @@ class Tool:
     """Base class implementing the tool interface.
 
     A tool is a tool invoked through servodtool [tool] [args...] and provides
-    aditional functionality to servod outside of the instance. Think instance
+    additional functionality to servod outside of the instance. Think instance
     management, log parsing, etc.
     """
 
@@ -54,7 +54,7 @@ class Tool:
           args: argparse.parse_arguments() returned namespace to execute a command
 
         The default invocation is that a tool, for each sub-command, implements
-        a method that's just the commadn with '-' replaced wiht '_'.
+        a method that's just the command with '-' replaced with '_'.
         The tool is of course free to overwrite run() to have a custom invocation
         logic.
         """

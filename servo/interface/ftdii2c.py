@@ -62,8 +62,8 @@ class Fi2c(i2c_base.BaseI2CBus):
         """Fi2c constructor.
 
         Loads libraries for libftdi, libftdii2c.  Creates instance objects
-        (Structures), Fi2cContext, FtdiContext and Gpio to iteract with the library
-        and intializes them.
+        (Structures), Fi2cContext, FtdiContext and Gpio to interact with the library
+        and initializes them.
 
         Args:
           vendor: usb vendor id of FTDI device
@@ -107,7 +107,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         fobj.open()
 
         # Set the frequency of operation of the i2c bus.
-        # TODO(tbroch) make configureable
+        # TODO(tbroch) make configurable
         fobj.setclock(MAX_I2C_CLOCK_HZ)
 
         return fobj
@@ -229,7 +229,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         Args:
           offset  : bit offset of the gpio to read or write
           width   : integer, number of contiguous bits in gpio to read or write
-          dir_val : direction value of the gpio.  dir_val is interpretted as:
+          dir_val : direction value of the gpio.  dir_val is interpreted as:
                       None : read the pins via libftdi's ftdi_read_pins
                       0    : configure as input
                       1    : configure as output

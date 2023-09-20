@@ -13,7 +13,7 @@ Output resistance Rwb(D) = D/256 * full resistance + 2 * wiper resistance
   - wiper resistance: contact resistance on wiper, 160 Ohm in spec
 
 Note that the greater D causes the greater Rwb. On the other hand, Rwa is the
-complementally resistance between terminal W and A.
+complementary resistance between terminal W and A.
 TODO(johnylin): add Rwa support if necessary.
 
 For subtype 'rdac':

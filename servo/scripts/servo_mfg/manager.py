@@ -24,7 +24,7 @@ class Manager:
         self.reporter = reporter.Reporter(self.board, outdir=outdir)
         self._logger = logging.getLogger(type(self).__name__)
         self.validation = validation
-        # Flag to indicate when to wrap up continious mode.
+        # Flag to indicate when to wrap up continuous mode.
         self._finished = False
         # Start happy.
         self.exit_code = 0
@@ -162,7 +162,7 @@ class Manager:
             self._logger.debug("user timed out, turning down.")
             return False
 
-    def continious_mode(self, args):
+    def continuous_mode(self, args):
         """Go through multiple devices until the user cancels.
 
         Args:
@@ -191,9 +191,9 @@ class Manager:
             self._logger.info("")
 
     def prompt_data(self, args):
-        """Helper to request data in continous mode. Needs to be overwritten.
+        """Helper to request data in continuous mode. Needs to be overwritten.
 
-        Note: take a look at continious mode to see how this is used. The
+        Note: take a look at continuous mode to see how this is used. The
         expectation is that this returns a dictionary of arguments to pass into
         the single_device implementation.
 

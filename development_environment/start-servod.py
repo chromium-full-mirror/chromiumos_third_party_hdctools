@@ -62,7 +62,7 @@ def start_servod(
     elif test:
         command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
     # elif servo_upgrade:
-    #    command = ["servo_updator", "-c", fw_channel, "-b", servo_board]
+    #    command = ["servo_updater", "-c", fw_channel, "-b", servo_board]
 
     volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
     if mounts:
