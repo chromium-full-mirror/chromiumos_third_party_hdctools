@@ -3,3 +3,5 @@
 # found in the LICENSE file.
 #
 export PATH=/hdctools_source/hdctools/scripts:${PATH}
+#Setup git auto complete on bash
+. /usr/share/bash-completion/completions/git
