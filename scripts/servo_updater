@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+from datetime import datetime
+import sys
+
+import docker
+
+
+DEFAULT_IMAGE = "servod:dev"
+ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
+
+
+def setup():
+    return docker.from_env()
+
+
+def get_image(client, channel):
+    if channel != "local":
+        image = ARTIFACT_URL_TEMPLATE % channel
+        client.images.pull(image)
+        return image
+    return DEFAULT_IMAGE
+
+
+def start_servo_updater(
+    client,
+    image,
+    mounts,
+    passthrough_args,
+):
+    now = datetime.now()
+    container_name = now.strftime("%s")
+
+    name = "%s-docker_servo_updater" % container_name
+
+    command = ["/usr/local/bin/servo_updater"] + passthrough_args
+
+    volumes = ["/dev:/dev"]
+    if mounts:
+        for mount in mounts:
+            volumes.append("".join(mount))
+
+    cont = client.containers.run(
+        image,
+        privileged=True,
+        stderr=True,
+        tty=True,
+        name=name,
+        hostname=name,
+        detach=True,
+        volumes=volumes,
+        entrypoint=command,
+    )
+    output = cont.attach(stdout=True, stderr=True, stream=True, logs=True)
+    for line in output:
+        print(line.decode("utf-8"), end="")
+    result = cont.wait()
+    ec = result["StatusCode"]
+    cont.remove()
+    return ec
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument(
+        "--updater_channel",
+        type=str,
+        choices=["local", "latest", "beta", "release"],
+        default="local",
+        help="Select docker image to use.",
+    )
+    parser.add_argument(
+        "--mount",
+        type=str,
+        action="append",
+        nargs="*",
+        help=(
+            "Mount a host directory into the servod container in the format"
+            "<hostdir>:<containerdir>.",
+        ),
+    )
+    return parser.parse_known_args()
+
+
+def main():
+    client = setup()
+    args, passthrough_args = parse_args()
+    image = get_image(client, args.updater_channel)
+    ec = start_servo_updater(
+        client=client,
+        image=image,
+        mounts=args.mount,
+        passthrough_args=passthrough_args,
+    )
+    sys.exit(ec)
+
+
+if __name__ == "__main__":
+    main()
