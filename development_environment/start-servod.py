@@ -132,7 +132,7 @@ def parse_args():
         "-t",
         "--run_tests",
         action=argparse.BooleanOptionalAction,
-        help="Run the servod tests and exist.",
+        help="Run the servod tests and exit.",
     )
     parser.add_argument(
         "-d",
