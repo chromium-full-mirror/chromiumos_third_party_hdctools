@@ -33,7 +33,7 @@ def get_rolled_fn(logfile, rotations):
 
 
 class TestServodRotatingFileHandler(unittest.TestCase):
-    # These are module wide attributs to cache and restore after tests
+    # These are module wide attributes to cache and restore after tests
     # in case the tests wish to modify them.
     MODULE_ATTRS = [
         "MAX_LOG_BYTES",  # Max bytes a log file can grow to.
@@ -56,7 +56,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         self.test_logger.setLevel(logging.DEBUG)
         self.test_logger.propagate = False
         self.module_defaults = {}
-        # Cache the module wide attributs to restore them after each test again.
+        # Cache the module wide attributes to restore them after each test again.
         for attr in self.MODULE_ATTRS:
             self.module_defaults[attr] = getattr(servo_logging, attr)
 

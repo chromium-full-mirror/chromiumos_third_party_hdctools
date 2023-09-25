@@ -13,7 +13,7 @@ from servo_mfg.v4p1_manufacturer import V4P1Manufacturer
 
 
 class V4P1Tester(tester.Tester):
-    """Class to handle one manufacteuring round for one device type."""
+    """Class to handle one manufacturing round for one device type."""
 
     PHASE = 1
 
@@ -83,7 +83,7 @@ class V4P1Tester(tester.Tester):
             mux_val="servo_sees_usbkey",
         )
         self._register_test(usb_test)
-        # No promp on the second one, as it's essentially the same test again.
+        # No prompt on the second one, as it's essentially the same test again.
         usb_test2 = usb_device_test.UsbDeviceTest(
             name=name,
             port_number=2,
@@ -108,7 +108,7 @@ class V4P1Tester(tester.Tester):
             mux_val="servo_sees_usbkey",
         )
         self._register_test(usb_test3)
-        # No promp on the second one, as it's essentially the same test again.
+        # No prompt on the second one, as it's essentially the same test again.
         usb_test4 = usb_device_test.UsbDeviceTest(
             name=name,
             port_number=3,

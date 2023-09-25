@@ -17,7 +17,7 @@ class ManagerError(Exception):
 
 
 class Manager:
-    """Class to handle one manufacteuring round for one device type."""
+    """Class to handle one manufacturing round for one device type."""
 
     def __init__(self, outdir, validation=False):
         """Initialize the manufacturing."""
@@ -186,7 +186,7 @@ class Manager:
             ):
                 self._logger.info("User indicated they are done. Thank you.")
                 return self.abort(0)
-            # 2 new lines to create a bit of seperation for the next device.
+            # 2 new lines to create a bit of separation for the next device.
             self._logger.info("")
             self._logger.info("")
 

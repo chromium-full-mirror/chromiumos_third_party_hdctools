@@ -45,7 +45,7 @@ class TestMetadata:
                 servo_host.starter._servod.get("ccd_serialname") == ccd_device.iSerial
             )
             # aleena is the hardcoded board name in mocked_pty_data
-            # not_applicable is the board name overriden by some overlays
+            # not_applicable is the board name overridden by some overlays
             if board == "mistral":
                 assert (
                     servo_host.starter._servod.get("ccd_cr50.ec_board")

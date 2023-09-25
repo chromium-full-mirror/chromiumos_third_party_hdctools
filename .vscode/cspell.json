@@ -1,0 +1,24 @@
+// Copyright 2023 The ChromiumOS Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+{
+    // Enable your dictionary by adding it to the list of `dictionaries`
+    "dictionaries": [
+        "project-words"
+    ],
+    // Tell CSpell about your dictionary
+    "dictionaryDefinitions": [
+        {
+            // The name of the dictionary is used to look it up.
+            "name": "project-words",
+            // Path to the custom word file. Relative to this `cspell.json` file.
+            "path": "./project-words.txt",
+            // Some editor extensions will use `addWords` for adding words to your
+            // personal dictionary.
+            "addWords": true
+        }
+    ]
+}

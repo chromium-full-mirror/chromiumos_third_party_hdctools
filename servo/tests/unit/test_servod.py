@@ -135,16 +135,16 @@ class TestServoStarter(unittest.TestCase):
         starter._init_parsers_and_option_helpers()
 
         self.assertTrue(
-            isinstance(starter.help_displayer, servo_parsing._BaseServodParser)
+            isinstance(starter.help_parser, servo_parsing._BaseServodParser)
         )
         self.assertTrue(isinstance(starter.server_pars, servo_parsing.BaseServodParser))
         self.assertTrue(isinstance(starter.dev_pars, servo_parsing.ServodRCParser))
         self.assertTrue(isinstance(starter.devopts_generator(), argparse.Namespace))
         self.assertEqual(
-            starter.help_displayer.format_usage, starter.server_pars.format_usage
+            starter.help_parser.format_usage, starter.server_pars.format_usage
         )
         self.assertEqual(
-            starter.help_displayer.format_usage, starter.dev_pars.format_usage
+            starter.help_parser.format_usage, starter.dev_pars.format_usage
         )
 
     @unittest.mock.patch(
@@ -196,20 +196,20 @@ class TestServoStarter(unittest.TestCase):
         """Test _parse_args()."""
         starter = servod.ServodStarter()
         starter._init_parsers_and_option_helpers()
-        starter.help_displayer.print_help = unittest.mock.MagicMock()
+        starter.help_parser.print_help = unittest.mock.MagicMock()
 
         with self.assertRaises(SystemExit) as exit_h:
             starter._parse_args(["-h"])
 
         self.assertEqual(exit_h.exception.code, 0)
-        starter.help_displayer.print_help.assert_called_once()
+        starter.help_parser.print_help.assert_called_once()
 
-        starter.help_displayer.print_help.reset_mock()
+        starter.help_parser.print_help.reset_mock()
         with self.assertRaises(SystemExit) as exit_help:
             starter._parse_args(["--help"])
 
         self.assertEqual(exit_help.exception.code, 0)
-        starter.help_displayer.print_help.assert_called_once()
+        starter.help_parser.print_help.assert_called_once()
 
     @unittest.mock.patch(
         "servo.servod.ServodStarter.__init__",

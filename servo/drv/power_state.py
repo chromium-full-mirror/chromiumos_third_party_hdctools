@@ -143,7 +143,7 @@ class PowerStateDriver(hw_driver.HwDriver):
         time.sleep(0.3)
         # Attempt to reinitialize the device in case the gsc reenumerated quicker
         # than the polling resolution. By now, if the device did not reenumerate,
-        # the Watchdog should be attempting to catch & reinitalize it.
+        # the Watchdog should be attempting to catch & reinitialize it.
         self._servod.reinitialize()
 
     def _set(self, statename):

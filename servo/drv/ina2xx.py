@@ -24,7 +24,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
     """class definition.
 
     Note, instances of this object get dispatched via base class,
-    HwDriver's get/set method.  That method ulitimately calls:
+    HwDriver's get/set method.  That method ultimately calls:
       "_[GS]et_%s" % params['subtype'] below.
 
     For example, a control to read the millivolts of an ADC would be
@@ -103,7 +103,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         return is_ovf
 
     def _reset(self):
-        """Reset object state when device is transistioned to certain modes."""
+        """Reset object state when device is transitioned to certain modes."""
         # TODO(tbroch) Not clear from data sheet what power-down makes IC forget
         # so I'm whacking everything stateful
         self._calib_reg = None

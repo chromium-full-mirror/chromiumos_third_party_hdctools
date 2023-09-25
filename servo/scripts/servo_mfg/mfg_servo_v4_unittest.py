@@ -13,7 +13,7 @@ class TestMfgServoV4(unittest.TestCase):
     def setUp(self):
         """Set up serialname stubs."""
         unittest.TestCase.setUp(self)
-        # G is one of the valid prefixes i.e. known manufacteurer.
+        # G is one of the valid prefixes i.e. known manufacturer.
         self.supplier = "G"
         # A valid suffix is purely digits for example.
         self.suffix = "9999"

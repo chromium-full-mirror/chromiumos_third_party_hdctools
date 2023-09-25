@@ -255,7 +255,7 @@ class StatsManager:
 
         line_length = len(formatted_lines[0])
         dec_length = len(prefix)
-        # line is a seperator line consisting of -----
+        # line is a separator line consisting of -----
         line = "%s%s" % (prefix, "-" * (line_length - dec_length))
         title_lines = []
         if self._title:

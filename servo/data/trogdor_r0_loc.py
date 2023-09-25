@@ -7,8 +7,8 @@ config_type='sweetberry'
 inas = [
     ('ina231', '0x40:3', 'PPVAR_BAT',          8.05, 0.010, 'j2', True), # R172_33
     ('ina231', '0x40:1', 'PP3300_HUB',       8.05, 0.100, 'j2', True), # R108, original size 0.01
-    ('ina231', '0x40:2', 'PP5000_A',           5.00, 0.010, 'j2', True), # R4689, orginal size 0.002
-    ('ina231', '0x40:0', 'PP3300_A_R',         3.30, 0.010, 'j2', True), # R4699, orginal size 0.002
+    ('ina231', '0x40:2', 'PP5000_A',           5.00, 0.010, 'j2', True), # R4689, original size 0.002
+    ('ina231', '0x40:0', 'PP3300_A_R',         3.30, 0.010, 'j2', True), # R4699, original size 0.002
     ('ina231', '0x41:3', 'PP3300_EC_STBY',     3.30, 0.010, 'j2', True), # R297_FF
     ('ina231', '0x41:1', 'PP3300_H1',          3.30, 0.010, 'j2', True), # R296_FF
     ('ina231', '0x41:2', 'PP1800_VR',          3.30, 0.010, 'j2', True), # R312
@@ -22,10 +22,10 @@ inas = [
     ('ina231', '0x43:2', 'PP3300_TCPC_C0',     3.30, 0.100, 'j2', True), # R138, original size 0.01
     ('ina231', '0x43:0', 'PPVAR_BAT_R',        3.30, 0.100, 'j2', True), # Across battery
     ('ina231', '0x44:3', 'PP1200_BRIJ',        3.30, 0.100, 'j3', True), # R93_LS, original size 0.01
-    ('ina231', '0x44:1', 'PP912_S3A',          3.30, 0.100, 'j3', True), # R200, orginal size 0.02
-    ('ina231', '0x44:2', 'PP868_S2A',          3.30, 0.100, 'j3', True), # R197, orginal size 0.02
-    ('ina231', '0x44:0', 'PP1125_S1A',         3.30, 0.100, 'j3', True), # R1, orginal size 0.02
-    ('ina231', '0x45:3', 'PP868_S4C',          3.30, 0.100, 'j3', True), # R195, orginal size 0.02
+    ('ina231', '0x44:1', 'PP912_S3A',          3.30, 0.100, 'j3', True), # R200, original size 0.02
+    ('ina231', '0x44:2', 'PP868_S2A',          3.30, 0.100, 'j3', True), # R197, original size 0.02
+    ('ina231', '0x44:0', 'PP1125_S1A',         3.30, 0.100, 'j3', True), # R1, original size 0.02
+    ('ina231', '0x45:3', 'PP868_S4C',          3.30, 0.100, 'j3', True), # R195, original size 0.02
     ('ina231', '0x45:1', 'PP900_L7A',          3.30, 0.100, 'j3', True), # R203
     ('ina231', '0x45:2', 'PP1000_L3A',         3.30, 0.100, 'j3', True), # R202
 ]

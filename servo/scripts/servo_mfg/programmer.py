@@ -43,7 +43,7 @@ class Programmer:
     def __init__(self, force=False):
         """Initialize the logger, and all usb device data.
 
-        Note: |force| in this context means to perform the taks without checking the
+        Note: |force| in this context means to perform the tasks without checking the
         chip is already programmed. This can mean different things for different
         chips but the base implementation means that we do not run |_verify| before
         programming if |force| = True. This has two main implications:

@@ -8,7 +8,7 @@ sensitive.  This results in a "one-shot warm reset" when using dut-control to
 assert the warm reset line.  That is, the application processor (AP) does reset,
 but continues to boot despite the fact that the warm reset line is asserted.
 For boards with a PD MCU, this causes a problem with the cros_ec_softrec_power
-driver.  That driver assumes that the warm reset is level senstive for the
+driver.  That driver assumes that the warm reset is level sensitive for the
 system.  If that driver is used with a edge sensitive system, a race occurs
 between the AP booting far enough to tell the PD MCU to jump to its RW image and
 the command sent to the EC to reboot but keep the AP off.

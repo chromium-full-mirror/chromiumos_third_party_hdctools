@@ -104,7 +104,7 @@ class UsbDeviceTest(test.Test):
     @property
     def debug_line(self):
         """Provide a detailed debug line where the test went wrong."""
-        # overwrite standard definition for this test specificall.
+        # overwrite standard definition for this test specifically.
         # This test runs in 3 stages: it checks the mux, then presence,
         # then power. This helps in giving debug instructions, as we never
         # reach the next stage if the previous one fails.

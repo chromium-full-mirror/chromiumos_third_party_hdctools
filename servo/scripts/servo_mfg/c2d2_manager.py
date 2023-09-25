@@ -17,7 +17,7 @@ class C2D2ManagerError(Exception):
 
 
 class C2D2Manager(manager.Manager):
-    """Class to handle one manufacteuring round for one device type."""
+    """Class to handle one manufacturing round for one device type."""
 
     TITLE = "c2d2"
 

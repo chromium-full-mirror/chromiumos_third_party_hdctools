@@ -5,7 +5,7 @@
 """Script to test and flash servo v4 boards.
 
 This script holds functionality shared between
-various servo manufacturiong scripts.
+various servo manufacturing scripts.
 """
 
 import errno

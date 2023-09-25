@@ -185,7 +185,7 @@ class Servod:
         if not dev.syscfg.is_control(processed_name):
             error_msg = (
                 "No control named '%s' registered with any connected servo device.\n"
-                "Servo device %s (prefix: %s) is picked as the targed device for "
+                "Servo device %s (prefix: %s) is picked as the target device for "
                 "the control.\n"
             ) % (name, dev, dev.get_prefixes())
             candidates = [ctrl for ctrl in self._controls if name in ctrl]

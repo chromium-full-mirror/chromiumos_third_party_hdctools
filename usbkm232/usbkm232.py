@@ -223,7 +223,7 @@ class usbkm232:
             usbkm232
           check: boolean determines whether response from usbkm232 should be
             checked.
-          clear: boolean determines whether keytroke clear should be sent at end
+          clear: boolean determines whether keystroke clear should be sent at end
             of the sequence.
         """
         # TODO(tbroch): USB queue depth is 6 might be more efficient to write

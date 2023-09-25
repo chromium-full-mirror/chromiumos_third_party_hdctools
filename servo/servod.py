@@ -151,7 +151,7 @@ class ServodStarter:
             ("-c <file> -p 8888", "Launch server listening on port 8888"),
             (
                 "-c <file> --vendor 0x18d1 --product 0x5001",
-                "Launch targetting usb device with vid:pid == 0x18d1:0x5001 "
+                "Launch targeting usb device with vid:pid == 0x18d1:0x5001 "
                 "(Google/Servo)",
             ),
         ]
@@ -291,15 +291,15 @@ class ServodStarter:
         # meaningful help messages to the user.
         # pylint: disable=protected-access
         # The parser here is used for its base ability to format examples.
-        help_displayer = servo_parsing._BaseServodParser(
+        help_parser = servo_parsing._BaseServodParser(
             description=description, examples=examples, parents=[server_pars, dev_pars]
         )
         # Both parsers should display the same usage information when an
         # argument is not found. Fix it here by pointing both of their methods
-        # to the help_displayer.
-        server_pars.format_usage = help_displayer.format_usage
-        dev_pars.format_usage = help_displayer.format_usage
-        self.help_displayer = help_displayer
+        # to the help_parser.
+        server_pars.format_usage = help_parser.format_usage
+        dev_pars.format_usage = help_parser.format_usage
+        self.help_parser = help_parser
         self.server_pars = server_pars
         self.dev_pars = dev_pars
         # Generator function for an empty namespace for a servo device.
@@ -318,8 +318,8 @@ class ServodStarter:
                  see below) necessary to configure a servo device.
         """
         if any(True for argstr in cmdline if argstr in ["-h", "--help"]):
-            self.help_displayer.print_help()
-            self.help_displayer.exit()
+            self.help_parser.print_help()
+            self.help_parser.exit()
         server_args, dev_cmdline = self.server_pars.parse_known_args(cmdline)
         # Adjust log-dir to be None if no_log_dir is requested.
         if server_args.no_log_dir:

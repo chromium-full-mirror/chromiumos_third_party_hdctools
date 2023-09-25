@@ -8,7 +8,7 @@ from servo_mfg import tester
 
 
 class C2D2Tester(tester.Tester):
-    """Class to handle one manufacteuring round for one device type."""
+    """Class to handle one manufacturing round for one device type."""
 
     PHASE = 1
 

@@ -115,7 +115,7 @@ class Tester:
                 # If the process existed, and is still alive is what this means.
                 self._servod_process.terminate()
             # pylint: disable=broad-except
-            # The testing should not fail for any reason related to stoppin servod.
+            # The testing should not fail for any reason related to stopping servod.
             except Exception as e:
                 for line in traceback.format_exc().splitlines():
                     self._logger.debug(line)

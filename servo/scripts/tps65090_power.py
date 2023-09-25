@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Interface to power measurement capabilities of TPS65090 PMIC.
 
-Device contains 14 seperate ADCs allowing 12 power measurements of:
+Device contains 14 separate ADCs allowing 12 power measurements of:
   1. Main AC input (via ADC VAC(0) & IAC(2))
   2. Battery Charging (via ADCs VBAT(1) & IBAT(3))
   3-5. Current measurement of 3 DC->DC converters.  Voltage must be provided.

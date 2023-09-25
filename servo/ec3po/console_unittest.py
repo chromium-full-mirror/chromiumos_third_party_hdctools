@@ -442,7 +442,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out = test_str
         exp_console_out += OutputStream.MoveCursorLeft(len(test_str))
 
-        # Check to see what whas printed on the console.
+        # Check to see what was printed on the console.
         CheckConsoleOutput(self, exp_console_out)
 
         # Check that the input buffer position is now 0.

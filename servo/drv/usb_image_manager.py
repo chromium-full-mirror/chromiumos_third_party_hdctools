@@ -61,7 +61,7 @@ class usbImageManager(hw_driver.HwDriver):
         if self._poweroff_delay:
             self._poweroff_delay = float(self._poweroff_delay)
         # This is required to determine if the usbkey is connected to the host.
-        # The |hub_ports| is a comma-seperated string of usb hub port numbers
+        # The |hub_ports| is a comma-separated string of usb hub port numbers
         # that the image usbkey enumerates under for a given servo device.
         # NOTE: initialization here is shared among multiple controls, some of which
         # do not use the hub_ports logic. Do not raise error here if the param
@@ -273,7 +273,7 @@ class usbImageManager(hw_driver.HwDriver):
                                     "open() or read() of {!r} failed with errno {:d} {} ({}), skipping it as a USB mux drive candidate.".format(
                                         devpath,
                                         error.errno,
-                                        errno.errorcode.get(error.errno, "UNKNOWN"),
+                                        error.errorcode.get(error.errno, "UNKNOWN"),
                                         os.strerror(error.errno),
                                     )
                                 )

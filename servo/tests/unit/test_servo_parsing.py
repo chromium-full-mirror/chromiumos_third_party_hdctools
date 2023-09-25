@@ -76,7 +76,7 @@ class TestRCFile(unittest.TestCase):
         assert {} == rcd
 
     def test_RCFileMisconfigured(self):
-        """RC file is misconfigured (no commas): return empy runtime config dict."""
+        """RC file is misconfigured (no commas): return empty runtime config dict."""
         with open(self._rc_file, "w", encoding="utf-8") as f:
             # Extra space is just for padding
             f.write(
@@ -170,7 +170,7 @@ class TestServodRCParser(unittest.TestCase):
         assert self._board == opts.board
 
     def test_NameNotInRCNoSerial(self):
-        """Name is provided but no in RC: SystmExit from the parser."""
+        """Name is provided but no in RC: SystemExit from the parser."""
         cmdline = ["--name", self._invalid_name]
         with self.assertRaisesRegex(
             servo_parsing.ServodParserError, "Name %r not in rc" % self._invalid_name

@@ -53,7 +53,7 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
     """The handler can pass the data, check for the availability of the port"""
 
     def __init__(self, data_sampler):
-        """Initializa the HttpRequestHandler
+        """Initialize the HttpRequestHandler
 
         Args:
           _data_sampler: A data sampler of generating the sample data for

@@ -130,7 +130,7 @@ class Susb:
             )
 
     def reset_usb(self):
-        """Reinitializes USB based on the device based settings from __init__"""
+        """Reinitialize USB based on the device based settings from __init__"""
         # Signal that resetting is about to happen.
         self.REINIT_DONE_EVENTS[self.get_device_info()].clear()
         # Reading and writing is unavailable until the reset has finished.
@@ -177,7 +177,7 @@ class Susb:
                 # valid.
                 return
 
-        # Detatch raiden.ko if it is loaded.
+        # Detach raiden.ko if it is loaded.
         if dev.is_kernel_driver_active(self._interface):
             dev.detach_kernel_driver(self._interface)
 

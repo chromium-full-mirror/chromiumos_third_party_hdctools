@@ -126,7 +126,7 @@ def mock_endpoint(mocker):
             data echoed out to the console.  Store the command in a queue to
             be read later when the read command is called.
 
-            At times multiple commands can be sent - each command is deliniated
+            At times multiple commands can be sent - each command is delineated
             by a line break.
 
             At times partial strings are sent, store these partial strings until
@@ -139,7 +139,7 @@ def mock_endpoint(mocker):
                 int: number of characters in the string in data
             """
             try:
-                data_to_parse = ep.parent.recieved_data + data
+                data_to_parse = ep.parent.received_data + data
                 line_break = data_to_parse.find(b"\n")
                 while line_break != -1:
                     command = data_to_parse[0:line_break]
@@ -152,7 +152,7 @@ def mock_endpoint(mocker):
                     command = command.strip()
                     ep.parent.command_queue.put(command)
                     data_to_parse = b""
-                ep.parent.recieved_data = data_to_parse
+                ep.parent.received_data = data_to_parse
             except Exception:
                 _logger.exception("Something bad happened in endpoint write")
                 raise
@@ -215,7 +215,7 @@ def mock_interface(mocker, mock_endpoint):
         mock_interface.command_queue = queue.Queue()
         mock_interface.executed_command_queue = queue.Queue()
         mock_interface.no_data_command_queue = queue.Queue()
-        mock_interface.recieved_data = b""
+        mock_interface.received_data = b""
         mock_interface.lock = tempfile.TemporaryFile()
         mock_interface.mocked_data = mocked_data
         mock_interface.default_reply = default_reply

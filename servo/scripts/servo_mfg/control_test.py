@@ -41,7 +41,7 @@ class ControlTest(test.Test):
         Returns:
           list of one tuple (name, result) where
             name: is the name of the test (or control if both are the same)
-            result: is whether the control succeded and matched the output
+            result: is whether the control succeeded and matched the output
         """
         try:
             self._logger.debug("Running %s", self._ctrl)

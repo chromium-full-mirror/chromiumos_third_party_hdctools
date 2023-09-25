@@ -96,7 +96,7 @@ class Interpreter:
         interpreter_prefix = ("%s - " % name) if name else ""
         logger = logging.getLogger("%sEC3PO.Interpreter" % interpreter_prefix)
         self.logger = LoggerAdapter(logger, {"pty": ec_uart_pty})
-        # TODO(https://crbug.com/1162189): revist the 2 TODOs below
+        # TODO(https://crbug.com/1162189): revisit the 2 TODOs below
         # TODO(https://bugs.python.org/issue27805, python3.7+): revert to ab+
         # TODO(https://bugs.python.org/issue20074): removing buffering=0 if/when
         # that gets fixed, or keep two pty: one for reading and one for writing
@@ -159,7 +159,7 @@ class Interpreter:
           | |    ||    ||  |-- the raw console command.
           | |    ||    ||-- 1 ampersand.
           | |    ||____|--- 2 hex digits representing the CRC8 of cmd.
-          | |____|-- 2 hex digits reprsenting the length of cmd.
+          | |____|-- 2 hex digits representing the length of cmd.
           |-- 2 ampersands
 
         Args:

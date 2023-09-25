@@ -171,7 +171,7 @@ class Reporter:
             topic=board,
             date=str(datetime.datetime.today()),
         )
-        # This report as it bookbinds the entire reporter is a bit special.
+        # This report as it bookends the entire reporter is a bit special.
         # We need to change the prefix, to highlight it's a title.
         # pylint: disable=invalid-name
         # |REPORT_PREFIX| is the constant used in the report to generate the title.

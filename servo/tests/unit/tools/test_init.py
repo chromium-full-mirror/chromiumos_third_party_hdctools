@@ -15,7 +15,7 @@ class TestDutControl(unittest.TestCase):
     """Test __init__.py."""
 
     def test_init(self):
-        """Teset tools package is initiated properly."""
+        """Test tools package is initiated properly."""
         self.assertTrue(device.Device in tools.REGISTERED_TOOLS)
         self.assertTrue(instance.Instance in tools.REGISTERED_TOOLS)
         self.assertTrue(logs.Logs in tools.REGISTERED_TOOLS)

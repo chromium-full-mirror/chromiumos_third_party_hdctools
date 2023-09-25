@@ -56,7 +56,7 @@ class ServoDevice:
           config: instance of SystemConfig containing all controls for
               particular Servod invocation
           interfaces: list of strings of interface types the server will instantiate
-          servod: a pointer to access servod to invoke controls targetd at the servod
+          servod: a pointer to access servod to invoke controls targeted at the servod
                   daemon and other devices.
 
         Raises:
@@ -243,7 +243,7 @@ class ServoDevice:
                 if fault_tolerant:
                     self._logger.warning(
                         "Failure trying to initialize interface %s (%s) "
-                        "in fault toleratant mode, so this will not crash servod.",
+                        "in fault tolerant mode, so this will not crash servod.",
                         i,
                         name,
                     )

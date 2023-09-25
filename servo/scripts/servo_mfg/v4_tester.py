@@ -16,7 +16,7 @@ from servo_mfg.v4p1_tester import V4P1Tester
 
 class V4Tester(V4P1Tester):
     # Please see V4P1Tester._get_ina_tests for motivation to inherit here.
-    """Class to handle one manufacteuring round for one device type."""
+    """Class to handle one manufacturing round for one device type."""
 
     PHASE = 1
 
@@ -63,7 +63,7 @@ class V4Tester(V4P1Tester):
             mux_val="servo_sees_usbkey",
         )
         self._register_test(usb_test)
-        # No promp on the second one, as it's essentially the same test again.
+        # No prompt on the second one, as it's essentially the same test again.
         usb_test2 = usb_device_test.UsbDeviceTest(
             name=name,
             port_number=2,

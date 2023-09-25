@@ -23,7 +23,7 @@ class activeV4Device(hw_driver.HwDriver):
     either servo micro or ccd from the type c servo v4. It is possible for servo
     micro and ccd to be used on the same DUT at the same time. Cr50 won't enable
     ccd AP/EC uart when it sees servo micro is connected, because they use the
-    same signals and will interfere with eachother. They can both be used with
+    same signals and will interfere with each other. They can both be used with
     servod at the same time, but only one device will have complete control of the
     DUT at a time.
 
@@ -49,7 +49,7 @@ class activeV4Device(hw_driver.HwDriver):
 
         This gets the servo type from the servo information and uses that to
         determine what devices can control the DUT and possibly interfere with
-        eachother.
+        each other.
 
         There is a naming scheme for servo_type when there are multiple devices in
         the same servod instance. The main device is first. Secondary devices that

@@ -7,7 +7,7 @@ Test procedure
 1- start servod as sudo servod --board=panther --usbkm232=atmega
    look for output USBKM232: /dev/pts/9
 2- launch script as USBKM232_UART_DEVICE=/dev/pts/9 python kb.py
-3- press 1 and 2 to swtich from vt1 to vt2
+3- press 1 and 2 to switch from vt1 to vt2
 4- press 1 to goto vt1, login and open a browser (as guest)
 5- press 9 to see [A-Z] output to URL bar
 6- press 0 to send [ -~]

@@ -88,7 +88,7 @@ class basePWRADC(hw_driver.HwDriver):
         self._reset()
 
     def _reset(self):
-        """Reset object state when device is transistioned to certain modes."""
+        """Reset object state when device is transitioned to certain modes."""
         # NOTE: overwrite in child class for desired reset behavior.
         pass
 

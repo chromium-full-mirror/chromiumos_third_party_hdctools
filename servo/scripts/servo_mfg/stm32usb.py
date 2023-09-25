@@ -71,7 +71,7 @@ class Susb:
         if not intf:
             raise SusbError("Interface not found")
 
-        # Detatch raiden.ko if it is loaded.
+        # Detach raiden.ko if it is loaded.
         if dev.is_kernel_driver_active(intf.bInterfaceNumber) is True:
             dev.detach_kernel_driver(intf.bInterfaceNumber)
         # self._logger.debug("InterfaceNumber: %s" % intf.bInterfaceNumber)
