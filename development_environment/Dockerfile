@@ -60,13 +60,15 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     python3 \
     python3-docker \
     python3-flake8-docstrings \
+    python3-numpy \
     python3-pip \
+    python3-pytest \
     python3-setuptools \
+    python3-usb \
     software-properties-common \
     sudo \
     usbutils \
     vim
-
 
 # Install chrome
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub |\
