@@ -1,6 +1,7 @@
 # Copyright 2023 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 aaboagye
 ABUL
 accelinfo
@@ -207,6 +208,7 @@ Dsleep
 dtester
 dupctrl
 DUT's
+DUT’s
 DUTHUB
 dvfs
 EADDRINUSE
@@ -574,6 +576,7 @@ pluggable
 pmic
 PMIC
 pname
+popenargs
 popleft
 postfiles
 powerbtn
@@ -686,6 +689,7 @@ representing
 reqs
 reqtype
 rereadpt
+retcode
 retimer
 REUSEADDR
 reven
