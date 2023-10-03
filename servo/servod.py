@@ -66,14 +66,23 @@ class ServodStarter:
         Raises:
           ServodError: if automatic config cannot be found
         """
-        # The scratch initialization here ensures that potentially stale entries
-        # are removed from the scratch before attempting to create a new one.
-        self._scratchutil = scratch.Scratch()
         # Initialize logging up here first to ensure log messages from parsing
         # can go through.
         loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
         logging.basicConfig(level=loglevel, format=fmt)
         self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+        env_vars = sorted(servo_parsing.GetServodEnvVars())
+        self._logger.info(
+            "Attempting to parse servod command line: %r\n"
+            "With environment variables: %r",
+            cmdline,
+            env_vars,
+        )
+
+        # The scratch initialization here ensures that potentially stale entries
+        # are removed from the scratch before attempting to create a new one.
+        self._scratchutil = scratch.Scratch()
         self._init_parsers_and_option_helpers()
         sopts, devopts_list = self._parse_args(cmdline)
         self._host = sopts.host
@@ -93,6 +102,14 @@ class ServodStarter:
             backup_count=sopts.log_dir_backup_count,
         )
 
+        # Log the command line again now that we've configured logging based on
+        # a successfully parsed command line.
+        self._logger.info(
+            "Successfully parsed servod command line: %r\n"
+            "With environment variables: %r",
+            cmdline,
+            env_vars,
+        )
         self._logger.info("Start")
 
         (dev_entries, main_dev_entry) = self._discover_servos(sopts, devopts_list)

@@ -74,8 +74,9 @@ else:
     DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("SUDO_USER", "")
 
 
-PORT_ENV_VAR = "SERVOD_PORT"
 NAME_ENV_VAR = "SERVOD_NAME"
+PORT_ENV_VAR = "SERVOD_PORT"
+ALL_ENV_VARS = NAME_ENV_VAR, PORT_ENV_VAR
 
 
 ARG_BY_USER_MARKER = "supplied_by_user"
@@ -90,6 +91,18 @@ def ArgMarkedAsUserSupplied(namespace, arg_name):
     """Query whether an argument that uses StoreAndMarkAction is user supplied."""
     marker_name = "%s_%s" % (arg_name, ARG_BY_USER_MARKER)
     return hasattr(namespace, marker_name)
+
+
+def GetServodEnvVars():
+    """Get the name and value of each environment variable used in option parsing.
+
+    This is intended as a helper for log messages.
+
+    Yields:
+        str, None|str: name and value of each environment variable
+    """
+    for env_var in ALL_ENV_VARS:
+        yield env_var, os.environ.get(env_var)
 
 
 # pylint: disable=protected-access
