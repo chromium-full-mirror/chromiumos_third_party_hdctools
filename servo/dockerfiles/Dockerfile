@@ -210,7 +210,7 @@ RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | ta
 COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 RUN make
 RUN strip  /uhubctl/uhubctl
 
@@ -320,7 +320,7 @@ RUN apt-get update --no-install-recommends \
 COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 WORKDIR /wheels
 COPY --link --from=ec-builder /ec/dist/*.whl ./
@@ -380,7 +380,7 @@ RUN chmod 755 /usr/local/sbin/flashrom
 #Install futility
 COPY --link --from=futility-builder /usr/bin/futility /usr/bin/
 RUN chmod 755 /usr/bin/futility
-COPY --link --from=futility-builder /usr/local/lib/*/libflashrom.so.1.0.0 /usr/lib
+COPY --from=futility-builder /usr/local/lib/*/libflashrom.so.1.0.0 /usr/lib
 RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
     ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
 
