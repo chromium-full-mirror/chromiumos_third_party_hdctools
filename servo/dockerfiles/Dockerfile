@@ -267,6 +267,10 @@ RUN strip /usr/local/sbin/flashrom
 ######################################################################
 FROM flashrom-builder as futility-builder
 
+RUN apt-get update \
+    && apt-get install -y \
+    libnss3-dev
+
 # Install vboot.
 WORKDIR /
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference
