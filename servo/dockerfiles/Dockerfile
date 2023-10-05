@@ -442,7 +442,7 @@ ENV SUDO_USER=docker
 ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages
 
 ######################################################################
-FROM base as final
+FROM base
 
 WORKDIR /hdctools/chromeos/
 COPY --link --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
@@ -456,6 +456,3 @@ WORKDIR /
 RUN rm -rf wheels
 
 COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
-
-FROM scratch as mini-final
-COPY --from=final / /
