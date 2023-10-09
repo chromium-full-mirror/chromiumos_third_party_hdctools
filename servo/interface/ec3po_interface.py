@@ -101,7 +101,7 @@ class EC3PO(uart.Uart):
     This includes both the interpreter and the console objects for one UART.
     """
 
-    def __init__(self, raw_ec_uart, source_name, device_info, tokenized):
+    def __init__(self, raw_ec_uart, source_name, device_info, token_db=None):
         """Provides the interface to the EC-3PO console interpreter.
 
         Args:
@@ -109,7 +109,7 @@ class EC3PO(uart.Uart):
           source_name: A user friendly name documenting the source of this PTY.
           device_info: A DeviceInfo tuple of the USB device info
               (vid, pid, serialname)
-          tokenized: Boolean indicating device logging is tokenized.
+          token_db: Path to token database, None if tokenization is disabled.
         """
         # Run Fuart init.
         uart.Uart.__init__(self, logger_name="%s - EC3PO Interface" % source_name)
@@ -117,6 +117,7 @@ class EC3PO(uart.Uart):
         self._raw_ec_uart = raw_ec_uart
         self._source = source_name
         self._device_info = device_info
+        self._token_db = token_db
 
         # Create some pipes to communicate between the interpreter and the console.
         # The command pipe is bidirectional.
@@ -218,7 +219,7 @@ class EC3PO(uart.Uart):
             cmd_pipe_interactive,
             dbg_pipe_interactive,
             self._source,
-            tokenized,
+            token_db=self._token_db,
         )
         self._console = new_console
         new_console._logger = logging.getLogger("Console")
@@ -266,6 +267,7 @@ class EC3PO(uart.Uart):
         sid,
         interface_data,
         servo_device,
+        token_db,
     ):
         """Factory method to implement the interface."""
         device_info = DeviceInfo(vid, pid, sid)
@@ -290,7 +292,7 @@ class EC3PO(uart.Uart):
                 raw_ec_uart,
                 raw_uart_source,
                 device_info,
-                ec_tokenized,
+                token_db if ec_tokenized else None,
             )
 
         # The overlay doesn't have the raw PTY defined, therefore we can skip

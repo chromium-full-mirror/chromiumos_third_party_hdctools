@@ -105,6 +105,7 @@ class ServoDevice:
         self._interface_init = []
         self._sync_interface_lists()
         self._servod = servod
+        self._token_db = dev_entry.devopts.token_db
 
     def __repr__(self):
         return str(self)
@@ -238,6 +239,7 @@ class ServoDevice:
                     sid=self._serial,
                     interface_data=interface_data,
                     servo_device=self,
+                    token_db=self._token_db,
                 )
             except Exception:
                 if fault_tolerant:

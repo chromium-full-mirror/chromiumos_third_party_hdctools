@@ -2,6 +2,7 @@
 # Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Python version of Servo hardware debug & control board server."""
 
 # pkg_resources is erroneously suggested to be in the 3rd party segment
@@ -303,6 +304,12 @@ class ServodStarter:
             nargs="+",
             default=[],
             help="prefix(s) used to route controls to this device",
+        )
+        dev_pars.add_argument(
+            "--token_db",
+            default="/usr/share/cros_ec/tokens.bin",
+            type=str,
+            help="Path to CrOS EC token database",
         )
         # Create a unified parser with both server & device arguments to display
         # meaningful help messages to the user.
