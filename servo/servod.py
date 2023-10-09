@@ -408,6 +408,12 @@ class ServodStarter:
             default=[],
             help="prefix(s) used to route controls to this device",
         )
+        dev_pars.add_argument(
+            "--token_db",
+            default="/usr/share/cros_ec/tokens.bin",
+            type=str,
+            help="Path to CrOS EC token database",
+        )
         # Create a unified parser with both server & device arguments to display
         # meaningful help messages to the user.
         # pylint: disable=protected-access

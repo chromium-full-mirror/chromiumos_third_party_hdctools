@@ -171,6 +171,7 @@ class ServoDevice:
         self._logger.debug("Connect to grpc server of data.....")
         self._driver_client = driver_grpc.DriverService(channel)
         self._system_config_client = system_config_grpc.SystemConfig(channel)
+        self._token_db = dev_entry.devopts.token_db
 
     def __repr__(self):
         return str(self)
@@ -271,6 +272,7 @@ class ServoDevice:
             serial=self._serial,
             interface_template=json.dumps(self._interfaces),
             fault_tolerant=fault_tolerant,
+            token_db=self._token_db,
         )
 
     def set_board_and_model(self, board, model=None):

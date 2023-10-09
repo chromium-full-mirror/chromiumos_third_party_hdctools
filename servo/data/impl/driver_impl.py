@@ -171,7 +171,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             InterfaceUtils.sync_interface_lists(interfaces=interfaces, vid=request.vid, pid=request.pid,
                                                 serial=request.serial)
             InterfaceUtils.init_servo_interfaces(interfaces, request.vid, request.pid, request.serial,
-                                                 request.fault_tolerant)
+                                                 request.fault_tolerant, request.token_db)
             return driver_pb2.InterfaceResponse(success=True)
         except Exception as e:
             raise InterfaceImplError("Error occurred in init interfaces: {}".format(e))

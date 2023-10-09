@@ -29,6 +29,7 @@ from servo.common.interface import common as c
 from servo.common.interface import empty
 from servo.common.interface import uart
 from servo.common.proto import driver_grpc
+from servo.common.proto import system_config_grpc
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
@@ -107,7 +108,7 @@ class EC3PO(uart.Uart):
     This includes both the interpreter and the console objects for one UART.
     """
 
-    def __init__(self, raw_ec_uart, source_name, device_info, tokenized):
+    def __init__(self, raw_ec_uart, source_name, device_info, token_db=None):
         """Provides the interface to the EC-3PO console interpreter.
 
         Args:
@@ -115,7 +116,7 @@ class EC3PO(uart.Uart):
           source_name: A user friendly name documenting the source of this PTY.
           device_info: A DeviceInfo tuple of the USB device info
               (vid, pid, serialname)
-          tokenized: Boolean indicating device logging is tokenized.
+          token_db: Path to token database, None if tokenization is disabled.
         """
         # Run Fuart init.
         uart.Uart.__init__(self, logger_name="%s - EC3PO Interface" % source_name)
@@ -123,6 +124,7 @@ class EC3PO(uart.Uart):
         self._raw_ec_uart = raw_ec_uart
         self._source = source_name
         self._device_info = device_info
+        self._token_db = token_db
 
         # Create some pipes to communicate between the interpreter and the console.
         # The command pipe is bidirectional.
@@ -224,7 +226,7 @@ class EC3PO(uart.Uart):
             cmd_pipe_interactive,
             dbg_pipe_interactive,
             self._source,
-            tokenized,
+            token_db=self._token_db,
         )
         self._console = new_console
         new_console._logger = logging.getLogger("Console")
@@ -272,6 +274,7 @@ class EC3PO(uart.Uart):
         sid,
         interface_data,
         servo_device,
+        token_db,
     ):
         """Factory method to implement the interface."""
         c.build_logger.debug("Servo: {}".format(servo_device))
@@ -280,6 +283,7 @@ class EC3PO(uart.Uart):
         raw_uart_source = interface_data["source"]
         channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
         driver_client = driver_grpc.DriverService(channel)
+        scfg_client = system_config_grpc.SystemConfig(channel)
         try:
             drv = driver_client.CallDriver(
                 vid=vid,
@@ -291,10 +295,19 @@ class EC3PO(uart.Uart):
             )
             raw_ec_uart = json.loads(drv.value)
             ec_tokenized = False
-            if raw_uart_source == "EC" and servo_device.syscfg.is_control(
-                EC_TOKENS_CONTROL
-            ):
-                ec_tokens_val = servo_device.get(EC_TOKENS_CONTROL)
+            has_token_ctrl = scfg_client.IsControl(
+                vid=vid, pid=pid, control_name = EC_TOKENS_CONTROL
+            ).value
+            if raw_uart_source == "EC" and has_token_ctrl:
+                ec_tokens_json = driver_client.CallDriver(
+                    vid=vid,
+                    pid=pid,
+                    serial=sid,
+                    interface_template=str(servo_interfaces.INTERFACE_DEFAULTS[vid][pid]),
+                    control_name=EC_TOKENS_CONTROL,
+                    device_type="",
+                ).value
+                ec_tokens_val = json.loads(ec_tokens_json)["value"]
                 ec_tokenized = EC_TOKENS_VALUES.get(ec_tokens_val)
                 if ec_tokenized is None:
                     raise EC3POInterfaceError(
@@ -307,7 +320,7 @@ class EC3PO(uart.Uart):
                 raw_ec_uart["response"],
                 raw_uart_source,
                 device_info,
-                ec_tokenized
+                token_db if ec_tokenized else None,
             )
         except Exception:
             c.build_logger.info(

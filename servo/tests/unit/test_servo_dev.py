@@ -34,6 +34,7 @@ class TestServoDevice(unittest.TestCase):
         self.micro_entry.devopts.prefix = ["micro"]
         self.micro_entry.devopts.board = "atlas"
         self.micro_entry.devopts.model = "default"
+        self.micro_entry.devopts.token_db = "default"
         self.micro_dev = servo_dev.ServoDevice(
             self.micro_entry, system_config.SystemConfig(), None, self.servod
         )
@@ -47,6 +48,7 @@ class TestServoDevice(unittest.TestCase):
         self.v4_entry.devopts.prefix = ["v4"]
         self.v4_entry.devopts.board = "brya"
         self.v4_entry.devopts.model = "default"
+        self.v4_entry.devopts.token_db = "default"
         self.v4_dev = servo_dev.ServoDevice(
             self.v4_entry, system_config.SystemConfig(), None, self.servod
         )
@@ -261,6 +263,7 @@ class TestServoDevice(unittest.TestCase):
         v2_entry.devopts.prefix = ["v2"]
         v2_entry.devopts.board = "puff"
         v2_entry.devopts.model = "default"
+        v2_entry.devopts.token_db = "default"
         v2_dev = servo_dev.ServoDevice(
             v2_entry, system_config.SystemConfig(), None, self.servod
         )

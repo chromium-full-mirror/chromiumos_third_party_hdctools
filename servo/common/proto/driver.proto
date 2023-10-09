@@ -72,6 +72,8 @@ message InterfaceRequest {
     string interface_template = 4;
 
     bool fault_tolerant = 5;
+    // Path to tokens database
+    string token_db = 6;
 }
 
 message InterfaceResponse {

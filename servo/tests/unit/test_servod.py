@@ -538,6 +538,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.prefix = [""]
         dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
         dev_entry_1.devopts.interfaces = []
+        dev_entry_1.devopts.token_db = "default"
         dev_entry_1.dev_template = servo_dev_templates.GetTemplateClassByName(
             "ccd_cr50"
         )
@@ -548,6 +549,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.devopts.prefix = ["v4"]
         dev_entry_2.devopts.board = dev_entry_2.devopts.model = "testing"
         dev_entry_2.devopts.interfaces = []
+        dev_entry_2.devopts.token_db = "default"
         dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName(
             "servo_v4p1"
         )
@@ -616,6 +618,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.prefix = [""]
         dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
         dev_entry_1.devopts.interfaces = []
+        dev_entry_1.devopts.token_db = "default"
         dev_entry_1.dev_template = servo_dev_templates.GetTemplateClassByName(
             "ccd_cr50"
         )
@@ -626,6 +629,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.devopts.prefix = ["v4"]
         dev_entry_2.devopts.board = dev_entry_2.devopts.model = "testing"
         dev_entry_2.devopts.interfaces = []
+        dev_entry_2.devopts.token_db = "default"
         dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName(
             "servo_v4p1"
         )

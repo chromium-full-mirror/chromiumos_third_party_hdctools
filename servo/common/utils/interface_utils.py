@@ -60,7 +60,14 @@ class InterfaceUtils:
             interface_init += [False] * (interfaces_len - interface_list_len)
 
     @staticmethod
-    def init_servo_interfaces(interfaces, vid, pid, serial, fault_tolerant=False):
+    def init_servo_interfaces(
+        interfaces, 
+        vid, 
+        pid, 
+        serial, 
+        fault_tolerant=False, 
+        token_db=None
+    ):
         """Init the servo interfaces with the given interfaces.
 
         Args:
@@ -108,6 +115,7 @@ class InterfaceUtils:
                     sid=serial,
                     interface_data=interface_data,
                     servo_device=None,
+                    token_db=token_db,
                 )
             except Exception:
                 if fault_tolerant:

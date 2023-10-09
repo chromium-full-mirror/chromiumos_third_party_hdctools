@@ -154,7 +154,7 @@ class Console:
         cmd_pipe: Union[socket.socket, multiprocessing.connection.Connection],
         dbg_pipe: multiprocessing.connection.Connection,
         name: Union[str, None] = None,
-        tokenized=False,
+        token_db=None,
     ):
         """Initializes a Console object with the provided arguments.
 
@@ -171,7 +171,7 @@ class Console:
           unidirectional pipe attached to the interpreter.  EC debug messages use
           this pipe.
         name: The console source name.
-        tokenized: Device is using tokenized logging.
+        token_db: Path to token database, None if tokenization is disabled.
         """
         # Create a unique logger based on the console name
         console_prefix = ("%s - " % (name,)) if name else ""
@@ -203,11 +203,11 @@ class Console:
         self.tm_req = True
         self.z_detokenizer = None
         self.decoder = None
-        self.is_tokenized = tokenized
+        self.is_tokenized = False
         self.token_db = None
 
-        if self.is_tokenized:
-            self.LoadTokenDatabase()
+        if token_db:
+            self.LoadTokenDatabase(token_db)
 
     def __str__(self):
         """Show internal state of Console object as a string."""
