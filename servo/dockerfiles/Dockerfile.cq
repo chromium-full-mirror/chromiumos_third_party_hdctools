@@ -109,6 +109,15 @@ RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 
 ######################################################################
+FROM libftdi as pigweed-builder
+
+RUN git clone https://chromium.googlesource.com/external/pigweed/pigweed/pigweed
+
+WORKDIR /pigweed
+COPY servo/dockerfiles/setup_pigweed.py .
+RUN python3 setup_pigweed.py bdist_wheel
+
+######################################################################
 FROM libftdi as hdctools-builder
 COPY / hdctools/
 
@@ -193,6 +202,7 @@ COPY --link --from=hdctools-ec3po-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-servo_mfg-builder /hdctools/dist/* ./
 COPY --link --from=ec-builder /ec/dist/*.whl ./
+COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
