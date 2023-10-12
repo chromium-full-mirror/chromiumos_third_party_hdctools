@@ -405,10 +405,6 @@ def real_main(cmdline):
             # message is not required.
             parser.print_help()
     else:
-        if ":" not in " ".join(args):
-            # Sort args only if none of them sets values - otherwise the order is
-            # important.
-            args = sorted(args)
         iterate(args, options, sclient)
 
 
