@@ -177,7 +177,7 @@ COPY / hdctools/
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
-RUN make -j $(grep -c   "^processor" /proc/cpuinfo)
+RUN make -j $(nproc)
 RUN make install
 
 # Setuptools skips nested entry point. Adding custom setup.py to overcome.
