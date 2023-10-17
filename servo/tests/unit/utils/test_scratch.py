@@ -230,6 +230,7 @@ class TestScratch(unittest.TestCase):
 
     def test_GetAllEntriesEmpty(self):
         """Verify GetAllEntries() doesn't break when there are no entries."""
+        # pylint: disable=use-implicit-booleaness-not-comparison
         assert self._scratch.GetAllEntries() == []
 
     def test_GetAllEntries(self):
