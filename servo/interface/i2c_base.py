@@ -1,6 +1,7 @@
 # Copyright 2018 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Provides a base class for I2C bus implementations."""
 
 import logging
@@ -76,7 +77,7 @@ class BaseI2CBus(interface.Interface):
             # The weakref avoids a reference count cycle.
             # Avoding the circular reference entirely would be preferable.
             self.__pseudo_adap = i2c_pseudo.I2cPseudoAdapter(
-                pseudo_ctrlr_path, weakref.proxy(self)
+                i2c_bus=weakref.proxy(self), controller_device_path=pseudo_ctrlr_path
             )
             self.__pseudo_adap.start()
 

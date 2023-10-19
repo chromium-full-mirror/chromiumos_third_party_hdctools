@@ -66,31 +66,19 @@ class I2cPseudoAdapter:
       It is safe to use the public interface from multiple threads concurrently.
 
     Usage:
-      adap = I2cPseudoAdapter.make_with_default_path(i2c_bus)
+      adap = I2cPseudoAdapter(i2c_bus)
       i2c_id = adap.start()
       ...
       adap.shutdown()
     """
 
-    @staticmethod
-    def make_with_default_path(i2c_bus):
-        """Make an instance using the default i2c-pseudo controller device path.
-
-        Args:
-          i2c_bus: implementation of i2c_base.BaseI2CBus
-
-        Returns:
-          I2cPseudoAdapter
-        """
-        return I2cPseudoAdapter(default_controller_path(), i2c_bus)
-
-    def __init__(self, controller_device_path, i2c_bus):
+    def __init__(self, i2c_bus, controller_device_path=None):
         """Initializer.  Does NOT create the pseudo adapter.
 
         Args:
-          controller_device_path: bytes or str - path to the i2c-pseudo controller
-              device file
           i2c_bus: implementation of i2c_base.BaseI2CBus
+          controller_device_path: None or bytes or str - path to the
+              i2c-pseudo device file
         """
         self._logger = logging.getLogger("i2c_pseudo")
         self._logger.info(
@@ -99,6 +87,13 @@ class I2cPseudoAdapter:
             controller_device_path,
             i2c_bus,
         )
+
+        if controller_device_path is None:
+            controller_device_path = default_controller_path()
+            self._logger.info(
+                "using controller_device_path=%r from default_controller_path()",
+                controller_device_path,
+            )
 
         self._i2c_bus = i2c_bus
         self._controller_device_path = controller_device_path
