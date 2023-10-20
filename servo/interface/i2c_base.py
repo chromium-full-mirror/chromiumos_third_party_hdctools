@@ -55,35 +55,47 @@ class BaseI2CBus(interface.Interface):
     def init(self):
         self.__reinit()
 
-    def __reinit(self):
-        self.__modprobe("i2c-pseudo", True)
+    def __try_i2cp(self, pseudo_adap):
+        """Try initializing an i2c-pseudo adapter implementation.
 
+        Args:
+            pseudo_adap: i2c_pseudo_base.BaseI2cPseudoAdapter
+
+        Returns:
+            bool - True for success, False if the i2c-pseudo device was not found
+        """
+        pseudo_ctrlr_path = pseudo_adap.default_controller_path()
+        if not os.path.exists(pseudo_ctrlr_path):
+            return False
+        # This circular reference is less than ideal.
+        # The weakref avoids a reference count cycle.
+        # Avoding the circular reference entirely would be preferable.
+        self.__logger.info(
+            "i2c-pseudo device path %r found, starting %s I2C pseudo adapter",
+            pseudo_ctrlr_path,
+            type(pseudo_adap).__name__,
+        )
+        pseudo_adap.init(
+            i2c_bus=weakref.proxy(self), controller_device_path=pseudo_ctrlr_path
+        )
+        pseudo_adap.start()
+        self.__pseudo_adap = pseudo_adap
+        return True
+
+    def __reinit(self):
+        """Initialize or re-initialize the I2C pseudo adapter for this I2C bus."""
+        self.__modprobe("i2c-pseudo", True)
         with self.__lock:
             if self.__pseudo_adap is not None:
                 self.__do_close()
-
-            pseudo_ctrlr_path = (
-                i2c_pseudo_v1.I2cPseudoV1Adapter.default_controller_path()
-            )
-            if not os.path.exists(pseudo_ctrlr_path):
+            for create_i2cp in (i2c_pseudo_v1.I2cPseudoV1Adapter,):
+                if self.__try_i2cp(create_i2cp()):
+                    break
+            else:
                 self.__logger.info(
-                    "path %r not found, cannot start I2C pseudo adapter",
-                    pseudo_ctrlr_path,
+                    "i2c-pseudo device not found, skipping I2C pseudo adapter"
                 )
                 return
-
-            self.__logger.info(
-                "path %r found, starting I2C pseudo adapter", pseudo_ctrlr_path
-            )
-            # This circular reference is less than ideal.
-            # The weakref avoids a reference count cycle.
-            # Avoding the circular reference entirely would be preferable.
-            self.__pseudo_adap = i2c_pseudo_v1.I2cPseudoV1Adapter()
-            self.__pseudo_adap.init(
-                i2c_bus=weakref.proxy(self), controller_device_path=pseudo_ctrlr_path
-            )
-            self.__pseudo_adap.start()
-
         # The I2C pseudo adapter itself does not need or use i2c-dev.
         # However any userspace program wanting to use a
         # servod I2C pseudo adapter will need i2c-dev,
