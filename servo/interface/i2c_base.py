@@ -59,11 +59,11 @@ class BaseI2CBus(interface.Interface):
             if self.__pseudo_adap is not None:
                 self.__do_close()
 
-            # While the I2C pseudo adapter controller itself does not need i2c-dev, it
-            # is intended to be available for userspace processes, so for convenience
-            # we make sure i2c-dev is loaded if available.
+            # The I2C pseudo adapter itself does not need or use i2c-dev.
+            # However any userspace program wanting to use a
+            # servod I2C pseudo adapter will need i2c-dev,
+            # so we load it for them if available.
             self.__modprobe("i2c-dev", True)
-            # The I2C pseudo adapter controller very much needs i2c-pseudo!
             self.__modprobe("i2c-pseudo", True)
 
             pseudo_ctrlr_path = i2c_pseudo.default_controller_path()
@@ -73,12 +73,13 @@ class BaseI2CBus(interface.Interface):
                     pseudo_ctrlr_path,
                 )
                 return
-            # TODO(b/79684405): This circular reference is less than ideal.  Find a
-            # better way to hook i2c_pseudo.I2cPseudoAdapter into servod.  For now
-            # weakref is used to avoid a reference count cycle.
+
             self.__logger.info(
                 "path %r found, starting I2C pseudo adapter", pseudo_ctrlr_path
             )
+            # This circular reference is less than ideal.
+            # The weakref avoids a reference count cycle.
+            # Avoding the circular reference entirely would be preferable.
             self.__pseudo_adap = i2c_pseudo.I2cPseudoAdapter(
                 pseudo_ctrlr_path, weakref.proxy(self)
             )
@@ -194,8 +195,6 @@ class BaseI2CBus(interface.Interface):
     def __do_close(self):
         self.__pseudo_adap.shutdown(2)
         # Break the circular reference.
-        # TODO(b/79684405): This circular reference is less than ideal.  Find a
-        # better way to fit i2c_pseudo.I2cPseudoAdapter into servod.
         self.__pseudo_adap = None
 
     def __modprobe(self, module, quiet):
