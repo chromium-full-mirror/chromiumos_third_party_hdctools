@@ -14,6 +14,8 @@ import os
 import select
 import threading
 
+from servo.interface import i2c_pseudo_base
+
 
 _CONTROLLER_DEVICE_PATH = b"/dev/i2c-pseudo-controller"
 _CMD_END_CHAR = b"\n"
@@ -44,7 +46,7 @@ _I2C_M_RD = 0x0001
 _I2C_M_RECV_LEN = 0x0400
 
 
-class I2cPseudoAdapter:
+class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
     """This class implements a Linux I2C adapter for the servo I2C bus.
 
     This class is a controller for the i2c-pseudo Linux kernel module.  See its
@@ -55,48 +57,28 @@ class I2cPseudoAdapter:
       It is safe to use the public interface from multiple threads concurrently.
 
     Usage:
-      adap = I2cPseudoAdapter(i2c_bus)
-      i2c_id = adap.start()
+      adap = I2cPseudoAdapter()
+      adap.init(i2c_bus)
+      adap.start()
       ...
       adap.shutdown()
     """
 
-    @staticmethod
-    def default_controller_path():
+    @classmethod
+    def default_controller_path(cls):
         """Get the default i2c-pseudo controller device path.
 
         Returns:
           bytes - absolute path
         """
         path = _CONTROLLER_DEVICE_PATH
+        assert isinstance(path, bytes)
         assert os.path.isabs(path)
         return path
 
-    def __init__(self, i2c_bus, controller_device_path=None):
-        """Initializer.  Does NOT create the pseudo adapter.
-
-        Args:
-          i2c_bus: implementation of i2c_base.BaseI2CBus
-          controller_device_path: None or bytes or str - path to the
-              i2c-pseudo device file
-        """
-        self._logger = logging.getLogger("i2c_pseudo")
-        self._logger.info(
-            "attempting to initialize (not start yet!) I2C pseudo adapter "
-            "controller_device_path=%r i2c_bus=%r",
-            controller_device_path,
-            i2c_bus,
-        )
-
-        if controller_device_path is None:
-            controller_device_path = self.default_controller_path()
-            self._logger.info(
-                "using controller_device_path=%r from default_controller_path()",
-                controller_device_path,
-            )
-
-        self._i2c_bus = i2c_bus
-        self._controller_device_path = controller_device_path
+    def __init__(self):
+        i2c_pseudo_base.BaseI2cPseudoAdapter.__init__(self)
+        self._logger = logging.getLogger("i2c_pseudo_v1")
 
         self._device_fd = None
         self._i2c_pseudo_id = None
@@ -123,7 +105,21 @@ class I2cPseudoAdapter:
         self._startstop_lock = threading.Lock()
         self._started = False
 
-        self._logger.info("finished initializing I2C pseudo adapter (not started yet!)")
+    def _internal_init(self, i2c_bus, controller_device_path):
+        """Initialize the instance.  This does NOT create the pseudo adapter.
+
+        Args:
+          i2c_bus: implementation of i2c_base.BaseI2CBus
+          controller_device_path: bytes or str - path to the i2c-pseudo device file
+        """
+        self._logger.info(
+            "initializing (not starting yet!) I2C pseudo adapter "
+            "controller_device_path=%r i2c_bus=%r",
+            controller_device_path,
+            i2c_bus,
+        )
+        self._i2c_bus = i2c_bus
+        self._controller_device_path = controller_device_path
 
     def start(self):
         """Create and start the i2c-pseudo adapter.

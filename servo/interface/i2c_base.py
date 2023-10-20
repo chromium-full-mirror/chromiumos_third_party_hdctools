@@ -62,7 +62,9 @@ class BaseI2CBus(interface.Interface):
             if self.__pseudo_adap is not None:
                 self.__do_close()
 
-            pseudo_ctrlr_path = i2c_pseudo_v1.I2cPseudoAdapter.default_controller_path()
+            pseudo_ctrlr_path = (
+                i2c_pseudo_v1.I2cPseudoV1Adapter.default_controller_path()
+            )
             if not os.path.exists(pseudo_ctrlr_path):
                 self.__logger.info(
                     "path %r not found, cannot start I2C pseudo adapter",
@@ -76,7 +78,8 @@ class BaseI2CBus(interface.Interface):
             # This circular reference is less than ideal.
             # The weakref avoids a reference count cycle.
             # Avoding the circular reference entirely would be preferable.
-            self.__pseudo_adap = i2c_pseudo_v1.I2cPseudoAdapter(
+            self.__pseudo_adap = i2c_pseudo_v1.I2cPseudoV1Adapter()
+            self.__pseudo_adap.init(
                 i2c_bus=weakref.proxy(self), controller_device_path=pseudo_ctrlr_path
             )
             self.__pseudo_adap.start()
@@ -92,7 +95,7 @@ class BaseI2CBus(interface.Interface):
         """Get the I2C pseudo adapter object for this I2C bus.
 
         Returns:
-          None or i2c_pseudo_v1.I2cPseudoAdapter
+          None or i2c_pseudo_base.BaseI2cPseudoAdapter
         """
         return self.__pseudo_adap
 
