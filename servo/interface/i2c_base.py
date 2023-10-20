@@ -56,11 +56,6 @@ class BaseI2CBus(interface.Interface):
 
     def __reinit(self):
         self.__modprobe("i2c-pseudo", True)
-        # The I2C pseudo adapter itself does not need or use i2c-dev.
-        # However any userspace program wanting to use a
-        # servod I2C pseudo adapter will need i2c-dev,
-        # so we load it for them if available.
-        self.__modprobe("i2c-dev", True)
 
         with self.__lock:
             if self.__pseudo_adap is not None:
@@ -84,6 +79,12 @@ class BaseI2CBus(interface.Interface):
                 pseudo_ctrlr_path, weakref.proxy(self)
             )
             self.__pseudo_adap.start()
+
+        # The I2C pseudo adapter itself does not need or use i2c-dev.
+        # However any userspace program wanting to use a
+        # servod I2C pseudo adapter will need i2c-dev,
+        # so we load it for them if available.
+        self.__modprobe("i2c-dev", True)
 
     @property
     def pseudo_adap(self):
