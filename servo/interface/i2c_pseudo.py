@@ -44,17 +44,6 @@ _I2C_M_RD = 0x0001
 _I2C_M_RECV_LEN = 0x0400
 
 
-def default_controller_path():
-    """Get the default i2c-pseudo controller device path.
-
-    Returns:
-      bytes - absolute path
-    """
-    path = _CONTROLLER_DEVICE_PATH
-    assert os.path.isabs(path)
-    return path
-
-
 class I2cPseudoAdapter:
     """This class implements a Linux I2C adapter for the servo I2C bus.
 
@@ -71,6 +60,17 @@ class I2cPseudoAdapter:
       ...
       adap.shutdown()
     """
+
+    @staticmethod
+    def default_controller_path():
+        """Get the default i2c-pseudo controller device path.
+
+        Returns:
+          bytes - absolute path
+        """
+        path = _CONTROLLER_DEVICE_PATH
+        assert os.path.isabs(path)
+        return path
 
     def __init__(self, i2c_bus, controller_device_path=None):
         """Initializer.  Does NOT create the pseudo adapter.
@@ -89,7 +89,7 @@ class I2cPseudoAdapter:
         )
 
         if controller_device_path is None:
-            controller_device_path = default_controller_path()
+            controller_device_path = self.default_controller_path()
             self._logger.info(
                 "using controller_device_path=%r from default_controller_path()",
                 controller_device_path,

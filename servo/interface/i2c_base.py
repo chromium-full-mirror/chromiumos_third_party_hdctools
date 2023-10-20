@@ -62,7 +62,7 @@ class BaseI2CBus(interface.Interface):
             if self.__pseudo_adap is not None:
                 self.__do_close()
 
-            pseudo_ctrlr_path = i2c_pseudo.default_controller_path()
+            pseudo_ctrlr_path = i2c_pseudo.I2cPseudoAdapter.default_controller_path()
             if not os.path.exists(pseudo_ctrlr_path):
                 self.__logger.info(
                     "path %r not found, cannot start I2C pseudo adapter",
