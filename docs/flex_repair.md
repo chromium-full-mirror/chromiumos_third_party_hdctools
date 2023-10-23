@@ -24,7 +24,7 @@ the required number of USB ports required to control both the usb drive and the
 relay switch separately.
 
 The USB drive must be connected to the top port, and the relay switch must be
-connected to the bottom port. This should be done with USB-A extenders.
+connected to the μSERVO port.
 
 ## How to run Servo on Flex
 Fun fact! You don't actually need a Flex DUT to run servo with the reven
