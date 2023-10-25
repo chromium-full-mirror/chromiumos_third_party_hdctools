@@ -13,17 +13,22 @@ from urllib import request
 UNBLOCKED_TERMS_FILE = "unblocked_terms.txt"
 
 
+def _read_terms_from_array(lines):
+    keywords = set()
+    for line in lines:
+        line = line.split("#", 1)[0]
+        if not line:
+            continue
+        keywords.add(line)
+    return keywords
+
+
 def _read_terms_file(terms_file: str):
     """Read list of words from file, skipping comments and blank lines."""
-    file_terms = set()
     with open(terms_file, "r", encoding="utf-8") as fh:
-        for line in fh.readlines():
-            # Allow comment and blank lines.
-            line = line.split("#", 1)[0]
-            if not line:
-                continue
-            file_terms.add(line)
-    return file_terms
+        keywords = _read_terms_from_array(fh.readlines())
+
+    return keywords
 
 
 def _read_terms_from_gitiles(url: str):
@@ -33,14 +38,9 @@ def _read_terms_from_gitiles(url: str):
         print("Unable to get bad words list")
         sys.exit(1)
     encoded = response.read()
-    lines = base64.b64decode(encoded).split(b"\n")
-    keywords = set()
-    for line in lines:
-        line = line.split(b"#", 1)[0]
-        if not line:
-            continue
-        keywords.add(line.decode("utf-8"))
-    return keywords
+    decoded = base64.b64decode(encoded).decode("utf-8")
+    lines = decoded.split("\n")
+    return _read_terms_from_array(lines)
 
 
 def _check_keywords_in_file(file_to_check, keywords):
