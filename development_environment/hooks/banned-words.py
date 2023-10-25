@@ -43,7 +43,29 @@ def _read_terms_from_gitiles(url: str):
     return _read_terms_from_array(lines)
 
 
-def _check_keywords_in_file(file_to_check, keywords):
+_cache = {}
+_default_terms = set()
+
+
+def _read_terms_from_cache(file):
+    if not file:
+        raise NameError("requesting terms for checking no file?")
+
+    d = os.path.dirname(file)
+    while True:
+        terms_file = os.path.join(d, UNBLOCKED_TERMS_FILE)
+        if os.path.isfile(terms_file):
+            if d not in _cache:
+                _cache[d] = _read_terms_file(terms_file)
+            return _cache[d]
+        d = os.path.dirname(d)
+        if os.path.isdir(os.path.join(d, ".git")):
+            break
+
+    return _default_terms
+
+
+def _check_keywords_in_file(file_to_check):
     """Checks there are no blocked keywords in a file being changed."""
 
     def _check_line(line):
@@ -89,6 +111,8 @@ def _check_keywords_in_file(file_to_check, keywords):
                 return f'Matched "{b["group"]}" with regex of "{b["keyword"]}"'
         return False
 
+    keywords = _read_terms_from_cache(file_to_check)
+
     matches = []
     if file_to_check:
         try:
@@ -107,7 +131,8 @@ def _check_keywords_in_file(file_to_check, keywords):
 
 
 def main():
-    keywords = _read_terms_from_gitiles(
+    global _default_terms
+    _default_terms = _read_terms_from_gitiles(
         (
             "https://chromium.googlesource.com/chromiumos/"
             "repohooks/+/refs/heads/main/blocked_terms.txt?format=TEXT"
@@ -115,7 +140,7 @@ def main():
     )
     for filename in sys.argv:
         if os.path.isfile(filename):
-            _check_keywords_in_file(filename, keywords=keywords)
+            _check_keywords_in_file(filename)
 
 
 if __name__ == "__main__":
