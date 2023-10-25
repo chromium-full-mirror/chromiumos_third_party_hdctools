@@ -454,5 +454,7 @@ COPY --link --from=hdctools-servo_mfg-builder /hdctools/dist/* ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
+# ensure that /usr/local/lib is properly known and set up, especially libusb
+RUN ldconfig
 
 COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
