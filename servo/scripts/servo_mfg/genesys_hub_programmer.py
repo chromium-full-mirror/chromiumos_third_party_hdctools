@@ -5,6 +5,7 @@
 
 import os
 import re
+import shutil
 
 from servo_mfg import device_util
 from servo_mfg import exec_util
@@ -52,8 +53,8 @@ class GenesysHubProgrammer(programmer.Programmer):
         # This needs to run in the binfiles directory for the tool to work
         # properly.
         wd = os.getcwd()
-        program_dir = util.get_bindir()
-        os.chdir(program_dir)
+        program_bin = shutil.which(self.PROGRAMMER_BIN)
+        os.chdir(os.path.dirname(program_bin))
         # At this stage, we have already validated that |FW_BIN| exists. So create
         # the full command.
         write_cmd = self.WRITE_CMD + [util.find_binfile(self.FW_BIN)]
@@ -78,8 +79,8 @@ class GenesysHubProgrammer(programmer.Programmer):
         # This needs to run in the binfiles directory for the tool to work
         # properly.
         wd = os.getcwd()
-        program_dir = util.get_bindir()
-        os.chdir(program_dir)
+        program_bin = shutil.which(self.PROGRAMMER_BIN)
+        os.chdir(os.path.dirname(program_bin))
         # At this stage, we have already validated that |FW_BIN| exists. So create
         # the full command.
         ret, stdout, _unused = exec_util.exec_blocking(self.READ_CMD, hint="reading")
