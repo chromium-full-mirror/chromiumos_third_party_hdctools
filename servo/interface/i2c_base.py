@@ -1,6 +1,7 @@
 # Copyright 2018 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Provides a base class for I2C bus implementations."""
 
 import logging
@@ -10,7 +11,8 @@ import sys
 import threading
 import weakref
 
-from servo.interface import i2c_pseudo
+from servo.interface import i2c_pseudo_v1
+from servo.interface import i2c_pseudo_v2
 from servo.interface import interface
 
 
@@ -54,42 +56,62 @@ class BaseI2CBus(interface.Interface):
     def init(self):
         self.__reinit()
 
+    def __try_i2cp(self, pseudo_adap):
+        """Try initializing an i2c-pseudo adapter implementation.
+
+        Args:
+            pseudo_adap: i2c_pseudo_base.BaseI2cPseudoAdapter
+
+        Returns:
+            bool - True for success, False if the i2c-pseudo device was not found
+        """
+        pseudo_ctrlr_path = pseudo_adap.default_controller_path()
+        if not os.path.exists(pseudo_ctrlr_path):
+            return False
+        # This circular reference is less than ideal.
+        # The weakref avoids a reference count cycle.
+        # Avoding the circular reference entirely would be preferable.
+        self.__logger.info(
+            "i2c-pseudo device path %r found, starting %s I2C pseudo adapter",
+            pseudo_ctrlr_path,
+            type(pseudo_adap).__name__,
+        )
+        pseudo_adap.init(
+            i2c_bus=weakref.proxy(self), controller_device_path=pseudo_ctrlr_path
+        )
+        pseudo_adap.start()
+        self.__pseudo_adap = pseudo_adap
+        return True
+
     def __reinit(self):
+        """Initialize or re-initialize the I2C pseudo adapter for this I2C bus."""
+        self.__modprobe("i2c-pseudo", True)
         with self.__lock:
             if self.__pseudo_adap is not None:
                 self.__do_close()
-
-            # While the I2C pseudo adapter controller itself does not need i2c-dev, it
-            # is intended to be available for userspace processes, so for convenience
-            # we make sure i2c-dev is loaded if available.
-            self.__modprobe("i2c-dev", True)
-            # The I2C pseudo adapter controller very much needs i2c-pseudo!
-            self.__modprobe("i2c-pseudo", True)
-
-            pseudo_ctrlr_path = i2c_pseudo.default_controller_path()
-            if not os.path.exists(pseudo_ctrlr_path):
+            for create_i2cp in (
+                i2c_pseudo_v2.I2cPseudoV2Adapter,
+                i2c_pseudo_v1.I2cPseudoV1Adapter,
+            ):
+                if self.__try_i2cp(create_i2cp()):
+                    break
+            else:
                 self.__logger.info(
-                    "path %r not found, cannot start I2C pseudo adapter",
-                    pseudo_ctrlr_path,
+                    "i2c-pseudo device not found, skipping I2C pseudo adapter"
                 )
                 return
-            # TODO(b/79684405): This circular reference is less than ideal.  Find a
-            # better way to hook i2c_pseudo.I2cPseudoAdapter into servod.  For now
-            # weakref is used to avoid a reference count cycle.
-            self.__logger.info(
-                "path %r found, starting I2C pseudo adapter", pseudo_ctrlr_path
-            )
-            self.__pseudo_adap = i2c_pseudo.I2cPseudoAdapter(
-                pseudo_ctrlr_path, weakref.proxy(self)
-            )
-            self.__pseudo_adap.start()
+        # The I2C pseudo adapter itself does not need or use i2c-dev.
+        # However any userspace program wanting to use a
+        # servod I2C pseudo adapter will need i2c-dev,
+        # so we load it for them if available.
+        self.__modprobe("i2c-dev", True)
 
     @property
     def pseudo_adap(self):
         """Get the I2C pseudo adapter object for this I2C bus.
 
         Returns:
-          None or i2c_pseudo.I2cPseudoAdapter
+          None or i2c_pseudo_base.BaseI2cPseudoAdapter
         """
         return self.__pseudo_adap
 
@@ -194,8 +216,6 @@ class BaseI2CBus(interface.Interface):
     def __do_close(self):
         self.__pseudo_adap.shutdown(2)
         # Break the circular reference.
-        # TODO(b/79684405): This circular reference is less than ideal.  Find a
-        # better way to fit i2c_pseudo.I2cPseudoAdapter into servod.
         self.__pseudo_adap = None
 
     def __modprobe(self, module, quiet):

@@ -29,8 +29,8 @@ class V4P1Manager(manager.Manager):
         r"[0-9]{2}"  # YY
         r"(0[1-9]|1[0-2])"  # MM
         r"(0[1-9]|[12][0-9]|3[0-1])"  # DD
-        r"[0-9]{4}$"
-    )  # serialno suffix
+        r"[0-9]{4,5}$"  # serialno suffix
+    )
 
     LEGACY_RES = [r"^N[PDQ][0-9]{5}$"]
 

@@ -516,7 +516,12 @@ void SendNextReport(void)
 	USB_KeyboardReport_Data_t	KeyboardReportData;
 	bool                             SendReport = false;
 
+	/* Select the Keyboard Report Endpoint */
+	Endpoint_SelectEndpoint(KEYBOARD_IN_EPADDR);
+
 	/* Create the next keyboard report for transmission to the host */
+	if (!Endpoint_IsReadWriteAllowed())
+		return;
 	CreateKeyboardReport(&KeyboardReportData);
 
 	/* Check if the idle period is set and has elapsed */
@@ -534,11 +539,9 @@ void SendNextReport(void)
 		SendReport = (memcmp(&PrevKeyboardReportData, &KeyboardReportData, sizeof(USB_KeyboardReport_Data_t)) != 0);
 	}
 
-	/* Select the Keyboard Report Endpoint */
-	Endpoint_SelectEndpoint(KEYBOARD_IN_EPADDR);
 
 	/* Check if Keyboard Endpoint Ready for Read/Write and if we should send a new report */
-	if (Endpoint_IsReadWriteAllowed() && SendReport)
+	if (SendReport)
 	{
 		/* Save the current report data for later comparison to check for changes */
 		PrevKeyboardReportData = KeyboardReportData;

@@ -26,6 +26,7 @@ class FwWpStateDriver(hw_driver.HwDriver):
     _STATE_RESET = "reset"
     _STATE_ON = "on"
     _STATE_OFF = "off"
+    _STATE_FOLLOW_BATTERY_PRESENT = "follow_batt_pres"
 
     def __init__(self, interface, params, servod=None):
         """Constructor.
