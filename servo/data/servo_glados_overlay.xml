@@ -10,7 +10,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params drv="cros_ec_pd_softrec_power" clobber_ok=""
+    <params drv="cros_ec_pd_softrec_power" clobber_ok="patch"
     reset_recovery="0.6" shutdown_delay="11.0"
     boot_to_rec_screen_delay="5.0" />
   </control>
@@ -45,10 +45,10 @@
   <control>
     <name>uart4_pty</name>
     <alias>raw_usbpd_uart_pty</alias>
-    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's uart
+    <doc>Psuedo-terminal (pty) thats connected to USB PD MCU's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <!-- EC-3PO console interpreter for USB PD -->
   <control>
@@ -56,7 +56,7 @@
     <alias>usbpd_uart_pty</alias>
     <doc>USBPD UART console provided via EC-3PO console
     interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart" clobber_ok="">
+    <params cmd="get" subtype="pty" interface="9" drv="uart" clobber_ok="full">
     </params>
   </control>
   <control>
@@ -64,34 +64,34 @@
     <doc>State indicating if interpreter is listening to the EC
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok=""></params>
+    subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
     <name>uart4_baudrate</name>
     <alias>usbpd_uart_baudrate</alias>
     <doc>Baudrate for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    clobber_ok="" interface="1"></params>
+    clobber_ok="full" interface="1"></params>
   </control>
   <control>
     <name>uart4_parity</name>
     <alias>usbpd_uart_parity</alias>
     <doc>Parity for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    clobber_ok="" interface="1" map="uart_parity"></params>
+    clobber_ok="full" interface="1" map="uart_parity"></params>
   </control>
   <control>
     <name>uart4_sbits</name>
     <alias>usbpd_uart_sbits</alias>
     <doc>Number of stop bits for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-    clobber_ok="" interface="1" map="uart_sbits"></params>
+    clobber_ok="full" interface="1" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart4_bits</name>
     <alias>usbpd_uart_bits</alias>
     <doc>Number of data bits for CPU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok="full"
     interface="1" map="uart_bits"></params>
   </control>
   <!-- USB PD UART Automation Controls -->
@@ -156,13 +156,13 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="mec1322" />
   </control>
   <control>
     <name>usbpd_chip</name>
     <doc>USB PD chip name (read-only)</doc>
-    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="stm32" />
   </control>
   <control>

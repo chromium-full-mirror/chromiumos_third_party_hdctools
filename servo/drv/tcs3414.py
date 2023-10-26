@@ -19,6 +19,7 @@ import time
 # servo libs
 from servo.drv import hw_driver
 
+
 # I/O registers
 REG_COMMAND_BIT = 0x80
 REG_WORD_BIT = 0x20
@@ -47,7 +48,7 @@ TIMING_400MS = 400
 TIMING_TIME_BITS = {
     TIMING_12MS: 0x00,  # default value
     TIMING_100MS: 0x01,
-    TIMING_400MS: 0x02
+    TIMING_400MS: 0x02,
 }
 
 # bits 0-2 of gain register (Prescaler)
@@ -60,12 +61,7 @@ GAIN_16X = 16
 GAIN_64X = 64
 
 # bits 4-5 of gain register (Analog Gain Control)
-GAIN_ANALOG_BITS = {
-    GAIN_1X: 0x00,
-    GAIN_4X: 0x10,
-    GAIN_16X: 0x20,
-    GAIN_64X: 0x30
-}
+GAIN_ANALOG_BITS = {GAIN_1X: 0x00, GAIN_4X: 0x10, GAIN_16X: 0x20, GAIN_64X: 0x30}
 
 # millisecond
 MSEC = 1e-3
@@ -79,181 +75,181 @@ tcs3414_devices = {}
 
 
 class Tcs3414Error(hw_driver.HwDriverError):
-  """Error occurred accessing TCS3414."""
-  pass
+    """Error occurred accessing TCS3414."""
+
+    pass
 
 
-class Tcs3414Device(object):
-  """Define a TCS3414 device shared among many tcs3414 drivers.
+class Tcs3414Device:
+    """Define a TCS3414 device shared among many tcs3414 drivers.
 
-  Note: public members are directly accessible by tcs3414 class.
-  """
+    Note: public members are directly accessible by tcs3414 class.
+    """
 
-  def __init__(self):
-    self.integ_time = TIMING_12MS
-    self.analog_gain = GAIN_1X
+    def __init__(self):
+        self.integ_time = TIMING_12MS
+        self.analog_gain = GAIN_1X
 
 
 class tcs3414(hw_driver.HwDriver):
-  """Provides drv=tcs3414 control.
+    """Provides drv=tcs3414 control.
 
-  Note: The public interfaces of the object are of the form _Get_X() / _Set_X(),
-  where X is params['subtype']. Instances of this object get dispatched via
-  get/set methods of the base class, HwDriver.
+    Note: The public interfaces of the object are of the form _Get_X() / _Set_X(),
+    where X is params['subtype']. Instances of this object get dispatched via
+    get/set methods of the base class, HwDriver.
 
-  For example, to call _Get_HSV():
+    For example, to call _Get_HSV():
 
-    params['subtype'] = 'HSV'
-    drv = tcs3414(interface, params)
-    hsv = drv.get()
-  """
-
-  def __init__(self, interface, params):
-    """Constructor.
-
-    Args:
-      interface: interface object to handle low-level communication.
-      params: dictionary of params needed to perform operations on the device.
-          All items are strings initially but should be cast to types detailed
-          below.
-
-    Mandatory Params:
-      child: integer, 7-bit i2c child address
-
-    Optional Params:
-      N/A
-    """
-    super(tcs3414, self).__init__(interface, params)
-
-    device_key = (interface, self._get_child())
-    if device_key not in tcs3414_devices:
-      tcs3414_devices[device_key] = Tcs3414Device()
-
-    self._device = tcs3414_devices[device_key]
-
-    self._logger.debug('Initialized %d TCS3414 devices' % len(tcs3414_devices))
-
-  def _convert_HSV(self, r, g, b, i):
-    """Converts RGB to HSV coordinate.
-
-    http://en.wikipedia.org/wiki/HSL_and_HSV
-
-    Args:
-      r: 16-bit red value.
-      g: 16-bit green value.
-      b: 16-bit blue value.
-      i: 16-bit intensity value.
-
-    Returns:
-      [H, S, V]: the coordinates are all between 0 and 1.
+      params['subtype'] = 'HSV'
+      drv = tcs3414(interface, params)
+      hsv = drv.get()
     """
 
-    def w2f(b):
-      return float(b) / 65535.0
+    def __init__(self, interface, params):
+        """Constructor.
 
-    h, s, _ = colorsys.rgb_to_hsv(w2f(r), w2f(g), w2f(b))
+        Args:
+          interface: interface object to handle low-level communication.
+          params: dictionary of params needed to perform operations on the device.
+              All items are strings initially but should be cast to types detailed
+              below.
 
-    return [h, s, w2f(i)]
+        Mandatory Params:
+          child: integer, 7-bit i2c child address
 
-  def _check_8bit(self, v):
-    if v & 0xFF != v:
-      raise Tcs3414Error('0x%x is not 8-bit' % v)
+        Optional Params:
+          N/A
+        """
+        super(tcs3414, self).__init__(interface, params)
 
-  def _get_child(self):
-    """Checks and return needed params to call driver.
+        device_key = (interface, self._get_child())
+        if device_key not in tcs3414_devices:
+            tcs3414_devices[device_key] = Tcs3414Device()
 
-    Returns:
-      child: 7-bit i2c address
-    """
-    if 'child' not in self._params:
-      raise Tcs3414Error('Missing child address "child"')
-    child = int(self._params['child'], 0)
-    return child
+        self._device = tcs3414_devices[device_key]
 
-  def _write_byte(self, reg, data):
-    """Writes one byte to register.
+        self._logger.debug("Initialized %d TCS3414 devices" % len(tcs3414_devices))
 
-    Args:
-      reg: Register address.
-      data: One byte.
+    def _convert_HSV(self, r, g, b, i):
+        """Converts RGB to HSV coordinate.
 
-    Returns:
-      None
-    """
-    self._check_8bit(reg)
-    self._check_8bit(data)
+        http://en.wikipedia.org/wiki/HSL_and_HSV
 
-    self._interface.wr_rd(self._get_child(), [reg, data], 0)
+        Args:
+          r: 16-bit red value.
+          g: 16-bit green value.
+          b: 16-bit blue value.
+          i: 16-bit intensity value.
 
-  def _read_word(self, reg):
-    """Reads a word by giving a register address.
+        Returns:
+          [H, S, V]: the coordinates are all between 0 and 1.
+        """
 
-    Args:
-      reg: Register address.
+        def w2f(b):
+            return float(b) / 65535.0
 
-    Returns:
-      16-bit value.
-    """
-    self._check_8bit(reg)
+        h, s, _unused = colorsys.rgb_to_hsv(w2f(r), w2f(g), w2f(b))
 
-    values = self._interface.wr_rd(self._get_child(), [reg], 2)
-    return values[0] + (values[1] << 8)
+        return [h, s, w2f(i)]
 
-  def _power_on(self):
-    self._write_byte(REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWERON)
+    def _check_8bit(self, v):
+        if v & 0xFF != v:
+            raise Tcs3414Error("0x%x is not 8-bit" % v)
 
-  def _power_off(self):
-    self._write_byte(REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWEROFF)
+    def _get_child(self):
+        """Checks and return needed params to call driver.
 
-  def _Set_gain(self, value):
-    """Sets ADC gain.
+        Returns:
+          child: 7-bit i2c address
+        """
+        if "child" not in self._params:
+            raise Tcs3414Error('Missing child address "child"')
+        child = int(self._params["child"], 0)
+        return child
 
-    Args:
-      value: analog gain multiplier
-    """
-    if value not in GAIN_ANALOG_BITS:
-      raise Tcs3414Error('Analog gain %d is unsupported' % value)
-    self._device.analog_gain = value
+    def _write_byte(self, reg, data):
+        """Writes one byte to register.
 
-    byte = GAIN_ANALOG_BITS[value] | GAIN_PRESCALER_DIVIDE_BY_1
-    self._write_byte(REG_COMMAND_BIT | REG_GAIN, byte)
+        Args:
+          reg: Register address.
+          data: One byte.
 
-  def _Set_timing(self, value):
-    """Sets integration time for each read.
+        Returns:
+          None
+        """
+        self._check_8bit(reg)
+        self._check_8bit(data)
 
-    Args:
-      value: integration time in milliseconds.
-    """
-    if value not in TIMING_TIME_BITS:
-      raise Tcs3414Error('Integration time of %d ms is unsupported' % value)
-    self._device.integ_time = value
+        self._interface.wr_rd(self._get_child(), [reg, data], 0)
 
-    byte = TIMING_TIME_BITS[value] | TIMING_FREE_RUNNING
-    self._write_byte(REG_COMMAND_BIT | REG_TIMING, byte)
+    def _read_word(self, reg):
+        """Reads a word by giving a register address.
 
-  def _Get_HSV(self):
-    """Gets reading in HSV colorspace.
+        Args:
+          reg: Register address.
 
-    Note: if V == 1.0, it means the integration is digitally saturated. You
-    should lower gain or integration time.
+        Returns:
+          16-bit value.
+        """
+        self._check_8bit(reg)
 
-    Returns:
-      [H, S, V]
+        values = self._interface.wr_rd(self._get_child(), [reg], 2)
+        return values[0] + (values[1] << 8)
 
-    """
-    self._power_on()
+    def _power_on(self):
+        self._write_byte(REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWERON)
 
-    time.sleep(self._device.integ_time * MSEC + SLEEP_MORE_TIME)
+    def _power_off(self):
+        self._write_byte(REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWEROFF)
 
-    color_r = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_RED_CHANNEL)
-    color_g = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT
-                              | REG_GREEN_CHANNEL)
-    color_b = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_BLUE_CHANNEL)
-    intensity = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT
-                                | REG_CLEAR_CHANNEL)
+    def _Set_gain(self, value):
+        """Sets ADC gain.
 
-    self._power_off()  # Save power
+        Args:
+          value: analog gain multiplier
+        """
+        if value not in GAIN_ANALOG_BITS:
+            raise Tcs3414Error("Analog gain %d is unsupported" % value)
+        self._device.analog_gain = value
 
-    self._logger.debug('Read RGBI values (%d, %d, %d, %d)', color_r, color_g,
-                       color_b, intensity)
-    return self._convert_HSV(color_r, color_g, color_b, intensity)
+        byte = GAIN_ANALOG_BITS[value] | GAIN_PRESCALER_DIVIDE_BY_1
+        self._write_byte(REG_COMMAND_BIT | REG_GAIN, byte)
+
+    def _Set_timing(self, value):
+        """Sets integration time for each read.
+
+        Args:
+          value: integration time in milliseconds.
+        """
+        if value not in TIMING_TIME_BITS:
+            raise Tcs3414Error("Integration time of %d ms is unsupported" % value)
+        self._device.integ_time = value
+
+        byte = TIMING_TIME_BITS[value] | TIMING_FREE_RUNNING
+        self._write_byte(REG_COMMAND_BIT | REG_TIMING, byte)
+
+    def _Get_HSV(self):
+        """Gets reading in HSV colorspace.
+
+        Note: if V == 1.0, it means the integration is digitally saturated. You
+        should lower gain or integration time.
+
+        Returns:
+          [H, S, V]
+
+        """
+        self._power_on()
+
+        time.sleep(self._device.integ_time * MSEC + SLEEP_MORE_TIME)
+
+        color_r = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_RED_CHANNEL)
+        color_g = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_GREEN_CHANNEL)
+        color_b = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_BLUE_CHANNEL)
+        intensity = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_CLEAR_CHANNEL)
+
+        self._power_off()  # Save power
+
+        self._logger.debug(
+            "Read RGBI values (%d, %d, %d, %d)", color_r, color_g, color_b, intensity
+        )
+        return self._convert_HSV(color_r, color_g, color_b, intensity)

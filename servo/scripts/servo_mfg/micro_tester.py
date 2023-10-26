@@ -9,22 +9,22 @@ from servo_mfg import tester
 
 
 class MicroTester(tester.Tester):
-  """Class to handle one manufacteuring round for one device type."""
+    """Class to handle one manufacturing round for one device type."""
 
-  PHASE = 1
+    PHASE = 1
 
-  @property
-  def wait_for_setup(self):
-    """Servo micro does not require any test setup other than the device."""
-    return False
+    @property
+    def wait_for_setup(self):
+        """Servo micro does not require any test setup other than the device."""
+        return False
 
-  def _register(self):
-    """Register all tests for servo micro."""
-    # This is broken out to allow for clean readability and maintainability
-    # Check the serialnumber to validate communication to the MCU works.
-    test = control_test.ControlTest(name='serialname', regex='.+')
-    # Indicate test is to check basic communication.
-    test.base_debug_line = 'Basic communication with servo EC failed.'
-    self._register_test(test)
-    # TODO(b/169900864): expand to test all communications on the gpio
-    # expander(s).
+    def _register(self):
+        """Register all tests for servo micro."""
+        # This is broken out to allow for clean readability and maintainability
+        # Check the serialnumber to validate communication to the MCU works.
+        test = control_test.ControlTest(name="serialname", regex=".+")
+        # Indicate test is to check basic communication.
+        test.base_debug_line = "Basic communication with servo EC failed."
+        self._register_test(test)
+        # TODO(b/169900864): expand to test all communications on the gpio
+        # expander(s).

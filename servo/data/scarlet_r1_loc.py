@@ -34,4 +34,3 @@ inas = [
         ('ina219', 0x4E, 'pp900_logic',     0.9, 0.01, 'loc', True),
         ('ina219', 0x4F, 'pp900_ap',        0.9, 0.01, 'loc', True),
        ]
-

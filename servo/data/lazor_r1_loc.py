@@ -7,8 +7,8 @@ config_type='sweetberry'
 inas = [
     ('ina231', '0x40:3', 'PPVAR_BAT',          8.05, 0.010, 'j2', True), # R172_33
     ('ina231', '0x40:1', 'PP3300_HUB',         8.05, 0.100, 'j2', True), # R108, original size 0.01
-    ('ina231', '0x40:2', 'PP5000_A',           5.00, 0.010, 'j2', True), # R4689, orginal size 0.002
-    ('ina231', '0x40:0', 'PP3300_A_R',         3.30, 0.010, 'j2', True), # R4699, orginal size 0.002
+    ('ina231', '0x40:2', 'PP5000_A',           5.00, 0.010, 'j2', True), # R4689, original size 0.002
+    ('ina231', '0x40:0', 'PP3300_A_R',         3.30, 0.010, 'j2', True), # R4699, original size 0.002
     ('ina231', '0x41:3', 'PP3300_EC_STBY',     3.30, 0.010, 'j2', True), # R297_FF
     ('ina231', '0x41:1', 'PP3300_H1',          3.30, 0.010, 'j2', True), # R296_FF
     ('ina231', '0x41:2', 'PP1800_VR',          3.30, 0.010, 'j2', True), # R312

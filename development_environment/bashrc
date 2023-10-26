@@ -1,6 +1,7 @@
-
-source $HOME/.bashrc
-
-alias run_tests="start_servod.py -t -b unknown $@"
-alias build="build_servod.sh $@"
-alias run="start_servod.py $@"
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+export PATH=/hdctools_source/hdctools/scripts:${PATH}
+#Setup git auto complete on bash
+. /usr/share/bash-completion/completions/git

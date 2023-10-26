@@ -5,47 +5,48 @@
 """
 from servo.drv import hw_driver
 
-CMD_MASK = 0xf
+
+CMD_MASK = 0xF
 
 
 class Pca9546Error(hw_driver.HwDriverError):
-  """Error class for PCA9546"""
+    """Error class for PCA9546"""
 
 
 class pca9546(hw_driver.HwDriver):
-  """Object to access drv=pca9546 controls."""
+    """Object to access drv=pca9546 controls."""
 
-  def __init__(self, interface, params):
-    """Constructor.
+    def __init__(self, interface, params):
+        """Constructor.
 
-    Args:
-      interface: interface object to handle low-level communication to control
-      params: dictionary of params needed to perform operations on pca9546
-          devices.
+        Args:
+          interface: interface object to handle low-level communication to control
+          params: dictionary of params needed to perform operations on pca9546
+              devices.
 
-    Mandatory Params:
-      child: integer, 7-bit i2c child address
-    """
-    super(pca9546, self).__init__(interface, params)
-    self._logger.debug('')
-    self._child = int(self._params['child'], 0)
+        Mandatory Params:
+          child: integer, 7-bit i2c child address
+        """
+        super(pca9546, self).__init__(interface, params)
+        self._logger.debug("")
+        self._child = int(self._params["child"], 0)
 
-  def _get(self):
-    """Get PCA9546 mux.
-    """
-    return self._interface.wr_rd(self._child, [], 1)[0]
+    def _get(self):
+        """Get PCA9546 mux."""
+        return self._interface.wr_rd(self._child, [], 1)[0]
 
-  def _set(self, value):
-    """Set PCA954 mux.
+    def _set(self, value):
+        """Set PCA954 mux.
 
-    Args:
-      value: 4-bit unsigned integer to set mux output
+        Args:
+          value: 4-bit unsigned integer to set mux output
 
-    Raises:
-      Pca9546Error: if value is out of bounds
-    """
-    self._logger.debug('value = %s' % str(value))
-    if value & ~CMD_MASK:
-      raise Pca9546Error("command value 0x%x can't be greater than 0x%x" %
-                         (value, CMD_MASK))
-    self._interface.wr_rd(self._child, [CMD_MASK & value], 0)
+        Raises:
+          Pca9546Error: if value is out of bounds
+        """
+        self._logger.debug("value = %s" % str(value))
+        if value & ~CMD_MASK:
+            raise Pca9546Error(
+                "command value 0x%x can't be greater than 0x%x" % (value, CMD_MASK)
+            )
+        self._interface.wr_rd(self._child, [CMD_MASK & value], 0)

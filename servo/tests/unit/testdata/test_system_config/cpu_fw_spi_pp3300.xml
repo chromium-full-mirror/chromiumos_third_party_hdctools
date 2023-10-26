@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<root>
+  <control>
+    <!-- This is the same as cpu_fw_spi_pp1800.xml, except with
+         spi2_vref changed from pp1800 to pp3300. -->
+    <name>cpu_fw_spi</name>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>spi2_buf_en:on</item>
+            <item>spi2_buf_on_flex_en:on</item>
+            <item>ap_flash_select:on</item>
+            <item>cold_reset:on</item>
+            <item>spi2_vref:pp3300</item>
+            <item>spi_hold:off</item>
+          </item>
+          <item key="0">
+            <item>spi2_buf_en:off</item>
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>spi2_vref:off</item>
+            <item>ap_flash_select:off</item>
+            <item>cold_reset:off</item>
+            <item>spi_hold:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+</root>

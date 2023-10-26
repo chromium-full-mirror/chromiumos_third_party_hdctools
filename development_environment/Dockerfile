@@ -47,25 +47,28 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     docker-ce \
     docker-ce-cli \
     docker-compose-plugin \
+    flake8 \
     git-core \
     google-cloud-sdk \
+    isort \
     libasound2 \
     libusb-dev \
     libxshmfence-dev \
     meld \
+    pre-commit \
     pylint \
     python3 \
     python3-docker \
-    python3-flake8 \
     python3-flake8-docstrings \
+    python3-numpy \
     python3-pip \
-    python3-pip \
+    python3-pytest \
     python3-setuptools \
+    python3-usb \
     software-properties-common \
     sudo \
     usbutils \
     vim
-
 
 # Install chrome
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub |\
@@ -74,16 +77,12 @@ RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ \
     stable main" >> /etc/apt/sources.list.d/google.list'
 RUN apt-get -yq update && apt-get install -yq google-chrome-stable
 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-
 
 WORKDIR /hdctools_source
 
-COPY entry.sh bashrc get_source.sh build_servod.sh start_servod.py /usr/local/bin/
-RUN chmod uog+rx /usr/local/bin/get_source.sh /usr/local/bin/entry.sh /usr/local/bin/build_servod.sh \
-  /usr/local/bin/start_servod.py
+COPY development_environment/entry.sh development_environment/bashrc development_environment/get-source.sh /usr/local/bin/
+RUN chmod uog+rx /usr/local/bin/get-source.sh /usr/local/bin/entry.sh
 
 ENV DISPLAY=:0
-
 
 CMD ["entry.sh"]

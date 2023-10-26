@@ -1,0 +1,9 @@
+<root>
+  <!-- Noop control for servo devices that require no setup for ADCs to work -->
+  <control>
+    <name>servo_adcs_enabled</name>
+    <doc>Noop control for this servod device. ADCs always work.</doc>
+    <params interface="servo" cmd="get" drv="echo" value="on"/>
+    <params interface="servo" cmd="set" drv="na"/>
+  </control>
+</root>

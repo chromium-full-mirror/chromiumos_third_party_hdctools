@@ -19,8 +19,8 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
   <control>
     <name>uart4_pty</name>
     <alias>raw_d2_uart_pty,raw_usbpd_uart_pty</alias>
-    <doc>Pseudo-terminal (pty) thats connnected to d2 uart console</doc>
-    <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok=""
+    <doc>Pseudo-terminal (pty) thats connected to d2 uart console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart" clobber_ok="full"
     ></params>
   </control>
   <control>
@@ -58,7 +58,7 @@ https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/m
     <alias>usbpd_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the D2 UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok="" ></params>
+    subtype="interp_connect" clobber_ok="full" ></params>
   </control>
   <control>
     <name>jtag_buf_on_flex_en</name>

@@ -157,18 +157,14 @@
   </control>
   <control>
     <name>pch_disable</name>
-    <doc>DUT specific. Note, is aliased to jtag_buf_on_flex_en
-    GPIO</doc>
+    <doc>DUT specific GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
     offset="2" map="onoff_i" init="off"></params>
   </control>
-  <!-- bit overloaded for enabling flex cable buffers -->
   <control>
-    <name>jtag_buf_on_flex_en</name>
-    <doc>Enables JTAG buffer on servo flex. Note, is aliased to
-    pch_disable GPIO</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="2" map="onoff_i" init="off"></params>
+    <name>servo_v2_jtag_buf_on_flex_en</name>
+    <doc>Do-nothing placeholder for servoflex configs to selectively implement with clobber_ok="patch". Since servoflex configs are included by board overlays regardless of Servo device type in use, this lets the servoflex config only implement this control when this Servo device type is in use.</doc>
+    <params drv="na"/>
   </control>
   <control>
     <name>default_cold_reset</name>
@@ -184,18 +180,14 @@
   </control>
   <control>
     <name>dev_mode</name>
-    <doc>dev_mode GPIO. Note, is aliased to spi1_buf_on_flex_en
-    GPIO</doc>
+    <doc>dev_mode GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
     offset="5" map="onoff"></params>
   </control>
-  <!-- bit overloaded for enabling flex cable buffers -->
   <control>
-    <name>spi1_buf_on_flex_en</name>
-    <doc>Enables SPI1 buffers on servo flex. Note, is aliased to
-    dev_mode GPIO</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
-    offset="5" map="onoff_i" init="off"></params>
+    <name>servo_v2_spi1_buf_on_flex_en</name>
+    <doc>Do-nothing placeholder for servoflex configs to selectively implement with clobber_ok="patch". Since servoflex configs are included by board overlays regardless of Servo device type in use, this lets the servoflex config only implement this control when this Servo device type is in use.</doc>
+    <params drv="na"/>
   </control>
   <control>
     <name>tp78</name>
@@ -254,18 +246,14 @@
   </control>
   <control>
     <name>lid_open</name>
-    <doc>lid open GPIO. Note, is aliased to spi2_buf_on_flex_en
-    GPIO</doc>
+    <doc>lid open GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
     offset="5" map="yesno" init="yes"></params>
   </control>
-  <!-- bit overloaded for enabling flex cable buffers -->
   <control>
-    <name>spi2_buf_on_flex_en</name>
-    <doc>Enables SPI2 buffers on servo flex. Note, is aliased to
-    lid_open GPIO</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
-    offset="5" map="onoff_i" init="off"></params>
+    <name>servo_v2_spi2_buf_on_flex_en</name>
+    <doc>Do-nothing placeholder for servoflex configs to selectively implement with clobber_ok="patch". Since servoflex configs are included by board overlays regardless of Servo device type in use, this lets the servoflex config only implement this control when this Servo device type is in use.</doc>
+    <params drv="na"/>
   </control>
   <control>
     <name>rec_mode</name>
@@ -635,7 +623,7 @@
   <control>
     <name>uart1_pty</name>
     <alias>raw_ec_uart_pty</alias>
-    <doc>Psuedo-terminal (pty) thats connnected to EC's uart
+    <doc>Psuedo-terminal (pty) thats connected to EC's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="7" drv="uart">
     </params>
@@ -673,7 +661,7 @@
   <control>
     <name>uart2_pty</name>
     <alias>raw_cpu_uart_pty</alias>
-    <doc>Psuedo-terminal (pty) thats connnected to CPU's uart
+    <doc>Psuedo-terminal (pty) thats connected to CPU's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart">
     </params>

@@ -9,12 +9,11 @@ from servo.interface import interface
 
 
 class Empty(interface.Interface):
+    @staticmethod
+    def Build(**_kwargs):
+        """Factory method to implement the interface."""
+        return Empty()
 
-  @staticmethod
-  def Build(**kwargs):
-    """Factory method to implement the interface."""
-    return Empty()
-
-  @staticmethod
-  def name():
-    return "empty"
+    @staticmethod
+    def name():
+        return "empty"

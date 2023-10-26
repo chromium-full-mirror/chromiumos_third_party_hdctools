@@ -111,4 +111,3 @@ LIBFTDI_LDLIBS	:= $(shell $(PKG_CONFIG) --libs   lib${LIBFTDI_NAME})
 
 SERIAL_IP	= gpio uart i2c
 SERIAL_LIBS	= $(foreach v,${SERIAL_IP},-lftdi$(v))
-

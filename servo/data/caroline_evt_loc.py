@@ -37,4 +37,3 @@ inas = [('ina219', 0x40, 'cpu_gt', 1, 0.002, "loc0", True),
         ('ina219', 0x4D, 'p3.3v_dx_edp', 3.3, 0.1, "loc0", True),
         ('ina219', 0x4E, 'cpu_sa', 1, 0.002, "loc0", True),
         ('ina219', 0x4F, 'cpu_la', 1, 0.002, "loc0", True)]
-

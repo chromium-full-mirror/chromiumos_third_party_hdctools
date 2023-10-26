@@ -45,6 +45,11 @@
     <doc>Determines whether DUT or host sees USB port</doc>
     <params servo_sees_usbkey="0" dut_sees_usbkey="1"></params>
   </map>
+  <map>
+    <name>enabled_enable</name>
+    <doc>Maps "enabled"/"disabled" to underlying "enable"/"disable" values.</doc>
+    <params disabled="disable" enabled="enable"/>
+  </map>
   <control>
     <name>second_usbkey_direction</name>
     <doc>Safely switch second usbkey direction by cycling power first. This port isn't currently implemented to use usb drives.</doc>
@@ -265,12 +270,14 @@
   </control>
   <control>
     <name>servo_v4p1_firmware_channel</name>
+    <alias>servo_firmware_channel</alias>
     <doc>which channel the current servo v4 firmware is from</doc>
     <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
       board="servo_v4p1"/>
   </control>
   <control>
     <name>servo_v4p1_firmware_uptodate</name>
+    <alias>servo_firmware_uptodate</alias>
     <doc>whether servo v4 firmware is to update</doc>
     <params cmd="get" interface="servo" drv="servo_firmware_checker"
       board="servo_v4p1" map="yesno"/>
@@ -291,7 +298,14 @@
       subtype="init_usb_keyboard"></params>
   </control>
   <control>
-    <name>servo_v4p1_dut_usb3_en</name>
+    <!--
+      When patching this control to change init= from a board overlay, please
+      use (include) dut_usb3_disabled.xml or dut_usb3_enabled.xml if applicable,
+      rather than hardcoding this control name or its allowed values directly in
+      the board overlay.
+    -->
+    <name>reinit_dut_usb3_en</name>
+    <alias>servo_v4p1_dut_usb3_en</alias>
     <doc>Enable/disable USB3 to DUT on servo_v4p1.
     USB3 is disabled on servo_v4p1 by default due to incompatibility
     with some models. This control allows to manipulate USB3 state.
@@ -300,20 +314,26 @@
     its config should include this control with 'patch' element inside.
     Also it should include 'clobber_ok' and overwrite 'init' value to 'disable'.
     Note: need to use servo FW with dut_usb3 console command available.
-    Note: servo_v4p1_dut_usb3_en:enable forces USB3 once after issuing.
+    Note: reinit_dut_usb3_en:enabled forces USB3 once after issuing.
     It also resets USB DUT hub, to make USB devices enumerate again
     as super speed. Then USB3 is only ALLOWED, which means that other
-    parts of servo FW can change it to USB2, eg. PD stack. </doc>
-    <params cmd="get" uart_cmd="dut_usb3" regex="(allowed/enabled|disabled)"
-    group="0" interface="26" drv="ec3po_servo"/>
+    parts of servo FW can change it to USB2, eg. PD stack.</doc>
+    <!-- The .* part of this regex can be deleted after
+         stable servo_v4p1 firmware contains https://crrev.com/c/4795131 -->
+    <params cmd="get" uart_cmd="dut_usb3" regex="USB3 to DUT: .*(enabled|disabled)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <!-- The map is used so these "set" values match the "get" values despite
+         servo_v4p1 firmware dut_usb3 command inconsistency.  The enabled_enable
+         map can be deleted after stable servo_v4p1 firmware contains
+         https://crrev.com/c/4795460 -->
     <params cmd="set" uart_cmd="dut_usb3" interface="26"
-    drv="ec3po_servo" input_type="str" choices="^(enable|disable)$" init="disable"/>
+    drv="ec3po_servo" input_type="str" map="enabled_enable" init="disabled"/>
   </control>
 
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_servo_v4p1_uart_pty</name>
-    <alias>raw_servo_v4_uart_pty</alias>
+    <alias>raw_servo_v4_uart_pty,raw_servo_uart_pty</alias>
     <doc>Servo V4P1's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="22" drv="uart">
     </params>
@@ -333,7 +353,7 @@
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_v4p1_uart</name>
-    <alias>servo_v4p1_uart_pty,servo_v4_uart_pty</alias>
+    <alias>servo_v4p1_uart_pty,servo_v4_uart_pty,servo_uart_pty,ec3po_servo_uart</alias>
     <doc>Servo v4p1 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
@@ -341,6 +361,7 @@
   </control>
   <control>
     <name>servo_v4p1_ec3po_interp_connect</name>
+    <alias>servo_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the servo
     console.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
@@ -348,6 +369,7 @@
   </control>
   <control>
     <name>servo_v4p1_uart_raw_debug</name>
+    <alias>servo_uart_raw_debug</alias>
     <doc>Turn on per-message-received logs to the servo v4p1 console
       messages.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="off"
@@ -355,12 +377,14 @@
   </control>
   <control>
     <name>servo_v4p1_uart_timestamp</name>
+    <alias>servo_uart_timestamp</alias>
     <doc>Add timestamps to the servo v4p1 console messages</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp"></params>
   </control>
   <control>
     <name>servo_v4p1_loglevel</name>
+    <alias>servo_loglevel</alias>
     <doc>servo v4p1 console loglevel</doc>
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
@@ -385,11 +409,11 @@
     <doc>Set to send command to the servo v4p1 console. Get to obtain the
     matched results with the regular expression of
     servo_v4p1_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
-    clobber_ok=""></params>
+    <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_timeout</name>
+    <alias>servo_uart_timeout</alias>
     <doc>Timeout value for waiting servo v4p1 console response of issuing
     an EC command.</doc>
     <params subtype="uart_timeout" interface="26" drv="uart"
@@ -397,29 +421,32 @@
   </control>
   <control>
     <name>servo_v4p1_uart_multicmd</name>
+    <alias>servo_uart_multicmd</alias>
     <doc>Set to send multiple commands to the servo v4p1 console.</doc>
-    <params interface="26" drv="na" cmd="get" clobber_ok=""></params>
+    <params interface="26" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
-    cmd="set" clobber_ok=""></params>
+    cmd="set"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_regexp</name>
+    <alias>servo_uart_regexp</alias>
     <doc>List of regular expressions to match the response of
     servo_v4p1_uart_cmd.</doc>
     <params subtype="uart_regexp" interface="26" drv="uart"
-    input_type="str" clobber_ok=""></params>
+    input_type="str"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_capture</name>
+    <alias>servo_uart_capture</alias>
     <doc>enable servo v4p1 console capture</doc>
     <params subtype="uart_capture" interface="26" drv="uart"
-    map="onoff" clobber_ok=""></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>servo_v4p1_uart_stream</name>
+    <alias>servo_uart_stream</alias>
     <doc>servo v4p1 console stream collected while servo_v4p1_uart_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"></params>
   </control>
   <!-- DTS mode control -->
   <control>
@@ -506,6 +533,7 @@
   <!-- Debug helper controls -->
   <control>
     <name>servo_v4p1_panicinfo</name>
+    <alias>servo_panicinfo</alias>
     <doc>Get panicinfo output for servo v4p1.</doc>
     <params interface="26" drv="simple_ec"
       uart_cmd="panicinfo" regex="panicinfo(.*)>" group="1"
@@ -515,16 +543,16 @@
   <control>
     <name>ppdut5_mv</name>
     <alias>vbus_voltage</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ppdut5_ma</name>
     <alias>vbus_current</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ppdut5_mw</name>
     <alias>vbus_power</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
 </root>

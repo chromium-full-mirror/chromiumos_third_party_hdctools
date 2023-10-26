@@ -129,14 +129,14 @@ control does and adding driver support to execute the control.
 
 The first decision to make is if the new functionality should extend an existing
 configuration or not. Creating a new configuration means having to ensure it's
-included in all the right places, which might be more appropiate for niche
+included in all the right places, which might be more appropriate for niche
 controls.
 
 The next decision to make is whether to extend an existing driver, or implement
 a new driver. When implementing a new driver, ensure that its added to
 `drv/__init__.py` as otherwise servod won't be able to find it.
 
-Once a driver with the appropiate method and the control exist, you can test out
+Once a driver with the appropriate method and the control exist, you can test out
 how you want to manage information. Hard-coding aspects into the driver makes
 configuration files simpler as the params attribute needs fewer entries. However
 it makes the driver less flexible, as that control's params now cannot be

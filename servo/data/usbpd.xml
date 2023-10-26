@@ -2,7 +2,7 @@
   <!-- USB PD UART Controls -->
   <control>
     <name>raw_usbpd_uart_pty</name>
-    <doc>Psuedo-terminal (pty) thats connnected to USB PD MCU's uart
+    <doc>Psuedo-terminal (pty) thats connected to USB PD MCU's uart
     console</doc>
     <params cmd="get" subtype="pty" interface="6" drv="uart"
     clobber_ok="never">
@@ -22,19 +22,19 @@
     <doc>State indicating if interpreter is listening to the EC
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok=""></params>
+    subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
     <name>usbpd_uart_baudrate</name>
     <doc>Baudrate for USB PD MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="6" clobber_ok=""></params>
+    interface="6" clobber_ok="full"></params>
   </control>
   <control>
     <name>usbpd_uart_parity</name>
     <doc>Parity for USB PD MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    clobber_ok="" interface="6" map="uart_parity"></params>
+    clobber_ok="full" interface="6" map="uart_parity"></params>
   </control>
   <control>
     <name>usbpd_uart_sbits</name>

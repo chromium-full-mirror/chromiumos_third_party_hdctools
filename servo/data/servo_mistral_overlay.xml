@@ -9,7 +9,7 @@
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
     <params interface="servo" drv="na" init="not_applicable"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <control>
     <name>power_state</name>
@@ -21,7 +21,7 @@
     <name>ec_board</name>
     <doc>The board name of the EC image</doc>
     <params interface="servo" drv="na" init="not_applicable"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <!-- FORCE_USB_BOOT on Y-flex cable is mapped to hpd on pin 39, so remap
        dev_mode to hpd
@@ -37,7 +37,7 @@
   <control>
     <name>atmega_rst</name>
     <doc>ATMEL_RESET_L: reset atmega</doc>
-    <params clobber_ok="" init="off"></params>
+    <params clobber_ok="patch" init="off"></params>
   </control>
   <control>
     <name>chassis_open</name>
@@ -49,6 +49,6 @@
     communication through it).-->
   <control>
     <name>supports_cros_ec_communication</name>
-    <params clobber_ok="" value="no"/>
+    <params clobber_ok="patch" value="no"/>
   </control>
 </root>

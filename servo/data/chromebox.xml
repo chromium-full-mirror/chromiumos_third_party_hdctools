@@ -7,11 +7,16 @@
     <name>lid_open</name>
     <doc>fake lid for products without one</doc>
     <params interface="servo" drv="na" init="not_applicable"
-    clobber_ok=""></params>
+    clobber_ok="full"></params>
   </control>
   <control>
     <name>rec_mode</name>
     <params subtype="rec_mode" interface="9" drv="cr50"
     map="onoff_i" clobber_ok="never" init="off"></params>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="patch" no_battery="yes"/>
   </control>
 </root>

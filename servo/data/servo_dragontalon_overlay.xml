@@ -12,7 +12,7 @@
   <control>
     <name>uart2_pty</name>
     <alias>raw_fpmcu_uart_pty,raw_usbpd_uart_pty</alias>
-    <doc>Pseudo-terminal (pty) thats connnected to FP MCU's uart
+    <doc>Pseudo-terminal (pty) thats connected to FP MCU's uart
       console</doc>
     <params cmd="get" subtype="pty" interface="8" drv="uart"
         clobber_ok=""></params>

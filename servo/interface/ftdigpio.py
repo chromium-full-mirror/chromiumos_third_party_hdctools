@@ -4,199 +4,219 @@
 """Allows creation of gpio interface via libftdigpio c library for FTDI
 devices."""
 
-import logging
 import ctypes
+import logging
 
 from servo.interface import common as c
 from servo.interface import ftdi_common
 from servo.interface import ftdi_utils
 from servo.interface import gpio_interface
 
+
 class FgpioError(c.InterfaceError):
-  """Class for exceptions of Fgpio."""
+    """Class for exceptions of Fgpio."""
 
-  def __init__(self, msg, value=0):
-    """FgpioError constructor.
+    def __init__(self, msg, value=0):
+        """FgpioError constructor.
 
-    Args:
-      msg: string, message describing error in detail
-      value: integer, value of error when non-zero status returned.  Default=0
-    """
-    super(FgpioError, self).__init__(msg, value)
-    self.msg = msg
-    self.value = value
+        Args:
+          msg: string, message describing error in detail
+          value: integer, value of error when non-zero status returned.  Default=0
+        """
+        super(FgpioError, self).__init__(msg, value)
+        self.msg = msg
+        self.value = value
 
 
 class FgpioContext(ctypes.Structure):
-  """Defines primary context structure for libftdigpio.
+    """Defines primary context structure for libftdigpio.
 
-  Declared in ftdigpio.h and named fgpio_context.
-  """
-  _fields_ = [('fc', ctypes.POINTER(ftdi_common.FtdiContext)),
-              ('gpio', ftdi_common.Gpio)]
+    Declared in ftdigpio.h and named fgpio_context.
+    """
+
+    _fields_ = [
+        ("fc", ctypes.POINTER(ftdi_common.FtdiContext)),
+        ("gpio", ftdi_common.Gpio),
+    ]
 
 
 class Fgpio(gpio_interface.GpioInterface):
-  """Provide interface to libftdigpio c-library via python ctypes module.
+    """Provide interface to libftdigpio c-library via python ctypes module.
 
-  Instance Variables:
-    _fargs: FTDI args for this interface.
-    _is_closed: Whether or not the connection to this UART is closed.
-    _gpio: _gpio: Instance of ftdi_common.GPIO()
-    _fc: FTDI Context object.
-    _fgc: FgpioContext object.
-  """
-
-  def __init__(self, vendor=ftdi_common.DEFAULT_VID,
-               product=ftdi_common.DEFAULT_PID, interface=4, serialname=None):
-    """Fgpio constructor.
-
-    Loads libraries for libftdi, libftdigpio.  Creates instance objects
-    (Structures), FgpioContext, FtdiContext and Gpio to iteract with the library
-    and intializes them.
-
-    Args:
-      vendor    : usb vendor id of FTDI device
-      product   : usb product id of FTDI device
-      interface : interface number ( 1 - 4 ) of FTDI device to use
-      serialname: string of device serialname/number as defined in FTDI eeprom.
-
-    Raises:
-      FgpioError: An error accessing Fgpio object
+    Instance Variables:
+      _fargs: FTDI args for this interface.
+      _is_closed: Whether or not the connection to this UART is closed.
+      _gpio: _gpio: Instance of ftdi_common.GPIO()
+      _fc: FTDI Context object.
+      _fgc: FgpioContext object.
     """
-    gpio_interface.GpioInterface.__init__(self)
-    self._logger.debug('')
 
-    (self._flib, self._lib) = ftdi_utils.load_libs('ftdi', 'ftdigpio')
-    self._fargs = ftdi_common.FtdiCommonArgs(
-        vendor_id=vendor, product_id=product, interface=interface,
-        # |FtdiCommonArgs| expects a byte-array here.
-        serialname=serialname.encode())
-    self._is_closed = True
-    self._gpio = ftdi_common.Gpio()
-    self._fc = ftdi_common.FtdiContext()
-    self._fgc = FgpioContext()
-    # initialize
-    if self._flib.ftdi_init(ctypes.byref(self._fc)):
-      raise FgpioError('doing ftdi_init')
-    if self._lib.fgpio_init(ctypes.byref(self._fgc), ctypes.byref(self._fc)):
-      raise FgpioError('doing fgpio_init')
+    def __init__(
+        self,
+        vendor=ftdi_common.DEFAULT_VID,
+        product=ftdi_common.DEFAULT_PID,
+        interface=4,
+        serialname=None,
+    ):
+        """Fgpio constructor.
 
-  @staticmethod
-  def Build(index, vid, pid, sid, **kwargs):
-    """Factory method to implement the interface."""
-    interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
-    fobj = Fgpio(vendor=vid, product=pid, interface=interface, serialname=sid)
-    fobj.open()
-    return fobj
+        Loads libraries for libftdi, libftdigpio.  Creates instance objects
+        (Structures), FgpioContext, FtdiContext and Gpio to interact with the library
+        and initializes them.
 
-  @staticmethod
-  def name():
-    """Name to request interface by in interface config maps."""
-    return 'ftdi_gpio'
+        Args:
+          vendor    : usb vendor id of FTDI device
+          product   : usb product id of FTDI device
+          interface : interface number ( 1 - 4 ) of FTDI device to use
+          serialname: string of device serialname/number as defined in FTDI eeprom.
 
-  def __del__(self):
-    """Fgpio destructor."""
-    self._logger.debug('')
-    if not self._is_closed:
-      self.close()
+        Raises:
+          FgpioError: An error accessing Fgpio object
+        """
+        gpio_interface.GpioInterface.__init__(self)
+        self._logger.debug("")
 
-  def open(self):
-    """Opens access to FTDI interface as a GPIO (bitbang).
+        (self._flib, self._lib) = ftdi_utils.load_libs("ftdi", "ftdigpio")
+        self._fargs = ftdi_common.FtdiCommonArgs(
+            vendor_id=vendor,
+            product_id=product,
+            interface=interface,
+            # |FtdiCommonArgs| expects a byte-array here.
+            serialname=serialname.encode(),
+        )
+        self._is_closed = True
+        self._gpio = ftdi_common.Gpio()
+        self._fc = ftdi_common.FtdiContext()
+        self._fgc = FgpioContext()
+        # initialize
+        if self._flib.ftdi_init(ctypes.byref(self._fc)):
+            raise FgpioError("doing ftdi_init")
+        if self._lib.fgpio_init(ctypes.byref(self._fgc), ctypes.byref(self._fc)):
+            raise FgpioError("doing fgpio_init")
 
-    Raises:
-      FgpioError: If open fails
-    """
-    err = self._lib.fgpio_open(
-        ctypes.byref(self._fgc), ctypes.byref(self._fargs))
-    if err:
-      raise FgpioError('doing fgpio_open', err)
-    self._is_closed = False
+    @staticmethod
+    def Build(index, vid, pid, sid, **_kwargs):
+        """Factory method to implement the interface."""
+        interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
+        fobj = Fgpio(vendor=vid, product=pid, interface=interface, serialname=sid)
+        fobj.open()
+        return fobj
 
-  def close(self):
-    """Close access to FTDI interface as a GPIO (bitbang).
+    @staticmethod
+    def name():
+        """Name to request interface by in interface config maps."""
+        return "ftdi_gpio"
 
-    Raises:
-      FgpioError: If close fails
-    """
-    err = self._lib.fgpio_close(ctypes.byref(self._fgc))
-    if err:
-      raise FgpioError('doing fgpio_close', err)
-    self._is_closed = True
+    def __del__(self):
+        """Fgpio destructor."""
+        self._logger.debug("")
+        if not self._is_closed:
+            self.close()
 
-  def wr_rd(self, offset, width, dir_val=None, wr_val=None, chip=None,
-            muxfile=None):
-    """Write and/or read GPIO bit.
+    def open(self):
+        """Opens access to FTDI interface as a GPIO (bitbang).
 
-    Args:
-      offset  : bit offset of the gpio to read or write
-      width   : integer, number of contiguous bits in gpio to read or write
-      dir_val : direction value of the gpio.  dir_val is interpretted as:
-                  None : read the pins via libftdi's ftdi_read_pins
-                  0    : configure as input
-                  1    : configure as output
-      wr_val  : value to write to the GPIO.  Note wr_val is irrelevant if
-                dir_val = 0
-      chip    : Not used. defaulted to None.
-      muxfile : Not used. defaulted to None.
+        Raises:
+          FgpioError: If open fails
+        """
+        err = self._lib.fgpio_open(ctypes.byref(self._fgc), ctypes.byref(self._fargs))
+        if err:
+            raise FgpioError("doing fgpio_open", err)
+        self._is_closed = False
 
-    Returns:
-      integer value from reading the gpio value ( masked & aligned )
-    """
-    rd_val = ctypes.c_ubyte()
-    self._gpio.mask = (pow(2, width) - 1) << offset
-    if wr_val is not None and dir_val is not None:
-      self._gpio.direction = self._gpio.mask if dir_val else 0
-      self._gpio.value = wr_val << offset
-      self._lib.fgpio_wr_rd(
-          ctypes.byref(self._fgc), ctypes.byref(self._gpio),
-          ctypes.byref(rd_val), ftdi_common.INTERFACE_TYPE_GPIO)
-    else:
-      self._lib.fgpio_wr_rd(
-          ctypes.byref(self._fgc), 0, ctypes.byref(rd_val),
-          ftdi_common.INTERFACE_TYPE_GPIO)
-    self._logger.debug('dir:%s val:%s returned %d' % (str(dir_val), str(wr_val),
-                                                      rd_val.value))
-    return (rd_val.value & self._gpio.mask) >> offset
+    def close(self):
+        """Close access to FTDI interface as a GPIO (bitbang).
+
+        Raises:
+          FgpioError: If close fails
+        """
+        err = self._lib.fgpio_close(ctypes.byref(self._fgc))
+        if err:
+            raise FgpioError("doing fgpio_close", err)
+        self._is_closed = True
+
+    def wr_rd(
+        self, offset, width, dir_val=None, wr_val=None, _chip=None, _muxfile=None
+    ):
+        """Write and/or read GPIO bit.
+
+        Args:
+          offset  : bit offset of the gpio to read or write
+          width   : integer, number of contiguous bits in gpio to read or write
+          dir_val : direction value of the gpio.  dir_val is interpreted as:
+                      None : read the pins via libftdi's ftdi_read_pins
+                      0    : configure as input
+                      1    : configure as output
+          wr_val  : value to write to the GPIO.  Note wr_val is irrelevant if
+                    dir_val = 0
+          chip    : Not used. defaulted to None.
+          muxfile : Not used. defaulted to None.
+
+        Returns:
+          integer value from reading the gpio value ( masked & aligned )
+        """
+        rd_val = ctypes.c_ubyte()
+        self._gpio.mask = (pow(2, width) - 1) << offset
+        if wr_val is not None and dir_val is not None:
+            self._gpio.direction = self._gpio.mask if dir_val else 0
+            self._gpio.value = wr_val << offset
+            self._lib.fgpio_wr_rd(
+                ctypes.byref(self._fgc),
+                ctypes.byref(self._gpio),
+                ctypes.byref(rd_val),
+                ftdi_common.INTERFACE_TYPE_GPIO,
+            )
+        else:
+            self._lib.fgpio_wr_rd(
+                ctypes.byref(self._fgc),
+                0,
+                ctypes.byref(rd_val),
+                ftdi_common.INTERFACE_TYPE_GPIO,
+            )
+        self._logger.debug(
+            "dir:%s val:%s returned %d" % (str(dir_val), str(wr_val), rd_val.value)
+        )
+        return (rd_val.value & self._gpio.mask) >> offset
 
 
 def test():
-  """Test code.
+    """Test code.
 
-  (TODO) tbroch: enhance and make Googley & pythonic from a unittest
-  perspective.
-  """
-  (options, args) = ftdi_utils.parse_common_args()
-  loglevel = logging.INFO
-  if options.debug:
-    loglevel = logging.DEBUG
-  logging.basicConfig(
-      level=loglevel,
-      format='%(asctime)s - %(name)s - ' + '%(levelname)s - %(message)s')
-  for i in range(1, 5):
-    fobj = Fgpio(options.vendor, options.product, i)
-    fobj.open()
-    rd_val = fobj.wr_rd(6, 1, 0)
-    logging.debug('rd_val = %d after <6> -> 0', (rd_val))
-    if rd_val != 0:
-      logging.error('rd_val = %d != 0', (rd_val))
+    (TODO) tbroch: enhance and make Googley & pythonic from a unittest
+    perspective.
+    """
+    options = ftdi_utils.parse_common_args()
+    loglevel = logging.INFO
+    if options.debug:
+        loglevel = logging.DEBUG
+    logging.basicConfig(
+        level=loglevel,
+        format="%(asctime)s - %(name)s - " + "%(levelname)s - %(message)s",
+    )
+    for i in range(1, 5):
+        fobj = Fgpio(options.vendor, options.product, i)
+        fobj.open()
+        rd_val = fobj.wr_rd(6, 1, 0)
+        logging.debug("rd_val = %d after <6> -> 0", (rd_val))
+        if rd_val != 0:
+            logging.error("rd_val = %d != 0", (rd_val))
 
-    rd_val = fobj.wr_rd(6, 1, 1)
-    logging.debug('rd_val = %d after <6> -> 1', (rd_val))
-    if rd_val != 1:
-      logging.error('rd_val = %d != 1', (rd_val))
+        rd_val = fobj.wr_rd(6, 1, 1)
+        logging.debug("rd_val = %d after <6> -> 1", (rd_val))
+        if rd_val != 1:
+            logging.error("rd_val = %d != 1", (rd_val))
 
-    rd_val = fobj.wr_rd(6, 1, 0)
-    logging.debug('rd_val = %d after <6> -> 0', (rd_val))
-    if rd_val != 0:
-      logging.error('rd_val = %d != 0', (rd_val))
+        rd_val = fobj.wr_rd(6, 1, 0)
+        logging.debug("rd_val = %d after <6> -> 0", (rd_val))
+        if rd_val != 0:
+            logging.error("rd_val = %d != 0", (rd_val))
 
-    # release as output
-    rd_val = fobj.wr_rd(6, 0, 0)
-    logging.debug('rd_val = %d after <6> dir released', (rd_val))
-    logging.info('rd_val = %d should match pu/pd', (rd_val))
-    fobj.close()
+        # release as output
+        rd_val = fobj.wr_rd(6, 0, 0)
+        logging.debug("rd_val = %d after <6> dir released", (rd_val))
+        logging.info("rd_val = %d should match pu/pd", (rd_val))
+        fobj.close()
 
 
-if __name__ == '__main__':
-  test()
+if __name__ == "__main__":
+    test()

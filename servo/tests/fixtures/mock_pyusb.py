@@ -6,15 +6,17 @@
 # This file provides a mock version of each of the main entities that the
 # PyUSB interface provides.  Device, Configuration, Interface, Endpoint
 
+# pylint: disable=redefined-outer-name
+# pylint: disable=unused-argument
+
+from functools import partial
 import logging
 import queue
 import tempfile
 import time
-from functools import partial
 
 import pytest
-from servo.tests.data import mocked_pty_data
-from servo.tests.fixtures import common
+
 
 _logger = logging.getLogger("mock_pyusb")
 
@@ -49,8 +51,8 @@ def mock_endpoint(mocker):
                 ep (Mock): Mock endpoint object used to access / store data.
                 description (str): Name of the endpoint, example "CR50 Uart" used
                                for logging.
-                size_or_buffer:  Either the number of bytes to read or an array object where
-                                 the data will be put in
+                size_or_buffer:  Either the number of bytes to read or an array
+                                 object where the data will be put in
             Returns:
                 string: mocked data for the last command issued.
             """
@@ -62,16 +64,17 @@ def mock_endpoint(mocker):
                     if command not in ep.parent.mocked_data:
                         # Store any command we do not have mocked data so the
                         # test data can report this.
-                        ep.parent.no_data_command_queue.put("%s: %s" % (description, command))
+                        ep.parent.no_data_command_queue.put(
+                            "%s: %s" % (description, command)
+                        )
                         _logger.debug(
-                            "%s Missing mock data for command %s"
-                            % (description, command)
+                            "%s Missing mock data for command %s", description, command
                         )
                         ep.parent.command_queue.get()
                     else:
                         if not result:
                             result = ep.parent.mocked_data[command]
-                            if type(result) == list:
+                            if isinstance(result, list):
                                 if len(result) > 1:
                                     result = result.pop(0)
                                 else:
@@ -82,7 +85,8 @@ def mock_endpoint(mocker):
                         else:
                             new_result = ep.parent.mocked_data[command]
                             if len(result) + len(new_result) + 1 > size_or_buffer:
-                                # Total results exceeds the size so stop generating a result.
+                                # Total results exceeds the size so stop generating
+                                # a result.
                                 break
 
                             if new_result:
@@ -122,11 +126,11 @@ def mock_endpoint(mocker):
             data echoed out to the console.  Store the command in a queue to
             be read later when the read command is called.
 
-            At times multiple commands can be sent - each command is deliniated
+            At times multiple commands can be sent - each command is delineated
             by a line break.
 
             At times partial strings are sent, store these partial strings until
-            the next line break is recieved.
+            the next line break is received.
 
             Args:
                 ep (Mock): Mock endpoint object used to access / store data.
@@ -135,7 +139,7 @@ def mock_endpoint(mocker):
                 int: number of characters in the string in data
             """
             try:
-                data_to_parse = ep.parent.recieved_data + data
+                data_to_parse = ep.parent.received_data + data
                 line_break = data_to_parse.find(b"\n")
                 while line_break != -1:
                     command = data_to_parse[0:line_break]
@@ -148,7 +152,7 @@ def mock_endpoint(mocker):
                     command = command.strip()
                     ep.parent.command_queue.put(command)
                     data_to_parse = b""
-                ep.parent.recieved_data = data_to_parse
+                ep.parent.received_data = data_to_parse
             except Exception:
                 _logger.exception("Something bad happened in endpoint write")
                 raise
@@ -165,7 +169,7 @@ def mock_endpoint(mocker):
             Returns:
                 int: the length of the data written.
             """
-            if type(data) == list:
+            if isinstance(data, list):
                 return _mock_write_list_ep(ep, data)
 
             return _mock_write_str_ep(ep, data)
@@ -173,7 +177,6 @@ def mock_endpoint(mocker):
         mock_endpoint.bEndpointAddress = bEndpointAddress
         mock_endpoint.read.side_effect = partial(mock_read, mock_endpoint, description)
         mock_endpoint.write.side_effect = partial(mock_write, mock_endpoint)
-        mock_endpoint._ttyname
         mock_endpoint.parent = parent
         return mock_endpoint
 
@@ -212,7 +215,7 @@ def mock_interface(mocker, mock_endpoint):
         mock_interface.command_queue = queue.Queue()
         mock_interface.executed_command_queue = queue.Queue()
         mock_interface.no_data_command_queue = queue.Queue()
-        mock_interface.recieved_data = b""
+        mock_interface.received_data = b""
         mock_interface.lock = tempfile.TemporaryFile()
         mock_interface.mocked_data = mocked_data
         mock_interface.default_reply = default_reply
@@ -273,14 +276,14 @@ def mock_pyusb(mocker):
 
 
 def clear_interfaces(device):
-    for (no, interface) in device.configuration.interfaces.items():
+    for _unused, interface in device.configuration.interfaces.items():
         while not interface.executed_command_queue.empty():
             interface.executed_command_queue.get()
 
 
 def dump_interfaces(device):
     result = {}
-    for (no, interface) in device.configuration.interfaces.items():
+    for no, interface in device.configuration.interfaces.items():
         result[no] = list(interface.executed_command_queue.queue)
         result["missing"] = list(interface.no_data_command_queue.queue)
     return result

@@ -6,56 +6,61 @@
 
 import logging
 
-class DeviceProber(object):
-  """Class to probe servo attached DUT's EC for information."""
 
-  RETRY_ATTEMPTS = 3
+class DeviceProber:
+    """Class to probe servo attached DUT's EC for information."""
 
-  def __init__(self):
-    """Setup instance by creating a logger."""
-    self._logger = logging.getLogger(type(self).__name__)
+    RETRY_ATTEMPTS = 3
 
-  def get_board_from_ec(self, dev):
-    """Attempt to get ec_board output from |dev|.
+    def __init__(self):
+        """Setup instance by creating a logger."""
+        self._logger = logging.getLogger(type(self).__name__)
 
-    Args:
-      dev: ServoDevice instance (ideally with an initialized EC console interface).
+    def get_board_from_ec(self, dev):
+        """Attempt to get ec_board output from |dev|.
 
-    Returns:
-      output of dev.get('ec_board') or None after |RETRY_ATTEMPTS| failures.
-    """
-    return self._get_info_from_ec(dev=dev, cmd='ec_board')
+        Args:
+          dev: ServoDevice instance (ideally with an initialized EC console interface).
 
-  def get_model_from_ec(self, dev):
-    """Attempt to get ec_model output from |dev|.
+        Returns:
+          output of dev.get('ec_board') or None after |RETRY_ATTEMPTS| failures.
+        """
+        return self._get_info_from_ec(dev=dev, cmd="ec_board")
 
-    Args:
-      dev: ServoDevice instance (ideally with an initialized EC console interface).
+    def get_model_from_ec(self, dev):
+        """Attempt to get ec_model output from |dev|.
 
-    Returns:
-      output of dev.get('ec_model') or None after |RETRY_ATTEMPTS| failures.
-    """
-    return self._get_info_from_ec(dev=dev, cmd='ec_model')
+        Args:
+          dev: ServoDevice instance (ideally with an initialized EC console interface).
 
-  def _get_info_from_ec(self, dev, cmd, attempts=None):
-    """Try to get |cmd| from |dev| |attempts| times before giving up.
+        Returns:
+          output of dev.get('ec_model') or None after |RETRY_ATTEMPTS| failures.
+        """
+        return self._get_info_from_ec(dev=dev, cmd="ec_model")
 
-    Args:
-      dev: ServoDevice instance (ideally with an initialized EC console interface).
-      cmd: servod control to get from |dev|
-      attempts: number of attempts of getting the info before erroring out
+    def _get_info_from_ec(self, dev, cmd, attempts=None):
+        """Try to get |cmd| from |dev| |attempts| times before giving up.
 
-    Returns:
-      output of dev.get(cmd) or None after |attempts| failures.
-    """
-    if attempts is None:
-        attempts = self.RETRY_ATTEMPTS
-    for i in range(attempts, 0, -1):
-      try:
-        result = dev.get(cmd)
-        self._logger.info('Retrieved %r as %r for %s.', cmd, result, dev)
-        return result
-      except Exception:
-        self._logger.warning('Failed to retrieve %r from %s. Attempting %d more '
-                          'times.', cmd, dev, i - 1)
-    return None
+        Args:
+          dev: ServoDevice instance (ideally with an initialized EC console interface).
+          cmd: servod control to get from |dev|
+          attempts: number of attempts of getting the info before erroring out
+
+        Returns:
+          output of dev.get(cmd) or None after |attempts| failures.
+        """
+        if attempts is None:
+            attempts = self.RETRY_ATTEMPTS
+        for i in range(attempts, 0, -1):
+            try:
+                result = dev.get(cmd)
+                self._logger.info("Retrieved %r as %r for %s.", cmd, result, dev)
+                return result
+            except Exception:
+                self._logger.warning(
+                    "Failed to retrieve %r from %s. Attempting %d more times.",
+                    cmd,
+                    dev,
+                    i - 1,
+                )
+        return None

@@ -52,9 +52,9 @@
      usbchg="5"></params>
   </map>
   <map>
-    <name>reinit_dut_usb3_en</name>
-    <doc>USB3 to DUT: Enable, disable, or use automatic selection logic due to http://b/160426972</doc>
-    <params off="0" on="1" automatic="2"></params>
+    <name>servo_v4_reinit_dut_usb3_en</name>
+    <doc>USB3 to DUT: enabled, disabled, or use automatic selection logic due to http://b/160426972</doc>
+    <params disabled="0" enabled="1" automatic="2"></params>
   </map>
   <map>
     <name>servo_v4_type_map</name>
@@ -212,14 +212,26 @@
   </control>
 
   <control>
+    <!--
+      Most human and automation uses should use reinit_dut_usb3_en instead of
+      this low-level control.
+    -->
     <name>dut_usb3_en</name>
+    <alias>servo_v4_dut_usb3_en</alias>
     <doc>Enable Parade USB3 mux on DUT type-c</doc>
     <params interface="23" drv="ps8742" child="0x10" port="1"
-    subtype="usb3" map="onoff"></params>
+    subtype="usb3" map="enabled"></params>
   </control>
 
   <control>
+    <!--
+      When patching this control to change init= from a board overlay, please
+      use (include) dut_usb3_disabled.xml or dut_usb3_enabled.xml if applicable,
+      rather than hardcoding this control name or its allowed values directly in
+      the board overlay.
+    -->
     <name>reinit_dut_usb3_en</name>
+    <alias>servo_v4_reinit_dut_usb3_en</alias>
     <doc>Reinitialize DUT-facing USB3 mux. This is a wrapper around dut_usb3_en.
     When this results in a change in dut_usb3_en value, and dut_hub_usb_reset is
     off, this will toggle on dut_hub_usb_reset briefly to force DUT USB
@@ -229,8 +241,8 @@
     https://issuetracker.google.com/160426972
     https://issuetracker.google.com/163418494</doc>
     <params interface="servo" drv="servo_v4" subtype="reinit_dut_usb3_en"
-    map="reinit_dut_usb3_en" automatic_default="off" init="automatic"
-    usb_reset_ms="500"></params>
+    map="servo_v4_reinit_dut_usb3_en" automatic_default="disabled"
+    init="automatic" usb_reset_ms="500"></params>
   </control>
 
   <control>
@@ -307,12 +319,14 @@
   </control>
   <control>
     <name>servo_v4_firmware_channel</name>
+    <alias>servo_firmware_channel</alias>
     <doc>which channel the current servo v4 firmware is from</doc>
     <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
       board="servo_v4"/>
   </control>
   <control>
     <name>servo_v4_firmware_uptodate</name>
+    <alias>servo_firmware_uptodate</alias>
     <doc>whether servo v4 firmware is to update</doc>
     <params cmd="get" interface="servo" drv="servo_firmware_checker"
       board="servo_v4" map="yesno"/>
@@ -337,6 +351,7 @@
   <!-- UART and CONSOLE settings -->
   <control>
     <name>raw_servo_v4_uart_pty</name>
+    <alias>raw_servo_uart_pty</alias>
     <doc>Servo V4's stm32 console.</doc>
     <params cmd="get" subtype="pty" interface="22" drv="uart">
     </params>
@@ -356,7 +371,7 @@
   <!-- EC-3PO console interpreter linkup -->
   <control>
     <name>ec3po_servo_v4_uart</name>
-    <alias>servo_v4_uart_pty</alias>
+    <alias>servo_v4_uart_pty,servo_uart_pty,ec3po_servo_uart</alias>
     <doc>Servo v4 console provided via EC-3PO console
     interpreter.</doc>
     <params cmd="get" subtype="pty" interface="26" drv="uart">
@@ -364,6 +379,7 @@
   </control>
   <control>
     <name>servo_v4_ec3po_interp_connect</name>
+    <alias>servo_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the servo
     console.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
@@ -371,6 +387,7 @@
   </control>
   <control>
     <name>servo_v4_uart_raw_debug</name>
+    <alias>servo_uart_raw_debug</alias>
     <doc>Turn on per-message-received logs to the servo v4 console
       messages.</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="off"
@@ -378,12 +395,14 @@
   </control>
   <control>
     <name>servo_v4_uart_timestamp</name>
+    <alias>servo_uart_timestamp</alias>
     <doc>Add timestamps to the servo v4 console messages</doc>
     <params interface="26" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp"></params>
   </control>
   <control>
     <name>servo_v4_loglevel</name>
+    <alias>servo_loglevel</alias>
     <doc>servo v4 console loglevel</doc>
     <params interface="26" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
@@ -410,10 +429,11 @@
     matched results with the regular expression of
     servo_v4_uart_regexp.</doc>
     <params subtype="uart_cmd" interface="26" drv="uart" input_type="str"
-    clobber_ok="" tags="servo_cmd_ctrl"></params>
+    tags="servo_cmd_ctrl"></params>
   </control>
   <control>
     <name>servo_v4_uart_timeout</name>
+    <alias>servo_uart_timeout</alias>
     <doc>Timeout value for waiting servo v4 console response of issuing
     an EC command.</doc>
     <params subtype="uart_timeout" interface="26" drv="uart"
@@ -421,29 +441,32 @@
   </control>
   <control>
     <name>servo_v4_uart_multicmd</name>
+    <alias>servo_uart_multicmd</alias>
     <doc>Set to send multiple commands to the servo v4 console.</doc>
-    <params interface="26" drv="na" cmd="get" clobber_ok=""></params>
+    <params interface="26" drv="na" cmd="get"></params>
     <params subtype="uart_multicmd" interface="26" drv="uart" input_type="str"
-    cmd="set" clobber_ok=""></params>
+    cmd="set"></params>
   </control>
   <control>
     <name>servo_v4_uart_regexp</name>
+    <alias>servo_uart_regexp</alias>
     <doc>List of regular expressions to match the response of
     servo_v4_uart_cmd.</doc>
     <params subtype="uart_regexp" interface="26" drv="uart"
-    input_type="str" clobber_ok=""></params>
+    input_type="str"></params>
   </control>
   <control>
     <name>servo_v4_uart_capture</name>
+    <alias>servo_uart_capture</alias>
     <doc>enable servo v4 console capture</doc>
     <params subtype="uart_capture" interface="26" drv="uart"
-    map="onoff" clobber_ok=""></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>servo_v4_uart_stream</name>
+    <alias>servo_uart_stream</alias>
     <doc>servo v4 console stream collected while servo_v4_uart_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"
-    clobber_ok=""></params>
+    <params cmd="get" subtype="uart_stream" interface="26" drv="uart"></params>
   </control>
   <!-- DTS mode control -->
   <control>
@@ -526,6 +549,7 @@
   <!-- Debug helper controls -->
   <control>
     <name>servo_v4_panicinfo</name>
+    <alias>servo_panicinfo</alias>
     <doc>Get panicinfo output for servo v4.</doc>
     <params interface="26" drv="simple_ec"
       uart_cmd="panicinfo" regex="panicinfo(.*)>" group="1"
@@ -535,17 +559,17 @@
   <control>
     <name>ppdut5_mv</name>
     <alias>vbus_voltage</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ppdut5_ma</name>
     <alias>vbus_current</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <control>
     <name>ppdut5_mw</name>
     <alias>vbus_power</alias>
-    <params clobber_ok=""></params>
+    <params clobber_ok="patch"></params>
   </control>
   <!-- I2C pseudo adapter controller -->
   <control>

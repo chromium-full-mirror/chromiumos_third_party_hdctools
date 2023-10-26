@@ -1,0 +1,5 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+# Reformat with black formatter.
+d49702948772a3cae3b9146ce50e9ef62b18570c

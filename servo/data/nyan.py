@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+# Copyright 2013 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -59,4 +59,3 @@ inas = [('ina219', 0x40, 'vdd_mux', 11.1, 0.01, 'rem', True),
         ('ina219', 0x4D, '1_8v_vdd_wf', 1.8, 0.05, 'rem', True),
         ('ina219', 0x4E, '3_3v_vdd_wf', 3.3, 0.02, 'rem', True),
         ('ina219', 0x4F, '3_3v_stby', 3.3, 0.2, 'rem', True)]
-

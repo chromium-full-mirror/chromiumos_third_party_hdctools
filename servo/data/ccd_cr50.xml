@@ -32,7 +32,7 @@
     <name>ec_uart_bitbang_en</name>
     <doc>Enable bit banging for the EC UART.</doc>
     <params subtype="ec_uart_bitbang_en" interface="9" drv="cr50"
-    map="onoff" clobber_ok="" init="off"></params>
+    map="onoff" init="off"></params>
   </control>
   <control>
     <name>ccd_ec_uart_parity</name>
@@ -40,14 +40,14 @@
     <doc>Parity setting for the EC UART console forwarded over
     CCD.</doc>
     <params subtype="ccd_ec_uart_parity" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    input_type="str"></params>
   </control>
   <control>
     <name>ccd_ec_uart_baudrate</name>
     <alias>ec_uart_baudrate</alias>
     <doc>Baud rate for the EC UART console forwarded over CCD.</doc>
     <params subtype="ccd_ec_uart_baudrate" interface="9" drv="cr50"
-    input_type="str" clobber_ok=""></params>
+    input_type="str"></params>
   </control>
   <control>
     <name>usbpd_uart_routing</name>
@@ -65,45 +65,51 @@
     <name>ccd_state</name>
     <doc>ccd_state</doc>
     <params cmd="get" subtype="ccd_state" interface="servo" drv="servo_watchdog"
-    map="onoff" clobber_ok=""></params>
+    map="onoff"></params>
   </control>
   <control>
     <name>warm_reset</name>
     <doc>warm_reset (active low)</doc>
     <params cmd="get" uart_cmd="sysrst"
     regex="SYS_RST_L is (asserted|deasserted)" group="1"
-    interface="9" drv="cr50" map="asserted_re" clobber_ok=""></params>
+    interface="9" drv="cr50" map="asserted_re"></params>
     <params cmd="set" subtype="warm_reset" interface="9" drv="cr50"
-    map="onoff_i" clobber_ok=""></params>
+    map="onoff_i"></params>
   </control>
   <control>
     <name>pwr_button</name>
     <doc>Power button GPIO</doc>
     <params cmd="get" uart_cmd="powerbtn"
     regex="powerbtn: (forced press|pressed|released)" group="1"
-    interface="9" drv="cr50" map="press_re" clobber_ok=""></params>
+    interface="9" drv="cr50" map="press_re"></params>
     <params cmd="set" subtype="pwr_button" interface="9" drv="cr50"
-    map="press" clobber_ok=""></params>
+    map="press"></params>
   </control>
   <control>
     <name>lid_open</name>
     <doc>Emulated lid switch on ec</doc>
-    <params cmd="get" uart_cmd="lidstate" regex="lid state: (open|closed)" 
+    <params cmd="get" uart_cmd="lidstate" regex="lid state: (open|closed)"
     group="1" retries="3" formatting="map_open" interface="10"
-    drv="simple_ec" map="yesno" clobber_ok=""></params>
+    drv="simple_ec" map="yesno"></params>
     <params cmd="set" subtype="lid_open" interface="10"
-    drv="ec" map="yesno" clobber_ok=""></params>
+    drv="ec" map="yesno"></params>
   </control>
   <control>
     <name>ccd_keepalive_en</name>
     <doc>Enable/disable keepalive on CCD</doc>
-    <params clobber_ok="" init="on"></params>
+    <params clobber_ok="patch" init="on"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="9" drv="fw_wp_ccd" input_type="str"
     init="force_off" />
+  </control>
+  <control>
+    <name>fw_wp_atboot_state</name>
+    <doc>Used to turn fw wp off and on persistently</doc>
+    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    atboot="yes" />
   </control>
   <control>
     <name>ccd_cpu_fw_spi</name>
@@ -190,7 +196,7 @@
   <control>
     <name>servo_class</name>
     <doc>servo type (flex or ccd)</doc>
-    <params drv="echo" value="ccd" interface="servo" clobber_ok=""/>
+    <params drv="echo" value="ccd" interface="servo" clobber_ok="full"/>
   </control>
   <control>
     <name>servo_adcs_enabled</name>

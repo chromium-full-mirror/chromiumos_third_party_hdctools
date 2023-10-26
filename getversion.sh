@@ -50,6 +50,7 @@ gen_version_py() {
 	local vbase
 	local ver_branch
 	local ver_major
+	local branch_name
 
 	if ghash="$(git rev-parse --short --verify HEAD 2>/dev/null)"; then
 		if gdesc="$(git describe --dirty --match='v*' 2>/dev/null)"; then
@@ -86,6 +87,7 @@ gen_version_py() {
 	fi
 	vbase="${ver_major}.${ver_branch}.${numcommits}"
 	ghash="${marker}${ghash}"
+	branch_name="$(git branch --show-current 2>/dev/null)"
 
 	# If dirty, then we also append a timestamp.
 	if [[ "$marker" == "$dirty_marker" ]]; then
@@ -115,7 +117,8 @@ gen_version_py() {
 	  'vbase': '${vbase}',
 	  'ghash': '${ghash}',
 	  'date': '${timestamp}',
-	  'dirty': '${dirty}'
+	  'dirty': '${dirty}',
+	  'branch': '${branch_name}'
 	}
 	EOF
 }
