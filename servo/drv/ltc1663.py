@@ -16,7 +16,6 @@ to the supply voltage.
 from servo.drv import hw_driver
 from servo.drv import i2c_reg
 
-
 # TODO(tbroch)
 # Evaluate implementing the sync address functionality via the quick command
 # to force all LTC1663 DAC's on bus to load in parallel.  As we use the LTC1663
@@ -27,55 +26,48 @@ from servo.drv import i2c_reg
 REG_CMD_0 = 0
 
 CMD_MASK = 0x7  # 3bit command data
-DATA_MASK = 0x3FF  # 10-bit DAC data
+DATA_MASK = 0x3ff  # 10-bit DAC data
 
 
 class Ltc1663Error(hw_driver.HwDriverError):
-    """Error class for LTC1663"""
+  """Error class for LTC1663"""
 
 
 class ltc1663(hw_driver.HwDriver):
-    """Object to access drv=ltc1663 controls."""
+  """Object to access drv=ltc1663 controls."""
 
-    def __init__(self, interface, params):
-        """Constructor.
+  def __init__(self, interface, params):
+    """Constructor.
 
-        Note, LTC1663 I2C transaction is ONLY to set the DAC via:
-          <child address> + <cmd> + <lsb byte> + <msb byte>
+    Note, LTC1663 I2C transaction is ONLY to set the DAC via:
+      <child address> + <cmd> + <lsb byte> + <msb byte>
 
-        Args:
-          interface: interface object to handle low-level communication to control
-          params: dictionary of params needed to perform operations on ltc1663
-              devices.
+    Args:
+      interface: interface object to handle low-level communication to control
+      params: dictionary of params needed to perform operations on ltc1663
+          devices.
 
-        Mandatory Params:
-          child: integer, 7-bit i2c child address
-          i2c_obj: I2cReg object
-        """
-        super(ltc1663, self).__init__(interface, params)
-        self._logger.debug("")
-        self._child = int(self._params["child"], 0)
-        self._i2c_obj = i2c_reg.I2cReg.get_device(
-            self._interface,
-            self._child,
-            addr_len=1,
-            reg_len=2,
-            msb_first=False,
-            no_read=True,
-            use_reg_cache=False,
-        )
+    Mandatory Params:
+      child: integer, 7-bit i2c child address
+      i2c_obj: I2cReg object
+    """
+    super(ltc1663, self).__init__(interface, params)
+    self._logger.debug('')
+    self._child = int(self._params['child'], 0)
+    self._i2c_obj = i2c_reg.I2cReg.get_device(
+        self._interface, self._child, addr_len=1, reg_len=2, msb_first=False,
+        no_read=True, use_reg_cache=False)
 
-    def _set(self, value):
-        """Set 10-bit DAC value of LTC1663.
+  def _set(self, value):
+    """Set 10-bit DAC value of LTC1663.
 
-        Args:
-          value: 10-bit unsigned integer to set DAC's output value
+    Args:
+      value: 10-bit unsigned integer to set DAC's output value
 
-        Raises:
-          Ltc1663Error: if value is out of bounds
-        """
-        if value & ~DATA_MASK:
-            raise Ltc1663Error(
-                "DAC value %x can't be greater than %x" % (value, DATA_MASK)
-            )
-        self._i2c_obj._write_reg(REG_CMD_0, value)
+    Raises:
+      Ltc1663Error: if value is out of bounds
+    """
+    if value & ~DATA_MASK:
+      raise Ltc1663Error("DAC value %x can't be greater than %x" % (value,
+                                                                    DATA_MASK))
+    self._i2c_obj._write_reg(REG_CMD_0, value)

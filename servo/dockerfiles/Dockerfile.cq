@@ -1,7 +1,8 @@
-# syntax=docker/dockerfile:1.4
 # Copyright 2023 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+ARG BUILD_ENV=production
 
 ######################################################################
 FROM alpine/git as chromiumos_overlays
@@ -17,20 +18,20 @@ FROM debian:bookworm as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
-    autoconf \
-    build-essential \
-    clang \
-    curl \
-    git \
-    libssl-dev \
-    libtool \
-    pkg-config \
-    python3 \
-    python3-distutils \
-    python3-setuptools \
-    python3-wheel \
-    uuid-dev \
-    wget
+        autoconf \
+        build-essential \
+        clang \
+        curl \
+        git \
+        libssl-dev \
+        libtool \
+        pkg-config \
+        python3 \
+        python3-distutils \
+        python3-setuptools \
+        python3-wheel \
+        uuid-dev \
+        wget
 RUN update-alternatives --auto c++
 RUN update-alternatives --auto cc
 
@@ -61,24 +62,24 @@ RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.ta
     && tar xf libftdi1-1.2.tar.bz2 \
     && rm libftdi1-1.2.tar.bz2
 
-COPY --link --from=chromiumos_overlays \
+COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/libftdi-1.2-getopts.patch \
     /libftdi1-1.2/
 
-COPY --link --from=chromiumos_overlays \
+COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
-    cmake \
+        cmake \
     && rm -rf /var/lib/apt/lists/*
 
 
-COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 
 WORKDIR /libftdi1-1.2
 
@@ -102,20 +103,45 @@ FROM libftdi as ec-builder
 
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
 
+WORKDIR /
+
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
+
+WORKDIR /flashmap
+RUN make && make install
+
+# Install libusb.
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
+ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
+
 WORKDIR /ec
+ENV CFLAGS=" -Wno-deprecated-declarations -Wno-sign-compare"
+RUN sed -i 's/-Wmissing-declarations/-Wmissing-declarations -Wno-missing-declarations /' extra/usb_updater/Makefile
+RUN sed -i 's/-Wmissing-declarations/-Wsign-compare -Wno-sign-compare/' extra/usb_updater/Makefile
+RUN sed -i 's/^HOST_CFLAGS=/HOST_CFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
+RUN sed -i 's/^HOST_CXXFLAGS=/HOST_CXXFLAGS=-Wno-deprecated-declarations -Wno-sign-compare /' Makefile.toolchain
 
 COPY servo/dockerfiles/setup_ec.py .
+RUN PACKAGE="ec3po" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
 RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
 
+RUN curl https://raw.githubusercontent.com/kward/shflags/master/shflags --output /usr/share/misc/shfl
 ######################################################################
 FROM libftdi as hdctools-builder
+# For cloud build and for developers copying the local source is correct, if
+# you need to build from checked in code vs you local source comment out the
+# copy command and uncomment the clone command.
 COPY / hdctools/
+#RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
 RUN apt-get update \
     && apt-get install -y \
-    protobuf-compiler \
-    python3-pytest
+        protobuf-compiler \
+        python3-pytest
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
@@ -125,97 +151,85 @@ RUN make install
 # Setuptools skips nested entry point. Adding custom setup.py to overcome.
 COPY /servo/dockerfiles/setup_hdctools.py .
 RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
-
-######################################################################
-FROM hdctools-builder as hdctools-usbkm232-builder
-
 RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
-######################################################################
-FROM hdctools-builder as hdctools-servo_mfg-builder
-
 RUN PACKAGE="servo_mfg" python3 setup_hdctools.py bdist_wheel
-######################################################################
-FROM hdctools-builder as hdctools-ec3po-builder
 
-RUN PACKAGE="ec3po" python3 setup_hdctools.py bdist_wheel
 ######################################################################
 FROM debian:bookworm-slim
 
 # Install libusb.
-COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
-    dnsutils \
-    fwupd \
-    iptables \
-    iputils-ping \
-    kmod \
-    libatomic1 \
-    libpci-dev \
-    lsof \
-    procps \
-    sudo \
-    usbutils \
-    udev \
-    xz-utils \
-    build-essential \
-    make \
-    gcc \
-    python3 \
-    python3-mock \
-    python3-numpy \
-    python3-pexpect \
-    python3-protobuf \
-    python3-serial \
-    python3-pytest \
-    python3-pytest-cov \
-    python3-pytest-forked \
-    python3-pytest-mock \
-    python3-pytest-xdist \
-    python3-usb \
-    python3-requests \
-    python3-pip \
-    wget \
+        dnsutils \
+        fwupd \
+        iptables \
+        iputils-ping \
+        kmod \
+        libatomic1 \
+        libpci-dev \
+        lsof \
+        procps \
+        sudo \
+        usbutils \
+        udev \
+        xz-utils \
+        build-essential \
+        make \
+        gcc \
+        python3 \
+        python3-mock \
+        python3-numpy \
+        python3-pexpect \
+        python3-protobuf \
+        python3-serial \
+        python3-pytest \
+        python3-pytest-cov \
+        python3-pytest-forked \
+        python3-pytest-mock \
+        python3-pytest-xdist \
+        python3-usb \
+        python3-requests \
+        python3-six \
+        python3-pip \
+        wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
 
 WORKDIR /hdctools/chromeos/
-COPY --link --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
+COPY --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
-COPY --link --from=hdctools-builder /hdctools/dist/* ./
-COPY --link --from=hdctools-ec3po-builder /hdctools/dist/* ./
-COPY --link --from=hdctools-usbkm232-builder /hdctools/dist/* ./
-COPY --link --from=hdctools-servo_mfg-builder /hdctools/dist/* ./
-COPY --link --from=ec-builder /ec/dist/*.whl ./
+COPY --from=hdctools-builder /hdctools/dist/* ./
+COPY --from=ec-builder /ec/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
 
-#TODO(b/287265152): Fetch token database from GCS
-#COPY --link --from=ec-builder /ec/tokens.bin /tmp/tokens.bin
 
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 
-COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
+
+COPY --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
+
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
 COPY /servo/dockerfiles/start_servod.sh /servo/dockerfiles/stop_servod.sh \
-    /
+     /
 
 # Try to remove as much as possible to make the container smaller
 RUN apt-get remove --purge -y \
-    xz-utils \
-    build-essential \
-    make \
-    gcc \
-    python3-pip \
-    wget \
+        xz-utils \
+        build-essential \
+        make \
+        gcc \
+        python3-pip \
+        wget \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /usr/local/lib/python*/site-packages/numpy/core/tests \

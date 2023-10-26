@@ -99,17 +99,13 @@ Type C Male            | Other host (Type A Male)
 A8 (SBU 1)             | D+
 B8 (SBU 2)             | D-
 A4, A9, B4, B9 (VBUS)  | VBUS, 5V
-A5 (CC1)               | 22 kΩ 1%  resistor to VBUS
-B5 (CC2)               | 45.3 kΩ 1% resistor to VBUS *
+A5 (CC1)               | 22 kΩ resistor to VBUS
+B5 (CC2)               | 56 kΩ resistor to VBUS
 A1, A12, B1, B12 (GND) | GND
-
-\* In a pinch, a lower tolerance resistor like 5% and 56 kΩ instead of
-45.3 kΩ might work, but the higher accuracy resistor is recommended
-especially on devices using the new D2/Ti50 GSC.
 
 Note that unlike the [Sparkfun SuzyQable], this cable does not include
 an internal USB hub, so you won't be able to use the same cable for
-ADB and CCD at the same time, but this is a rare requirement.
+ADB and CCD at the same time.
 
 There is a [video tutorial on making your own SuzyQable] available for
 those interested.

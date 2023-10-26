@@ -22,19 +22,19 @@
     <doc>State indicating if interpreter is listening to the EC
     UART.</doc>
     <params interface="9" drv="ec3po_driver" map="onoff" init="on"
-    subtype="interp_connect" clobber_ok="full"></params>
+    subtype="interp_connect" clobber_ok=""></params>
   </control>
   <control>
     <name>usbpd_uart_baudrate</name>
     <doc>Baudrate for USB PD MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="6" clobber_ok="full"></params>
+    interface="6" clobber_ok=""></params>
   </control>
   <control>
     <name>usbpd_uart_parity</name>
     <doc>Parity for USB PD MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    clobber_ok="full" interface="6" map="uart_parity"></params>
+    clobber_ok="" interface="6" map="uart_parity"></params>
   </control>
   <control>
     <name>usbpd_uart_sbits</name>

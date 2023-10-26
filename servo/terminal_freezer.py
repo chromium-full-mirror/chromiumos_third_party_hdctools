@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Terminal Freezer utility"""
 
+from __future__ import print_function
 
 import logging
 import os
@@ -13,67 +14,64 @@ import time
 
 
 def PIDNamespaceUsed():
-    """Checks to see if we are running with PID namespaces."""
-    with open("/proc/1/cmdline", encoding="utf-8") as f:
-        if "cros_sdk" in f.readline():
-            return True
-    return False
+  """Checks to see if we are running with PID namespaces."""
+  with open('/proc/1/cmdline') as f:
+    if 'cros_sdk' in f.readline():
+      return True
+  return False
 
 
-class TerminalFreezer:
-    """SIGSTOP all processes (and their parents) that have the TTY open."""
+class TerminalFreezer(object):
+  """SIGSTOP all processes (and their parents) that have the TTY open."""
 
-    def __init__(self, tty):
-        self._tty = tty
-        self._logger = logging.getLogger("Terminal Freezer (%s)" % self._tty)
-        self._processes = None
-        if PIDNamespaceUsed():
-            self._logger.warning(
-                "This chroot was not entered with"
-                ' "cros_sdk --no-ns-pid", make sure not to interfere'
-                " on ptys used by servod."
-                ' Also note that "fwgdb" or "flash_ec" might not work'
-                " (crbug.com/444931)."
-            )
+  def __init__(self, tty):
+    self._tty = tty
+    self._logger = logging.getLogger('Terminal Freezer (%s)' % self._tty)
+    self._processes = None
+    if PIDNamespaceUsed():
+      self._logger.warning('This chroot was not entered with'
+                           ' "cros_sdk --no-ns-pid", make sure not to interfere'
+                           ' on ptys used by servod.'
+                           ' Also note that "fwgdb" or "flash_ec" might not work'
+                           ' (crbug.com/444931).')
 
-    def __enter__(self):
-        ret = ""
-        try:
-            ret = subprocess.check_output(
-                ["lsof", "-FR", self._tty], stderr=subprocess.STDOUT, encoding="utf-8"
-            )
-        except subprocess.CalledProcessError:
-            # Ignore non-zero return codes.
-            pass
+  def __enter__(self):
+    ret = ''
+    try:
+      ret = subprocess.check_output(['lsof', '-FR', self._tty],
+                                    stderr=subprocess.STDOUT, encoding='utf-8')
+    except subprocess.CalledProcessError:
+      # Ignore non-zero return codes.
+      pass
 
-        self._processes = re.findall(r"^(?:R|p)(\d+)$", ret, re.MULTILINE)
+    self._processes = re.findall(r'^(?:R|p)(\d+)$', ret, re.MULTILINE)
 
-        # Don't kill servod, we need that.
-        servod_processes = []
-        for p in self._processes:
-            with open("/proc/%s/cmdline" % p, encoding="utf-8") as f:
-                if "servod" in f.readline():
-                    servod_processes.append(p)
+    # Don't kill servod, we need that.
+    servod_processes = []
+    for p in self._processes:
+      with open('/proc/%s/cmdline' % p) as f:
+        if 'servod' in f.readline():
+          servod_processes.append(p)
 
-        self._logger.debug("servod processes: %r", servod_processes)
-        for p in servod_processes:
-            self._processes.remove(p)
+    self._logger.debug('servod processes: %r', servod_processes)
+    for p in servod_processes:
+      self._processes.remove(p)
 
-        # SIGSTOP parents before children.
-        try:
-            for p in reversed(self._processes):
-                self._logger.debug("Sending SIGSTOP to process %s!", p)
-                time.sleep(0.02)
-                os.kill(int(p), signal.SIGSTOP)
-        except OSError:
-            self.__exit__(None, None, None)
-            raise
+    # SIGSTOP parents before children.
+    try:
+      for p in reversed(self._processes):
+        self._logger.debug('Sending SIGSTOP to process %s!', p)
+        time.sleep(0.02)
+        os.kill(int(p), signal.SIGSTOP)
+    except OSError:
+      self.__exit__(None, None, None)
+      raise
 
-    def __exit__(self, _t, _v, _b):
-        # ...and wake 'em up again in reverse order.
-        for p in self._processes:
-            self._logger.debug("Sending SIGCONT to process %s!", p)
-            try:
-                os.kill(int(p), signal.SIGCONT)
-            except OSError as e:
-                self._logger.error("Error when trying to unfreeze process %s: %s", p, e)
+  def __exit__(self, _t, _v, _b):
+    # ...and wake 'em up again in reverse order.
+    for p in self._processes:
+      self._logger.debug('Sending SIGCONT to process %s!', p)
+      try:
+        os.kill(int(p), signal.SIGCONT)
+      except OSError as e:
+        self._logger.error('Error when trying to unfreeze process %s: %s', p, e)

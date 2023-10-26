@@ -21,27 +21,28 @@
   <!-- cr50 UART Buffers & VREF Controls -->
   <control>
     <name>jtag_vref_sel0</name>
-    <params clobber_ok="patch" init="off"/>
+    <params clobber_ok="" init="off"></params>
   </control>
   <control>
     <name>jtag_vref_sel1</name>
-    <params clobber_ok="patch" init="off"/>
+    <params clobber_ok="" init="off"></params>
   </control>
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params cmd="set" interface="servo" drv="sarien_power"
+    <params clobber_ok="" cmd="set" interface="servo" drv="sarien_power"
             input_type="str" reset_hold="0.1" reset_recovery="0.0"/>
   </control>
   <!-- Drallion does not have a CrOS EC (thus also does not support
     communication through it).-->
   <control>
     <name>supports_cros_ec_communication</name>
-    <params clobber_ok="patch" value="no"/>
+    <params clobber_ok="" value="no"/>
   </control>
   <map>
     <name>keypress_duration</name>
     <doc>short hand configs for keypress durations</doc>
-    <params tab="0.1" short_press="1.2" press="1.2" long_press="6"/>
+    <params tab="0.1" short_press="1.2" press="1.2" long_press="6"></params>
   </map>
 </root>
+

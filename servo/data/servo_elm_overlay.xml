@@ -4,6 +4,6 @@
   </include>
   <control>
     <name>spi1_vref</name>
-    <params init="off" clobber_ok="patch"></params>
+    <params init="off" clobber_ok=""></params>
   </control>
 </root>

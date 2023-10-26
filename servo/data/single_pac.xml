@@ -9,265 +9,133 @@
   <control>
     <name>CPD_VBAT_mv</name>
     <doc>Bus Voltage of 'CPD_VBAT' rail in millivolts</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="millivolts" rsense="0.02" base_name="CPD_VBAT" nom="0.0" tags="bus_voltage_rail">
+    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="millivolts" tags="bus_voltage_rail" rsense="0.020" nom="0.6" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_mw</name>
     <doc>Power of 'CPD_VBAT' rail in milliwatts</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="milliwatts" rsense="0.02" base_name="CPD_VBAT" nom="0.0" tags="power_rail">
+    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="milliwatts" tags="power_rail" rsense="0.020" nom="0.6" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_ma</name>
     <doc>Current of 'CPD_VBAT' rail in milliamps</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="milliamps" rsense="0.02" base_name="CPD_VBAT" nom="0.0" tags="current_rail">
+    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="milliamps" tags="current_rail" rsense="0.020" nom="0.6" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_res</name>
     <doc>Resolution of 'CPD_VBAT' rail</doc>
-    <params interface="servo" drv="pac1954" channel="1" subtype="resolution" map="resolution" rsense="0.02" base_name="CPD_VBAT" nom="0.0">
+    <params interface="servo" drv="pac1954" channel="1" subtype="resolution" rsense="0.020" nom="0.6" base_name="CPD_VBAT" map="resolution">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_slow_enabled</name>
     <doc>Slow pin ctrl enabled on 'CPD_VBAT' rail</doc>
-    <params interface="servo" drv="pac1954_gpio" channel="1" subtype="slow" map="yesno" pin="1" nom="0.0" rsense="0.02" base_name="CPD_VBAT" io_mode="slow">
+    <params interface="servo" drv="pac1954_gpio" channel="1" subtype="slow" rsense="0.020" pin="1" io_mode="slow" nom="0.6" map="yesno" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_samples</name>
     <doc>Samples per second of 'CPD_VBAT' rail</doc>
-    <params interface="servo" drv="pac1954" channel="1" subtype="samples" map="pac_samples" rsense="0.02" base_name="CPD_VBAT" nom="0.0">
+    <params interface="servo" drv="pac1954" channel="1" subtype="samples" rsense="0.020" nom="0.6" base_name="CPD_VBAT" map="pac_samples">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_ez_config</name>
     <doc>Good default config for 'CPD_VBAT' rail</doc>
-    <params cmd="set" interface="servo" drv="pac1954" channel="1" subtype="ez_config" map="on" nom="0.0" tags="adc_ez_config_ctrls" rsense="0.02" base_name="CPD_VBAT">
+    <params cmd="set" interface="servo" drv="pac1954" channel="1" subtype="ez_config" rsense="0.020" nom="0.6" map="on" tags="adc_ez_config_ctrls" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_avg_mw</name>
     <doc>Avg power of 'CPD_VBAT' rail in milliwatts since last clearing the accumulator</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="accum_milliwatts" rsense="0.02" base_name="CPD_VBAT" nom="0.0" tags="avg_power_rails">
+    <params cmd="get" interface="servo" drv="pac1954" channel="1" subtype="accum_milliwatts" tags="avg_power_rails" rsense="0.020" nom="0.6" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_acc_clear</name>
     <doc>Clear the accumulator for 'CPD_VBAT' rail</doc>
-    <params cmd="set" interface="servo" drv="pac1954" channel="1" subtype="acc_clear" map="yes" nom="0.0" tags="accum_clear_ctrls" rsense="0.02" base_name="CPD_VBAT">
+    <params cmd="set" interface="servo" drv="pac1954" channel="1" subtype="acc_clear" rsense="0.020" nom="0.6" map="yes" tags="accum_clear_ctrls" base_name="CPD_VBAT">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_signed</name>
     <doc>Readings are signed for 'CPD_VBAT' rail</doc>
-    <params interface="servo" drv="pac1954" channel="1" subtype="signed" map="yesno" rsense="0.02" base_name="CPD_VBAT" nom="0.0">
+    <params interface="servo" drv="pac1954" channel="1" subtype="signed" rsense="0.020" nom="0.6" base_name="CPD_VBAT" map="yesno">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_refresh_reg</name>
     <doc>Raw register value of refresh on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" map="refresh" no_read="" offset="0" addr="16" write_only="" reg_len="0" fmt="hex">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="0" offset="0" no_read="" write_only="" map="refresh" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_ctrl_reg</name>
     <doc>Raw register value of ctrl on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="1" reg_len="2" fmt="hex" addr="16">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="2" offset="1" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_acc_count_reg</name>
     <doc>Raw register value of acc_count on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="2" reg_len="4" fmt="hex" addr="16">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="4" offset="2" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_acc_pwr_reg</name>
     <doc>Raw register value of acc_pwr on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="4" reg_len="7" fmt="hex" addr="16">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="7" offset="4" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_busv_reg</name>
     <doc>Raw register value of busv on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="16" addr="16" read_only="" reg_len="2" fmt="hex">
+    <params interface="4" drv="i2c_reg_drv" addr="16" read_only="" reg_len="2" offset="16" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_cur_reg</name>
     <doc>Raw register value of cur on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="20" addr="16" read_only="" reg_len="2" fmt="hex">
+    <params interface="4" drv="i2c_reg_drv" addr="16" read_only="" reg_len="2" offset="20" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_pwr_reg</name>
     <doc>Raw register value of pwr on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="24" addr="16" read_only="" reg_len="4" fmt="hex">
+    <params interface="4" drv="i2c_reg_drv" addr="16" read_only="" reg_len="4" offset="24" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_smbus_reg</name>
     <doc>Raw register value of smbus on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="28" reg_len="2" fmt="hex" addr="16">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="2" offset="28" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_neg_pwr_fsr_reg</name>
     <doc>Raw register value of neg_pwr_fsr on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="29" reg_len="2" fmt="hex" addr="16">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="2" offset="29" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_refresh_v_reg</name>
     <doc>Raw register value of refresh_v on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" map="refresh" no_read="" offset="31" addr="16" write_only="" reg_len="0" fmt="hex">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="0" offset="31" no_read="" write_only="" map="refresh" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_ctrl_act_reg</name>
     <doc>Raw register value of ctrl_act on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="33" reg_len="2" fmt="hex" addr="16">
+    <params interface="4" drv="i2c_reg_drv" addr="16" reg_len="2" offset="33" fmt="hex">
     </params>
   </control>
   <control>
     <name>CPD_VBAT_neg_pwr_fsr_act_reg</name>
     <doc>Raw register value of neg_pwr_fsr_act on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="34" addr="16" read_only="" reg_len="2" fmt="hex">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_mv</name>
-    <doc>Bus Voltage of 'CPD_VBAT_ALT' rail in millivolts</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="2" subtype="millivolts" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0" tags="bus_voltage_rail">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_mw</name>
-    <doc>Power of 'CPD_VBAT_ALT' rail in milliwatts</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="2" subtype="milliwatts" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0" tags="power_rail">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_ma</name>
-    <doc>Current of 'CPD_VBAT_ALT' rail in milliamps</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="2" subtype="milliamps" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0" tags="current_rail">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_res</name>
-    <doc>Resolution of 'CPD_VBAT_ALT' rail</doc>
-    <params interface="servo" drv="pac1954" channel="2" subtype="resolution" map="resolution" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_slow_enabled</name>
-    <doc>Slow pin ctrl enabled on 'CPD_VBAT_ALT' rail</doc>
-    <params interface="servo" drv="pac1954_gpio" channel="2" subtype="slow" map="yesno" pin="1" nom="0.0" rsense="0.02" base_name="CPD_VBAT_ALT" io_mode="slow">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_samples</name>
-    <doc>Samples per second of 'CPD_VBAT_ALT' rail</doc>
-    <params interface="servo" drv="pac1954" channel="2" subtype="samples" map="pac_samples" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_ez_config</name>
-    <doc>Good default config for 'CPD_VBAT_ALT' rail</doc>
-    <params cmd="set" interface="servo" drv="pac1954" channel="2" subtype="ez_config" map="on" nom="0.0" tags="adc_ez_config_ctrls" rsense="0.02" base_name="CPD_VBAT_ALT">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_avg_mw</name>
-    <doc>Avg power of 'CPD_VBAT_ALT' rail in milliwatts since last clearing the accumulator</doc>
-    <params cmd="get" interface="servo" drv="pac1954" channel="2" subtype="accum_milliwatts" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0" tags="avg_power_rails">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_acc_clear</name>
-    <doc>Clear the accumulator for 'CPD_VBAT_ALT' rail</doc>
-    <params cmd="set" interface="servo" drv="pac1954" channel="2" subtype="acc_clear" map="yes" nom="0.0" tags="accum_clear_ctrls" rsense="0.02" base_name="CPD_VBAT_ALT">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_signed</name>
-    <doc>Readings are signed for 'CPD_VBAT_ALT' rail</doc>
-    <params interface="servo" drv="pac1954" channel="2" subtype="signed" map="yesno" rsense="0.02" base_name="CPD_VBAT_ALT" nom="0.0">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_refresh_reg</name>
-    <doc>Raw register value of refresh on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" map="refresh" no_read="" offset="0" addr="16" write_only="" reg_len="0" fmt="hex">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_ctrl_reg</name>
-    <doc>Raw register value of ctrl on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="1" reg_len="2" fmt="hex" addr="16">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_acc_count_reg</name>
-    <doc>Raw register value of acc_count on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="2" reg_len="4" fmt="hex" addr="16">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_acc_pwr_reg</name>
-    <doc>Raw register value of acc_pwr on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="5" reg_len="7" fmt="hex" addr="16">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_busv_reg</name>
-    <doc>Raw register value of busv on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="17" addr="16" read_only="" reg_len="2" fmt="hex">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_cur_reg</name>
-    <doc>Raw register value of cur on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="21" addr="16" read_only="" reg_len="2" fmt="hex">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_pwr_reg</name>
-    <doc>Raw register value of pwr on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="25" addr="16" read_only="" reg_len="4" fmt="hex">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_smbus_reg</name>
-    <doc>Raw register value of smbus on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="28" reg_len="2" fmt="hex" addr="16">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_neg_pwr_fsr_reg</name>
-    <doc>Raw register value of neg_pwr_fsr on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="29" reg_len="2" fmt="hex" addr="16">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_refresh_v_reg</name>
-    <doc>Raw register value of refresh_v on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" map="refresh" no_read="" offset="31" addr="16" write_only="" reg_len="0" fmt="hex">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_ctrl_act_reg</name>
-    <doc>Raw register value of ctrl_act on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="33" reg_len="2" fmt="hex" addr="16">
-    </params>
-  </control>
-  <control>
-    <name>CPD_VBAT_ALT_neg_pwr_fsr_act_reg</name>
-    <doc>Raw register value of neg_pwr_fsr_act on i2c_mux:rem</doc>
-    <params interface="4" drv="i2c_reg_drv" offset="34" addr="16" read_only="" reg_len="2" fmt="hex">
+    <params interface="4" drv="i2c_reg_drv" addr="16" read_only="" reg_len="2" offset="34" fmt="hex">
     </params>
   </control>
   <include>

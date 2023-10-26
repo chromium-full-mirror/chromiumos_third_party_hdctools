@@ -31,7 +31,7 @@
   <control>
     <name>dev_mode</name>
     <alias>usbpd_boot_mode</alias>
-    <params clobber_ok="patch" od="PP" map="onoff"></params>
+    <params clobber_ok="" od="PP" map="onoff"></params>
   </control>
   <control>
     <name>fw_wp_state</name>

@@ -6,6 +6,6 @@
   <control>
     <name>spi1_vref</name>
     <alias>ec_boot_mode</alias>
-    <params clobber_ok="patch" map="onoff_vref_sel" />
+    <params clobber_ok="" map="onoff_vref_sel"></params>
   </control>
 </root>

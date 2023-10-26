@@ -34,3 +34,4 @@ inas = [
         ('ina219', 0x4E, 'ppvar_center',   0.9, 0.01, 'loc', True),
         ('ina219', 0x4F, 'ppvar_logic',    0.9, 0.01, 'loc', True),
        ]
+

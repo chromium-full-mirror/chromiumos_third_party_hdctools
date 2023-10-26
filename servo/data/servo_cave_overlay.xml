@@ -6,6 +6,6 @@
     <name>lid_open</name>
     <doc>emulated lid switch on ec</doc>
     <params subtype="single" interface="10" drv="ec3po_gpio" map="yesno"
-    clobber_ok="full" name="LID_OPEN"></params>
+    clobber_ok="" name="LID_OPEN"></params>
   </control>
 </root>

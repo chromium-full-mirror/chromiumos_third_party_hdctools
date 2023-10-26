@@ -33,3 +33,4 @@ function flash_stm32_dfu() {
 
 
 flash_stm32_dfu
+

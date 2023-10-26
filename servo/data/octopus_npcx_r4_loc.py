@@ -25,3 +25,4 @@ inas = [
         ('ina231', (36,38), 'ppvar_vnn',             1.0,   0.005, 'j2', True), #R724(short) reworked
         ('ina231', (37,39), 'vbat',                  11.55, 0.010, 'j2', True), #R542
 ]
+

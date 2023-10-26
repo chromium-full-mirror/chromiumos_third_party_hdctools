@@ -8,7 +8,7 @@ class SweetberryPreprocessorError(Exception):
   """Error to throw on configuration file syntax issues."""
   pass
 
-class SweetberryPreprocessor:
+class SweetberryPreprocessor(object):
   """Preprocessor to convert pin-style child-addr config to i2c-addr style.
 
   See README.sweetberry.md for details. One j-bank on sweetberry has

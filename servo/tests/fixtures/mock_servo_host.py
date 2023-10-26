@@ -1,14 +1,11 @@
-# Copyright 2022 The ChromiumOS Authors
+# Copyright 2022 The ChromiumOS Authors.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# pylint: disable=redefined-outer-name
-# pylint: disable=unused-argument
-
 import logging
 
+from mock import call
 import pytest
-
 from servo import servod as sd
 from servo.tests.fixtures import common
 from servo.tests.fixtures.mock_pyusb import clear_interfaces
@@ -19,14 +16,8 @@ _logger = logging.getLogger("mock_servod")
 
 
 @pytest.fixture(scope="function")
-def mock_servo_host(
-    class_mocker,
-    mock_pyusb,
-    mock_cr50_usb_device,
-    mock_v4p1_usb_device,
-    mock_servo_micro_usb_device,
-    mock_c2d2_usb_device,
-):
+def mock_servo_host(class_mocker, mock_pyusb, mock_cr50_usb_device, mock_v4p1_usb_device,
+    mock_servo_micro_usb_device, mock_c2d2_usb_device):
     """Mock representation of a servo host - a machine that has servo USB devices.
 
     Servod runs on a servo host, it searches the USB devices on that host when it starts
@@ -45,7 +36,6 @@ def mock_servo_host(
         mock_servo_micro_usb_device (_type_): Mock Servo micro fixture injected by pytest.
         mock_c2d2_usb_device (_type_): Mock C2D2 fixture injected by pytest.
     """
-
     def generate_servo_host():
         """Mock generator function.   This allows multiple tests to be run in
         parrallel as it generates a new mock for each test vs sharing the same
@@ -55,7 +45,6 @@ def mock_servo_host(
             MockServoHost: Mock servo host, a representation of a servo host
             which is what connects a servo/ccd to servod.
         """
-
         class MockServoHost:
             def __init__(self):
                 self._mock_usb = mock_pyusb
@@ -73,28 +62,28 @@ def mock_servo_host(
             def MockReadFromSysfs(self, sysfs_path, dev_file, cast=str):
                 return self.sysfs[sysfs_path][dev_file]
 
-            def add_device(self, servo_type, bus, address, dd):
-                serial = common.get_servo_serial(servo_type)
+            def add_device(self, type, bus, address, dd):
+                serial = common.get_servo_serial(type)
                 sys_path = "/sys/bus/usb/devices/%s-%s" % (bus, dd)
                 self.hierarchy[(bus, address)] = sys_path
                 self.sysfs[sys_path] = {}
-                self.sysfs[sys_path]["idVendor"] = common.device_details[servo_type][
+                self.sysfs[sys_path]["idVendor"] = common.device_details[type][
                     "idVendor"
                 ]
-                self.sysfs[sys_path]["idProduct"] = common.device_details[servo_type][
+                self.sysfs[sys_path]["idProduct"] = common.device_details[type][
                     "idProduct"
                 ]
                 self.sysfs[sys_path]["serial"] = serial
 
                 device = None
 
-                if servo_type == "ccd_cr50":
-                    device = mock_cr50_usb_device(serial, bus, address)
-                elif servo_type == "servo_v4p1":
+                if type == 'ccd_cr50':
+                    device =mock_cr50_usb_device(serial, bus, address)
+                elif type == 'servo_v4p1':
                     device = mock_v4p1_usb_device(serial, bus, address)
-                elif servo_type == "servo_micro":
+                elif type == 'servo_micro':
                     device = mock_servo_micro_usb_device(serial, bus, address)
-                elif servo_type == "c2d2":
+                elif type == 'c2d2':
                     device = mock_c2d2_usb_device(serial, bus, address)
 
                 if device:
@@ -111,7 +100,7 @@ def mock_servo_host(
                     result[device.iSerial] = dump_interfaces(device)
                 return result
 
-            def start(self, serial, board, model, device_discovery="min"):
+            def start(self, serial, board, model, device_discovery='min'):
                 opts = [
                     "-s",
                     serial,
@@ -120,7 +109,7 @@ def mock_servo_host(
                     "-m",
                     model,
                     "--device-discovery",
-                    device_discovery,
+                    device_discovery
                 ]
                 self.starter = sd.ServodStarter(opts)
 
@@ -142,7 +131,6 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
     Args:
         mock_servo_host (Mock): Mock host device
     """
-
     def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
@@ -155,13 +143,12 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
-        ccd_device = servo_host.add_device("ccd_cr50", 1, 57, "2.3")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        ccd_device = servo_host.add_device('ccd_cr50', 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, ccd_device)
 
     return generate_host
-
 
 @pytest.fixture()
 def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
@@ -170,7 +157,6 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
     Args:
         mock_servo_host (Mock): Mock host device
     """
-
     def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
@@ -183,13 +169,12 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
-        servo_micro_device = servo_host.add_device("servo_micro", 1, 57, "2.3")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        servo_micro_device = servo_host.add_device('servo_micro', 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, servo_micro_device)
 
     return generate_host
-
 
 @pytest.fixture()
 def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
@@ -198,7 +183,6 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
     Args:
         mock_servo_host (Mock): Mock host device
     """
-
     def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
@@ -211,14 +195,13 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
-        servo_micro_device = servo_host.add_device("servo_micro", 1, 57, "2.3")
-        ccd_device = servo_host.add_device("ccd_cr50", 1, 58, "2.2")
-        servo_host.start(servo_v4p1_device.iSerial, board, model, "full")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        servo_micro_device = servo_host.add_device('servo_micro', 1, 57, "2.3")
+        ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
+        servo_host.start(servo_v4p1_device.iSerial, board, model, 'full')
         return (servo_host, servo_v4p1_device, servo_micro_device, ccd_device)
 
     return generate_host
-
 
 @pytest.fixture()
 def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
@@ -227,7 +210,6 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
     Args:
         mock_servo_host (Mock): Mock host device
     """
-
     def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
@@ -240,13 +222,12 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
-        c2d2_device = servo_host.add_device("c2d2", 1, 57, "2.3")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        c2d2_device = servo_host.add_device('c2d2', 1, 57, "2.3")
         servo_host.start(servo_v4p1_device.iSerial, board, model)
         return (servo_host, servo_v4p1_device, c2d2_device)
 
     return generate_host
-
 
 @pytest.fixture()
 def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
@@ -255,7 +236,6 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
     Args:
         mock_servo_host (Mock): Mock host device
     """
-
     def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
@@ -268,10 +248,10 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         """
         servo_host = mock_servo_host()
         # Setup
-        servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
-        c2d2_device = servo_host.add_device("c2d2", 1, 57, "2.3")
-        ccd_device = servo_host.add_device("ccd_cr50", 1, 58, "2.2")
-        servo_host.start(servo_v4p1_device.iSerial, board, model, "full")
+        servo_v4p1_device = servo_host.add_device('servo_v4p1', 1, 56, "2.5")
+        c2d2_device = servo_host.add_device('c2d2', 1, 57, "2.3")
+        ccd_device = servo_host.add_device('ccd_cr50', 1, 58, "2.2")
+        servo_host.start(servo_v4p1_device.iSerial, board, model, 'full')
         return (servo_host, servo_v4p1_device, c2d2_device, ccd_device)
 
     return generate_host
