@@ -9,78 +9,78 @@ from servo.drv import pty_driver
 
 
 class uartError(pty_driver.ptyError):
-    """Error class for uart class."""
+  """Error class for uart class."""
 
 
 class uart(pty_driver.ptyDriver):
-    """Object to access type=uart controls.
+  """Object to access type=uart controls.
 
-    Note, instances of this object get dispatched via base class,
-    HwDriver's get/set method.  That method ultimately calls:
-      "_[GS]et_%s" % params['subtype'] below.
+  Note, instances of this object get dispatched via base class,
+  HwDriver's get/set method.  That method ultimately calls:
+    "_[GS]et_%s" % params['subtype'] below.
 
-    For example, a control to read pty attached to the uart device would
-    be dispatched to call _Get_pty.
+  For example, a control to read pty attached to the uart device would
+  be dispatched to call _Get_pty.
+  """
+
+  def _Get_pty(self):
+    """Get pty device attached to uart.
+
+    Retuns:
+      Path to pty attached to the uart.
     """
+    self._logger.debug('')
+    return self._interface.get_pty()
 
-    def _Get_pty(self):
-        """Get pty device attached to uart.
+  def _check_and_get_line_prop(self, valid_props):
+    """Check line property request and return it.
 
-        Retuns:
-          Path to pty attached to the uart.
-        """
-        self._logger.debug("")
-        return self._interface.get_pty()
+    Args:
+      valid_props: dict, valid line properties to configure
 
-    def _check_and_get_line_prop(self, valid_props):
-        """Check line property request and return it.
+    Returns:
+      string of line property to get or set
 
-        Args:
-          valid_props: dict, valid line properties to configure
+    Raises:
+      uartError: if key 'line_prop' not in params dict
+      uartError: If unrecognized line_prop requested.
+    """
+    if 'line_prop' not in self._params:
+      raise uartError('line_prop key not defined in params dict')
+    line_prop = self._params['line_prop']
+    if line_prop not in valid_props:
+      raise uartError('Unknown uart line_prop %s requested' % line_prop)
+    return line_prop
 
-        Returns:
-          string of line property to get or set
+  def _Get_props(self):
+    """Gets the requested uart line property.
 
-        Raises:
-          uartError: if key 'line_prop' not in params dict
-          uartError: If unrecognized line_prop requested.
-        """
-        if "line_prop" not in self._params:
-            raise uartError("line_prop key not defined in params dict")
-        line_prop = self._params["line_prop"]
-        if line_prop not in valid_props:
-            raise uartError("Unknown uart line_prop %s requested" % line_prop)
-        return line_prop
+    Line property is determined by string value in params['line_prop']
 
-    def _Get_props(self):
-        """Gets the requested uart line property.
+    Returns:
+      uart line property requested
 
-        Line property is determined by string value in params['line_prop']
+    Raises:
+      uartError: unable to locate line property in interface dict
+    """
+    self._logger.debug('')
+    prop_dict = self._interface.get_uart_props()
+    line_prop = self._check_and_get_line_prop(prop_dict)
+    return prop_dict[line_prop]
 
-        Returns:
-          uart line property requested
+  def _Set_props(self, value):
+    """Sets the requested uart control's line property.
 
-        Raises:
-          uartError: unable to locate line property in interface dict
-        """
-        self._logger.debug("")
-        prop_dict = self._interface.get_uart_props()
-        line_prop = self._check_and_get_line_prop(prop_dict)
-        return prop_dict[line_prop]
+    Line property is determined by string value in params['line_prop']
 
-    def _Set_props(self, value):
-        """Sets the requested uart control's line property.
+    Args:
+      value: integer, to write to line property
 
-        Line property is determined by string value in params['line_prop']
-
-        Args:
-          value: integer, to write to line property
-
-        Raises:
-          uartError: unable to locate line property in interface dict
-        """
-        self._logger.debug("")
-        prop_dict = self._interface.get_uart_props()
-        line_prop = self._check_and_get_line_prop(prop_dict)
-        prop_dict[line_prop] = value
-        self._interface.set_uart_props(prop_dict)
+    Raises:
+      uartError: unable to locate line property in interface dict
+    """
+    self._logger.debug('')
+    prop_dict = self._interface.get_uart_props()
+    line_prop = self._check_and_get_line_prop(prop_dict)
+    prop_dict[line_prop] = value
+    self._interface.set_uart_props(prop_dict)

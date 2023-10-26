@@ -57,3 +57,4 @@ inas = [
         ('ina3221', '0x42:1', 'vreg_s3b_s4b_s5b',  0.87, 0.010,  'rem dut_adc_mux:bank3', True), # R2301
         ('ina3221', '0x42:2', 'lcd_bl_edp_vp',     0.00, 0.010,  'rem dut_adc_mux:bank3', True), # R227
 ]
+

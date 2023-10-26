@@ -1,5 +1,5 @@
 <root>
   <include>
-    <name>kukui_common.xml</name>
+    <name>servo_kukui_common_overlay.xml</name>
   </include>
 </root>

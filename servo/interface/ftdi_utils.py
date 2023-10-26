@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Common functions for tools and libraries related to FTDI devices."""
-
-import argparse
+from __future__ import print_function
 import ctypes
 import ctypes.util
 import logging
+import optparse
 import os
 import sys
 
@@ -16,121 +16,106 @@ import servo.libftdi_for_servo
 
 
 def get_interface_and_pid(index, pid):
-    """Helper to retrieve the 'real' ftdi pid and interface given the index.
+  """Helper to retrieve the 'real' ftdi pid and interface given the index.
 
-    Args:
-      index: int, index in the interface list
-      pid: product id of ftdi device
+  Args:
+    index: int, index in the interface list
+    pid: product id of ftdi device
 
-    Returns:
-      tuple(index, pid) - the effective index and pid after conversion
-    """
-    # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
-    # The interface argument in ftdi initialization is the interface number.
-    idx = ((index - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
-    # pid has to be an int. ensure the increment is also an int.
-    product_increment = int((index - 1) / ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE)
-    pid = pid + product_increment
-    if product_increment:
-        c.build_logger.info("Use the next FTDI part @ pid = 0x%04x", pid)
-    return (idx, pid)
+  Returns:
+    tuple(index, pid) - the effective index and pid after conversion
+  """
+  # servos with multiple FTDI are guaranteed to have contiguous USB PIDs
+  # The interface argument in ftdi initialization is the interface number.
+  idx = ((index - 1) % ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE) + 1
+  # pid has to be an int. ensure the increment is also an int.
+  product_increment = int((index - 1) /
+                          ftdi_common.MAX_FTDI_INTERFACES_PER_DEVICE)
+  pid = pid + product_increment
+  if product_increment:
+    c.build_logger.info('Use the next FTDI part @ pid = 0x%04x', pid)
+  return (idx, pid)
 
 
 def ftdi_locate_lib(lib_name):
-    """Locate FTDI related dll path.
+  """Locate FTDI related dll path.
 
-    TODO(tbroch) To remove in favor of ctypes.util.find_library(lib_name) once
-    release of libraries in chroot is complete.
+  TODO(tbroch) To remove in favor of ctypes.util.find_library(lib_name) once
+  release of libraries in chroot is complete.
 
-    Args:
-      lib_name : string name of library to find
-    """
-    paths = []
-    paths.append(os.getcwd())
-    if "FTDI_LIBRARY_PATH" in os.environ:
-        paths.extend(os.environ["FTDI_LIBRARY_PATH"].split(os.pathsep))
-    if "LD_LIBRARY_PATH" in os.environ:
-        paths.extend(os.environ["LD_LIBRARY_PATH"].split(os.pathsep))
+  Args:
+    lib_name : string name of library to find
+  """
+  paths = []
+  paths.append(os.getcwd())
+  if 'FTDI_LIBRARY_PATH' in os.environ:
+    paths.extend(os.environ['FTDI_LIBRARY_PATH'].split(os.pathsep))
+  if 'LD_LIBRARY_PATH' in os.environ:
+    paths.extend(os.environ['LD_LIBRARY_PATH'].split(os.pathsep))
 
-    lib_ext = ".so"
-    if os.name == "posix" and sys.platform == "darwin":
-        lib_ext = ".dylib"
+  lib_ext = '.so'
+  if os.name == 'posix' and sys.platform == 'darwin':
+    lib_ext = '.dylib'
 
-    for path in paths:
-        lib_path = os.path.join(path, "lib" + lib_name + lib_ext)
-        if os.path.exists(lib_path):
-            return os.path.realpath(lib_path)
-    # Try the default OS library path
-    return "lib" + lib_name + lib_ext
+  for path in paths:
+    lib_path = os.path.join(path, 'lib' + lib_name + lib_ext)
+    if os.path.exists(lib_path):
+      return os.path.realpath(lib_path)
+  # Try the default OS library path
+  return 'lib' + lib_name + lib_ext
 
 
 def load_libs(*args):
-    """Load libraries and return dll objects.
+  """Load libraries and return dll objects.
 
-    Calls sys.exit if unable to locate the library
+  Calls sys.exit if unable to locate the library
 
-    Args:
-      args : list of strings names of libraries to load
+  Args:
+    args : list of strings names of libraries to load
 
-    Returns:
-     List of PyDLL objects
-    """
-    dll_list = []
-    for lib_name in args:
-        if lib_name == "ftdi":
-            lib_name = servo.libftdi_for_servo.LIB_NAME
+  Returns:
+   List of PyDLL objects
+  """
+  dll_list = []
+  for lib_name in args:
+    if lib_name == 'ftdi':
+      lib_name = servo.libftdi_for_servo.LIB_NAME
 
-        lib_path = ftdi_locate_lib(lib_name)
-        logging.debug("lib_path for %s is %s\n", lib_name, lib_path)
+    lib_path = ftdi_locate_lib(lib_name)
+    logging.debug('lib_path for %s is %s\n', lib_name, lib_path)
 
-        try:
-            dll_list.append(ctypes.cdll.LoadLibrary(lib_path))
-        except OSError as e:
-            print("-E- Unable to find library %s : %s" % (lib_name, e))
-            sys.exit(1)
-    return dll_list
+    try:
+      dll_list.append(ctypes.cdll.LoadLibrary(lib_path))
+    except OSError as e:
+      print('-E- Unable to find library %s : %s' % (lib_name, e))
+      sys.exit(1)
+  return dll_list
 
 
-def parse_common_args(
-    vendor=ftdi_common.DEFAULT_VID,
-    product=ftdi_common.DEFAULT_PID,
-    interface=1,
-    serialname=None,
-):
-    """Parse common arguments for tools related to FTDI devices.
+def parse_common_args(vendor=ftdi_common.DEFAULT_VID,
+                      product=ftdi_common.DEFAULT_PID, interface=1,
+                      serialname=None):
+  """Parse common arguments for tools related to FTDI devices.
 
-    Args:
-      vendor    : integer value of USB vendor id of FTDI device
-      product   : integer value of USB vendor id of FTDI device
-      interface : integer ( 1 - 4 ) of interface on FTDI device
-      serialname: string of device serialname/number as defined in FTDI eeprom.
+  Args:
+    vendor    : integer value of USB vendor id of FTDI device
+    product   : integer value of USB vendor id of FTDI device
+    interface : integer ( 1 - 4 ) of interface on FTDI device
+    serialname: string of device serialname/number as defined in FTDI eeprom.
 
-    Returns:
-      (values, args) where 'values' is a optparse.Values instance and 'args' is
-      the list of arguments left over after parsing options.
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "-d",
-        "--debug",
-        help="enable debug messages",
-        action="store_true",
-        default=False,
-    )
-    parser.add_argument(
-        "-v", "--vendor", help="vendor id of ftdi device", default=vendor, type=int
-    )
-    parser.add_argument(
-        "-p", "--product", help="product id of ftdi device", default=product, type=int
-    )
-    parser.add_argument(
-        "-i", "--interface", help="ftdi interface to use", type=int, default=interface
-    )
-    parser.add_argument(
-        "-s",
-        "--serialname",
-        default=serialname,
-        type=str,
-        help="device serialname stored in eeprom",
-    )
-    return parser.parse_args()
+  Returns:
+    (values, args) where 'values' is a optparse.Values instance and 'args' is
+    the list of arguments left over after parsing options.
+  """
+  parser = optparse.OptionParser()
+  parser.add_option('-d', '--debug', help='enable debug messages',
+                    action='store_true', default=False)
+  parser.add_option('-v', '--vendor', help='vendor id of ftdi device',
+                    default=vendor, type=int)
+  parser.add_option('-p', '--product', help='product id of ftdi device',
+                    default=product, type=int)
+  parser.add_option('-i', '--interface', help='ftdi interface to use', type=int,
+                    default=interface)
+  parser.add_option('-s', '--serialname', default=None, type=str,
+                    help='device serialname stored in eeprom')
+  return parser.parse_args()

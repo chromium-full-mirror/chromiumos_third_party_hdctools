@@ -15,7 +15,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+  
 // bit positions various signals in interface
 #define SCL_POS 0x01
 #define SDA_POS 0x02
@@ -40,25 +40,25 @@ extern "C" {
 
 #define FI2C_ACK_RETRY_MAX 10
 #define FI2C_READ_ATTEMPTS 5
-
+  
 #define ERROR_FI2C(ecode, ...)                  \
   fprintf(stderr, "-E- (%d) ", ecode);          \
-  fprintf(stderr, __VA_ARGS__)
-
+  fprintf(stderr, __VA_ARGS__)                 
+  
 #ifndef DEBUG
 #define DEBUG_FI2C(...)
 #else
 #define DEBUG_FI2C(...)	prn_dbg( __VA_ARGS__)
 #endif
-
+  
 #define CHECK_FI2C(fic, fx, ...) do {           \
     DEBUG_FI2C(__VA_ARGS__);			\
     if ((fic->error = fx) < 0) {                \
       ERROR_FI2C(fic->error,__VA_ARGS__);       \
     }                                           \
   } while (0)
-
-
+  
+  
 #define FI2C_WBUF(fic, val) \
   fic->buf[fic->bufcnt++] = val
 
@@ -68,8 +68,8 @@ extern "C" {
     FI2C_WBUF(fic, ((val) | fic->gpio.value));                         \
     FI2C_WBUF(fic, ((dir) | fic->gpio.direction));                     \
   } while (0)
-
-struct fi2c_context {
+  
+struct fi2c_context { 
   // v--- DO NOT REORDER ---v
   struct ftdi_context *fc;
   struct gpio_s gpio;

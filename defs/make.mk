@@ -72,3 +72,4 @@ remake	=								\
 		HDCTOOLS_SOURCE_DIR=$(HDCTOOLS_DIR)/$${REL_DIR}		\
 		THIS_BUILD_DIR=$(HDCTOOLS_BUILD_DIR)/$${REL_DIR}	\
 		$(3))
+

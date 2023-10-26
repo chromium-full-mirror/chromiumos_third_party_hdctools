@@ -66,3 +66,4 @@ HOSTOS_CWARN	=				\
 HOSTOS_LD_LIB	= -dynamiclib
 HOSTOS_LIB_EXT	= dylib
 HOSTOS_CFLAGS	= -DDARWIN
+

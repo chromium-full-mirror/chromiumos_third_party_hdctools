@@ -11,17 +11,17 @@ from servo.drv import hw_driver
 
 
 class larvaeAdc(hw_driver.HwDriver):
-    """Reads ADC inputs."""
+  """Reads ADC inputs."""
 
-    def __init__(self, interface, params):
-        """Constructor."""
-        super(larvaeAdc, self).__init__(interface, params)
+  def __init__(self, interface, params):
+    """Constructor."""
+    super(larvaeAdc, self).__init__(interface, params)
 
-    def _get(self):
-        """Reads ADC inputs.
+  def _get(self):
+    """Reads ADC inputs.
 
-        Returns:
-          ADC values from AIN0 to AIN6.
-        """
-        buffer = self._interface.read()
-        return buffer[0:7]
+    Returns:
+      ADC values from AIN0 to AIN6.
+    """
+    buffer = self._interface.read()
+    return buffer[0:7]

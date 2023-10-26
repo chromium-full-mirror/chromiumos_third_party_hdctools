@@ -33,7 +33,7 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_uut"/>
   </control>
 
@@ -45,7 +45,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="patch" shutdown_delay="4.5" reset_recovery="0.5"/>
+    <params clobber_ok="" shutdown_delay="4.5" reset_recovery="0.5"/>
   </control>
 
   <!--
@@ -58,12 +58,12 @@
   <map>
     <name>sd_spi</name>
     <doc>Choose between SD and SPI</doc>
-    <params spi="1" sd="0"/>
+    <params spi="1" sd="0"></params>
   </map>
   <control>
     <name>rec_mode</name>
     <alias>cpu_boot_mode</alias>
     <doc>Google SPI boot mode</doc>
-    <params map="sd_spi" init="sd" clobber_ok="patch"/>
+    <params map="sd_spi" init="sd" clobber_ok=""></params>
   </control>
 </root>

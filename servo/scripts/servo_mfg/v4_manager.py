@@ -12,163 +12,147 @@ from servo_mfg.v4_manufacturer import V4Manufacturer
 from servo_mfg.v4_tester import V4Tester
 
 
+# pylint: disable=g-bad-exception-name
 class V4ManagerError(Exception):
-    """Manager error class for v4."""
+  """Manager error class for v4."""
 
 
 class V4Manager(manager.Manager):
-    """Class to handle one manufacteuring round for one device type."""
+  """Class to handle one manufacteuring round for one device type."""
 
-    TITLE = "v4"
+  TITLE = 'v4'
 
-    PARSER_DESC = "Run manufacturing flow for servo v4"
+  PARSER_DESC = 'Run manufacturing flow for servo v4'
 
-    RE = (
-        r"^(SERVOV4-)?"  # device type
-        r"[CGS](-)?"  # supplier
-        r"[0-9]{2}"  # YY
-        r"(0[1-9]|1[0-2])"  # MM
-        r"(0[1-9]|[12][0-9]|3[0-1])"  # DD
-        r"[0-9]{4}$"
-    )  # serialno suffix
+  RE = (r'^(SERVOV4-)?'               # device type
+        r'[CGS](-)?'                  # supplier
+        r'[0-9]{2}'                   # YY
+        r'(0[1-9]|1[0-2])'            # MM
+        r'(0[1-9]|[12][0-9]|3[0-1])'  # DD
+        r'[0-9]{4}$')                 # serialno suffix
 
-    LEGACY_RES = [r"^N[PDQ][0-9]{5}$"]
+  LEGACY_RES = [r'^N[PDQ][0-9]{5}$']
 
-    # The serial number is either the standard RE or one of the legacy serial
-    # numbers.
-    SERIALNO_RE = re.compile("|".join("(%s)" % e for e in LEGACY_RES + [RE]))
+  # The serial number is either the standard RE or one of the legacy serial
+  # numbers.
+  SERIALNO_RE = re.compile('|'.join('(%s)' % e for e in LEGACY_RES + [RE]))
 
-    def __init__(self, args, outdir):
-        """Initialize the manufacturing."""
-        self.board = "v4"
-        manager.Manager.__init__(self, outdir=outdir, validation=args.validation)
-        self.manufacturer = V4Manufacturer(self.validation, args)
-        self.tester_cls = V4Tester
+  def __init__(self, args, outdir):
+    """Initialize the manufacturing."""
+    self.board = 'v4'
+    manager.Manager.__init__(self, outdir=outdir, validation=args.validation)
+    self.manufacturer = V4Manufacturer(self.validation, args)
+    self.tester_cls = V4Tester
 
-    @staticmethod
-    def add_manager_args(parser):
-        """Helper to add the arguments that this type of manager requires."""
-        manager.Manager.add_manager_args(parser)
-        parser.add_argument(
-            "-s", "--serialno", type=str, help="serial number to program", default=None
-        )
-        parser.add_argument(
-            "-m", "--macaddr", type=str, help="macaddr to program", default=None
-        )
-        devices = ["flash", "serial", "mac", "kb-emulator"]
-        for dev in devices:
-            g = parser.add_mutually_exclusive_group()
-            g.add_argument(
-                "--no-%s" % dev,
-                action="store_false",
-                default=True,
-                dest=dev.replace("-", "_"),
-                help="Skip any %s validation or writing. This "
-                "takes precedence over force-." % dev,
-            )
-            if dev == "flash":
-                # You cannot force the dfu mode through software, so either it's on
-                # through a cable, or it's not. There is no point in having a
-                # force flag here.
-                continue
-            g.add_argument(
-                "--force-%s" % dev,
-                action="store_true",
-                default=False,
-                help="Force %s writing. Even if the already has "
-                "the right firmware, write it again." % dev,
-            )
+  @staticmethod
+  def add_manager_args(parser):
+    """Helper to add the arguments that this type of manager requires."""
+    manager.Manager.add_manager_args(parser)
+    parser.add_argument('-s', '--serialno', type=str,
+                        help='serial number to program', default=None)
+    parser.add_argument('-m', '--macaddr', type=str, help='macaddr to program',
+                        default=None)
+    devices = ['flash', 'serial', 'mac', 'kb-emulator']
+    for dev in devices:
+      g = parser.add_mutually_exclusive_group()
+      g.add_argument('--no-%s' % dev, action='store_false', default=True,
+                     dest=dev.replace('-', '_'),
+                     help='Skip any %s validation or writing. This '
+                     'takes precedence over force-.' % dev)
+      if dev == 'flash':
+        # You cannot force the dfu mode through software, so either it's on
+        # through a cable, or it's not. There is no point in having a
+        # force flag here.
+        continue
+      g.add_argument('--force-%s' % dev, action='store_true', default=False,
+                     help='Force %s writing. Even if the already has '
+                     'the right firmware, write it again.' % dev)
 
-    def check_args(self, args):
-        """Check the parsed arguments, perform modifications, or raise error.
+  def check_args(self, args):
+    """Check the parsed arguments, perform modifications, or raise error.
 
-        Note: in single device mode, the required arguments are supplied through
-        the command line. In continious mode, they are supplied through continious
-        prompts to the user. This functions sets the required arguments (serialno,
-        macaddr) to None if they are provided in continious mode to force a
-        prompting.
+    Note: in single device mode, the required arguments are supplied through
+    the command line. In continious mode, they are supplied through continious
+    prompts to the user. This functions sets the required arguments (serialno,
+    macaddr) to None if they are provided in continious mode to force a
+    prompting.
 
-        Args:
-          args: argparse Namespace object for the programming
+    Args:
+      args: argparse Namespace object for the programming
 
-        Returns:
-          True if the provided arguments match the expectation, False otherwise
-        """
-        if not args.single:
-            if args.serialno or args.macaddr:
-                self._logger.info(
-                    "This is continious mode. Single device args are "
-                    "requested one at a time. These will be ignored."
-                )
-            if args.serialno:
-                self._logger.info(
-                    "Provided serialno %r will be ignored.", args.serialno
-                )
-                args.serialno = None
-            if args.macaddr:
-                self._logger.info("Provided macaddr %r will be ignored.", args.macaddr)
-                args.macaddr = None
-            return True
+    Returns:
+      True if the provided arguments match the expectation, False otherwise
+    """
+    if not args.single:
+      if args.serialno or args.macaddr:
+        self._logger.info('This is continious mode. Single device args are '
+                          'requested one at a time. These will be ignored.')
+      if args.serialno:
+        self._logger.info('Provided serialno %r will be ignored.',
+                          args.serialno)
+        args.serialno = None
+      if args.macaddr:
+        self._logger.info('Provided macaddr %r will be ignored.',
+                          args.macaddr)
+        args.macaddr = None
+      return True
+    else:
+      if args.serialno and not user_input.serial_is_valid(args.serialno,
+                                                          self.SERIALNO_RE):
+        self._logger.error('Provided serialno %r invalid.', args.serialno)
+        return self.abort(1)
+      if args.macaddr and not user_input.mac_is_valid(args.macaddr):
+        self._logger.error('Provided macaddr %r invalid.', args.macaddr)
+        return self.abort(1)
+      return True
 
-        if args.serialno and not user_input.serial_is_valid(
-            args.serialno, self.SERIALNO_RE
-        ):
-            self._logger.error("Provided serialno %r invalid.", args.serialno)
-            return self.abort(1)
-        if args.macaddr and not user_input.mac_is_valid(args.macaddr):
-            self._logger.error("Provided macaddr %r invalid.", args.macaddr)
-            return self.abort(1)
-        return True
+  def wait_for_disconnect(self):
+    # Simply wait for both hubs to be disconnected.
+    hh_vid, hh_pid = V4Manufacturer.HH_VID, V4Manufacturer.HH_PID
+    dh_vid, dh_pid = V4Manufacturer.DH_VID, V4Manufacturer.DH_PID
+    device_util.wait_for_usb_disconnect(vid=hh_vid, pid=hh_pid)
+    device_util.wait_for_usb_disconnect(vid=dh_vid, pid=dh_pid)
 
-    def wait_for_disconnect(self):
-        # Simply wait for both hubs to be disconnected.
-        hh_vid, hh_pid = V4Manufacturer.HH_VID, V4Manufacturer.HH_PID
-        dh_vid, dh_pid = V4Manufacturer.DH_VID, V4Manufacturer.DH_PID
-        device_util.wait_for_usb_disconnect(vid=hh_vid, pid=hh_pid)
-        device_util.wait_for_usb_disconnect(vid=dh_vid, pid=dh_pid)
+  def extract_single_device_data(self, args):
+    """Extract out of the command line args the single device args."""
+    if (args.mac and not args.macaddr) or (args.serial and not args.serialno):
+      return self._req_arg_missing(args)
+    return {'serial': args.serialno, 'macaddr': args.macaddr}
 
-    def extract_single_device_data(self, args):
-        """Extract out of the command line args the single device args."""
-        if (args.mac and not args.macaddr) or (args.serial and not args.serialno):
-            return self._req_arg_missing(args)
-        return {"serial": args.serialno, "macaddr": args.macaddr}
+  def prompt_data(self, args):
+    """Helper to request data in continous mode. Serial and mac address.
 
-    def prompt_data(self, args):
-        """Helper to request data in continous mode. Serial and mac address.
+    Note: this method does not return anything but rather sets the
+          - serialno
+          - macaddr
+          attributes on |args| after successful prompting.
 
-        Note: this method does not return anything but rather sets the
-              - serialno
-              - macaddr
-              attributes on |args| after successful prompting.
-
-        Args:
-          args: argparse Namespace object for the programming
-        """
-        serial = mac = None
-        if args.serial or args.testing:
-            serial = user_input.prompt_for_serial(self.SERIALNO_RE)
-            if serial is None:
-                # This indicates the user ran out of tries to get this right. Abort
-                # at this point.
-                self._logger.error("Retrieving serialno from user failed. Quitting.")
-                self.abort(1)
-        else:
-            self._logger.info(
-                "Serial programming not requested. Skipping prompt for serialno."
-            )
-        if self._finished:
-            # Check in whether we have been declared finished in the meantime.
-            return
-        if args.mac:
-            mac = user_input.prompt_for_mac()
-            if mac is None:
-                # This indicates the user ran out of tries to get this right. Abort
-                # at this point.
-                self._logger.error("Retrieving macaddr from user failed. Quitting.")
-                self.abort(1)
-        else:
-            self._logger.info(
-                "Mac programming not requested. Skipping prompt for macaddr."
-            )
-        args.serialno = serial
-        args.macaddr = mac
+    Args:
+      args: argparse Namespace object for the programming
+    """
+    serial = mac = None
+    if args.serial or args.testing:
+      serial = user_input.prompt_for_serial(self.SERIALNO_RE)
+      if serial is None:
+        # This indicates the user ran out of tries to get this right. Abort
+        # at this point.
+        self._logger.error('Retrieving serialno from user failed. Quitting.')
+        self.abort(1)
+    else:
+      self._logger.info('Serial programming not requested. Skipping '
+                        'prompt for serialno.')
+    if self._finished:
+      # Check in whether we have been declared finished in the meantime.
+      return
+    if args.mac:
+      mac = user_input.prompt_for_mac()
+      if mac is None:
+        # This indicates the user ran out of tries to get this right. Abort
+        # at this point.
+        self._logger.error('Retrieving macaddr from user failed. Quitting.')
+        self.abort(1)
+    else:
+      self._logger.info('Mac programming not requested. Skipping '
+                        'prompt for macaddr.')
+    args.serialno = serial
+    args.macaddr = mac

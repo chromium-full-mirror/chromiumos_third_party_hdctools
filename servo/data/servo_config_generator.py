@@ -20,7 +20,7 @@ class ServoConfigGeneratorError(Exception):
   """Error class for INA control generation errors."""
   pass
 
-class XMLElementGenerator:
+class XMLElementGenerator(object):
   """Helper class to generate a formatted XML element.
 
   Attributes:
@@ -56,7 +56,7 @@ class XMLElementGenerator:
                             self._text, self._name)
 
 
-class ServoControlGenerator:
+class ServoControlGenerator(object):
   """Helper class to generate formatted XML for servo controls.
 
   Attributes:
@@ -119,7 +119,7 @@ class ServoControlGenerator:
     return ctrl_element.GetXML()
 
 
-class ServoConfigFileGenerator:
+class ServoConfigFileGenerator(object):
   """Helper to generate XML servod configuration files.
 
   Attributes:

@@ -26,7 +26,7 @@
     <!-- Volteer connects TABLET_MODE_L to the rec_mode signal -->
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params drv="cros_ec_softrec_power" clobber_ok="patch" cmd="set"
+    <params drv="cros_ec_softrec_power" clobber_ok="" cmd="set"
     reset_recovery="0.6" shutdown_delay="11.0" warm_reset_can_hold_ap="no"/>
   </control>
   <control>
@@ -39,13 +39,13 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_int_spi" chip_for_ccd_cr50="npcx_uut"/>
   </control>
   <!-- Overriding regex since Volteer EC seems to use "," instead of ":" -->
   <control>
     <name>ec_board</name>
     <doc>The board name of the EC image</doc>
-    <params clobber_ok="patch" regex="RO[:,]\s+(\S*)_v?[\d.\w\+-]+[\n\r]"/>
+    <params clobber_ok="" regex="RO[:,]\s+(\S*)_v?[\d.\w\+-]+[\n\r]"/>
   </control>
 </root>

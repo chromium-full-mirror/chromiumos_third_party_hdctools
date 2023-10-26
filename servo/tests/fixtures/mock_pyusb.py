@@ -6,17 +6,15 @@
 # This file provides a mock version of each of the main entities that the
 # PyUSB interface provides.  Device, Configuration, Interface, Endpoint
 
-# pylint: disable=redefined-outer-name
-# pylint: disable=unused-argument
-
-from functools import partial
 import logging
 import queue
 import tempfile
 import time
+from functools import partial
 
 import pytest
-
+from servo.tests.data import mocked_pty_data
+from servo.tests.fixtures import common
 
 _logger = logging.getLogger("mock_pyusb")
 
@@ -64,17 +62,16 @@ def mock_endpoint(mocker):
                     if command not in ep.parent.mocked_data:
                         # Store any command we do not have mocked data so the
                         # test data can report this.
-                        ep.parent.no_data_command_queue.put(
-                            "%s: %s" % (description, command)
-                        )
+                        ep.parent.no_data_command_queue.put("%s: %s" % (description, command))
                         _logger.debug(
-                            "%s Missing mock data for command %s", description, command
+                            "%s Missing mock data for command %s"
+                            % (description, command)
                         )
                         ep.parent.command_queue.get()
                     else:
                         if not result:
                             result = ep.parent.mocked_data[command]
-                            if isinstance(result, list):
+                            if type(result) == list:
                                 if len(result) > 1:
                                     result = result.pop(0)
                                 else:
@@ -168,7 +165,7 @@ def mock_endpoint(mocker):
             Returns:
                 int: the length of the data written.
             """
-            if isinstance(data, list):
+            if type(data) == list:
                 return _mock_write_list_ep(ep, data)
 
             return _mock_write_str_ep(ep, data)
@@ -176,6 +173,7 @@ def mock_endpoint(mocker):
         mock_endpoint.bEndpointAddress = bEndpointAddress
         mock_endpoint.read.side_effect = partial(mock_read, mock_endpoint, description)
         mock_endpoint.write.side_effect = partial(mock_write, mock_endpoint)
+        mock_endpoint._ttyname
         mock_endpoint.parent = parent
         return mock_endpoint
 
@@ -275,14 +273,14 @@ def mock_pyusb(mocker):
 
 
 def clear_interfaces(device):
-    for _unused, interface in device.configuration.interfaces.items():
+    for (no, interface) in device.configuration.interfaces.items():
         while not interface.executed_command_queue.empty():
             interface.executed_command_queue.get()
 
 
 def dump_interfaces(device):
     result = {}
-    for no, interface in device.configuration.interfaces.items():
+    for (no, interface) in device.configuration.interfaces.items():
         result[no] = list(interface.executed_command_queue.queue)
         result["missing"] = list(interface.no_data_command_queue.queue)
     return result

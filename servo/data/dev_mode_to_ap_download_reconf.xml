@@ -3,6 +3,6 @@
     <name>dev_mode</name>
     <alias>ap_download_mode</alias>
     <doc>Pin to toggle download mode on the AP.</doc>
-    <params map="onoff_i" clobber_ok="patch" />
+    <params map="onoff_i" clobber_ok=""></params>
   </control>
 </root>

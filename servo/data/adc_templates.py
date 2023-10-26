@@ -12,7 +12,7 @@ class ADCTemplateError(Exception):
   pass
 
 
-class ADCTemplate:
+class ADCTemplate(object):
   """"Base class for all templates."""
 
   # NOTE: subclass should implement this.

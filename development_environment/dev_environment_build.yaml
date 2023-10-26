@@ -1,7 +1,3 @@
-# Copyright 2023 The ChromiumOS Authors
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 steps:
 
 - name: 'gcr.io/kaniko-project/executor:latest'
@@ -10,7 +6,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/dev_env:latest
   - --cache=true
   - --cache-ttl=96h
-  - -f=development_environment/Dockerfile
+  - -f=/workspace/development_environment/Dockerfile
 
 options:
   # Use higher CPU machines so the caching and build steps are faster.

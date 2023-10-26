@@ -8,5 +8,8 @@ from servo.tools import device
 from servo.tools import instance
 from servo.tools import logs
 
-
-REGISTERED_TOOLS = [device.Device, instance.Instance, logs.Logs]
+REGISTERED_TOOLS = [
+    device.Device,
+    instance.Instance,
+    logs.Logs
+]
