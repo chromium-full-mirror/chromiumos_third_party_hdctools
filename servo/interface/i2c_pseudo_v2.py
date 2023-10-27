@@ -290,6 +290,11 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
 
         for msg_idx in range(req_arg.output.num_msgs):
             i2c_msg = req_arg.msgs[msg_idx]
+            # I2C_M_RECV_LEN is not supported by the servod I2C bus interface.
+            # Messages using it should be rejected by the kernel I2C subsystem
+            # on behalf of our I2C pseudo adapter, so this simple assertion
+            # will do.
+            assert not i2c_msg.flags & i2c.I2C_M_RECV_LEN
             if i2c_addr is not None and i2c_msg.addr != i2c_addr:
                 self._reply_error(
                     req_arg.output.xfer_id,

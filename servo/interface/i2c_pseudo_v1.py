@@ -291,7 +291,10 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         xfer_id = None
 
         for xfer_id, idx, addr, flags, length, data in self._xfer_reqs:
-            # This option is not supported by the self._i2c_bus interface.
+            # I2C_M_RECV_LEN is not supported by the servod I2C bus interface.
+            # Messages using it should be rejected by the kernel I2C subsystem
+            # on behalf of our I2C pseudo adapter, so this simple assertion
+            # will do.
             assert not flags & _I2C_M_RECV_LEN
             if flags & _I2C_M_RD:
                 read_idx = idx
