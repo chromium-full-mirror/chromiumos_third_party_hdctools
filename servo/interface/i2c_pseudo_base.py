@@ -74,7 +74,8 @@ class BaseI2cPseudoAdapter:
         """Get the i2c_base.BaseI2CBus implementation this object is using.
 
         Returns:
-          i2c_base.BaseI2CBus
+          None or i2c_base.BaseI2CBus - The servo I2C bus this pseudo controller
+              is using, or None if init() has not completed yet.
         """
         raise NotImplementedError
 
@@ -83,7 +84,9 @@ class BaseI2cPseudoAdapter:
         """Get the i2c-pseudo controller device file this object is using.
 
         Returns:
-          bytes or str - path to the i2c-pseudo controller device file
+          None or bytes or str - The path to the i2c-pseudo device file this
+              pseudo controller is using, or None if init() has not completed
+              yet.
         """
         raise NotImplementedError
 

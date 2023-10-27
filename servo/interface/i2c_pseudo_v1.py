@@ -80,6 +80,8 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         i2c_pseudo_base.BaseI2cPseudoAdapter.__init__(self)
         self._logger = logging.getLogger("i2c_pseudo_v1")
 
+        self._i2c_bus = None
+        self._controller_device_path = None
         self._device_fd = None
         self._i2c_pseudo_id = None
         self._i2c_adapter_num = None
@@ -174,7 +176,8 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         """Get the i2c_base.BaseI2CBus implementation this object is using.
 
         Returns:
-          i2c_base.BaseI2CBus
+          None or i2c_base.BaseI2CBus - The servo I2C bus this pseudo controller
+              is using, or None if init() has not completed yet.
         """
         return self._i2c_bus
 
@@ -183,7 +186,9 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         """Get the i2c-pseudo controller device file this object is using.
 
         Returns:
-          bytes or str - path to the i2c-pseudo controller device file
+          None or bytes or str - The path to the i2c-pseudo device file this
+              pseudo controller is using, or None if init() has not completed
+              yet.
         """
         return self._controller_device_path
 
