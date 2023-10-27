@@ -59,14 +59,15 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
       It is safe to use the public interface from multiple threads concurrently.
 
     Usage:
-      adap = I2cPseudoAdapter(i2c_bus)
-      i2c_id = adap.start()
+      adap = I2cPseudoAdapter()
+      adap.init(servo_i2c_bus)
+      adap.start()
       ...
       adap.shutdown()
     """
 
     @classmethod
-    def default_controller_path(cls):
+    def default_pseudo_device(cls):
         """Get the default i2c-pseudo controller device path.
 
         Returns:
@@ -81,8 +82,8 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         i2c_pseudo_base.BaseI2cPseudoAdapter.__init__(self)
         self._logger = logging.getLogger("i2c_pseudo_v2")
 
-        self._i2c_bus = None
-        self._controller_device_path = None
+        self._servo_i2c_bus = None
+        self._pseudo_device_path = None
         self._device_fd = None
         self._i2c_pseudo_id = None
         self._i2c_adapter_num = None
@@ -111,21 +112,21 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
 
         self._logger.info("finished initializing I2C pseudo adapter (not started yet!)")
 
-    def _internal_init(self, i2c_bus, controller_device_path):
+    def _internal_init(self, servo_i2c_bus, pseudo_device_path):
         """Initialize the instance.  This does NOT create the pseudo adapter.
 
         Args:
-          i2c_bus: implementation of i2c_base.BaseI2CBus
-          controller_device_path: bytes or str - path to the i2c-pseudo device file
+          servo_i2c_bus: implementation of i2c_base.BaseI2CBus
+          pseudo_device_path: bytes or str - path to the i2c-pseudo device file
         """
         self._logger.info(
             "initializing (not starting yet!) I2C pseudo adapter "
-            "controller_device_path=%r i2c_bus=%r",
-            controller_device_path,
-            i2c_bus,
+            "servo_i2c_bus=%r pseudo_device_path=%r",
+            servo_i2c_bus,
+            pseudo_device_path,
         )
-        self._i2c_bus = i2c_bus
-        self._controller_device_path = controller_device_path
+        self._servo_i2c_bus = servo_i2c_bus
+        self._pseudo_device_path = pseudo_device_path
 
     def start(self):
         """Create and start the i2c-pseudo adapter.
@@ -140,17 +141,17 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
             self._start_impl()
 
     @property
-    def i2c_bus(self):
+    def servo_i2c_bus(self):
         """Get the i2c_base.BaseI2CBus implementation this object is using.
 
         Returns:
           None or i2c_base.BaseI2CBus - The servo I2C bus this pseudo controller
               is using, or None if init() has not completed yet.
         """
-        return self._i2c_bus
+        return self._servo_i2c_bus
 
     @property
-    def controller_device_path(self):
+    def pseudo_device_path(self):
         """Get the i2c-pseudo controller device file this object is using.
 
         Returns:
@@ -158,7 +159,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
               pseudo controller is using, or None if init() has not completed
               yet.
         """
-        return self._controller_device_path
+        return self._pseudo_device_path
 
     @property
     def i2c_pseudo_id(self):
@@ -202,9 +203,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
             timeout_ms=_I2C_ADAPTER_TIMEOUT_MS,
             suffix=b"(servod pid %d)" % (os.getpid(),),
         )
-        self._device_fd = os.open(
-            self._controller_device_path, os.O_RDWR | os.O_NONBLOCK
-        )
+        self._device_fd = os.open(self._pseudo_device_path, os.O_RDWR | os.O_NONBLOCK)
         fcntl.ioctl(self._device_fd, i2c_pseudo.I2CP_IOCTL_START, start_arg, True)
         self._i2c_pseudo_id = start_arg.output.pseudo_id
         self._i2c_adapter_num = start_arg.output.adapter_num
@@ -355,7 +354,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
                 write_list = [i2c_msg.buf[i] for i in range(i2c_msg.len)]
 
         try:
-            retval = self._i2c_bus.wr_rd(
+            retval = self._servo_i2c_bus.wr_rd(
                 i2c_addr, write_list, read_msg.len if read_msg is not None else 0
             )
         except OSError as error:
