@@ -4,6 +4,8 @@
 
 """Driver class for reading properties of a Servod I2C pseudo controller."""
 
+import json
+
 from servo.drv import hw_driver
 
 
@@ -60,3 +62,16 @@ class i2cPseudo(hw_driver.HwDriver):
         """
         pseudo_adap = self._interface.pseudo_adap
         return None if pseudo_adap is None else pseudo_adap.pseudo_device_path
+
+    def _Get_xfer_counters(self):
+        """Get the I2C pseudo controller transfer counters.
+
+        Returns:
+            None or str - JSON mapping of counter names to counts
+        """
+        pseudo_adap = self._interface.pseudo_adap
+        return (
+            None
+            if pseudo_adap is None
+            else json.dumps(pseudo_adap.get_xfer_counters(), sort_keys=True, indent=4)
+        )

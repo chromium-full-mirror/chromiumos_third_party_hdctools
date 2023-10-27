@@ -609,4 +609,10 @@
     <params cmd="get" drv="i2c_pseudo" subtype="pseudo_device_path" interface="23">
     </params>
   </control>
+  <control>
+    <name>servo_v4_i2c_pseudo_xfer_counters</name>
+    <doc>Get the I2C pseudo controller transfer counters of the Servo v4 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="xfer_counters" interface="23">
+    </params>
+  </control>
 </root>

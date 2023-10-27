@@ -208,6 +208,13 @@
     </params>
   </control>
   <control>
+    <name>ccd_gsc_i2c_pseudo_xfer_counters</name>
+    <alias>ccd_cr50_i2c_pseudo_xfer_counters,ccd_ti50_i2c_pseudo_xfer_counters</alias>
+    <doc>Get the I2C pseudo controller transfer counters of the CCD I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="xfer_counters" interface="2">
+    </params>
+  </control>
+  <control>
     <name>servo_class</name>
     <doc>servo type (flex or ccd)</doc>
     <params drv="echo" value="ccd" interface="servo" clobber_ok="full"/>

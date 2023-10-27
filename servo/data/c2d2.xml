@@ -308,6 +308,12 @@
     <params cmd="get" drv="i2c_pseudo" subtype="pseudo_device_path" interface="2">
     </params>
   </control>
+  <control>
+    <name>c2d2_i2c_pseudo_xfer_counters</name>
+    <doc>Get the I2C pseudo controller transfer counters of the C2D2 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="xfer_counters" interface="2">
+    </params>
+  </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>warm_reset</name>

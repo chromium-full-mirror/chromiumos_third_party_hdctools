@@ -453,6 +453,26 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
                 finally:
                     self._device_fd = None
 
+    def get_xfer_counters(self):
+        """Get the I2C pseudo controller transfer counters.
+
+        This may only be called after successful start().
+
+        Returns:
+            {str: int} - Mapping of counter names to counts.
+        """
+        assert self._state >= _STATE_RUN
+        xfer_counters = i2c_pseudo.i2cp_ioctl_xfer_counters()
+        fcntl.ioctl(
+            self._device_fd, i2c_pseudo.I2CP_IOCTL_GET_COUNTERS, xfer_counters, True
+        )
+        # Use field[0] by index instead of unpacking because the tuple may have
+        # 2 or 3 items.
+        return {
+            field[0]: getattr(xfer_counters, field[0])
+            for field in xfer_counters._fields_
+        }
+
     def shutdown(self, timeout):
         """Shutdown the I2C pseudo adapter.
 

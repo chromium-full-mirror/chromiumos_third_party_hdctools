@@ -120,6 +120,16 @@ class BaseI2cPseudoAdapter:
         """
         raise NotImplementedError
 
+    def get_xfer_counters(self):
+        """Get the I2C pseudo controller transfer counters.
+
+        This may only be called after successful start().
+
+        Returns:
+            {str: int} - Mapping of counter names to counts.
+        """
+        raise NotImplementedError
+
     def shutdown(self, timeout):
         """Shutdown the I2C pseudo adapter.
 
