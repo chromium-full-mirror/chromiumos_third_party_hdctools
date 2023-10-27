@@ -32,27 +32,36 @@ def run_command(command):
     return subprocess.run(command, stdout=subprocess.PIPE, check=True)
 
 
-def get_hostnames(all_servo_type=False):
+def get_hostnames(servo_select: str = "from-sheet"):
     """Query the UFS a list of DUT hostnames.
 
-    By default it returns a list based on the custom plx table
+    By default ("from-sheet" mode) it returns a list based on the custom plx table
     chromeos_hardware_tools.FW_ROLLOUT_CONNECTED which is populated by the contents of
     a google sheet.  This allows careful control of DUT's affected.
 
-    If all_servo_type is specified all DUT's in the fleet that have been seen in the
-    last 1 day is returned.
+    Other options for |servo_select| are "servo_v4", "servo_v4p1" and "all",
+    selecting all DUTs in the fleet using the specified servo that have been
+    seen in the last 1 day.
 
     Args:
-        all_servo_type (bool, optional): Query the full list of DUT's.
-                                         Defaults to False.
+        servo_select (str): Which servos to handle. Defaults to "from-sheet".
 
     Returns:
         list[string]: Fleet DUT hostnames, either in the collated list or the full list
-                      of active fleet DUT's
+                      of active fleet DUT's.
+
+    Raises:
+        ValueError: if |servo_select| is not supported.
     """
-    query = "SELECT * FROM chromeos_hardware_tools.FW_ROLLOUT_CONNECTED;"
-    if all_servo_type:
-        query = ALL_QUERY % (len(all_servo_type), all_servo_type)
+    if servo_select == "from-sheet":
+        query = "SELECT * FROM chromeos_hardware_tools.FW_ROLLOUT_CONNECTED;"
+    elif servo_select in ["servo_v4", "servo_v4p1"]:
+        query = ALL_QUERY % (len(servo_select), servo_select)
+    elif servo_select == "all":
+        query = ALL_QUERY % (0, "")
+    else:
+        raise ValueError(f"{servo_select} is not a supported servo selector.")
+
     ps = subprocess.Popen(["echo", query], stdout=subprocess.PIPE)
     hostnames = (
         subprocess.check_output(
@@ -254,9 +263,9 @@ def parse_args():
         ),
     )
     parser.add_argument(
-        "--all",
-        required=False,
-        choices=["servo_v4", "servo_v4p1"],
+        "--select",
+        default="from-sheet",
+        choices=["from-sheet", "servo_v4", "servo_v4p1", "all"],
         help="What servo to update",
     )
     return parser.parse_args()
@@ -305,7 +314,7 @@ def main(unused_argv):
 
     # Retrieve all relevant data from shivas, based on a collated list of devices
     # or all of the devices for a particular servo board.
-    hostnames = get_hostnames(args.all)[1:]
+    hostnames = get_hostnames(args.select)[1:]
     data_dict = get_all_dut_info(hostnames)
 
     action_hostnames = []
