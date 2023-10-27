@@ -296,6 +296,18 @@
     <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="4">
     </params>
   </control>
+  <control>
+    <name>c2d2_i2c_pseudo_bus_type</name>
+    <doc>Get the Servo I2C bus type used by the C2D2 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="servo_i2c_bus_type" interface="2">
+    </params>
+  </control>
+  <control>
+    <name>c2d2_i2c_pseudo_device_path</name>
+    <doc>Get the i2c-pseudo device file path used by the C2D2 I2C pseudo adapter.</doc>
+    <params cmd="get" drv="i2c_pseudo" subtype="pseudo_device_path" interface="2">
+    </params>
+  </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>warm_reset</name>
