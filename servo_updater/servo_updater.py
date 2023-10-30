@@ -254,7 +254,7 @@ def _extract_version(boardname, binfile):
         return None
     rawstrings = subprocess.check_output(
         ["cbfstool", binfile, "read", "-r", "RO_FRID", "-f", "/dev/stdout"],
-        **c.get_subprocess_args()
+        **c.get_subprocess_args(),
     )
     m = re.match(r"%s_v\S+" % boardname, rawstrings)
     if m:
