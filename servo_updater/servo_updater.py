@@ -582,12 +582,22 @@ def main():
         help="Update even if version match",
         default=False,
     )
+    # TODO: Once we can expect py3.9, replace with one
+    # action=argparse.BooleanOptionalAction
     # TODO: Once fleet is ready, switch default to --no-allow-rollback (False)
     parser.add_argument(
         "--allow-rollback",
-        action=argparse.BooleanOptionalAction,
+        dest="allow_rollback",
+        action="store_true",
         default=True,
         help="Allow firmware downgrades",
+    )
+    parser.add_argument(
+        "--no-allow-rollback",
+        dest="allow_rollback",
+        action="store_false",
+        default=True,
+        help="Don't allow firmware downgrades",
     )
     parser.add_argument(
         "-a",
