@@ -174,7 +174,7 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "ec3po":
 if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo_updater":
     setup(
         name="servo_updater",
-        version="1.0",
+        version=__version__,
         maintainer="chromium os",
         maintainer_email="chromium-os-dev@chromium.org",
         license="Chromium",
