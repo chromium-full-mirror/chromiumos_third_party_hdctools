@@ -49,7 +49,7 @@ steps:
   id: 'test-ec3po'
   entrypoint: 'bash'
   args:
-    - /workspace/servo/ec3po/run_tests.sh
+    - /workspace/ec3po/run_tests.sh
   waitFor: ['src-prep']
 
 - name: 'pyfound/black:latest_release'

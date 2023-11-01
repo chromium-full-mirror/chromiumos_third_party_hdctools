@@ -1,53 +1,38 @@
-#!/usr/bin/python
-# Copyright 2020 The ChromiumOS Authors
+#!/usr/bin/python3
+# Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
-# Note: This is a py2/3 compatible file.
-
-"""Script to test and flash c2d2 boards.
+"""Script to test and flash servo micro boards.
 
 This script will continuously flash new boards in a loop,
 consisting of barcode scan, flash, provision, test.
 
 It will produce logfiles in a logfile/ directory for
-each device and for the full run.
+each servo and for the full run.
 """
 
 import argparse
 import re
 import time
 
-from servo.scripts.servo_mfg import mfg_servo_common as c
+from servo_mfg import mfg_servo_common as c
 from servo_updater import servo_updater
 
 
 STM_DFU_VIDPID = "0483:df11"
-STM_VIDPID = "18d1:5041"
-LOGNAME = "/var/log/mfg_c2d2"
-TESTERLOGNAME = "/var/log/mfg_c2d2_run"
+STM_VIDPID = "18d1:501a"
+LOGNAME = "/var/log/mfg_servo_micro"
+TESTERLOGNAME = "/var/log/mfg_servo_micro_run"
 
-# Example serial number C2012130001
 RE_SERIALNO = re.compile(
-    r"^[C]"  # supplier
-    r"[0-9]{2}"  # YY
-    r"(0[1-9]|1[0-2])"  # MM
-    r"(0[1-9]|[12][0-9]|3[0-1])"  # DD
-    r"[0-9]{4}$"
-)  # Serialno suffix
+    "^(S[MN](C[PDQ][0-9]{5}|N[PDQ][0-9]{5})|(CMO653-00166-04[A-Z0-9]+))$"
+)
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Image a c2d2 device")
+    parser = argparse.ArgumentParser(description="Image a servo micro device")
     parser.add_argument(
         "-s", "--serialno", type=str, help="serial number to program", default=None
-    )
-    parser.add_argument(
-        "--no_flash",
-        action="store_false",
-        help="Skip DFU step",
-        dest="flash",
-        default=True,
     )
     args = parser.parse_args()
 
@@ -68,17 +53,16 @@ def main():
         c.setup_logfile(LOGNAME, serialno)
         c.log("Scanned sn %s" % serialno)
 
-        if args.flash:
-            c.log("\n\n************************************************\n")
-            c.log("Plug in c2d2 via OTG adapter")
-            c.wait_for_usb(STM_DFU_VIDPID)
-            c.log("Found DFU target")
-            c.do_dfu(c.full_servo_bin_path(servo_updater.BOARD_C2D2))
+        c.log("\n\n************************************************\n")
+        c.log("Plug in servo_micro via OTG adapter")
+        c.wait_for_usb(STM_DFU_VIDPID)
+        c.log("Found DFU target")
+        c.do_dfu(c.full_servo_bin_path(servo_updater.BOARD_SERVO_MICRO))
 
         c.log("\n\n************************************************\n")
-        c.log("Plug in c2d2 via normal cable")
+        c.log("Plug in servo_micro via normal cable")
         c.wait_for_usb(STM_VIDPID)
-        # We need to wait after c2d2 power on for initialization to complete,
+        # We need to wait after servo power on for initialization to complete,
         # as well as to avoid a race condition with the kernel driver.
         # See b/110045723
         time.sleep(1)
@@ -95,7 +79,7 @@ def main():
         c.log("Finished programming.")
         c.log("\n\n************************************************\n")
         c.log("PASS")
-        c.log("C2D2, %s, PASS" % serialno)
+        c.log("Servo_Micro, %s, PASS" % serialno)
         c.log("\n\n************************************************\n")
 
         c.finish_logfile()

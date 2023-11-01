@@ -118,7 +118,7 @@ If you instead build in (~/trunk/src/third_party/hdctools) some (?) files will b
 
 
 ```
-(chroot) $ cd ~/trunk/src/third_party/hdctools/servo/scripts/servo_mfg/binfiles
+(chroot) $ cd ~/trunk/src/third_party/hdctools/servo_mfg/binfiles
 ```
 
 ### Flash custom-built firmware to ServoV4p1
@@ -348,11 +348,11 @@ The Atmega32u4 device has the same functionality as was used on Servo v4, so the
 4. If the Atmel part is not blank, erase the Atmega32u4  (possibly w/o the `--force`): `# sudo ./dfu-programmer atmega32u4 erase --force`
 5. Program the blank device.  The Keyboard.hex file & location are from a standard chromium installation.  The format is `# sudo ./dfu-programmer <device> flash <image>`
 
-A specific example outside the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/chromiumos/src/third_party/hdctools/servo/scripts/servo_mfg/binfiles/Keyboard.hex`
+A specific example outside the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/chromiumos/src/third_party/hdctools/servo_mfg/binfiles/Keyboard.hex`
 
-And from within the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/trunk/src/third_party/hdctools/servo/scripts/servo_mfg/binfiles/Keyboard.hex`
+And from within the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/trunk/src/third_party/hdctools/servo_mfg/binfiles/Keyboard.hex`
 
-Note: the Atmega32u4 can also be programmed using the script found inside the chroot at src/third_party/hdctools/servo/scripts/servo_mfg/mfg_servo_v4.py.
+Note: the Atmega32u4 can also be programmed using the script found inside the chroot at src/third_party/hdctools/servo_mfg/mfg_servo_v4.py.
 
 ## Testing DisplayPort
 

@@ -126,7 +126,6 @@ setup(
 setup(
     name="servo_mfg",
     version=__version__,
-    package_dir={"": "servo/scripts"},
     py_modules=["servo_mfg"],
     packages=["servo_mfg"],
     package_data={
@@ -161,7 +160,6 @@ setup(
     maintainer_email="chromium-os-dev@chromium.org",
     license="Chromium",
     url="http://www.chromium.org",
-    package_dir={"": "servo"},
     packages=["ec3po"],
     py_modules=["ec3po.console", "ec3po.interpreter"],
     description="EC console interpreter.",

@@ -8,9 +8,8 @@ import logging
 import os
 import time
 
-from servo_mfg import user_input
-
 import servo.utils.usb_hierarchy as usb_hierarchy
+from servo_mfg import user_input
 
 
 # Timeout to wait for a user to plug usb device in.

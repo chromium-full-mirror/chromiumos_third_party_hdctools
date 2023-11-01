@@ -6,11 +6,10 @@
 import logging
 import traceback
 
-from servo_mfg import exec_util
-from servo_mfg import user_input
-
 import servo.client as client
 import servo.utils.scratch as scratch
+from servo_mfg import exec_util
+from servo_mfg import user_input
 
 
 class TesterError(Exception):

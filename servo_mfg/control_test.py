@@ -5,9 +5,8 @@
 
 import re
 
-from servo_mfg import test
-
 import servo.client as client
+from servo_mfg import test
 
 
 class ControlTestError(test.TestError):

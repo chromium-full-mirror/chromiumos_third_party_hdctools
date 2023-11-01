@@ -64,7 +64,7 @@ repos:
                 docs/.*|
                 .*md|
                 .*\.hex|
-                servo/scripts/servo_mfg/binfiles/.*|
+                servo_mfg/binfiles/.*|
                 .gitignore|
                 LICENSE|
                 DIR_METADATA|
