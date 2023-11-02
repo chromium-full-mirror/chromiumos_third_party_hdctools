@@ -83,7 +83,6 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         self._servo_i2c_bus = None
         self._pseudo_device_path = None
         self._device_fd = None
-        self._i2c_pseudo_id = None
         self._i2c_adapter_num = None
 
         self._epoll = None
@@ -158,7 +157,6 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
             self._io_thread.daemon = True
             self._io_thread.start()
 
-            self._enqueue_simple_ctrlr_cmd((b"GET_PSEUDO_ID",))
             self._enqueue_simple_ctrlr_cmd(
                 (b"SET_ADAPTER_NAME_SUFFIX", b"(servod pid %d)" % (os.getpid(),))
             )
@@ -191,16 +189,6 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
               yet.
         """
         return self._pseudo_device_path
-
-    @property
-    def i2c_pseudo_id(self):
-        """Get the i2c-pseudo controller ID.
-
-        Returns:
-          None or int - The i2c-pseudo controller ID, or None if start() has not
-            completed yet.
-        """
-        return self._i2c_pseudo_id
 
     @property
     def i2c_adapter_num(self):
@@ -375,15 +363,6 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         self._i2c_adapter_num = int(line.split(_HEADER_SEP_CHAR, 2)[1])
         self._logger.info("I2C adapter number: %d", self._i2c_adapter_num)
 
-    def _cmd_i2c_pseudo_id(self, line):
-        """Record the I2C pseudo ID of this I2C pseudo controller.
-
-        Args:
-          line: str - The I2C_PSEUDO_ID line read from the i2c-pseudo device.
-        """
-        self._i2c_pseudo_id = int(line.split(_HEADER_SEP_CHAR, 2)[1])
-        self._logger.info("I2C pseudo ID: %d", self._i2c_pseudo_id)
-
     def _do_ctrlr_cmd(self, line):
         """Dispatch an I2C pseudo controller command to the appropriate handler.
 
@@ -403,8 +382,6 @@ class I2cPseudoV1Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
             self._cmd_i2c_xfer_req(line)
         elif cmd_name == b"I2C_ADAPTER_NUM":
             self._cmd_i2c_adap_num(line)
-        elif cmd_name == b"I2C_PSEUDO_ID":
-            self._cmd_i2c_pseudo_id(line)
         else:
             self._logger.warning(
                 "unrecognized I2C pseudo controller device command name %r", cmd_name

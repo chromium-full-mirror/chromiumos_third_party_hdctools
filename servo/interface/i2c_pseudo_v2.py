@@ -85,7 +85,6 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         self._servo_i2c_bus = None
         self._pseudo_device_path = None
         self._device_fd = None
-        self._i2c_pseudo_id = None
         self._i2c_adapter_num = None
 
         self._epoll = select.epoll(sizehint=1)
@@ -162,16 +161,6 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         return self._pseudo_device_path
 
     @property
-    def i2c_pseudo_id(self):
-        """Get the i2c-pseudo controller ID.
-
-        Returns:
-          None or int - The i2c-pseudo controller ID, or None if start() has not
-            completed yet.
-        """
-        return self._i2c_pseudo_id
-
-    @property
     def i2c_adapter_num(self):
         """Get the Linux I2C adapter number.
 
@@ -205,7 +194,6 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         )
         self._device_fd = os.open(self._pseudo_device_path, os.O_RDWR | os.O_NONBLOCK)
         fcntl.ioctl(self._device_fd, i2c_pseudo.I2CP_IOCTL_START, start_arg, True)
-        self._i2c_pseudo_id = start_arg.output.pseudo_id
         self._i2c_adapter_num = start_arg.output.adapter_num
 
         self._epoll.register(self._device_fd, _EPOLL_EVENTMASK)

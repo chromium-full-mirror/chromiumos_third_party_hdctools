@@ -90,16 +90,6 @@ class BaseI2cPseudoAdapter:
         raise NotImplementedError
 
     @property
-    def i2c_pseudo_id(self):
-        """Get the i2c-pseudo controller ID.
-
-        Returns:
-          None or int - The i2c-pseudo controller ID, or None if start() has not
-            completed yet.
-        """
-        raise NotImplementedError
-
-    @property
     def i2c_adapter_num(self):
         """Get the Linux I2C adapter number.
 

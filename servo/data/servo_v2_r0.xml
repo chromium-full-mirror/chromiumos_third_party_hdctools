@@ -721,12 +721,6 @@
     </params>
   </control>
   <control>
-    <name>servo_v2_i2c_pseudo_id</name>
-    <doc>Get the I2C pseudo ID of the Servo v2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
-    </params>
-  </control>
-  <control>
     <name>servo_v2_i2c_pseudo_bus_type</name>
     <doc>Get the Servo I2C bus type used by the Servo v2 I2C pseudo adapter.</doc>
     <params cmd="get" drv="i2c_pseudo" subtype="servo_i2c_bus_type" interface="2">

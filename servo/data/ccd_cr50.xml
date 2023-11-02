@@ -187,13 +187,6 @@
     </params>
   </control>
   <control>
-    <name>ccd_gsc_i2c_pseudo_id</name>
-    <alias>ccd_cr50_i2c_pseudo_id,ccd_ti50_i2c_pseudo_id</alias>
-    <doc>Get the I2C pseudo ID of the CCD I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="i2c_pseudo_id" interface="2">
-    </params>
-  </control>
-  <control>
     <name>ccd_gsc_i2c_pseudo_bus_type</name>
     <alias>ccd_cr50_i2c_pseudo_bus_type,ccd_ti50_i2c_pseudo_bus_type</alias>
     <doc>Get the Servo I2C bus type used by the CCD I2C pseudo adapter.</doc>

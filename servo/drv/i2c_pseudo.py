@@ -35,14 +35,6 @@ class i2cPseudo(hw_driver.HwDriver):
         pseudo_adap = self._interface.pseudo_adap
         return None if pseudo_adap is None else pseudo_adap.i2c_adapter_num
 
-    def _Get_i2c_pseudo_id(self):
-        """Get the I2C pseudo ID of this I2C pseudo adapter.
-
-        Returns: None or int
-        """
-        pseudo_adap = self._interface.pseudo_adap
-        return None if pseudo_adap is None else pseudo_adap.i2c_pseudo_id
-
     def _Get_servo_i2c_bus_type(self):
         """Get the Servo I2C bus type of this I2C pseudo adapter.
 
