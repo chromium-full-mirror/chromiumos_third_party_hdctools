@@ -190,7 +190,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         start_arg = i2c_pseudo.i2cp_ioctl_start_arg(
             functionality=i2c.I2C_FUNC_I2C | i2c.I2C_FUNC_SMBUS_EMUL,
             timeout_ms=_I2C_ADAPTER_TIMEOUT_MS,
-            suffix=b"(servod pid %d)" % (os.getpid(),),
+            name=b"servod pid=%d obj_id=%d" % (os.getpid(), id(self)),
         )
         self._device_fd = os.open(self._pseudo_device_path, os.O_RDWR | os.O_NONBLOCK)
         fcntl.ioctl(self._device_fd, i2c_pseudo.I2CP_IOCTL_START, start_arg, True)

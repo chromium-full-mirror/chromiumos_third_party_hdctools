@@ -29,7 +29,7 @@ I2CP_IOCTL_SHUTDOWN = 0x0705
 class i2cp_ioctl_start_output(ctypes.Structure):
     _fields_ = (
         ("adapter_num", ctypes.c_uint64),
-        ("pseudo_id", ctypes.c_uint64),
+        ("name_len", ctypes.c_uint32),
     )
 
 
@@ -38,7 +38,7 @@ class i2cp_ioctl_start_arg(ctypes.Structure):
         ("output", i2cp_ioctl_start_output),
         ("functionality", ctypes.c_uint32),
         ("timeout_ms", ctypes.c_uint32),
-        ("suffix", ctypes.c_char_p),
+        ("name", ctypes.c_char_p),
     )
 
 
