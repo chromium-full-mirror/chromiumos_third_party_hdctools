@@ -319,7 +319,7 @@ Sync the latest source:
 Update `sys-firmware/servo-firmware` to the latest version:
 
 ```bash
-(chroot) ~/trunk/src/scripts/update_chroot
+(chroot) update_chroot
 ```
 
 Update to latest stable firmware:
@@ -414,7 +414,7 @@ Servo v4.1 code lives in the [EC] and [`hdctools`] codebase. It can be built as
 follows:
 
 ```bash
-(chroot) $ cd ~/trunk/src/platform/ec
+(chroot) $ cd ~/chromiumos/src/platform/ec
 (chroot) $ make BOARD=servo_v4p1 -j8
 ```
 

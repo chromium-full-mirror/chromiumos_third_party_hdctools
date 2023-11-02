@@ -136,7 +136,7 @@ several tools needed to work with `servod`. Make sure the latest version is
 installed in your chroot:
 
 ```bash
-(chroot) $ ~/chromiumos/src/scripts/update_chroot
+(chroot) $ update_chroot
 ```
 
 On your workstation, `servod` must also be running to communicate with GSC:

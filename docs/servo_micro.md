@@ -127,7 +127,7 @@ Sync the latest source:
 Update `sys-firmware/servo-firmware` to the latest version:
 
 ```bash
-(chroot) ~/trunk/src/scripts/update_chroot
+(chroot) update_chroot
 ```
 
 Update the firmware:
@@ -143,7 +143,7 @@ Update the firmware:
 servo micro code lives in the ec codebase. It can be built as follows:
 
 ```bash
-(chroot) $ cd ~/trunk/src/platform/ec
+(chroot) $ cd ~/chromiumos/src/platform/ec
 (chroot) $ make BOARD=servo_micro -j8
 ```
 
