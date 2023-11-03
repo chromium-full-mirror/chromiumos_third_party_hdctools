@@ -5,6 +5,8 @@
 
 import argparse
 from datetime import datetime
+import os
+import pwd
 import sys
 
 import docker
@@ -63,6 +65,11 @@ def start_servod(
         command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
 
     volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
+
+    _servodrc = os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, ".servodrc")
+    if os.path.isfile(_servodrc):
+        volumes.append(f"{_servodrc}:/root/.servodrc:ro")
+
     if mounts:
         for mount in mounts:
             volumes.append("".join(mount))
