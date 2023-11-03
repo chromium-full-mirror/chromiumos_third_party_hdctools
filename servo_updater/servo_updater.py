@@ -11,6 +11,7 @@ from __future__ import print_function
 
 import argparse
 import json
+import logging
 import os
 import re
 import subprocess
@@ -20,6 +21,7 @@ from typing import Tuple
 
 from packaging import version
 
+from servo import servo_parsing
 from servo_updater.ecusb import tiny_servod
 import servo_updater.ecusb.tiny_servo_common as c
 import servo_updater.fw_update as fw_update
@@ -552,6 +554,7 @@ def main():
     )
     parser.add_argument(
         "-s",
+        "--serialname",
         "--serialno",
         type=str,
         help="serial number to program",
@@ -572,6 +575,12 @@ def main():
         help="Firmware channel to use",
         default=DEFAULT_CHANNEL,
         choices=CHANNELS,
+    )
+    parser.add_argument(
+        "-n",
+        "--name",
+        type=str,
+        help="symbolic name of the servo board, used as a config shortcut",
     )
     parser.add_argument(
         "-f", "--file", type=str, help="Complete ec.bin file", default=None
@@ -615,6 +624,10 @@ def main():
 
     args = parser.parse_args()
 
+    servo_parsing.ServodRCParser.PostProcessRCElements(
+        options=args, rcpath=servo_parsing.DEFAULT_RC_FILE, logger=logging
+    )
+
     if args.board is None:
         boards = BOARDS
     else:
@@ -635,7 +648,7 @@ def main():
             print_json(sys.stdout, boards, args.file, args.channel)
         return
 
-    serialno = args.serialno
+    serialno = args.serialname
 
     vidpids = set()
     devmap = {}
