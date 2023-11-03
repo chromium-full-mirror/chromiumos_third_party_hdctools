@@ -314,7 +314,6 @@ Geralt
 geteuid
 getpid
 gettime
-getuid
 ghash
 glados
 globpath

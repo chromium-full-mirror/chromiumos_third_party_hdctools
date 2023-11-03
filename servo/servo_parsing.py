@@ -68,10 +68,10 @@ from servo.utils import scratch
 #   command line <- environment definition <- rc config file
 
 
-if os.getuid():
-    DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("USER", "")
-else:
+if "SUDO_USER" in os.environ:
     DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("SUDO_USER", "")
+else:
+    DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("USER", "")
 
 
 NAME_ENV_VAR = "SERVOD_NAME"
