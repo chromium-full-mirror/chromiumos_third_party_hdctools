@@ -172,6 +172,7 @@ setup(
     maintainer_email="chromium-os-dev@chromium.org",
     license="Chromium",
     url="https://www.chromium.org/chromium-os/ec-development",
+    install_requires=["servo"],
     packages=["servo_updater", "servo_updater.ecusb"],
     entry_points={
         "console_scripts": ["servo_updater=servo_updater.servo_updater:main"],
