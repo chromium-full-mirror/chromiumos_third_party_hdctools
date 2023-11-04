@@ -6,7 +6,6 @@
 import argparse
 import logging
 import os
-import pwd
 import textwrap
 
 from servo import client
@@ -69,10 +68,11 @@ from servo.utils import scratch
 #   command line <- environment definition <- rc config file
 
 
-DEFAULT_RC_FILE = os.path.join(
-    pwd.getpwuid(os.getenv("SUDO_UID") or os.geteuid()).pw_dir,
-    ".servodrc",
-)
+if "SUDO_USER" in os.environ:
+    DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("SUDO_USER", "")
+else:
+    DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("USER", "")
+
 
 NAME_ENV_VAR = "SERVOD_NAME"
 PORT_ENV_VAR = "SERVOD_PORT"

@@ -432,7 +432,7 @@ RUN apt-get remove --purge -y \
 
 
 # Required for the name parameter for using .servorc.
-ENV USER=root
+ENV USER=docker
 # Required for the ftdi libraries to be found. ENV does not allow the
 # use of command to populate the results, to be less brittle it would
 # be nice if the path could be discovered with a command like:
