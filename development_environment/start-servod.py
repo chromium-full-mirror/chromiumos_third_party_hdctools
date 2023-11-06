@@ -6,7 +6,6 @@
 import argparse
 from datetime import datetime
 import os
-import pwd
 import sys
 
 import docker
@@ -66,7 +65,7 @@ def start_servod(
 
     volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
 
-    _servodrc = os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, ".servodrc")
+    _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
     if os.path.isfile(_servodrc):
         volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
