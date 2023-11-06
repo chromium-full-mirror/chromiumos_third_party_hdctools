@@ -11,7 +11,7 @@ To build your changes to `servod` (board overlays, python code, etc), run the
 following command:
 
 ```bash
-(chroot) $ ~/chromiumos/src/scripts/update_chroot
+(chroot) $ update_chroot
 ```
 
 If you don't run `update_chroot` after every `repo sync`, then manually emerging

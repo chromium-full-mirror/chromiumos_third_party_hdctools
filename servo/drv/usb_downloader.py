@@ -59,6 +59,7 @@ class usbDownloader(hw_driver.HwDriver):
             headers = resp.headers
             self._logger.debug("Block size %d", bs)
             self._logger.debug("Request Get Headers %s", headers)
+            resp.raise_for_status()
             tfp = open(filename, "wb", 0)
             with tfp:
                 result = filename, headers

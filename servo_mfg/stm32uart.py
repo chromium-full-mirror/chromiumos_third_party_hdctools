@@ -13,7 +13,7 @@ import tty
 import exceptions
 import usb
 
-from servo.scripts.servo_mfg import stm32usb
+from servo_mfg import stm32usb
 
 
 class SuartError(Exception):

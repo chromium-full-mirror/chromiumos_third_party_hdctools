@@ -9,10 +9,9 @@ import os
 import re
 import time
 
-import servo_updater
-
 import servo
 from servo.drv import pty_driver
+from servo_updater import servo_updater
 
 
 # EC console mask for enabling only command channel

@@ -68,10 +68,10 @@ from servo.utils import scratch
 #   command line <- environment definition <- rc config file
 
 
-if os.getuid():
-    DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("USER", "")
-else:
+if "SUDO_USER" in os.environ:
     DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("SUDO_USER", "")
+else:
+    DEFAULT_RC_FILE = "/home/%s/.servodrc" % os.getenv("USER", "")
 
 
 NAME_ENV_VAR = "SERVOD_NAME"
@@ -261,7 +261,7 @@ class BaseServodParser(_BaseServodParser):
             dest="port",
             action=StoreAndMarkAction,
             help="port of the servod server. Can also be supplied "
-            "through environment variable " + PORT_ENV_VAR
+            "through environment variable " + PORT_ENV_VAR,
         )
 
 
@@ -317,7 +317,7 @@ class ServodRCParser(_BaseServodParser):
             dest="name",
             help="symbolic name of the servo board, "
             "used as a config shortcut, could also be supplied "
-            "through environment variable " + NAME_ENV_VAR
+            "through environment variable " + NAME_ENV_VAR,
         )
 
     @staticmethod

@@ -6,7 +6,7 @@
 
 import unittest
 
-from servo.scripts.servo_mfg import mfg_servo_v4 as mfg
+from servo_mfg import mfg_servo_v4 as mfg
 
 
 class TestMfgServoV4(unittest.TestCase):

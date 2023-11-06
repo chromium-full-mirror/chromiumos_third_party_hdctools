@@ -5,6 +5,8 @@
 
 import argparse
 from datetime import datetime
+import os
+import pwd
 import sys
 
 import docker
@@ -63,6 +65,11 @@ def start_servod(
         command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
 
     volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
+
+    _servodrc = os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, ".servodrc")
+    if os.path.isfile(_servodrc):
+        volumes.append(f"{_servodrc}:/root/.servodrc:ro")
+
     if mounts:
         for mount in mounts:
             volumes.append("".join(mount))
@@ -98,6 +105,15 @@ def start_servod(
                 started = True
                 log_lines = cont.logs(tail=3)
                 print(log_lines.decode("utf-8"))
+                if port:
+                    print(
+                        "container port 9999 is mapped to port %s on your machine"
+                        % port
+                    )
+                print(
+                    "\nTo stop this container: $ stop-servod --container_name %s\n"
+                    % container_name
+                )
     elif test:
         cont.reload()
         while cont.status == "running":
@@ -108,6 +124,11 @@ def start_servod(
             else:
                 for line in log_lines:
                     print(line.decode("utf-8"), end="")
+    elif sleep:
+        print(
+            "Enter the container by running the command $ docker exec -it %s bash"
+            % name
+        )
 
 
 def parse_args():
