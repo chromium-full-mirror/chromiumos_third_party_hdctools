@@ -50,7 +50,7 @@ def start_servod(
     if serial_no:
         servod_params += "--serialname %s " % serial_no
     if passthrough_args:
-        servod_params += passthrough_args
+        servod_params += str.join(" ", passthrough_args)
     if not container_name:
         now = datetime.now()
         container_name = now.strftime("%s")
