@@ -1,0 +1,18 @@
+Section: devel
+Priority: required
+Standards-Version: 4.5.1
+
+Package: hdctools-docker-fake
+Version: 9999-1
+Maintainer: The ChromiumOS Authors <chromium-os-dev@chromium.org>
+Provides: libflashrom1, libflashrom-dev, libusb-1.0-0 (= 2:1.0.9999-1), libusb-1.0-0-dev, libftdi1-2, libftdi1-dev
+Conflicts: libflashrom1, libflashrom-dev, libusb-1.0-0, libusb-1.0-0-dev, libftdi1-2, libftdi1-dev
+Architecture: all
+Description: Stand-In for locally installed sources
+ The hdctools Docker container builds a couple of libraries and tools on
+ its own for various reasons: With some, we need a custom version (e.g.
+ flashrom), others need different compilation flags to work properly in
+ the container context (e.g. libusb). To avoid mixing up two versions in
+ the container, we fake the presence of the distro packages for the things
+ we install on our own. This is an easier approach than maintaining those
+ packages as Debian packages ourselves.
