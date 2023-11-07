@@ -21,6 +21,7 @@ RUN apt-get update \
     && apt-get install -y \
     autoconf \
     build-essential \
+    equivs \
     clang \
     curl \
     git \
@@ -41,6 +42,13 @@ ENV CXX=clang++
 # Required to make the platform/ec makefile not think we are building
 # from portage.
 ENV BUILDCC_PREFIX=
+
+# Override the libraries we build ourselves, and do it early: no need to mess
+# up the library builds by building against distro packages that we don't
+# intend to use.
+COPY servo/dockerfiles/equivs-control .
+RUN equivs-build equivs-control
+RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
 
 ######################################################################
 FROM clang-builder as cbfstool
@@ -235,6 +243,9 @@ RUN apt-get update --no-install-recommends  \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --link --from=clang-builder hdctools-docker-fake_9999-1_all.deb /tmp/
+RUN apt-get install -y /tmp/hdctools-docker-fake_9999-1_all.deb
+
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/cloud.google.gpg
 RUN sudo apt-get update && sudo apt-get install google-cloud-cli
@@ -318,6 +329,10 @@ RUN apt-get update --no-install-recommends \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+
+COPY --link --from=clang-builder hdctools-docker-fake_9999-1_all.deb /tmp/
+RUN apt-get install -y /tmp/hdctools-docker-fake_9999-1_all.deb && \
+	rm -f /tmp/hdctools-docker-fake_9999-1_all.deb
 
 # Install libusb.
 COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
