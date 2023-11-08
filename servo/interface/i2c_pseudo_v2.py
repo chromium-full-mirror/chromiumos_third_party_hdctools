@@ -400,6 +400,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
                 error=0,
             )
         )
+        return True
 
     def _poll_loop(self):
         """Keep polling the I2C pseudo controller in a loop."""
