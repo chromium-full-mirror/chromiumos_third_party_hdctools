@@ -27,6 +27,11 @@
     </params>
   </control>
   <control>
+    <name>ccd_cpu_fw_spi_depends_on_ec_fw</name>
+    <doc>Returns "yes" or "no" of whether ccd_cpu_fw_spi control depends on DUT EC firmware cooperation. See https://issuetracker.google.com/269804618 for background. This control is only meaningful when ccd_cpu_fw_spi control exists.</doc>
+    <params drv="echo" value="yes" interface="servo" clobber_ok="full"/>
+  </control>
+  <control>
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing AP firmware over C2D2</doc>
     <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
@@ -49,6 +54,11 @@
         </item>
       </content>
     </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi_depends_on_ec_fw</name>
+    <doc>Returns "yes" or "no" of whether cpu_fw_spi control depends on DUT EC firmware cooperation. See https://issuetracker.google.com/269804618 for background. This control is only meaningful when cpu_fw_spi control exists.</doc>
+    <params drv="echo" value="yes" interface="servo" clobber_ok="full"/>
   </control>
   <!-- ******** Controls ******** -->
   <control>

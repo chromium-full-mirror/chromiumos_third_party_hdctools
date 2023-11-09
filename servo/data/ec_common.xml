@@ -156,4 +156,14 @@
     <doc>The USB PD data role from the perspective of the DUT. It is not possible to set to UFP when servo_pd_role is SNK.</doc>
     <params interface="10" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" />
   </control>
+  <control>
+    <name>cpu_fw_spi_depends_on_ec_fw</name>
+    <doc>Returns "yes" or "no" of whether cpu_fw_spi control depends on DUT EC firmware cooperation. See https://issuetracker.google.com/269804618 for background. This control is only meaningful when cpu_fw_spi control exists.</doc>
+    <params drv="echo" value="no" interface="servo"/>
+  </control>
+  <control>
+    <name>ccd_cpu_fw_spi_depends_on_ec_fw</name>
+    <doc>Returns "yes" or "no" of whether ccd_cpu_fw_spi control depends on DUT EC firmware cooperation. See https://issuetracker.google.com/269804618 for background. This control is only meaningful when ccd_cpu_fw_spi control exists.</doc>
+    <params drv="echo" value="no" interface="servo"/>
+  </control>
 </root>
