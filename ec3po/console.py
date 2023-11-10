@@ -191,24 +191,26 @@ class Console:
 
     def __str__(self):
         """Show internal state of Console object as a string."""
-        string = []
-        string.append("controller_pty: %s" % (self.controller_pty,))
-        string.append("user_pty: %s" % (self.user_pty,))
-        string.append("interface_pty: %s" % (self.interface_pty,))
-        string.append("cmd_pipe: %s" % (self.cmd_pipe,))
-        string.append("dbg_pipe: %s" % (self.dbg_pipe,))
-        string.append("oobm_queue: %s" % (self.oobm_queue,))
-        string.append("input_buffer: %s" % (self.input_buffer,))
-        string.append("input_buffer_pos: %d" % (self.input_buffer_pos,))
-        string.append("esc_state: %d" % (self.esc_state,))
-        string.append("line_limit: %d" % (self.line_limit,))
-        string.append("history: %r" % (self.history,))
-        string.append("history_pos: %d" % (self.history_pos,))
-        string.append("prompt: %r" % (self.prompt,))
-        string.append("partial_cmd: %r" % (self.partial_cmd,))
-        string.append("interrogation_mode: %r" % (self.interrogation_mode,))
-        string.append("look_buffer: %r" % (self.look_buffer,))
-        return "\n".join(string)
+        return "\n".join(
+            (
+                "controller_pty: %s" % (self.controller_pty,),
+                "user_pty: %s" % (self.user_pty,),
+                "interface_pty: %s" % (self.interface_pty,),
+                "cmd_pipe: %s" % (self.cmd_pipe,),
+                "dbg_pipe: %s" % (self.dbg_pipe,),
+                "oobm_queue: %s" % (self.oobm_queue,),
+                "input_buffer: %s" % (self.input_buffer,),
+                "input_buffer_pos: %d" % (self.input_buffer_pos,),
+                "esc_state: %d" % (self.esc_state,),
+                "line_limit: %d" % (self.line_limit,),
+                "history: %r" % (self.history,),
+                "history_pos: %d" % (self.history_pos,),
+                "prompt: %r" % (self.prompt,),
+                "partial_cmd: %r" % (self.partial_cmd,),
+                "interrogation_mode: %r" % (self.interrogation_mode,),
+                "look_buffer: %r" % (self.look_buffer,),
+            )
+        )
 
     def LogConsoleOutput(self, data):
         """Log to debug user MCU output to controller_pty when line is filled.

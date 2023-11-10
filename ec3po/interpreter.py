@@ -120,20 +120,22 @@ class Interpreter:
         Returns:
           A string that shows the values of the attributes.
         """
-        string = []
-        string.append("%r" % (self,))
-        string.append("ec_uart_pty: %s" % (self.ec_uart_pty,))
-        string.append("cmd_pipe: %r" % (self.cmd_pipe,))
-        string.append("dbg_pipe: %r" % (self.dbg_pipe,))
-        string.append("cmd_retries: %d" % (self.cmd_retries,))
-        string.append("log_level: %d" % (self.log_level,))
-        string.append("inputs: %r" % (self.inputs,))
-        string.append("outputs: %r" % (self.outputs,))
-        string.append("ec_cmd_queue: %r" % (self.ec_cmd_queue,))
-        string.append("last_cmd: '%s'" % (self.last_cmd,))
-        string.append("enhanced_ec: %r" % (self.enhanced_ec,))
-        string.append("interrogating: %r" % (self.interrogating,))
-        return "\n".join(string)
+        return "\n".join(
+            (
+                "%r" % (self,),
+                "ec_uart_pty: %s" % (self.ec_uart_pty,),
+                "cmd_pipe: %r" % (self.cmd_pipe,),
+                "dbg_pipe: %r" % (self.dbg_pipe,),
+                "cmd_retries: %d" % (self.cmd_retries,),
+                "log_level: %d" % (self.log_level,),
+                "inputs: %r" % (self.inputs,),
+                "outputs: %r" % (self.outputs,),
+                "ec_cmd_queue: %r" % (self.ec_cmd_queue,),
+                "last_cmd: '%s'" % (self.last_cmd,),
+                "enhanced_ec: %r" % (self.enhanced_ec,),
+                "interrogating: %r" % (self.interrogating,),
+            )
+        )
 
     def EnqueueCmd(self, command):
         """Enqueue a command to be sent to the EC UART.
