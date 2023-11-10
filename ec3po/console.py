@@ -1060,19 +1060,19 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 "ec3po console received EOF from cmd_pipe"
                             )
                             continue_looping = False
-                        else:
-                            # Write it to the user console.
-                            if console.raw_debug:
-                                console.logger.debug(
-                                    "|CMD|-%s->%r",
-                                    ("u" if controller_connected else "")
-                                    + ("i" if command_active.value else ""),
-                                    data.strip(),
-                                )
-                            if controller_connected:
-                                os.write(console.controller_pty, data)
-                            if command_active.value:
-                                os.write(console.interface_pty, data)
+                            continue
+                        # Write it to the user console.
+                        if console.raw_debug:
+                            console.logger.debug(
+                                "|CMD|-%s->%r",
+                                ("u" if controller_connected else "")
+                                + ("i" if command_active.value else ""),
+                                data.strip(),
+                            )
+                        if controller_connected:
+                            os.write(console.controller_pty, data)
+                        if command_active.value:
+                            os.write(console.interface_pty, data)
 
                     elif fileno == console.dbg_pipe.fileno():
                         try:
@@ -1082,50 +1082,50 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 "ec3po console received EOF from dbg_pipe"
                             )
                             continue_looping = False
-                        else:
-                            if console.interrogation_mode == b"auto":
-                                # Search look buffer for enhanced EC image string.
-                                console.CheckBufferForEnhancedImage(data)
-                            # Write it to the user console.
-                            if len(data) > 1 and console.raw_debug:
-                                console.logger.debug(
-                                    "|DBG|-%s->%r",
-                                    ("u" if controller_connected else "")
-                                    + ("i" if command_active.value else ""),
-                                    data.strip(),
-                                )
-                            console.LogConsoleOutput(data)
-                            if controller_connected:
-                                end = len(data) - 1
-                                if console.timestamp_enabled:
-                                    # A timestamp is required at the beginning of
-                                    # this line
-                                    if tm_req is True:
-                                        now = datetime.now()
-                                        tm = CanonicalizeTimeString(
-                                            now.strftime(HOST_STRFTIME)
-                                        )
-                                        os.write(console.controller_pty, tm)
-                                        tm_req = False
-
-                                    # Insert timestamps into the middle where
-                                    # appropriate except if the last character is a
-                                    # newline
-                                    nls_found = data.count(b"\n", 0, end)
+                            continue
+                        if console.interrogation_mode == b"auto":
+                            # Search look buffer for enhanced EC image string.
+                            console.CheckBufferForEnhancedImage(data)
+                        # Write it to the user console.
+                        if len(data) > 1 and console.raw_debug:
+                            console.logger.debug(
+                                "|DBG|-%s->%r",
+                                ("u" if controller_connected else "")
+                                + ("i" if command_active.value else ""),
+                                data.strip(),
+                            )
+                        console.LogConsoleOutput(data)
+                        if controller_connected:
+                            end = len(data) - 1
+                            if console.timestamp_enabled:
+                                # A timestamp is required at the beginning of
+                                # this line
+                                if tm_req is True:
                                     now = datetime.now()
                                     tm = CanonicalizeTimeString(
-                                        now.strftime("\n" + HOST_STRFTIME)
+                                        now.strftime(HOST_STRFTIME)
                                     )
-                                    data_tm = data.replace(b"\n", tm, nls_found)
-                                else:
-                                    data_tm = data
+                                    os.write(console.controller_pty, tm)
+                                    tm_req = False
 
-                                # timestamp required on next input
-                                if data[end] == b"\n"[0]:
-                                    tm_req = True
-                                os.write(console.controller_pty, data_tm)
-                            if command_active.value:
-                                os.write(console.interface_pty, data)
+                                # Insert timestamps into the middle where
+                                # appropriate except if the last character is a
+                                # newline
+                                nls_found = data.count(b"\n", 0, end)
+                                now = datetime.now()
+                                tm = CanonicalizeTimeString(
+                                    now.strftime("\n" + HOST_STRFTIME)
+                                )
+                                data_tm = data.replace(b"\n", tm, nls_found)
+                            else:
+                                data_tm = data
+
+                            # timestamp required on next input
+                            if data[end] == b"\n"[0]:
+                                tm_req = True
+                            os.write(console.controller_pty, data_tm)
+                        if command_active.value:
+                            os.write(console.interface_pty, data)
 
                     elif fileno == shutdown_pipe.fileno():
                         console.logger.debug(
