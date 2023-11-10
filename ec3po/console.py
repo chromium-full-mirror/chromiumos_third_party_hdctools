@@ -220,11 +220,6 @@ class Console:
           data: bytes - string received from MCU
         """
         data = list(data)
-        # For compatibility with python2 and python3, standardize on the data
-        # being a list of integers. This requires one more transformation in py2
-        if not isinstance(data[0], int):
-            data = [ord(c) for c in data]
-
         # This is a list of already filtered characters (or placeholders).
         line = self.output_line_log_buffer
 
