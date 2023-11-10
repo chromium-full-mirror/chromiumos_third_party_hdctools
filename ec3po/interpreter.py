@@ -93,8 +93,8 @@ class Interpreter:
           name: the console source name
         """
         # Create a unique logger based on the interpreter name
-        interpreter_prefix = ("%s - " % name) if name else ""
-        logger = logging.getLogger("%sEC3PO.Interpreter" % interpreter_prefix)
+        interpreter_prefix = ("%s - " % (name,)) if name else ""
+        logger = logging.getLogger("%sEC3PO.Interpreter" % (interpreter_prefix,))
         self.logger = LoggerAdapter(logger, {"pty": ec_uart_pty})
         # TODO(https://crbug.com/1162189): revisit the 2 TODOs below
         # TODO(https://bugs.python.org/issue27805, python3.7+): revert to ab+
@@ -121,18 +121,18 @@ class Interpreter:
           A string that shows the values of the attributes.
         """
         string = []
-        string.append("%r" % self)
-        string.append("ec_uart_pty: %s" % self.ec_uart_pty)
-        string.append("cmd_pipe: %r" % self.cmd_pipe)
-        string.append("dbg_pipe: %r" % self.dbg_pipe)
-        string.append("cmd_retries: %d" % self.cmd_retries)
-        string.append("log_level: %d" % self.log_level)
-        string.append("inputs: %r" % self.inputs)
-        string.append("outputs: %r" % self.outputs)
-        string.append("ec_cmd_queue: %r" % self.ec_cmd_queue)
-        string.append("last_cmd: '%s'" % self.last_cmd)
-        string.append("enhanced_ec: %r" % self.enhanced_ec)
-        string.append("interrogating: %r" % self.interrogating)
+        string.append("%r" % (self,))
+        string.append("ec_uart_pty: %s" % (self.ec_uart_pty,))
+        string.append("cmd_pipe: %r" % (self.cmd_pipe,))
+        string.append("dbg_pipe: %r" % (self.dbg_pipe,))
+        string.append("cmd_retries: %d" % (self.cmd_retries,))
+        string.append("log_level: %d" % (self.log_level,))
+        string.append("inputs: %r" % (self.inputs,))
+        string.append("outputs: %r" % (self.outputs,))
+        string.append("ec_cmd_queue: %r" % (self.ec_cmd_queue,))
+        string.append("last_cmd: '%s'" % (self.last_cmd,))
+        string.append("enhanced_ec: %r" % (self.enhanced_ec,))
+        string.append("interrogating: %r" % (self.interrogating,))
         return "\n".join(string)
 
     def EnqueueCmd(self, command):
@@ -175,9 +175,9 @@ class Interpreter:
             packed_cmd = []
             packed_cmd.append(b"&&")
             # The first pair of hex digits are the length of the command.
-            packed_cmd.append(b"%02x" % len(raw_cmd))
+            packed_cmd.append(b"%02x" % (len(raw_cmd),))
             # Then the CRC8 of cmd.
-            packed_cmd.append(b"%02x" % Crc8(raw_cmd))
+            packed_cmd.append(b"%02x" % (Crc8(raw_cmd),))
             packed_cmd.append(b"&")
             # Now, the raw command followed by 2 newlines.
             packed_cmd.append(raw_cmd)

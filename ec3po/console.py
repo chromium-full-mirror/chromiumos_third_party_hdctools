@@ -162,8 +162,8 @@ class Console:
         name: the console source name
         """
         # Create a unique logger based on the console name
-        console_prefix = ("%s - " % name) if name else ""
-        logger = logging.getLogger("%sEC3PO.Console" % console_prefix)
+        console_prefix = ("%s - " % (name,)) if name else ""
+        logger = logging.getLogger("%sEC3PO.Console" % (console_prefix,))
         self.logger = interpreter.LoggerAdapter(logger, {"pty": user_pty})
         self.controller_pty = controller_pty
         self.user_pty = user_pty
@@ -192,22 +192,22 @@ class Console:
     def __str__(self):
         """Show internal state of Console object as a string."""
         string = []
-        string.append("controller_pty: %s" % self.controller_pty)
-        string.append("user_pty: %s" % self.user_pty)
-        string.append("interface_pty: %s" % self.interface_pty)
-        string.append("cmd_pipe: %s" % self.cmd_pipe)
-        string.append("dbg_pipe: %s" % self.dbg_pipe)
-        string.append("oobm_queue: %s" % self.oobm_queue)
-        string.append("input_buffer: %s" % self.input_buffer)
-        string.append("input_buffer_pos: %d" % self.input_buffer_pos)
-        string.append("esc_state: %d" % self.esc_state)
-        string.append("line_limit: %d" % self.line_limit)
-        string.append("history: %r" % self.history)
-        string.append("history_pos: %d" % self.history_pos)
-        string.append("prompt: %r" % self.prompt)
-        string.append("partial_cmd: %r" % self.partial_cmd)
-        string.append("interrogation_mode: %r" % self.interrogation_mode)
-        string.append("look_buffer: %r" % self.look_buffer)
+        string.append("controller_pty: %s" % (self.controller_pty,))
+        string.append("user_pty: %s" % (self.user_pty,))
+        string.append("interface_pty: %s" % (self.interface_pty,))
+        string.append("cmd_pipe: %s" % (self.cmd_pipe,))
+        string.append("dbg_pipe: %s" % (self.dbg_pipe,))
+        string.append("oobm_queue: %s" % (self.oobm_queue,))
+        string.append("input_buffer: %s" % (self.input_buffer,))
+        string.append("input_buffer_pos: %d" % (self.input_buffer_pos,))
+        string.append("esc_state: %d" % (self.esc_state,))
+        string.append("line_limit: %d" % (self.line_limit,))
+        string.append("history: %r" % (self.history,))
+        string.append("history_pos: %d" % (self.history_pos,))
+        string.append("prompt: %r" % (self.prompt,))
+        string.append("partial_cmd: %r" % (self.partial_cmd,))
+        string.append("interrogation_mode: %r" % (self.interrogation_mode,))
+        string.append("look_buffer: %r" % (self.look_buffer,))
         return "\n".join(string)
 
     def LogConsoleOutput(self, data):
@@ -245,11 +245,11 @@ class Console:
                 # Turn any character that isn't printable ASCII into escaped hex.
                 # ' ' is chr(20), and 0-19 are unprintable control characters.
                 # '~' is chr(126), and 127 is DELETE.  128-255 are control and Latin-1.
-                line.append(r"\x%02x" % byte)
+                line.append(r"\x%02x" % (byte,))
             else:
                 # byte is printable. Thus it is safe to use chr() to get the printable
                 # character out of it again.
-                line.append("%s" % chr(byte))
+                line.append("%s" % (chr(byte),))
         self.output_line_log_buffer = line
 
     def PrintHistory(self):
