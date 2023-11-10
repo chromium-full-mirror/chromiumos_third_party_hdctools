@@ -223,8 +223,7 @@ class Console:
         # This is a list of already filtered characters (or placeholders).
         line = self.output_line_log_buffer
 
-        # TODO(b/177480273): use raw strings here
-        symbols = {ord(b"\n"): "\\n", ord(b"\r"): "\\r", ord(b"\t"): "\\t"}
+        symbols = {ord(b"\n"): r"\n", ord(b"\r"): r"\r", ord(b"\t"): r"\t"}
         # self.logger.debug(u'%s + %r', u''.join(line), ''.join(data))
         while data:
             # Recall, data is a list of integers, namely the byte values sent by
@@ -246,7 +245,7 @@ class Console:
                 # Turn any character that isn't printable ASCII into escaped hex.
                 # ' ' is chr(20), and 0-19 are unprintable control characters.
                 # '~' is chr(126), and 127 is DELETE.  128-255 are control and Latin-1.
-                line.append("\\x%02x" % byte)
+                line.append(r"\x%02x" % byte)
             else:
                 # byte is printable. Thus it is safe to use chr() to get the printable
                 # character out of it again.
