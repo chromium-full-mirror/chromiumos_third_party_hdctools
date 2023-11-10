@@ -1096,7 +1096,6 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             )
                         console.LogConsoleOutput(data)
                         if controller_connected:
-                            end = len(data) - 1
                             if console.timestamp_enabled:
                                 # A timestamp is required at the beginning of
                                 # this line
@@ -1111,7 +1110,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 # Insert timestamps into the middle where
                                 # appropriate except if the last character is a
                                 # newline
-                                nls_found = data.count(b"\n", 0, end)
+                                nls_found = data.count(b"\n", 0, -1)
                                 now = datetime.now()
                                 tm = CanonicalizeTimeString(
                                     now.strftime("\n" + HOST_STRFTIME)
@@ -1121,7 +1120,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 data_tm = data
 
                             # timestamp required on next input
-                            if data[end] == b"\n"[0]:
+                            if data[-1:] == b"\n":
                                 tm_req = True
                             os.write(console.controller_pty, data_tm)
                         if command_active.value:
