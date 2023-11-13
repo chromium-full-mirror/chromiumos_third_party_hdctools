@@ -13,7 +13,7 @@ This module is designed to be friendly for 'import *' by making these promises:
 
 import ctypes
 
-from servo.utils.linux_i2c.i2c import i2c_msg
+from servo.utils.linux.i2c import i2c_msg
 
 
 I2CP_CONTROLLER_PATH = b"/dev/i2c-pseudo"

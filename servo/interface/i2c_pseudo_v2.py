@@ -16,8 +16,8 @@ import select
 import threading
 
 from servo.interface import i2c_pseudo_base
-from servo.utils.linux_i2c import i2c
-from servo.utils.linux_i2c import i2c_pseudo
+from servo.utils.linux import i2c
+from servo.utils.linux import i2c_pseudo
 
 
 # pylint: disable=undefined-variable
