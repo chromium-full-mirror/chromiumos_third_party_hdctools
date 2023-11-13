@@ -59,7 +59,7 @@ class i2cp_ioctl_xfer_counters(ctypes.Structure):
 class i2cp_ioctl_xfer_req_output(ctypes.Structure):
     _fields_ = (
         ("xfer_id", ctypes.c_uint64),
-        ("num_msgs", ctypes.c_uint16),
+        ("num_msgs", ctypes.c_uint32),
     )
 
 
@@ -77,8 +77,8 @@ class i2cp_ioctl_xfer_reply_arg(ctypes.Structure):
     _fields_ = (
         ("msgs", ctypes.POINTER(i2c_msg)),
         ("xfer_id", ctypes.c_uint64),
-        ("num_msgs", ctypes.c_uint16),
-        ("error", ctypes.c_uint16),
+        ("num_msgs", ctypes.c_uint32),
+        ("error", ctypes.c_uint32),
     )
 
 

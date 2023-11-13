@@ -21,6 +21,7 @@ RUN apt-get update \
     && apt-get install -y \
     autoconf \
     build-essential \
+    equivs \
     clang \
     curl \
     git \
@@ -41,6 +42,13 @@ ENV CXX=clang++
 # Required to make the platform/ec makefile not think we are building
 # from portage.
 ENV BUILDCC_PREFIX=
+
+# Override the libraries we build ourselves, and do it early: no need to mess
+# up the library builds by building against distro packages that we don't
+# intend to use.
+COPY servo/dockerfiles/equivs-control .
+RUN equivs-build equivs-control
+RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
 
 ######################################################################
 FROM clang-builder as cbfstool
@@ -235,6 +243,9 @@ RUN apt-get update --no-install-recommends  \
     xz-utils \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --link --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
+RUN apt-get install -y /hdctools-docker-fake_9999-1_all.deb
+
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
 RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/cloud.google.gpg
 RUN sudo apt-get update && sudo apt-get install google-cloud-cli
@@ -282,6 +293,8 @@ RUN strip /usr/bin/futility
 ######################################################################
 FROM debian:bookworm-slim as base
 
+COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
+
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
     dnsutils \
@@ -317,7 +330,9 @@ RUN apt-get update --no-install-recommends \
     python3-pip \
     wget \
     && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
+    && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
+    && rm -f /hdctools-docker-fake_9999-1_all.deb
 
 # Install libusb.
 COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
@@ -431,8 +446,6 @@ RUN apt-get remove --purge -y \
     && rm -rf /usr/share/zoneinfo/
 
 
-# Required for the name parameter for using .servorc.
-ENV USER=docker
 # Required for the ftdi libraries to be found. ENV does not allow the
 # use of command to populate the results, to be less brittle it would
 # be nice if the path could be discovered with a command like:

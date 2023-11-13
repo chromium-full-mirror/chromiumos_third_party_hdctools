@@ -6,7 +6,6 @@
 import argparse
 from datetime import datetime
 import os
-import pwd
 import sys
 
 import docker
@@ -43,7 +42,7 @@ def start_servo_updater(
 
     volumes = ["/dev:/dev"]
 
-    _servodrc = os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, ".servodrc")
+    _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
     if os.path.isfile(_servodrc):
         volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 

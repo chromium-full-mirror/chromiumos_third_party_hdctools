@@ -162,8 +162,8 @@ class Console:
         name: the console source name
         """
         # Create a unique logger based on the console name
-        console_prefix = ("%s - " % name) if name else ""
-        logger = logging.getLogger("%sEC3PO.Console" % console_prefix)
+        console_prefix = ("%s - " % (name,)) if name else ""
+        logger = logging.getLogger("%sEC3PO.Console" % (console_prefix,))
         self.logger = interpreter.LoggerAdapter(logger, {"pty": user_pty})
         self.controller_pty = controller_pty
         self.user_pty = user_pty
@@ -191,24 +191,26 @@ class Console:
 
     def __str__(self):
         """Show internal state of Console object as a string."""
-        string = []
-        string.append("controller_pty: %s" % self.controller_pty)
-        string.append("user_pty: %s" % self.user_pty)
-        string.append("interface_pty: %s" % self.interface_pty)
-        string.append("cmd_pipe: %s" % self.cmd_pipe)
-        string.append("dbg_pipe: %s" % self.dbg_pipe)
-        string.append("oobm_queue: %s" % self.oobm_queue)
-        string.append("input_buffer: %s" % self.input_buffer)
-        string.append("input_buffer_pos: %d" % self.input_buffer_pos)
-        string.append("esc_state: %d" % self.esc_state)
-        string.append("line_limit: %d" % self.line_limit)
-        string.append("history: %r" % self.history)
-        string.append("history_pos: %d" % self.history_pos)
-        string.append("prompt: %r" % self.prompt)
-        string.append("partial_cmd: %r" % self.partial_cmd)
-        string.append("interrogation_mode: %r" % self.interrogation_mode)
-        string.append("look_buffer: %r" % self.look_buffer)
-        return "\n".join(string)
+        return "\n".join(
+            (
+                "controller_pty: %s" % (self.controller_pty,),
+                "user_pty: %s" % (self.user_pty,),
+                "interface_pty: %s" % (self.interface_pty,),
+                "cmd_pipe: %s" % (self.cmd_pipe,),
+                "dbg_pipe: %s" % (self.dbg_pipe,),
+                "oobm_queue: %s" % (self.oobm_queue,),
+                "input_buffer: %s" % (self.input_buffer,),
+                "input_buffer_pos: %d" % (self.input_buffer_pos,),
+                "esc_state: %d" % (self.esc_state,),
+                "line_limit: %d" % (self.line_limit,),
+                "history: %r" % (self.history,),
+                "history_pos: %d" % (self.history_pos,),
+                "prompt: %r" % (self.prompt,),
+                "partial_cmd: %r" % (self.partial_cmd,),
+                "interrogation_mode: %r" % (self.interrogation_mode,),
+                "look_buffer: %r" % (self.look_buffer,),
+            )
+        )
 
     def LogConsoleOutput(self, data):
         """Log to debug user MCU output to controller_pty when line is filled.
@@ -220,16 +222,10 @@ class Console:
           data: bytes - string received from MCU
         """
         data = list(data)
-        # For compatibility with python2 and python3, standardize on the data
-        # being a list of integers. This requires one more transformation in py2
-        if not isinstance(data[0], int):
-            data = [ord(c) for c in data]
-
         # This is a list of already filtered characters (or placeholders).
         line = self.output_line_log_buffer
 
-        # TODO(b/177480273): use raw strings here
-        symbols = {ord(b"\n"): "\\n", ord(b"\r"): "\\r", ord(b"\t"): "\\t"}
+        symbols = {ord(b"\n"): r"\n", ord(b"\r"): r"\r", ord(b"\t"): r"\t"}
         # self.logger.debug(u'%s + %r', u''.join(line), ''.join(data))
         while data:
             # Recall, data is a list of integers, namely the byte values sent by
@@ -251,11 +247,11 @@ class Console:
                 # Turn any character that isn't printable ASCII into escaped hex.
                 # ' ' is chr(20), and 0-19 are unprintable control characters.
                 # '~' is chr(126), and 127 is DELETE.  128-255 are control and Latin-1.
-                line.append("\\x%02x" % byte)
+                line.append(r"\x%02x" % (byte,))
             else:
                 # byte is printable. Thus it is safe to use chr() to get the printable
                 # character out of it again.
-                line.append("%s" % chr(byte))
+                line.append("%s" % (chr(byte),))
         self.output_line_log_buffer = line
 
     def PrintHistory(self):
@@ -1064,19 +1060,19 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 "ec3po console received EOF from cmd_pipe"
                             )
                             continue_looping = False
-                        else:
-                            # Write it to the user console.
-                            if console.raw_debug:
-                                console.logger.debug(
-                                    "|CMD|-%s->%r",
-                                    ("u" if controller_connected else "")
-                                    + ("i" if command_active.value else ""),
-                                    data.strip(),
-                                )
-                            if controller_connected:
-                                os.write(console.controller_pty, data)
-                            if command_active.value:
-                                os.write(console.interface_pty, data)
+                            continue
+                        # Write it to the user console.
+                        if console.raw_debug:
+                            console.logger.debug(
+                                "|CMD|-%s->%r",
+                                ("u" if controller_connected else "")
+                                + ("i" if command_active.value else ""),
+                                data.strip(),
+                            )
+                        if controller_connected:
+                            os.write(console.controller_pty, data)
+                        if command_active.value:
+                            os.write(console.interface_pty, data)
 
                     elif fileno == console.dbg_pipe.fileno():
                         try:
@@ -1086,50 +1082,49 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 "ec3po console received EOF from dbg_pipe"
                             )
                             continue_looping = False
-                        else:
-                            if console.interrogation_mode == b"auto":
-                                # Search look buffer for enhanced EC image string.
-                                console.CheckBufferForEnhancedImage(data)
-                            # Write it to the user console.
-                            if len(data) > 1 and console.raw_debug:
-                                console.logger.debug(
-                                    "|DBG|-%s->%r",
-                                    ("u" if controller_connected else "")
-                                    + ("i" if command_active.value else ""),
-                                    data.strip(),
-                                )
-                            console.LogConsoleOutput(data)
-                            if controller_connected:
-                                end = len(data) - 1
-                                if console.timestamp_enabled:
-                                    # A timestamp is required at the beginning of
-                                    # this line
-                                    if tm_req is True:
-                                        now = datetime.now()
-                                        tm = CanonicalizeTimeString(
-                                            now.strftime(HOST_STRFTIME)
-                                        )
-                                        os.write(console.controller_pty, tm)
-                                        tm_req = False
-
-                                    # Insert timestamps into the middle where
-                                    # appropriate except if the last character is a
-                                    # newline
-                                    nls_found = data.count(b"\n", 0, end)
+                            continue
+                        if console.interrogation_mode == b"auto":
+                            # Search look buffer for enhanced EC image string.
+                            console.CheckBufferForEnhancedImage(data)
+                        # Write it to the user console.
+                        if len(data) > 1 and console.raw_debug:
+                            console.logger.debug(
+                                "|DBG|-%s->%r",
+                                ("u" if controller_connected else "")
+                                + ("i" if command_active.value else ""),
+                                data.strip(),
+                            )
+                        console.LogConsoleOutput(data)
+                        if controller_connected:
+                            if console.timestamp_enabled:
+                                # A timestamp is required at the beginning of
+                                # this line
+                                if tm_req is True:
                                     now = datetime.now()
                                     tm = CanonicalizeTimeString(
-                                        now.strftime("\n" + HOST_STRFTIME)
+                                        now.strftime(HOST_STRFTIME)
                                     )
-                                    data_tm = data.replace(b"\n", tm, nls_found)
-                                else:
-                                    data_tm = data
+                                    os.write(console.controller_pty, tm)
+                                    tm_req = False
 
-                                # timestamp required on next input
-                                if data[end] == b"\n"[0]:
-                                    tm_req = True
-                                os.write(console.controller_pty, data_tm)
-                            if command_active.value:
-                                os.write(console.interface_pty, data)
+                                # Insert timestamps into the middle where
+                                # appropriate except if the last character is a
+                                # newline
+                                nls_found = data.count(b"\n", 0, -1)
+                                now = datetime.now()
+                                tm = CanonicalizeTimeString(
+                                    now.strftime("\n" + HOST_STRFTIME)
+                                )
+                                data_tm = data.replace(b"\n", tm, nls_found)
+                            else:
+                                data_tm = data
+
+                            # timestamp required on next input
+                            if data[-1:] == b"\n":
+                                tm_req = True
+                            os.write(console.controller_pty, data_tm)
+                        if command_active.value:
+                            os.write(console.interface_pty, data)
 
                     elif fileno == shutdown_pipe.fileno():
                         console.logger.debug(

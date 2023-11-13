@@ -6,7 +6,6 @@
 import argparse
 from datetime import datetime
 import os
-import pwd
 import sys
 
 import docker
@@ -50,7 +49,7 @@ def start_servod(
     if serial_no:
         servod_params += "--serialname %s " % serial_no
     if passthrough_args:
-        servod_params += passthrough_args
+        servod_params += str.join(" ", passthrough_args)
     if not container_name:
         now = datetime.now()
         container_name = now.strftime("%s")
@@ -66,7 +65,7 @@ def start_servod(
 
     volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
 
-    _servodrc = os.path.join(pwd.getpwuid(os.geteuid()).pw_dir, ".servodrc")
+    _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
     if os.path.isfile(_servodrc):
         volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
