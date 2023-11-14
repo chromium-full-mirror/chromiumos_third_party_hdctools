@@ -8,6 +8,7 @@ Author: Keith Haddow
   - [Assumptions](#assumptions)
   - [How to give feedback / report issues](#how-to-give-feedback--report-issues)
   - [Install docker](#install-docker)
+  - [Add your user to the tty group](#add-your-user-to-the-tty-group)
   - [Installing docker API](#installing-docker-api)
   - [Setting up your PATH](#setting-up-your-path)
   - [Quick start](#quick-start)
@@ -46,7 +47,7 @@ at least up to the “Getting the source code section”
 
 ## How to give feedback / report issues
 
-- Googlers please file feedback at go/file-hwtools-bug
+- Googlers please file feedback at <http://go/file-hwtools-bug>
 - Non-Googlers please email your feedback to <cros-servod-outside-chroot-external@google.com>
 this feedback will only been seen by Google and we will reach out to you directly if we
 need any further information or to update you with progress.
@@ -65,6 +66,26 @@ Follow the instructions for your distribution to install docker engine at
 
 Also complete the post installation step to have "Manage Docker as a non-root user"
 setup [link](https://docs.docker.com/engine/install/linux-postinstall/)
+
+## Add your user to the tty group
+
+The serial devices created by the docker container are owned by root - outside of the
+container the host will get a permission denied error if they try to access these
+devices
+
+```text
+picocom /dev/pts/36
+FATAL: cannot open /dev/pts/36: Permission denied
+```
+
+To solve this issue add your user into the tty group
+
+```text
+sudo usermod -aG tty $USER
+```
+
+You may need to reboot your host for this change to take effect.
+
 
 ## Installing docker API
 
