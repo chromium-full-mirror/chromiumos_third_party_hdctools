@@ -1,7 +1,6 @@
 # Servod Outside of Chroot
 
-Current status: **Dogfood**\
-Author: Keith Haddow
+Current status: **Dogfood**
 
 - [Servod Outside of Chroot](#servod-outside-of-chroot)
   - [Overview](#overview)
