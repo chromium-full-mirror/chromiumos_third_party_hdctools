@@ -10,12 +10,64 @@ import signal
 import sys
 
 import docker
+import run_command
 
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
 
 signal.signal(signal.SIGINT, signal.default_int_handler)
+
+HELP_MESSAGE = """
+start-servod
+
+    [-c {local,latest,beta,release}]
+       local, image built on this machine.
+       latest, a close to ToT build, may have bugs
+       beta, used for short period of time to test next release
+       release, latest release version, typically 2-4 weeks behind,
+                used by Satlab and most partners has significantly more testing.
+
+    [-b BOARD]
+       DUT board the servo is connected to.  Not required but strongly suggested.
+
+    [-m MODEL]
+       DUT model the servo is connected to.  Not required.
+
+    [-s SERIAL]
+       Servo serial number you want to connect to.
+
+    [-n CONTAINER_NAME]
+       Name to give your container, not required but useful if you are running
+       multiple containers.
+
+    [-t | --run_tests | --no-run_tests]
+       Run the e2e tests rather than run servod.
+
+    [-d | --sleep | --no-sleep]
+       Run/setup the container but execute sleep infinity, useful in advanced use
+       cases like running servo_updater where the servod can not be running but
+       the container needs to be setup.
+
+    [--mount [MOUNT ...]]
+       Mount a directory from the host to the container in the format:
+             <host_directory>:<container_mount_point>
+
+       Note multiple mount arguments are supported.
+
+    [-p PORT]
+       Map the internal XML RPC port to this port number on the host, allows for
+       direct API access without having to run commands inside of the docker
+       container
+
+    [-f ]
+       After the servod has started continue to follow the logs as they get generated
+       rather than dropping back to the shell.  CTRL+C will exit the servod on the
+       command line.
+
+       By default -f will show the debug logs but you can specify -f=WARNING or -f=INFO
+       if you wish another level of logging.
+"""
 
 
 def setup():
@@ -157,32 +209,29 @@ def start_servod(
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(add_help=False)
+    parser = run_command.CustomArgHelpParser(message=HELP_MESSAGE)
     parser.add_argument(
         "-n",
         "--container_name",
         type=str,
         help="The IP or hostname of the DUT connected to servo.",
     )
-    parser.add_argument("-b", "--board", type=str, help="The board of the DUT.")
-    parser.add_argument("-m", "--model", type=str, help="The model of the DUT.")
+    parser.add_argument("-b", "--board", type=str)
+    parser.add_argument("-m", "--model", type=str)
     parser.add_argument(
         "-s",
         "--serial",
         type=str,
-        help="The serial number of the servo.",
     )
     parser.add_argument(
         "-t",
         "--run_tests",
         action=argparse.BooleanOptionalAction,
-        help="Run the servod tests and exit.",
     )
     parser.add_argument(
         "-d",
         "--sleep",
         action=argparse.BooleanOptionalAction,
-        help="Run the container but do not start servod - best for debug.",
     )
     parser.add_argument(
         "-c",
@@ -190,7 +239,6 @@ def parse_args():
         type=str,
         choices=["local", "latest", "beta", "release"],
         default="local",
-        help="Run the container but do not start servod - best for debug.",
     )
     parser.add_argument(
         "-f",
@@ -199,17 +247,12 @@ def parse_args():
         choices=["INFO", "WARNING", "DEBUG"],
         nargs="?",
         const="DEBUG",
-        help="Keep the start process running streaming, the servod logs.",
     )
     parser.add_argument(
         "--mount",
         type=str,
         action="append",
         nargs="*",
-        help=(
-            "Mount a host directory into the servod container in the format"
-            "<hostdir>:<containerdir>.",
-        ),
     )
     parser.add_argument(
         "-p", "--port", type=int, help="Host port number to map the servod service to"
@@ -218,6 +261,9 @@ def parse_args():
         "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
     )
     args = parser.parse_args()
+    if args.help:
+        parser.print_usage()
+        sys.exit(4)
     if args.passthrough and args.passthrough[0] != "--":
         print(
             (

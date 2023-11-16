@@ -9,19 +9,37 @@ import sys
 import docker
 
 
+class CustomArgHelpParser(argparse.ArgumentParser):
+    def __init__(self, message):
+        super().__init__(add_help=False)
+        self.message = message
+
+        self.add_argument(
+            "-h",
+            "--help",
+            action=argparse.BooleanOptionalAction,
+        )
+
+    def print_usage(self, file=None):
+        print(self.message)
+
+
 class RunCommandBase:
     def parse_args(self):
-        parser = argparse.ArgumentParser(add_help=False)
-        parser.add_argument(
+        self.parser = CustomArgHelpParser(self.message)
+        self.parser.add_argument(
             "-n",
             "--container_name",
             type=str,
-            help="The IP or hostname of the DUT connected to servo.",
         )
-        parser.add_argument(
-            "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
+        self.parser.add_argument(
+            "passthrough",
+            nargs=argparse.REMAINDER,
         )
-        args = parser.parse_args()
+        args = self.parser.parse_args()
+        if args.help:
+            self.parser.print_usage()
+            sys.exit(4)
         if args.passthrough and args.passthrough[0] != "--":
             print(
                 (
