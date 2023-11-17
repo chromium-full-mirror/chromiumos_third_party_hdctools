@@ -18,13 +18,14 @@ Current status: **Dogfood**
     - [To run the same tests as the CQ does](#to-run-the-same-tests-as-the-cq-does)
   - [Forget the wrappers just let me into the container](#forget-the-wrappers-just-let-me-into-the-container)
   - [FAQ](#faq)
-    - [When I run dut-control -- XXX I get a message like “More than one container matches …“](#when-i-run-dut-control----xxx-i-get-a-message-like-more-than-one-container-matches-)
-    - [I want to flash firmware - how do I do that ?](#i-want-to-flash-firmware---how-do-i-do-that-)
+    - [When I run dut-control -- XXX I get a message like “More than one container matches …“](#when-i-run-dut-control----xxx-i-get-a-message-like-more-than-one-container-matches)
+    - [I want to flash firmware - how do I do that ?](#i-want-to-flash-firmware---how-do-i-do-that)
+    - [I want to run TAST/FAFT tests locally - how do I do that ?](#i-want-to-run-tastfaft-tests-locally---how-do-i-do-that)
     - [Some tests fail with OSError - No space on device or similar - how to fix](#some-tests-fail-with-oserror---no-space-on-device-or-similar---how-to-fix)
     - [I am getting docker.errors.DockerException: Error while fetching server API version: ('Connection aborted.', PermissionError(13, 'Permission denied'))](#i-am-getting-dockererrorsdockerexception-error-while-fetching-server-api-version-connection-aborted-permissionerror13-permission-denied)
-    - [Can I use podman instead of docker ?](#can-i-use-podman-instead-of-docker-)
-    - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred-)
-    - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts-)
+    - [Can I use podman instead of docker ?](#can-i-use-podman-instead-of-docker)
+    - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred)
+    - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts)
 
 ## Overview
 
@@ -116,6 +117,13 @@ pip install --user docker --break-system-packages docker
 
 ```text
 export PATH=~/chromiumos/src/third_party/hdctools/scripts:$PATH
+```
+
+To set it for every session you can also add this line at the end of yours shell
+configuration, like .bashrc:
+
+```text
+echo "export PATH=~/chromiumos/src/third_party/hdctools/scripts:$PATH" >> ~/.bashrc
 ```
 
 ## Quick start
@@ -344,6 +352,21 @@ should be able to use flash\_ec or any any other normal firmware
 
 flashing commands.
 
+### I want to run TAST/FAFT tests locally - how do I do that ?
+
+Start your servod container with -p [PORT] parameter, which would map internal XML RPC
+port to specific port number on the host. Then you should be able to run TAST or FAFT
+tests as usual.
+
+```text
+tast run -var=servo=localhost:<PORT> <DUT_IP> example.ServoEcho
+```
+or
+
+```text
+test_that --autotest_dir <TESTS_PATH> --board=<BOARD> <DUT_IP> --args "servo_host=localhost servo_port=<PORT>" f:.*firmware_ConsecutiveBoot/control
+```
+
 ### Some tests fail with OSError - No space on device or similar - how to fix
 
 You need to change the device limit on number of pty’s
@@ -398,7 +421,7 @@ For more examples and ideas, visit:
 
 ```
 
-If you see error messages please go through the instructions for sudo less docker again.
+If you see error messages please go through the instructions for sudoless docker again.
 
 ### Can I use podman instead of docker ?
 
