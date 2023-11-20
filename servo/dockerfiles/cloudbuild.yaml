@@ -103,8 +103,8 @@ steps:
       gsutil cp coverage.edited.lcov gs://ng3-metrics/ng3-hw-tools-coverage/absolute/hdctools/$COMMIT_SHA/coverage.out
       cat > metadata.json << EOF
       {
-        "host": "chromium-review",
-        "project": "chromium/chromiumos/codesearch",
+        "host": "chromium",
+        "project": "chromiumos/codesearch",
         "trace_type": "LCOV",
         "trim_prefix": "/usr/local/lib/python3.11/dist-packages/",
         "add_prefix": "src/third_party/hdctools/",
