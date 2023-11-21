@@ -98,17 +98,6 @@ RUN mkdir build \
 WORKDIR /
 
 ######################################################################
-FROM libftdi as ec-builder
-
-RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
-
-WORKDIR /ec
-
-COPY servo/dockerfiles/setup_ec.py .
-RUN PACKAGE="ecusb" python3 setup_ec.py bdist_wheel
-RUN PACKAGE="servo_updater" python3 setup_ec.py bdist_wheel
-
-######################################################################
 FROM libftdi as pigweed-builder
 
 RUN git clone https://chromium.googlesource.com/external/pigweed/pigweed/pigweed
@@ -134,6 +123,7 @@ RUN make install
 # Setuptools skips nested entry point. Adding custom setup.py to overcome.
 COPY /servo/dockerfiles/setup_hdctools.py .
 RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
+RUN PACKAGE="servo_updater" python3 setup_hdctools.py bdist_wheel
 
 ######################################################################
 FROM hdctools-builder as hdctools-usbkm232-builder
@@ -201,14 +191,10 @@ COPY --link --from=hdctools-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-ec3po-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-servo_mfg-builder /hdctools/dist/* ./
-COPY --link --from=ec-builder /ec/dist/*.whl ./
 COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
-
-#TODO(b/287265152): Fetch token database from GCS
-#COPY --link --from=ec-builder /ec/tokens.bin /tmp/tokens.bin
 
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 

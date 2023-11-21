@@ -20,7 +20,6 @@ import tty
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-
 from servo.interface import common as c
 from servo.interface import empty
 from servo.interface import uart

@@ -16,8 +16,8 @@ import select
 import threading
 
 from servo.interface import i2c_pseudo_base
-from servo.utils.linux_i2c import i2c
-from servo.utils.linux_i2c import i2c_pseudo
+from servo.utils.linux import i2c
+from servo.utils.linux import i2c_pseudo
 
 
 # pylint: disable=undefined-variable
@@ -59,14 +59,15 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
       It is safe to use the public interface from multiple threads concurrently.
 
     Usage:
-      adap = I2cPseudoAdapter(i2c_bus)
-      i2c_id = adap.start()
+      adap = I2cPseudoAdapter()
+      adap.init(servo_i2c_bus)
+      adap.start()
       ...
       adap.shutdown()
     """
 
     @classmethod
-    def default_controller_path(cls):
+    def default_pseudo_device(cls):
         """Get the default i2c-pseudo controller device path.
 
         Returns:
@@ -81,8 +82,9 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         i2c_pseudo_base.BaseI2cPseudoAdapter.__init__(self)
         self._logger = logging.getLogger("i2c_pseudo_v2")
 
+        self._servo_i2c_bus = None
+        self._pseudo_device_path = None
         self._device_fd = None
-        self._i2c_pseudo_id = None
         self._i2c_adapter_num = None
 
         self._epoll = select.epoll(sizehint=1)
@@ -109,21 +111,21 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
 
         self._logger.info("finished initializing I2C pseudo adapter (not started yet!)")
 
-    def _internal_init(self, i2c_bus, controller_device_path):
+    def _internal_init(self, servo_i2c_bus, pseudo_device_path):
         """Initialize the instance.  This does NOT create the pseudo adapter.
 
         Args:
-          i2c_bus: implementation of i2c_base.BaseI2CBus
-          controller_device_path: bytes or str - path to the i2c-pseudo device file
+          servo_i2c_bus: implementation of i2c_base.BaseI2CBus
+          pseudo_device_path: bytes or str - path to the i2c-pseudo device file
         """
         self._logger.info(
             "initializing (not starting yet!) I2C pseudo adapter "
-            "controller_device_path=%r i2c_bus=%r",
-            controller_device_path,
-            i2c_bus,
+            "servo_i2c_bus=%r pseudo_device_path=%r",
+            servo_i2c_bus,
+            pseudo_device_path,
         )
-        self._i2c_bus = i2c_bus
-        self._controller_device_path = controller_device_path
+        self._servo_i2c_bus = servo_i2c_bus
+        self._pseudo_device_path = pseudo_device_path
 
     def start(self):
         """Create and start the i2c-pseudo adapter.
@@ -138,14 +140,25 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
             self._start_impl()
 
     @property
-    def i2c_pseudo_id(self):
-        """Get the i2c-pseudo controller ID.
+    def servo_i2c_bus(self):
+        """Get the i2c_base.BaseI2CBus implementation this object is using.
 
         Returns:
-          None or int - The i2c-pseudo controller ID, or None if start() has not
-            completed yet.
+          None or i2c_base.BaseI2CBus - The servo I2C bus this pseudo controller
+              is using, or None if init() has not completed yet.
         """
-        return self._i2c_pseudo_id
+        return self._servo_i2c_bus
+
+    @property
+    def pseudo_device_path(self):
+        """Get the i2c-pseudo controller device file this object is using.
+
+        Returns:
+          None or bytes or str - The path to the i2c-pseudo device file this
+              pseudo controller is using, or None if init() has not completed
+              yet.
+        """
+        return self._pseudo_device_path
 
     @property
     def i2c_adapter_num(self):
@@ -177,13 +190,10 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
         start_arg = i2c_pseudo.i2cp_ioctl_start_arg(
             functionality=i2c.I2C_FUNC_I2C | i2c.I2C_FUNC_SMBUS_EMUL,
             timeout_ms=_I2C_ADAPTER_TIMEOUT_MS,
-            suffix=b"(servod pid %d)" % (os.getpid(),),
+            name=b"servod pid=%d obj_id=%d" % (os.getpid(), id(self)),
         )
-        self._device_fd = os.open(
-            self._controller_device_path, os.O_RDWR | os.O_NONBLOCK
-        )
+        self._device_fd = os.open(self._pseudo_device_path, os.O_RDWR | os.O_NONBLOCK)
         fcntl.ioctl(self._device_fd, i2c_pseudo.I2CP_IOCTL_START, start_arg, True)
-        self._i2c_pseudo_id = start_arg.output.pseudo_id
         self._i2c_adapter_num = start_arg.output.adapter_num
 
         self._epoll.register(self._device_fd, _EPOLL_EVENTMASK)
@@ -290,6 +300,11 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
 
         for msg_idx in range(req_arg.output.num_msgs):
             i2c_msg = req_arg.msgs[msg_idx]
+            # I2C_M_RECV_LEN is not supported by the servod I2C bus interface.
+            # Messages using it should be rejected by the kernel I2C subsystem
+            # on behalf of our I2C pseudo adapter, so this simple assertion
+            # will do.
+            assert not i2c_msg.flags & i2c.I2C_M_RECV_LEN
             if i2c_addr is not None and i2c_msg.addr != i2c_addr:
                 self._reply_error(
                     req_arg.output.xfer_id,
@@ -327,7 +342,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
                 write_list = [i2c_msg.buf[i] for i in range(i2c_msg.len)]
 
         try:
-            retval = self._i2c_bus.wr_rd(
+            retval = self._servo_i2c_bus.wr_rd(
                 i2c_addr, write_list, read_msg.len if read_msg is not None else 0
             )
         except OSError as error:
@@ -385,6 +400,7 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
                 error=0,
             )
         )
+        return True
 
     def _poll_loop(self):
         """Keep polling the I2C pseudo controller in a loop."""
@@ -425,6 +441,26 @@ class I2cPseudoV2Adapter(i2c_pseudo_base.BaseI2cPseudoAdapter):
                     os.close(self._device_fd)
                 finally:
                     self._device_fd = None
+
+    def get_xfer_counters(self):
+        """Get the I2C pseudo controller transfer counters.
+
+        This may only be called after successful start().
+
+        Returns:
+            {str: int} - Mapping of counter names to counts.
+        """
+        assert self._state >= _STATE_RUN
+        xfer_counters = i2c_pseudo.i2cp_ioctl_xfer_counters()
+        fcntl.ioctl(
+            self._device_fd, i2c_pseudo.I2CP_IOCTL_GET_COUNTERS, xfer_counters, True
+        )
+        # Use field[0] by index instead of unpacking because the tuple may have
+        # 2 or 3 items.
+        return {
+            field[0]: getattr(xfer_counters, field[0])
+            for field in xfer_counters._fields_
+        }
 
     def shutdown(self, timeout):
         """Shutdown the I2C pseudo adapter.

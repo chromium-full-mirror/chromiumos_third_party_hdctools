@@ -9,12 +9,11 @@ import shutil
 import tempfile
 import time
 
+import servo.utils.usb_hierarchy as usb_hierarchy
 from servo_mfg import device_util
 from servo_mfg import exec_util
 from servo_mfg import programmer
 from servo_mfg import util
-
-import servo.utils.usb_hierarchy as usb_hierarchy
 
 
 class RTKEthProgrammerError(programmer.ProgrammerError):

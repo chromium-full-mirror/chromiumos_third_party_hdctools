@@ -9,9 +9,9 @@ import os
 import re
 
 from packaging import version
-import servo_updater
 
 from servo.drv import hw_driver
+from servo_updater import servo_updater
 
 
 # In some environments, like automated testing, it is likely by design if a

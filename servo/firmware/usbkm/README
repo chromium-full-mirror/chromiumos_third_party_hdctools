@@ -36,7 +36,7 @@ Verify on the DUT that the avr is visible:
 lsusb should show "LUFA Keyboard"
 
 To test by sending a "space" key (inside chroot):
-cd ~/trunk/src/third_party/hdctools/usbkm232
+cd ~/chromiumos/src/third_party/hdctools/usbkm232
 USBKM232_UART_DEVICE=/dev/pts/31 python ./space.py
 
 

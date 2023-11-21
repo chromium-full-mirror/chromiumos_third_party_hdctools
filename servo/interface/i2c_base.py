@@ -65,19 +65,19 @@ class BaseI2CBus(interface.Interface):
         Returns:
             bool - True for success, False if the i2c-pseudo device was not found
         """
-        pseudo_ctrlr_path = pseudo_adap.default_controller_path()
-        if not os.path.exists(pseudo_ctrlr_path):
+        pseudo_device_path = pseudo_adap.default_pseudo_device()
+        if not os.path.exists(pseudo_device_path):
             return False
         # This circular reference is less than ideal.
         # The weakref avoids a reference count cycle.
         # Avoding the circular reference entirely would be preferable.
         self.__logger.info(
             "i2c-pseudo device path %r found, starting %s I2C pseudo adapter",
-            pseudo_ctrlr_path,
+            pseudo_device_path,
             type(pseudo_adap).__name__,
         )
         pseudo_adap.init(
-            i2c_bus=weakref.proxy(self), controller_device_path=pseudo_ctrlr_path
+            servo_i2c_bus=weakref.proxy(self), pseudo_device_path=pseudo_device_path
         )
         pseudo_adap.start()
         self.__pseudo_adap = pseudo_adap

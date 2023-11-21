@@ -5,10 +5,9 @@
 
 import time
 
+import servo.utils.usb_hierarchy as usb_hierarchy
 from servo_mfg import device_util
 from servo_mfg import programmer
-
-import servo.utils.usb_hierarchy as usb_hierarchy
 
 
 class SerialProgrammerError(programmer.ProgrammerError):

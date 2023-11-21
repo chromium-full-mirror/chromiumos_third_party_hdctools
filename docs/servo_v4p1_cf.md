@@ -44,10 +44,10 @@ Workaround: Limit power to host cable supply or supply dumb high voltage and man
 ```
 Update to default firmware:
 Update your CHROOT (!!!)
-(chroot) ~/trunk/src/scripts $ ./update_chroot
+(chroot) $ update_chroot
 
 Run Servo_Updater to "default" fw
-(chroot) ~/trunk/src/scripts $ sudo servo_updater -b servo_v4p1
+(chroot) $ sudo servo_updater -b servo_v4p1
 ```
 
 ### Do I need to flash my EC?
@@ -98,34 +98,33 @@ Servo v4 code lives in the [EC](https://chromium.googlesource.com/chromiumos/pla
 
 1. Build the firmware
 ```
-chroot> $ cd ~/trunk/src/platform/ec/
-chroot> ~/trunk/src/platform/ec $ make BOARD=servo_v4p1 -j8
+chroot> $ cd ~/chromiumos/src/platform/ec/
+chroot> ~/chromiumos/src/platform/ec $ make BOARD=servo_v4p1 -j8
 ```
 
-ec.bin appears in ~/trunk/src/platform/ec/build/servo_v4p1/ec.bin
+ec.bin appears in ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin
 
 2. Flash the firmware to the ServoV4.1
 
 ```
-chroot>  $ cd ~
-chroot> ~ $ sudo servo_updater --board=servo_v4p1 -v -f ~/trunk/src/platform/ec/build/servo_v4p1/ec.bin
+chroot> $ sudo servo_updater --board=servo_v4p1 -v -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin
 ```
 
 3. **Profit!**
 
 
-If you instead build in (~/trunk/src/third_party/hdctools) some (?) files will be here:
+If you instead build in (~/chromiumos/src/third_party/hdctools) some (?) files will be here:
 
 
 ```
-(chroot) $ cd ~/trunk/src/third_party/hdctools/servo/scripts/servo_mfg/binfiles
+(chroot) $ cd ~/chromiumos/src/third_party/hdctools/servo_mfg/binfiles
 ```
 
 ### Flash custom-built firmware to ServoV4p1
 
 
 ```
-$ sudo servo_updater --board=servo_v4p1 -v -f ~/trunk/src/platform/ec/build/servo_v4p1/ec.bin --force
+$ sudo servo_updater --board=servo_v4p1 -v -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin --force
 ```
 
 ### CCD not working out-of-box
@@ -343,16 +342,16 @@ The Atmega32u4 device has the same functionality as was used on Servo v4, so the
 1. Before programming this device it is necessary to install dfu-programmer on the host computer you must install the dfu-programmer tool first. Inside chroot this can be done with `# sudo emerge dfu-programmer`.
 2. Navigate to the directory where dfu-programmer file is located
     1. Something like `~/chromiumos/chroot/usr/bin` outside the chroot
-    2. `~/trunk/chroot/usr/bin/` inside the chroot
+    2. `~/chromiumos/chroot/usr/bin` inside the chroot
 3. Attach both DUT and host ports on the servo to the host computer USB ports. Crouton can also be used as a programmer when attached to the DUT USB-C cable.
 4. If the Atmel part is not blank, erase the Atmega32u4  (possibly w/o the `--force`): `# sudo ./dfu-programmer atmega32u4 erase --force`
 5. Program the blank device.  The Keyboard.hex file & location are from a standard chromium installation.  The format is `# sudo ./dfu-programmer <device> flash <image>`
 
-A specific example outside the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/chromiumos/src/third_party/hdctools/servo/scripts/servo_mfg/binfiles/Keyboard.hex`
+A specific example outside the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/chromiumos/src/third_party/hdctools/servo_mfg/binfiles/Keyboard.hex`
 
-And from within the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/trunk/src/third_party/hdctools/servo/scripts/servo_mfg/binfiles/Keyboard.hex`
+And from within the chroot: `# sudo ./dfu-programmer atmega32u4 flash ~/chromiumos/src/third_party/hdctools/servo_mfg/binfiles/Keyboard.hex`
 
-Note: the Atmega32u4 can also be programmed using the script found inside the chroot at src/third_party/hdctools/servo/scripts/servo_mfg/mfg_servo_v4.py.
+Note: the Atmega32u4 can also be programmed using the script found inside the chroot at src/third_party/hdctools/servo_mfg/mfg_servo_v4.py.
 
 ## Testing DisplayPort
 

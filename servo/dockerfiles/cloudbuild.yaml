@@ -49,7 +49,7 @@ steps:
   id: 'test-ec3po'
   entrypoint: 'bash'
   args:
-    - /workspace/servo/ec3po/run_tests.sh
+    - /workspace/ec3po/run_tests.sh
   waitFor: ['src-prep']
 
 - name: 'pyfound/black:latest_release'
@@ -97,6 +97,25 @@ steps:
       gsutil cp coverage.xml gs://python-test-coverage/coverage.$COMMIT_SHA.xml
       # Copy the test results to the cloud bucket
       gsutil -m cp -r htmlcov/ htmlcov.$COMMIT_SHA gs://python-test-coverage/
+      # Copy to ng3 metrics, too
+      # The parser is picky, so drop lines that are of no use to it
+      sed -e "/^BRDA:0,/ d" coverage.lcov > coverage.edited.lcov
+      gsutil cp coverage.edited.lcov gs://ng3-metrics/ng3-hw-tools-coverage/absolute/hdctools/$COMMIT_SHA/coverage.out
+      cat > metadata.json << EOF
+      {
+        "host": "chromium",
+        "project": "chromiumos/codesearch",
+        "trace_type": "LCOV",
+        "trim_prefix": "/usr/local/lib/python3.11/dist-packages/",
+        "add_prefix": "src/third_party/hdctools/",
+        "commit_id": "${COMMIT_SHA}",
+        "ref": "refs/heads/main",
+        "source": "zoss-uploader-hw-tools:main",
+        "owner": "1192509288844",
+        "bug_component": "983411"
+      }
+      EOF
+      gsutil cp metadata.json gs://ng3-metrics/ng3-hw-tools-coverage/absolute/hdctools/$COMMIT_SHA/metadata.json
   waitFor: ['test']
 
 options:

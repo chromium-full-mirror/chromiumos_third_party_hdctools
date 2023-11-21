@@ -18,14 +18,14 @@ class BaseI2cPseudoAdapter:
 
     Usage that implementations must support:
       adap = I2cPseudoAdapter()
-      adap.init(i2c_bus)
+      adap.init(servo_i2c_bus)
       adap.start()
       ...
       adap.shutdown()
     """
 
     @classmethod
-    def default_controller_path(cls):
+    def default_pseudo_device(cls):
         """Get the default i2c-pseudo controller device path.
 
         Returns:
@@ -33,24 +33,23 @@ class BaseI2cPseudoAdapter:
         """
         raise NotImplementedError
 
-    def init(self, i2c_bus, controller_device_path=None):
+    def init(self, servo_i2c_bus, pseudo_device_path=None):
         """Initialize the instance.  This does NOT create the pseudo adapter.
 
         Args:
-          i2c_bus: implementation of i2c_base.BaseI2CBus
-          controller_device_path: None or bytes or str - path to the
-              i2c-pseudo device file
+          servo_i2c_bus: implementation of i2c_base.BaseI2CBus
+          pseudo_device_path: None or bytes or str - path to the i2c-pseudo device file
         """
-        if controller_device_path is None:
-            controller_device_path = self.default_controller_path()
-        self._internal_init(i2c_bus, controller_device_path)
+        if pseudo_device_path is None:
+            pseudo_device_path = self.default_pseudo_device()
+        self._internal_init(servo_i2c_bus, pseudo_device_path)
 
-    def _internal_init(self, i2c_bus, controller_device_path):
+    def _internal_init(self, servo_i2c_bus, pseudo_device_path):
         """Initialize the instance.  This does NOT create the pseudo adapter.
 
         Args:
-          i2c_bus: implementation of i2c_base.BaseI2CBus
-          controller_device_path: bytes or str - path to the i2c-pseudo device file
+          servo_i2c_bus: implementation of i2c_base.BaseI2CBus
+          pseudo_device_path: bytes or str - path to the i2c-pseudo device file
         """
         raise NotImplementedError
 
@@ -70,30 +69,23 @@ class BaseI2cPseudoAdapter:
         raise NotImplementedError
 
     @property
-    def i2c_bus(self):
+    def servo_i2c_bus(self):
         """Get the i2c_base.BaseI2CBus implementation this object is using.
 
         Returns:
-          i2c_base.BaseI2CBus
+          None or i2c_base.BaseI2CBus - The servo I2C bus this pseudo controller
+              is using, or None if init() has not completed yet.
         """
         raise NotImplementedError
 
     @property
-    def controller_device_path(self):
+    def pseudo_device_path(self):
         """Get the i2c-pseudo controller device file this object is using.
 
         Returns:
-          bytes or str - path to the i2c-pseudo controller device file
-        """
-        raise NotImplementedError
-
-    @property
-    def i2c_pseudo_id(self):
-        """Get the i2c-pseudo controller ID.
-
-        Returns:
-          None or int - The i2c-pseudo controller ID, or None if start() has not
-            completed yet.
+          None or bytes or str - The path to the i2c-pseudo device file this
+              pseudo controller is using, or None if init() has not completed
+              yet.
         """
         raise NotImplementedError
 
@@ -115,6 +107,16 @@ class BaseI2cPseudoAdapter:
           bool - True if the pseudo controller and its I/O thread are running, False
               otherwise, e.g. if the controller was either never started, or has
               been shutdown.
+        """
+        raise NotImplementedError
+
+    def get_xfer_counters(self):
+        """Get the I2C pseudo controller transfer counters.
+
+        This may only be called after successful start().
+
+        Returns:
+            {str: int} - Mapping of counter names to counts.
         """
         raise NotImplementedError
 
