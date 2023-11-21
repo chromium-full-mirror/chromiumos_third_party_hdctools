@@ -13,17 +13,11 @@ This module is designed to be friendly for 'import *' by making these promises:
 
 import ctypes
 
-from servo.utils.linux_i2c.i2c import i2c_msg
+from servo.utils.linux import i2c
+from servo.utils.linux import ioctl
 
 
 I2CP_CONTROLLER_PATH = b"/dev/i2c-pseudo"
-
-# ioctl commands from include/uapi/linux/i2c-pseudo.h
-I2CP_IOCTL_START = 0x0701
-I2CP_IOCTL_XFER_REQ = 0x0702
-I2CP_IOCTL_XFER_REPLY = 0x0703
-I2CP_IOCTL_GET_COUNTERS = 0x0704
-I2CP_IOCTL_SHUTDOWN = 0x0705
 
 
 class i2cp_ioctl_start_output(ctypes.Structure):
@@ -66,7 +60,7 @@ class i2cp_ioctl_xfer_req_output(ctypes.Structure):
 class i2cp_ioctl_xfer_req_arg(ctypes.Structure):
     _fields_ = (
         ("output", i2cp_ioctl_xfer_req_output),
-        ("msgs", ctypes.POINTER(i2c_msg)),
+        ("msgs", ctypes.POINTER(i2c.i2c_msg)),
         ("data_buf", ctypes.POINTER(ctypes.c_uint8)),
         ("msgs_len", ctypes.c_uint32),
         ("data_buf_len", ctypes.c_uint32),
@@ -75,11 +69,20 @@ class i2cp_ioctl_xfer_req_arg(ctypes.Structure):
 
 class i2cp_ioctl_xfer_reply_arg(ctypes.Structure):
     _fields_ = (
-        ("msgs", ctypes.POINTER(i2c_msg)),
+        ("msgs", ctypes.POINTER(i2c.i2c_msg)),
         ("xfer_id", ctypes.c_uint64),
         ("num_msgs", ctypes.c_uint32),
         ("error", ctypes.c_uint32),
     )
+
+
+I2CP_IOCTL_CODE = 0x2C
+
+I2CP_IOCTL_START = ioctl._IOWR(I2CP_IOCTL_CODE, 0, i2cp_ioctl_start_arg)
+I2CP_IOCTL_XFER_REQ = ioctl._IOWR(I2CP_IOCTL_CODE, 1, i2cp_ioctl_xfer_req_arg)
+I2CP_IOCTL_XFER_REPLY = ioctl._IOW(I2CP_IOCTL_CODE, 2, i2cp_ioctl_xfer_reply_arg)
+I2CP_IOCTL_GET_COUNTERS = ioctl._IOR(I2CP_IOCTL_CODE, 3, i2cp_ioctl_xfer_counters)
+I2CP_IOCTL_SHUTDOWN = ioctl._IO(I2CP_IOCTL_CODE, 4)
 
 
 __all__ = [n for n in dir() if n.startswith("I2CP_") or n.startswith("i2cp_")]

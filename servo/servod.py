@@ -532,6 +532,15 @@ class ServodStarter:
         """Wrapper around rpc server's serve_forever to catch server errors."""
         # pylint: disable=broad-except
         self._logger.info("Listening on %s port %s", self._host, self._servo_port)
+        if os.environ.get("CROS_WORKON_SRCROOT"):
+            self._logger.info(
+                (
+                    "DEPRECATION WARNING:\nRunning servod in the cros_sdk is not going "
+                    "to be possible after the end Feb 2024.\nPlease refer to "
+                    "https://chromium.googlesource.com/chromiumos/third_party/hdctools"
+                    "/+/main/docs/servod_outside_chroot.md"
+                )
+            )
         try:
             self._server.serve_forever()
         except Exception:

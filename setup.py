@@ -59,7 +59,7 @@ setup(
         "servo.interface",
         "servo.tools",
         "servo.utils",
-        "servo.utils.linux_i2c",
+        "servo.utils.linux",
         "servo.tests.e2e",
         "servo.tests.fixtures",
         "servo.tests.unit",

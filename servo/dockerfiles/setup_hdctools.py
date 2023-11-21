@@ -61,7 +61,7 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
             "servo.interface",
             "servo.tools",
             "servo.utils",
-            "servo.utils.linux_i2c",
+            "servo.utils.linux",
             "servo.tests",
             "servo.tests.e2e",
             "servo.tests.fixtures",
