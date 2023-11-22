@@ -469,4 +469,6 @@ RUN rm -rf wheels
 RUN ldconfig
 
 COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
+COPY --link --from=hdctools-builder /hdctools/servo_mfg/tests/ /hdctools/servo_mfg/tests/
+COPY --link --from=hdctools-builder /hdctools/ec3po/tests/ /hdctools/ec3po/tests/
 RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/

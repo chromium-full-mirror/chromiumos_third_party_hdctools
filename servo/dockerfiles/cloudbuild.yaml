@@ -40,15 +40,9 @@ steps:
     - --cov=/usr/local/lib/python3.11/dist-packages/servo
     - --cov=/usr/local/lib/python3.11/dist-packages/usbkm232
     - --cov=/usr/local/lib/python3.11/dist-packages/ec3po
-    - /hdctools/servo/tests/
+    - --cov=/usr/local/lib/python3.11/dist-packages/servo_mfg
+    - /hdctools/
   waitFor: ['build']
-
-- name: 'python:slim'
-  id: 'test-ec3po'
-  entrypoint: 'bash'
-  args:
-    - /workspace/ec3po/run_tests.sh
-  waitFor: ['src-prep']
 
 - name: 'pyfound/black:latest_release'
   id: 'test-black-formatting'

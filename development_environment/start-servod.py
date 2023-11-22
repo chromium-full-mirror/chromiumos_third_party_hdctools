@@ -64,7 +64,7 @@ def start_servod(
     if sleep:
         command = ["sleep", "infinity"]
     elif test:
-        command = ["pytest", "-n", "auto", "/hdctools/servo/tests/"]
+        command = ["pytest", "-n", "auto", "/hdctools/"]
 
     volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
 
