@@ -22,7 +22,10 @@ def setup():
 def get_image(client, channel):
     if channel != "local":
         image = ARTIFACT_URL_TEMPLATE % channel
-        client.images.pull(image)
+        resp = client.api.pull(image, stream=True, decode=True)
+        for unused_update in resp:
+            print("+", end="", flush=True)
+        print("", flush=True)
         return image
     return DEFAULT_IMAGE
 
@@ -188,7 +191,9 @@ def parse_args():
 def main():
     client = setup()
     args = parse_args()
+    print("Checking docker image is up to date and downloading updates as necessary.")
     image = get_image(client, args.channel)
+    print("\nStarting the server.\n")
     start_servod(
         client=client,
         container_name=args.container_name,
