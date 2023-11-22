@@ -36,8 +36,6 @@ steps:
   args:
     - -n=auto
     - --forked
-    - --cov-report=html
-    - --cov-report=xml
     - --cov-report=lcov
     - --cov=/usr/local/lib/python3.11/dist-packages/servo
     - --cov=/usr/local/lib/python3.11/dist-packages/usbkm232
@@ -86,18 +84,7 @@ steps:
 
       cd /workspace
       gcloud config set project chromeos-hw-tools-dev
-      # We overwrite htmlcov every CL - keep a copy as a history.
-      cp -r htmlcov htmlcov.$COMMIT_SHA
-      # Cloud storage serving requires absolute vs relative for src/href tags. Fix that.
-      sed -i s#href=\"#href=\"https://storage.cloud.google.com/python-test-coverage/htmlcov/#g htmlcov/*
-      sed -i s#src=\"#src=\"https://storage.cloud.google.com/python-test-coverage/htmlcov/#g htmlcov/*
-      sed -i s#href=\"#href=\"https://storage.cloud.google.com/python-test-coverage/htmlcov.$COMMIT_SHA/#g htmlcov.$COMMIT_SHA/*
-      sed -i s#src=\"#src=\"https://storage.cloud.google.com/python-test-coverage/htmlcov.$COMMIT_SHA/#g htmlcov.$COMMIT_SHA/*
-      # Keep the coverage.xml - likely we can use this data to graph later.
-      gsutil cp coverage.xml gs://python-test-coverage/coverage.$COMMIT_SHA.xml
-      # Copy the test results to the cloud bucket
-      gsutil -m cp -r htmlcov/ htmlcov.$COMMIT_SHA gs://python-test-coverage/
-      # Copy to ng3 metrics, too
+      # Copy to ng3 metrics
       # The parser is picky, so drop lines that are of no use to it
       sed -e "/^BRDA:0,/ d" coverage.lcov > coverage.edited.lcov
       gsutil cp coverage.edited.lcov gs://ng3-metrics/ng3-hw-tools-coverage/absolute/hdctools/$COMMIT_SHA/coverage.out
