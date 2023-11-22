@@ -18,14 +18,14 @@ Current status: **Dogfood**
     - [To run the same tests as the CQ does](#to-run-the-same-tests-as-the-cq-does)
   - [Forget the wrappers just let me into the container](#forget-the-wrappers-just-let-me-into-the-container)
   - [FAQ](#faq)
-    - [When I run dut-control -- XXX I get a message like “More than one container matches …“](#when-i-run-dut-control----xxx-i-get-a-message-like-more-than-one-container-matches)
-    - [I want to flash firmware - how do I do that ?](#i-want-to-flash-firmware---how-do-i-do-that)
-    - [I want to run TAST/FAFT tests locally - how do I do that ?](#i-want-to-run-tastfaft-tests-locally---how-do-i-do-that)
+    - [When I run dut-control -- XXX I get a message like “More than one container matches …“](#when-i-run-dut-control----xxx-i-get-a-message-like-more-than-one-container-matches-)
+    - [I want to flash firmware - how do I do that ?](#i-want-to-flash-firmware---how-do-i-do-that-)
+    - [I want to run TAST/FAFT tests locally - how do I do that ?](#i-want-to-run-tastfaft-tests-locally---how-do-i-do-that-)
     - [Some tests fail with OSError - No space on device or similar - how to fix](#some-tests-fail-with-oserror---no-space-on-device-or-similar---how-to-fix)
     - [I am getting docker.errors.DockerException: Error while fetching server API version: ('Connection aborted.', PermissionError(13, 'Permission denied'))](#i-am-getting-dockererrorsdockerexception-error-while-fetching-server-api-version-connection-aborted-permissionerror13-permission-denied)
-    - [Can I use podman instead of docker ?](#can-i-use-podman-instead-of-docker)
-    - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred)
-    - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts)
+    - [Can I use podman instead of docker ?](#can-i-use-podman-instead-of-docker-)
+    - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred-)
+    - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts-)
 
 ## Overview
 
@@ -85,7 +85,6 @@ sudo usermod -aG tty $USER
 ```
 
 You may need to reboot your host for this change to take effect.
-
 
 ## Installing docker API
 
@@ -248,6 +247,17 @@ servo_type:ccd_cr50
 Note the exit code for the wrapper script is set to be the exit code of the dut-control command.
 ```
 
+```text
+servod-ps
+
+   Shows a list of the servod containers currently running
+
+Example:   servod-ps
+
+Name                      Image      Board   Model     Servo Serial               Port
+1700772381-docker_servod  dev        brya    banshee   SERVOV4P1-C-2306151088     9997
+```
+
 ## Making changes to servod
 
 ### Building Servod
@@ -274,11 +284,11 @@ run-servod-tests
 You can see a list of the running containers by running the command:
 
 ```text
-docker ps
+servod-ps
 
-CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS     NAMES
-e9336cfc2e69   servod:dev     "pytest -n auto /hdc…"   27 seconds ago   Up 26 seconds             1692829089-docker_servod
-34e03f1bad05   8fd584b2d526   "bash /start_servod_…"   30 minutes ago   Up 30 minutes             1692827271-docker_servod
+Name                      Image      Board   Model     Servo Serial               Port
+1700772381-docker_servod  dev        brya    banshee   SERVOV4P1-C-2306151088     9997
+
 ```
 
 Containers are always named - if you do not supply a name then a timestamp is
@@ -293,7 +303,7 @@ Entering a container so you can run commands can be done with the command:
 ```text
 docker exec -it <name> bash
 
-Example: docker exec -it 1692827271-docker_servod bash
+Example: docker exec -it 1700772381-docker_servod bash
 ```
 
 In particular if you use the:
@@ -315,17 +325,17 @@ by default a timestamp is used for the container name if it is not provided.
 You can see a list of the running containers by running the command:
 
 ```text
-docker ps
+servod-ps
 
-CONTAINER ID   IMAGE          COMMAND                  CREATED          STATUS          PORTS     NAMES
-e9336cfc2e69   servod:dev     "pytest -n auto /hdc…"   27 seconds ago   Up 26 seconds             1692829089-docker_servod
-34e03f1bad05   8fd584b2d526   "bash /start_servod_…"   30 minutes ago   Up 30 minutes             1692827271-docker_servod
+Name                      Image      Board   Model     Servo Serial               Port
+1700772381-docker_servod  dev        brya    banshee   SERVOV4P1-C-2306151088     9997
+1700778745-docker_servod  release    puff    wyvern    SERVOV4P1-C-2306153023     None
 ```
 
 Then you can stop one a container by running
 
 ```text
-stop-servod  -n 1692827271
+stop-servod  -n 1700778745
 ```
 
 Until you have only one servod container running. If you wish to have multiple
@@ -361,6 +371,7 @@ tests as usual.
 ```text
 tast run -var=servo=localhost:<PORT> <DUT_IP> example.ServoEcho
 ```
+
 or
 
 ```text
