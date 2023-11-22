@@ -211,6 +211,14 @@ start-servod
        Map the internal XML RPC port to this port number on the host, allows for
        direct API access without having to run commands inside of the docker
        container
+
+   [-f ]
+      After the servod has started continue to follow the logs as they get generated
+      rather than dropping back to the shell.  CTRL+C will exit the servod on the
+      command line.
+
+      By default -f will show the debug logs but you can specify -f=WARNING or -f=INFO
+      if you wish another level of logging.
 ```
 
 ```text

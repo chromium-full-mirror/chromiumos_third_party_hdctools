@@ -6,6 +6,7 @@
 import argparse
 from datetime import datetime
 import os
+import signal
 import sys
 
 import docker
@@ -13,6 +14,8 @@ import docker
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
+
+signal.signal(signal.SIGINT, signal.default_int_handler)
 
 
 def setup():
@@ -42,6 +45,7 @@ def start_servod(
     passthrough_args,
     sleep,
     test,
+    follow,
 ):
     servod_params = "--port 9999 "
 
@@ -102,10 +106,14 @@ def start_servod(
             except docker.errors.APIError:
                 for line in log_lines:
                     print(line.decode("utf-8"), end="")
-                sys.exit(1)
+                sys.exit(2)
             if ec == 0:
                 started = True
-                log_lines = cont.logs(tail=3)
+                log_lines = None
+                if follow:
+                    log_lines = cont.logs()
+                else:
+                    log_lines = cont.logs(tail=3)
                 print(log_lines.decode("utf-8"))
                 if port:
                     print(
@@ -113,9 +121,13 @@ def start_servod(
                         % port
                     )
                 print(
-                    "\nTo stop this container: $ stop-servod --container_name %s\n"
-                    % container_name
+                    "\nTo stop this container: $ stop-servod --container_name %s"
+                    % container_name,
+                    end="",
                 )
+                if follow:
+                    print(" or press CTRL+C", end="")
+                print("\n")
     elif test:
         cont.reload()
         while cont.status == "running":
@@ -131,6 +143,17 @@ def start_servod(
             "Enter the container by running the command $ docker exec -it %s bash"
             % name
         )
+    if not (sleep or test) and follow:
+        try:
+            unused_rc, stream = cont.exec_run(
+                ["tail", "-F", "-n", "0", "/var/log/servod_9999/latest.%s" % (follow,)],
+                stream=True,
+            )
+            for data in stream:
+                print(data.decode(), end="")
+        except KeyboardInterrupt:
+            cont.kill()
+            sys.exit(1)
 
 
 def parse_args():
@@ -168,6 +191,15 @@ def parse_args():
         choices=["local", "latest", "beta", "release"],
         default="local",
         help="Run the container but do not start servod - best for debug.",
+    )
+    parser.add_argument(
+        "-f",
+        "--follow",
+        type=str,
+        choices=["INFO", "WARNING", "DEBUG"],
+        nargs="?",
+        const="DEBUG",
+        help="Keep the start process running streaming, the servod logs.",
     )
     parser.add_argument(
         "--mount",
@@ -216,6 +248,7 @@ def main():
         passthrough_args=args.passthrough[1:],
         sleep=args.sleep,
         test=args.run_tests,
+        follow=args.follow,
     )
 
 
