@@ -331,6 +331,7 @@ RUN apt-get update --no-install-recommends \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
+    && apt-mark hold fwupd \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
     && rm -f /hdctools-docker-fake_9999-1_all.deb
 
