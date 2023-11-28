@@ -21,7 +21,17 @@ class RunCommandBase:
         parser.add_argument(
             "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
         )
-        return parser.parse_args()
+        args = parser.parse_args()
+        if args.passthrough and args.passthrough[0] != "--":
+            print(
+                (
+                    "Error - unknown arguments '%s' - if you want to pass through"
+                    " arguments use the -- separator"
+                )
+                % " ".join(args.passthrough)
+            )
+            sys.exit(3)
+        return args
 
     def run_command_in_container(self):
         args = self.parse_args()

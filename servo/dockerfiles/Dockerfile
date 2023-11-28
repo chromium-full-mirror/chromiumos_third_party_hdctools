@@ -331,6 +331,7 @@ RUN apt-get update --no-install-recommends \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
+    && apt-mark hold fwupd \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
     && rm -f /hdctools-docker-fake_9999-1_all.deb
 
@@ -469,4 +470,6 @@ RUN rm -rf wheels
 RUN ldconfig
 
 COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
+COPY --link --from=hdctools-builder /hdctools/servo_mfg/tests/ /hdctools/servo_mfg/tests/
+COPY --link --from=hdctools-builder /hdctools/ec3po/tests/ /hdctools/ec3po/tests/
 RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
