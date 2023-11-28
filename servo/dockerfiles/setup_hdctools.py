@@ -57,7 +57,7 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
             "servo",
             "servo.data",
             "servo.proto",
-            "servo.drv",
+            "servo.data.drv",
             "servo.interface",
             "servo.tools",
             "servo.utils",

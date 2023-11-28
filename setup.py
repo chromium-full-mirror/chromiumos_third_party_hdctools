@@ -55,7 +55,7 @@ setup(
         "servo",
         "servo.data",
         "servo.proto",
-        "servo.drv",
+        "servo.data.drv",
         "servo.interface",
         "servo.tools",
         "servo.utils",
