@@ -1,0 +1,48 @@
+#!/bin/bash
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+
+set -x
+set -e
+
+date=$(date +"%y.%m.%d%H%M")
+short_hash=$(git rev-parse --short HEAD || echo "localbuild")
+
+mkdir -p servod/usr/local/servod/development_environment
+mkdir -p servod/usr/local/bin
+mkdir servod/DEBIAN
+
+cd development_environment/
+cp start-servod.py \
+    stop-servod.py \
+    servod-ps.py \
+    dut-control.py \
+    servodtool.py \
+    run_command.py  \
+    ../servod/usr/local/servod/development_environment/
+cd -
+
+cd servod/usr/local/bin/
+ln -s /usr/local/servod/development_environment/start-servod.py \
+    ./start-servod
+ln -s /usr/local/servod/development_environment/stop-servod.py \
+    ./stop-servod
+ln -s /usr/local/servod/development_environment/servod-ps.py \
+    ./servod-ps
+ln -s /usr/local/servod/development_environment/dut-control.py \
+    ./dut-control
+ln -s /usr/local/servod/development_environment/servodtool.py \
+    ./servodtool
+cd -
+
+echo "Package: servod" > servod/DEBIAN/control
+echo "Version: ${date}+${short_hash}" >> servod/DEBIAN/control
+echo "Maintainer: ChromeOS Developers" >> servod/DEBIAN/control
+echo "Architecture: all" >> servod/DEBIAN/control
+echo "Description: Script that allow easy start/stop of servod" >> servod/DEBIAN/control
+echo "Depends: python3, python3-docker, docker-ce, docker-ce-cli, containerd.io" >> servod/DEBIAN/control
+
+dpkg-deb --build servod
+rm -rf servod

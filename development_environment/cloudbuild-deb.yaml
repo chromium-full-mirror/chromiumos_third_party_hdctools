@@ -1,0 +1,25 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+steps:
+
+- name: 'gcr.io/cloud-builders/git'
+  id: 'build-deb'
+  entrypoint: 'bash'
+  args:
+  - '-c'
+  - 'development_environment/build_deb.sh'
+
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: 'push-deb'
+  args:
+  - 'artifacts'
+  - 'apt'
+  - 'upload'
+  - 'servod-deb'
+  - '--project=chromeos-hw-tools'
+  - '--location=us'
+  - '--source=servod.deb'
+
+  waitFor: ['build-deb']
