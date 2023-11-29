@@ -75,14 +75,20 @@ def setup():
 
 
 def get_image(client, channel):
-    if channel != "local":
-        image = ARTIFACT_URL_TEMPLATE % channel
-        resp = client.api.pull(image, stream=True, decode=True)
-        for unused_update in resp:
-            print("+", end="", flush=True)
-        print("", flush=True)
-        return image
-    return DEFAULT_IMAGE
+    if channel == "local":
+        if client.images.list(filters={"reference": DEFAULT_IMAGE}):
+            return DEFAULT_IMAGE
+        print(
+            "\nWARNING:  local image requested but not available, "
+            "using release image.\n"
+        )
+        channel = "release"
+    image = ARTIFACT_URL_TEMPLATE % channel
+    resp = client.api.pull(image, stream=True, decode=True)
+    for unused_update in resp:
+        print("+", end="", flush=True)
+    print("", flush=True)
+    return image
 
 
 def start_servod(
