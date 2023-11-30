@@ -9,7 +9,7 @@ import os
 import pexpect
 from pexpect import fdpexpect
 
-from servo.data.drv import ec
+from servo.drv import ec
 
 
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms

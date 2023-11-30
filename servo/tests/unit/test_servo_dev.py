@@ -13,7 +13,7 @@ from servo import servo_dev_templates as tmpl
 from servo import servo_interfaces
 from servo import servo_server
 from servo import system_config
-from servo.data.drv import na
+from servo.drv import na
 from servo.utils import servo_dev_hierarchy
 
 
@@ -481,10 +481,10 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False), ["testing"])
 
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
+        "servo.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
     )
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
+        "servo.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
     )
     def test_get_param_drv_get_no_cache(self):
         """Test _get_param_drv()."""
@@ -516,10 +516,10 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True)[0], get_params)
 
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
+        "servo.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
     )
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
+        "servo.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
     )
     def test_get_param_drv_set_no_cache(self):
         """Test _get_param_drv()."""

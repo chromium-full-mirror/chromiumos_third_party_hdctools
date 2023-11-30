@@ -8,8 +8,8 @@ import mock
 import serial
 
 from servo import servo_server
-from servo.data.drv import hw_driver
-from servo.data.drv import relay_switch
+from servo.drv import hw_driver
+from servo.drv import relay_switch
 from servo.interface import interface
 
 
@@ -32,7 +32,7 @@ class TestRelaySwitch(unittest.TestCase):
         fakeport.pid = pid
         return fakeport
 
-    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
     @mock.patch("serial.tools.list_ports.comports")
     def test_pwrbtn_press_fail(self, comports_mock, servod_set_mock):
         """Test that Set_relay_pwrbtn_press throws error when relay switch is not present."""
@@ -48,7 +48,7 @@ class TestRelaySwitch(unittest.TestCase):
 
     @mock.patch("serial.Serial.write", mock.MagicMock())
     @mock.patch("serial.Serial.close", mock.MagicMock())
-    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
     @mock.patch("serial.Serial")
     @mock.patch("serial.tools.list_ports.comports")
     def test_pwrbtn_press_success(self, comports_mock, serial_mock, servod_set_mock):

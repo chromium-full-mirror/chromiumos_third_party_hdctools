@@ -9,8 +9,8 @@ import unittest
 import mock
 
 from servo import servo_server
-from servo.data.drv import hw_driver
-from servo.data.drv import reven_power
+from servo.drv import hw_driver
+from servo.drv import reven_power
 from servo.interface import interface
 
 
@@ -26,19 +26,19 @@ class TestRevenPower(unittest.TestCase):
         hw_drv = hw_driver.HwDriver(intfc, params)
         self.reven_power = reven_power.revenPower(hw_drv, params, servod)
 
-    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
     def test_power_off(self, servod_set_mock):
         """Test power_off"""
         self.reven_power._power_off(2)
         servod_set_mock.assert_called_once_with("relay_pwrbtn_press", 2)
 
-    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
     def test_power_on(self, servod_set_mock):
         """Test power_on"""
         self.reven_power._power_on(self.reven_power.REC_OFF, 2)
         servod_set_mock.assert_called_once_with("relay_pwrbtn_press", 2)
 
-    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
     def test_power_on_bad_input(self, servod_set_mock):
         """Test power_on returns error when wrong rec mode passed in"""
         self.assertRaises(
@@ -48,8 +48,8 @@ class TestRevenPower(unittest.TestCase):
         )
         servod_set_mock.assert_not_called()
 
-    @mock.patch("servo.data.drv.reven_power.revenPower._power_on")
-    @mock.patch("servo.data.drv.reven_power.revenPower._power_off")
+    @mock.patch("servo.drv.reven_power.revenPower._power_on")
+    @mock.patch("servo.drv.reven_power.revenPower._power_off")
     def test_reset_cycle(self, power_off_mock, power_on_mock):
         """Test that reset_cycle makes correct calls to on and off functions"""
         self.reven_power._reset_cycle(0)

@@ -9,11 +9,11 @@ import logging
 import os
 import threading
 
+from servo import drv as servo_drv
 from servo import interface as _interface
 from servo import servo_dev_templates
 from servo import servo_interfaces
 from servo import servo_logging
-from servo.data import drv as servo_drv
 from servo.utils import string_utils
 import servo.utils.usb_hierarchy as usb_hierarchy
 
