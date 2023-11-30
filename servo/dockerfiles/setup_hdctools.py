@@ -56,8 +56,10 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
         packages=[
             "servo",
             "servo.data",
-            "servo.proto",
-            "servo.drv",
+            "servo.data.config",
+            "servo.data.grpc_server",
+            "servo.data.impl",
+            "servo.data.drv",
             "servo.interface",
             "servo.tools",
             "servo.utils",
@@ -67,13 +69,17 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
             "servo.tests.fixtures",
             "servo.tests.unit",
             "servo.tests.data",
+            "servo.common",
+            "servo.common.config",
+            "servo.common.proto",
         ],
         package_data={
             "servo": [
                 "data/*.xml",
                 "data/*.scenario",
                 "data/*.board",
-                "proto/*.textproto",
+                "common/proto/*.textproto",
+                "common/proto/*.proto",
             ],
         },
         cmdclass={"build_py": servo_build_py},
@@ -195,4 +201,40 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo_updater":
             )
         ],
         description="Servo usb updater.",
+    )
+
+if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "data_grpc_server":
+    setup(
+        name="data_grpc_server",
+        version=__version__,
+        maintainer="chromium os",
+        maintainer_email="chromium-os-dev@chromium.org",
+        license="Chromium",
+        url="https://www.chromium.org/chromium-os/ec-development",
+        install_requires=[""],
+        packages=[""],
+        entry_points={
+            "console_scripts": [
+                "servo_updater=data.grpc_server.grpc_server_setup:main"
+            ],
+        },
+        description="data gRPC server setup.",
+    )
+
+if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "data_grpc_server":
+    setup(
+        name="data_grpc_server",
+        version=__version__,
+        maintainer="chromium os",
+        maintainer_email="chromium-os-dev@chromium.org",
+        license="Chromium",
+        url="https://www.chromium.org/chromium-os/ec-development",
+        install_requires=[""],
+        packages=[""],
+        entry_points={
+            "console_scripts": [
+                "servo_updater=data.grpc_server.grpc_server_setup:main"
+            ],
+        },
+        description="data gRPC server setup.",
     )

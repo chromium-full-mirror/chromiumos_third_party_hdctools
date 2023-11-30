@@ -7,11 +7,11 @@ import unittest
 
 import mock
 
-from servo.drv import cr50
-from servo.drv import pty_driver
+from servo.data.drv import cr50
+from servo.data.drv import pty_driver
 
 
-@mock.patch("servo.drv.pty_driver.ptyDriver._issue_cmd_get_results")
+@mock.patch("servo.data.drv.pty_driver.ptyDriver._issue_cmd_get_results")
 class TestPromptDetection(unittest.TestCase):
     class cr50(cr50.cr50):
         def __init__(self):

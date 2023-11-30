@@ -185,7 +185,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         """
         super(ServoINAConfigGenerator, self).__init__(module_name, ina_pkg)
         if not servo_drv_dir:
-            servo_drv_dir = os.path.join(servo_data_dir, "..", "drv")
+            servo_drv_dir = os.path.join(servo_data_dir, "drv")
         self._servo_drv_dir = servo_drv_dir
         ina2xx_drv_cfg = os.path.join(servo_data_dir, "ina2xx.xml")
         # Note: the 'interface' attribute is to support an old API that allowed

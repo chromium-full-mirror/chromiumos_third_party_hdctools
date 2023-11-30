@@ -1,0 +1,39 @@
+# Copyright 2011 The ChromiumOS Authors
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+include $(HDCTOOLS_DIR)/defs/definitions.mk
+include $(HDCTOOLS_DIR)/defs/utilities.mk
+
+
+SUBDIRS		=
+SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
+PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
+PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))
+XML_SRC		= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.xml))
+XML_DST		= $(addprefix $(THIS_BUILD_DIR)/,$(XML_SRC))
+
+all: $(PYTHON_DST) $(XML_DST)
+
+$(THIS_BUILD_DIR)/%.py: $(HDCTOOLS_SOURCE_DIR)/%.py
+	$(MESSAGE) "Copying $(notdir $@)"
+	$(CP) $< $@
+
+
+$(THIS_BUILD_DIR)/%.xml: $(HDCTOOLS_SOURCE_DIR)/%.xml
+	$(MESSAGE) "Copying $(notdir $@)"
+	$(CP) $< $@
+
+install:			# NOP
+
+all:		$(PYTHON_DST) $(XML_DST) $(SUBDIRS)
+
+install:	$(SUBDIRS_INSTALL)
+
+$(SUBDIRS):
+	@$(call remake,Building,$@,all)
+
+$(SUBDIRS_INSTALL):
+	@$(call remake,Installing,$(subst -install,,$@),install)
+
+.PHONY:	$(SUBDIRS) $(SUBDIRS_INSTALL)

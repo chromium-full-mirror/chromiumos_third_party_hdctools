@@ -18,8 +18,8 @@ from servo import servo_logging
 from servo import servo_parsing
 from servo import servo_server
 from servo import servod
-from servo import system_config
 from servo import watchdog
+from servo.common.config import system_config
 from servo.utils import scratch
 from servo.utils import servo_dev_prober
 

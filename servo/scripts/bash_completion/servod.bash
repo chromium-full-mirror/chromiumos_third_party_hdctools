@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 _all_servod_xmls=$(python3 -c "
-from servo import system_config
+from servo.common.config import system_config
 print(' '.join(system_config.SystemConfig().get_all_cfg_names()))
 ")
 
