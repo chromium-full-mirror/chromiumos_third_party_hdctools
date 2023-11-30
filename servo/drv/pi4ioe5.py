@@ -405,7 +405,7 @@ class pi4Ioe5(hw_driver.HwDriver):
         """
 
         if "child" not in self._params:
-            raise Pi4Ioe5("getting child address")
+            raise Pi4Ioe5Error("getting child address")
         child = int(self._params["child"], 0)
         return child
 
