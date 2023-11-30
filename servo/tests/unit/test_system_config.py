@@ -7,7 +7,7 @@
 import os
 import unittest
 
-from servo import system_config
+from servo.common.config import system_config
 from servo.tests.unit import syscfg_atlas
 
 

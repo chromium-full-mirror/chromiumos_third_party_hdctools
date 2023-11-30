@@ -32,6 +32,7 @@ RUN apt-get update \
     python3-distutils \
     python3-setuptools \
     python3-wheel \
+    python3-grpc-tools\
     uuid-dev \
     wget
 RUN update-alternatives --auto c++
@@ -49,7 +50,6 @@ ENV BUILDCC_PREFIX=
 COPY servo/dockerfiles/equivs-control .
 RUN equivs-build equivs-control
 RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
-
 ######################################################################
 FROM clang-builder as cbfstool
 
@@ -328,6 +328,8 @@ RUN apt-get update --no-install-recommends \
     python3-usb \
     python3-requests \
     python3-pip \
+    python3-grpcio \
+    python3-grpc-tools \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
@@ -345,6 +347,7 @@ WORKDIR /wheels
 COPY --link --from=ec-builder /ec/dist/*.whl ./
 COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
+
 WORKDIR /
 RUN rm -rf wheels
 

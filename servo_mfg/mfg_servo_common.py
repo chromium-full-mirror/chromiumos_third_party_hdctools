@@ -14,7 +14,7 @@ import subprocess
 import sysconfig
 import time
 
-import servo.drv.pty_driver as pty_driver
+import servo.data.drv.pty_driver as pty_driver
 import servo.interface.stm32uart as stm32uart
 from servo_updater import servo_updater
 

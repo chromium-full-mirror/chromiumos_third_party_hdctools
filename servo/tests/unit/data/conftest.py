@@ -4,7 +4,7 @@
 import pytest
 
 from servo import servo_dev_templates as templates
-from servo import system_config
+from servo.common.config import system_config
 
 
 class SystemConfigTestError(Exception):

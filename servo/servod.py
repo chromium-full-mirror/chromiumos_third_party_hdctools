@@ -8,6 +8,7 @@
 
 import errno
 import itertools
+import json
 import logging
 import os
 import signal
@@ -18,6 +19,8 @@ import time
 import weakref
 from xmlrpc.server import SimpleXMLRPCServer
 
+# pylint: disable=E0401
+import grpc
 import usb
 
 from servo import recovery
@@ -26,8 +29,9 @@ from servo import servo_dev_finder
 from servo import servo_logging
 from servo import servo_parsing
 from servo import servo_server
-from servo import system_config
 from servo import watchdog
+from servo.common.config.system_config import SystemConfig
+from servo.common.proto import system_config_grpc
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 from servo.utils import servo_dev_prober
@@ -35,6 +39,12 @@ from servo.utils import servo_dev_prober
 
 # If user does not specify a log directory, use this one.
 DEFAULT_LOG_DIR = "/var/log"
+
+# grpc server host
+GRPC_SERVER = "localhost"
+
+# grpc server running port
+GRPC_PORT = 50051
 
 # If user does not specify a port to use, try ports in this range. Traverse
 # the range from high to low addresses to maintain backwards compatibility
@@ -450,6 +460,13 @@ class ServodStarter:
           main_dev_entry: the main device's ServoDeviceEntry
           prober: a ServoDeviceProber to probe the board and model information
         """
+
+        # Create a gRPC channel to the specified host and port
+        channel = grpc.insecure_channel(f"{GRPC_SERVER}:{GRPC_PORT}")
+
+        # Create a SystemConfig client using the generated stub
+        system_config_client = system_config_grpc.SystemConfig(channel)
+
         for dev_entry in dev_entries:
             self._logger.debug("Start initializing servo device %s", dev_entry)
             devopts, dev_tmpl = dev_entry.devopts, dev_entry.dev_template
@@ -468,9 +485,29 @@ class ServodStarter:
                     " and no config specified with -c <file>"
                 )
 
-            scfg = system_config.SystemConfig()
-            for cfg_file in all_configs:
-                scfg.add_cfg_file(dev_entry.devopts.prefix[0], cfg_file)
+            # Create an instance of the SystemConfig
+            scfg = SystemConfig()
+            try:
+                # Load systemConfig using the gRPC server
+                # using the 'GetFileContent' system_config_stub
+                response = system_config_client.GetFileContent(
+                    VID=dev_entry.vid, PID=dev_entry.pid
+                )
+
+                # Extract and process the received system configuration data(
+                # SystemConfig ProtoMessage)
+                for config_object in response.systemConfig:
+                    # Deserialize JSON data from the gRPC response and assign it to
+                    # 'scfg'
+                    scfg.hwinit = json.loads(config_object.hwinit)
+                    scfg.control_tags = json.loads(config_object.control_tags)
+                    scfg.aliases = json.loads(config_object.aliases)
+                    scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
+
+            except grpc.RpcError as e:
+                # Handle gRPC errors, such as network issues and exit system
+                print(f"Error: {e}")
+                sys.exit(1)
 
             servo_device = servo_dev.ServoDevice(
                 dev_entry=dev_entry,

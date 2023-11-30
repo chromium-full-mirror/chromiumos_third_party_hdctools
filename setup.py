@@ -54,8 +54,10 @@ setup(
     packages=[
         "servo",
         "servo.data",
-        "servo.proto",
-        "servo.drv",
+        "servo.data.config",
+        "servo.data.grpc_server",
+        "servo.data.impl",
+        "servo.data.drv",
         "servo.interface",
         "servo.tools",
         "servo.utils",
@@ -65,13 +67,16 @@ setup(
         "servo.tests.unit",
         "servo.tests.data",
         "servo.scripts",
+        "servo.common",
+        "servo.common.config",
+        "servo.common.proto",
     ],
     package_data={
         "servo": [
             "data/*.xml",
             "data/*.scenario",
             "data/*.board",
-            "proto/*.textproto",
+            "common/proto/*.textproto",
         ],
     },
     cmdclass={"build_py": servo_build_py},
@@ -190,4 +195,34 @@ setup(
         )
     ],
     description="Servo usb updater.",
+)
+
+setup(
+    name="data_grpc_server",
+    version=__version__,
+    maintainer="chromium os",
+    maintainer_email="chromium-os-dev@chromium.org",
+    license="Chromium",
+    url="https://www.chromium.org/chromium-os/ec-development",
+    install_requires=[""],
+    packages=[""],
+    entry_points={
+        "console_scripts": ["servo_updater=data.grpc_server.grpc_server_setup:main"],
+    },
+    description="data gRPC server setup.",
+)
+
+setup(
+    name="data_grpc_server",
+    version=__version__,
+    maintainer="chromium os",
+    maintainer_email="chromium-os-dev@chromium.org",
+    license="Chromium",
+    url="https://www.chromium.org/chromium-os/ec-development",
+    install_requires=[""],
+    packages=[""],
+    entry_points={
+        "console_scripts": ["servo_updater=data.grpc_server.grpc_server_setup:main"],
+    },
+    description="data gRPC server setup.",
 )
