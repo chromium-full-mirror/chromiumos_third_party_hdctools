@@ -15,11 +15,13 @@ import binascii
 import ctypes
 from datetime import datetime
 import logging
+import multiprocessing.connection
 import os
 import pathlib
 import pty
 import re
 import select
+import socket
 import stat
 import sys
 
@@ -108,7 +110,7 @@ class Console:
       cmd_pipe: A socket.socket or multiprocessing.Connection object which
         represents the console side of the command pipe.  This must be a
         bidirectional pipe.  Console commands and responses utilize this pipe.
-      dbg_pipe: A socket.socket or multiprocessing.Connection object which
+      dbg_pipe: A multiprocessing.Connection object which
         represents the console's read-only side of the debug pipe.  This must be a
         unidirectional pipe attached to the interpreter.  EC debug messages use
         this pipe.
@@ -145,13 +147,13 @@ class Console:
 
     def __init__(
         self,
-        controller_pty,
-        user_pty,
-        interface_pty,
-        cmd_pipe,
-        dbg_pipe,
-        name=None,
-        token_db=None,
+        controller_pty: int,
+        user_pty: str,
+        interface_pty: int,
+        cmd_pipe: socket.socket | multiprocessing.connection.Connection,
+        dbg_pipe: multiprocessing.connection.Connection,
+        name: str | None = None,
+        token_db: str | None = None,
     ):
         """Initializes a Console object with the provided arguments.
 
@@ -159,8 +161,7 @@ class Console:
         controller_pty: File descriptor to the controller side of the PTY. Used for
           driving output to the user and receiving user input.
         user_pty: A string representing the PTY name of the served console.
-        interface_pty: A string representing the PTY name of the served command
-          interface.
+        interface_pty: File descriptor to the PTY of the served command interface.
         cmd_pipe: A socket.socket or multiprocessing.Connection object which
           represents the console side of the command pipe.  This must be a
           bidirectional pipe.  Console commands and responses utilize this pipe.
@@ -1233,7 +1234,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             data, controller_connected, command_active.value
                         )
 
-                    elif fileno == shutdown_pipe.fileno():
+                    elif shutdown_pipe is not None and fileno == shutdown_pipe.fileno():
                         console.logger.debug(
                             (
                                 "ec3po console received shutdown pipe"
@@ -1340,7 +1341,7 @@ def main(argv):
     console = Console(
         controller_pty,
         os.ttyname(user_pty),
-        os.ttyname(controller_pty),
+        controller_pty,
         cmd_pipe_interactive,
         dbg_pipe_interactive,
     )
