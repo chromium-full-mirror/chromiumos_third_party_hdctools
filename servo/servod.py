@@ -106,11 +106,15 @@ class ServodStarter:
         Raises:
           ServodError: if automatic config cannot be found
         """
+
         # Initialize logging up here first to ensure log messages from parsing
         # can go through.
         loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
         logging.basicConfig(level=loglevel, format=fmt)
         self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
+
+        # Running servod in chroot is no longer supported.
+        self.exit_if_in_chroot()
 
         env_vars = sorted(servo_parsing.GetServodEnvVars())
         self._logger.info(
@@ -604,15 +608,6 @@ class ServodStarter:
         """Wrapper around rpc server's serve_forever to catch server errors."""
         # pylint: disable=broad-except
         self._logger.info("Listening on %s port %s", self._host, self._servo_port)
-        if os.environ.get("CROS_WORKON_SRCROOT"):
-            self._logger.info(
-                (
-                    "DEPRECATION WARNING:\nRunning servod in the cros_sdk is not going "
-                    "to be possible after the end Feb 2024.\nPlease refer to "
-                    "https://chromium.googlesource.com/chromiumos/third_party/hdctools"
-                    "/+/main/docs/servod_outside_chroot.md"
-                )
-            )
         try:
             self._server.serve_forever()
         except Exception:
@@ -659,6 +654,25 @@ class ServodStarter:
             )
         self.cleanup()
         sys.exit(self._exit_status)
+
+    def exit_if_in_chroot(self):
+        if os.environ.get("CROS_WORKON_SRCROOT"):
+            self._logger.info(
+                "\nRunning servod in the cros_sdk is no longer supported."
+                "\nPlease refer to https://chromium.googlesource.com/"
+                "chromiumos/third_party/hdctools/+/main/docs/"
+                "servod_outside_chroot.md"
+            )
+            if os.environ.get("I_NEED_SERVOD"):
+                self._logger.info(
+                    "\n\n*********************************************************\n\n"
+                    "You are running servod in an override mode. "
+                    "\nProceed at your own risk with the understanding this may "
+                    "stop working at any time without notice."
+                    "\n\n*********************************************************\n\n"
+                )
+            else:
+                sys.exit(2)
 
 
 # Disable Genesys USB3 hubs that come without serial number: Genesys USB
