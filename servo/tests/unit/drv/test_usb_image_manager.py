@@ -9,8 +9,8 @@ import unittest
 import mock
 
 from servo import servo_server
-from servo.drv import hw_driver
-from servo.drv import usb_image_manager
+from servo.data.drv import hw_driver
+from servo.data.drv import usb_image_manager
 from servo.interface import interface
 
 
@@ -63,7 +63,7 @@ class TestUsbImageManager(unittest.TestCase):
         ]
 
     @mock.patch(
-        "servo.drv.hw_driver.HwDriver._servod_get", return_value="mock_direction"
+        "servo.data.drv.hw_driver.HwDriver._servod_get", return_value="mock_direction"
     )
     def test_get_image_usbkey(self, servod_get_mock):
         """Test Get_image_usbkey_direction"""
@@ -71,15 +71,15 @@ class TestUsbImageManager(unittest.TestCase):
         servod_get_mock.assert_called_once_with("image_usbkey_mux")
 
     @mock.patch(
-        "servo.drv.hw_driver.HwDriver._servod_get", return_value="mock_direction"
+        "servo.data.drv.hw_driver.HwDriver._servod_get", return_value="mock_direction"
     )
     def test_get_second_usbkey(self, servod_get_mock):
         """Test Get_second_usbkey_direction"""
         self.assertEqual(self.usb_mgr._Get_second_usbkey_direction(), "mock_direction")
         servod_get_mock.assert_called_once_with("bottom_usbkey_mux")
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_image_usbkey_1(self, servod_get_mock, servod_set_mock):
         """Test the Set_image_usbkey_direction function with 1 as an input."""
         usb_to_servo_calls = self.get_usb_to_servo_calls(
@@ -88,8 +88,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_image_usbkey_direction(1)
         servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_second_usbkey_1(self, servod_get_mock, servod_set_mock):
         """Test the Set_second_usbkey_direction function with 1 as an input."""
         usb_to_servo_calls = self.get_usb_to_servo_calls(
@@ -98,8 +98,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_second_usbkey_direction(1)
         servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_image_usbkey_0(self, servod_get_mock, servod_set_mock):
         """Test the Set_image_usbkey_direction function with 0 as an input."""
         usb_to_dut_calls = self.get_usb_to_dut_calls(
@@ -108,8 +108,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_image_usbkey_direction(0)
         servod_set_mock.assert_has_calls(usb_to_dut_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_second_usbkey_0(self, servod_get_mock, servod_set_mock):
         """Test the Set_second_usbkey_direction function with 0 as an input."""
         usb_to_dut_calls = self.get_usb_to_dut_calls(
@@ -118,8 +118,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_second_usbkey_direction(0)
         servod_set_mock.assert_has_calls(usb_to_dut_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_image_usbkey_servo(self, servod_get_mock, servod_set_mock):
         """Test the Set_image_usbkey_direction function with input servo_sees_usbkey."""
         usb_to_servo_calls = self.get_usb_to_servo_calls(
@@ -128,8 +128,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_image_usbkey_direction("servo_sees_usbkey")
         servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_second_usbkey_servo(self, servod_get_mock, servod_set_mock):
         """Test the Set_second_usbkey_direction function with input servo_sees_usbkey."""
         usb_to_servo_calls = self.get_usb_to_servo_calls(
@@ -138,8 +138,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_second_usbkey_direction("servo_sees_usbkey")
         servod_set_mock.assert_has_calls(usb_to_servo_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_image_usbkey_dut(self, servod_get_mock, servod_set_mock):
         """Test the Set_image_usbkey_direction function with input dut_sees_usbkey."""
         usb_to_dut_calls = self.get_usb_to_dut_calls(
@@ -148,8 +148,8 @@ class TestUsbImageManager(unittest.TestCase):
         self.usb_mgr._Set_image_usbkey_direction("dut_sees_usbkey")
         servod_set_mock.assert_has_calls(usb_to_dut_calls)
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_get", return_value="")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_get", return_value="")
     def test_set_second_usbkey_dut(self, servod_get_mock, servod_set_mock):
         """Test the Set_second_usbkey_direction function with input dut_sees_usbkey."""
         usb_to_dut_calls = self.get_usb_to_dut_calls(
@@ -174,18 +174,20 @@ class TestUsbImageManager(unittest.TestCase):
             2,
         )
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
     @mock.patch(
-        "servo.drv.hw_driver.HwDriver._servod_get", return_value="servo_sees_usbkey"
+        "servo.data.drv.hw_driver.HwDriver._servod_get",
+        return_value="servo_sees_usbkey",
     )
     def test_set_image_usbkey_repeat(self, servod_get_mock, servod_set_mock):
         """Test that when usbkey is already set to the requested direction, then no call is made"""
         self.usb_mgr._Set_image_usbkey_direction("servo_sees_usbkey")
         assert mock.call("servo_sees_usbkey") not in servod_set_mock.mock_calls
 
-    @mock.patch("servo.drv.hw_driver.HwDriver._servod_set")
+    @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
     @mock.patch(
-        "servo.drv.hw_driver.HwDriver._servod_get", return_value="servo_sees_usbkey"
+        "servo.data.drv.hw_driver.HwDriver._servod_get",
+        return_value="servo_sees_usbkey",
     )
     def test_set_second_usbkey_repeat(self, servod_get_mock, servod_set_mock):
         """Test that when usbkey is already set to the requested direction, then no call is made"""

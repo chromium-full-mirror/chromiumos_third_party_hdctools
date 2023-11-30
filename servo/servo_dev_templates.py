@@ -10,18 +10,19 @@ import pathlib
 
 from google.protobuf import text_format
 
-from servo.proto import servo_dev_pb2 as ServoDeviceProto
+from servo.common.proto import servo_dev_pb2 as ServoDeviceProto
 
 
 # Protobuf text file path
 _TEXTPROTO_PATH = (
-    str(pathlib.Path(__file__).parent.resolve()) + "/proto/servo_dev_info.textproto"
+    str(pathlib.Path(__file__).parent.resolve())
+    + "/common/proto/servo_dev_info.textproto"
 )
 
 # Main devices have an empty prefix. This constant here is to make those checks
 # uniform.
 MAIN_DEV_PREFIX = "main"
-# This alias is used for the main device on servo_server (the device without a
+# This alias is used for the main device on servo_server (the device w  ithout a
 # prefix) to allow for precise routing and server controls that need to indicate
 # which device they want things to happen on.
 MAIN_DEV_PREFIX_ALIAS = ""
@@ -29,7 +30,6 @@ MAIN_DEV_PREFIXES = [MAIN_DEV_PREFIX, MAIN_DEV_PREFIX_ALIAS]
 
 # The root hub device of the main device gets the prefix 'root'
 ROOT_DEV_PREFIX = "root"
-
 
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP, SERVO_ID_DEFAULTS,
 # and SERVO_NAME_TEMPLATE_MAP, get populated when protobufs are read from to keep

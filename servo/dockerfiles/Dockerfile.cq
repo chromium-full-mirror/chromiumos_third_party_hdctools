@@ -187,6 +187,8 @@ RUN apt-get update --no-install-recommends \
     python3-usb \
     python3-requests \
     python3-pip \
+    python3-grpc-tools \
+    python3-grpcio \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
