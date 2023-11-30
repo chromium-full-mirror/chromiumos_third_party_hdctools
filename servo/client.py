@@ -5,16 +5,9 @@
 """
 
 import re
+from xmlrpc.client import Fault
+from xmlrpc.client import ServerProxy
 
-
-try:
-    from xmlrpclib import Fault
-    from xmlrpclib import ServerProxy
-except ImportError:
-    # TODO(crbug.com/999878): This is for python3 compatibility.
-    # Remove once fully moved to python3.
-    from xmlrpc.client import Fault
-    from xmlrpc.client import ServerProxy
 
 DEFAULT_HOST = "localhost"
 DEFAULT_PORT = 9999
