@@ -29,6 +29,10 @@ steps:
   - --push
   - --platform
   - linux/amd64,linux/arm64
+  - '--cache-to'
+  - 'type=registry,ref=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi/cache:$_BRANCH_NAME-$_SPIN_NUMBER,mode=max'
+  - '--cache-from'
+  - 'type=registry,ref=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi/cache:$_BRANCH_NAME-$_SPIN_NUMBER'
   - -t=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi:$_BRANCH_NAME-$_SPIN_NUMBER
   - -f=/workspace/servo/dockerfiles/Dockerfile
   - '.'
