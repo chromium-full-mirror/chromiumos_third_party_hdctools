@@ -4,7 +4,17 @@
     <name>ec_board</name>
     <doc>The board name of the EC image</doc>
     <params interface="10" drv="simple_ec" uart_cmd="version"
-      regex="RO:\s+(\S*)_v?[\d.\w\+:,-]+[\n\r]" group="1" formatting="strip"/>
+      regex="RO:\s+(\S*)(?:-[\d\.]+(?:-\w+)?|_v?[\d\.\w\+:,-]+)[\n\r]" group="1" formatting="strip"/>
+    <!-- Sample version strings
+RO: fleex_v2.0.786-8928ffebb
+RO: careena_v2.1.392-2b6db0545c
+RO: crystaldrift_v3.3.107059-ec:3d3
+RO: frostflow_v3.3.107034-ec:c77a44
+RO: markarth_v3.3.107059-ec:3d39e5,
+RO: screebo-15694.0.0
+RO: voltorb-0.0.0-unknown
+RO: steelix-0.0.0-unknown
+    -->
   </control>
   <control>
     <name>ec_model</name>
