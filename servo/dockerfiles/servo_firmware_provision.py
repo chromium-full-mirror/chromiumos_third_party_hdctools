@@ -82,32 +82,38 @@ def create_sym_link(src, dst):
         os.symlink(src, dst)
 
 
-def download_unpack(path, base_name):
+def download_unpack(path, tar_files):
     """Download the tarball from Google Cloud storage, untar, clean up.
 
     Args:
         path (str): path to the gs bucket.
-        base_name (str): Base name of the tarball and binary
-        dst (str): local folder to download and extract.
+        tar_files (list): List of base names of the ""tarball"" and binary
     """
-    tar_name = "{}.tar.xz".format(base_name)
-    bin_name = "{}.bin".format(base_name)
-    # All files have a 'xz' extension except for a few legacy ones which
-    # have yet to be migrated or obsoleted.
-    if base_name in GZ_FILES:
-        tar_name = "{}.tar.gz".format(base_name)
-    subprocess.check_call(["gsutil", "cp", path + tar_name, tar_name])
-    subprocess.check_call(["tar", "--no-same-owner", "-xf", tar_name])
-    os.remove(tar_name)
-    os.chmod(bin_name, 420)
+    tar_bin_mapping = {}
+    for base_name in tar_files:
+        tar_name = "{}.tar.xz".format(base_name)
+        bin_name = "{}.bin".format(base_name)
+        # All files have a 'xz' extension except for a few legacy ones which
+        # have yet to be migrated or obsoleted.
+        if base_name in GZ_FILES:
+            tar_name = "{}.tar.gz".format(base_name)
+
+        tar_bin_mapping[tar_name] = bin_name
+
+    files_to_copy = [path + tar_name for tar_name in list(tar_bin_mapping.keys())]
+
+    subprocess.check_call(["gsutil", "-m", "cp"] + files_to_copy + ["."])
+    for tar_name, bin_name in tar_bin_mapping.items():
+        subprocess.check_call(["tar", "--no-same-owner", "-xf", tar_name])
+        os.remove(tar_name)
+        os.chmod(bin_name, 420)
 
 
 def main():
     """Downloads the images and creates the required links."""
     # Find each unique file
     tar_files = set([x[1] for x in ALL_IMAGES])
-    for tar in tar_files:
-        download_unpack(MIRROR_PATH, tar)
+    download_unpack(MIRROR_PATH, tar_files)
     # Create the Symlinks.
     for image in ALL_IMAGES:
         sym_name = "{}.bin".format(image[0])
