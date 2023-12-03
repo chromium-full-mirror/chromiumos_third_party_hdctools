@@ -29,6 +29,8 @@ RUN apt-get update \
     libtool \
     pkg-config \
     python3 \
+    python3-grpc-tools \
+    python3-grpcio \
     python3-distutils \
     python3-setuptools \
     python3-wheel \

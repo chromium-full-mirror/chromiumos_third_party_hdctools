@@ -25,5 +25,9 @@ $(THIS_BUILD_DIR)/%.py: $(HDCTOOLS_SOURCE_DIR)/%.py
 	$(MESSAGE) "Copying $(notdir $@)"
 	$(CP) $< $@
 
-all: $(PYTHON_DST) $(TEXTPROTO_DST) $(PROTO_DST)
+ver:
+	python3 $(HDCTOOLS_DIR)/servo/grpc.py;
+
+
+all: 		ver $(PYTHON_DST) $(TEXTPROTO_DST)
 install:
