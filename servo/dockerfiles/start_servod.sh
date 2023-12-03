@@ -114,17 +114,6 @@ if ([ -n "$SERVO_FW_CHANNEL" ] && [ -n "$SERIAL" ] && [ -n "$SERVO_TYPE" ]); the
     servo_updater -s $SERIAL -c $SERVO_FW_CHANNEL -b $SERVO_TYPE
 fi
 
-
-
-log_output "start generate gRPC Files...."
-
-cp /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc.py /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
-chmod +x /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
-
-/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/grpc.py
-
-log_output "Finish generate gRPC Files"
-
 log_output "starting grpc server ...................."
 /usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py &
 

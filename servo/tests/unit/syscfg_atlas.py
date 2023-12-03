@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 
-# This is the expected servo.system_config.SystemConfig.syscfg_dict for the
+# This is the expected servo.common.config.system_config.SystemConfig.syscfg_dict for the
 # combination of:
 #
 #  servo/tests/unit/testdata/test_system_config/servo_micro.xml

@@ -507,7 +507,6 @@ class ServodStarter:
             except grpc.RpcError as e:
                 # Handle gRPC errors, such as network issues and exit system
                 print(f"Error: {e}")
-                sys.exit(1)
 
             servo_device = servo_dev.ServoDevice(
                 dev_entry=dev_entry,

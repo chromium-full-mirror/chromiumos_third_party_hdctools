@@ -2,19 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
-echo "start generate gRPC Files...."
-
-cp servo/protoc-gen-custom_grpc.py servo/protoc-gen-custom_grpc
-chmod +x servo/protoc-gen-custom_grpc
-
-python3 servo/grpc.py
-echo $(ls -ltr servo/common/proto)
-
-echo "Finish generate gRPC Files"
-
-echo "starting grpc server ...................."
+echo "DEV: starting grpc server ...................."
 python3 servo/data/grpc_server/grpc_server_setup.py &
-
 
 start-servod -t $1

@@ -77,6 +77,7 @@ setup(
             "data/*.scenario",
             "data/*.board",
             "common/proto/*.textproto",
+            "common/proto/*.proto",
         ],
     },
     cmdclass={"build_py": servo_build_py},
