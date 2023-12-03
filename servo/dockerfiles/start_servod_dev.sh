@@ -15,15 +15,6 @@ if [ $found_updatable -eq 1 ]; then
 	/usr/bin/fwupdtool install --plugins genesys --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
 fi
 
-echo "DEV: start generate gRPC Files...."
-
-cp /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc.py /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
-chmod +x /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
-
-/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/grpc.py
-
-echo "DEV: Finish generate gRPC Files"
-
 echo "DEV: starting grpc server ...................."
 /usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py &
 echo "DEV: starting servod ...................."
