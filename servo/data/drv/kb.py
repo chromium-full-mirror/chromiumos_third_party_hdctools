@@ -33,17 +33,6 @@ class kb(hw_driver.HwDriver):
             raise KbError("Unknown keyboard handler requested: %s" % self._handler)
         self._key = self._params["key"]
 
-    def _GetKeyboard(self):
-        """Get the correct keyboard to use."""
-        keyboard = (
-            self._servod._usb_keyboard
-            if self._handler == "usb"
-            else self._servod._keyboard
-        )
-        if not keyboard:
-            raise KbError("Keyboard %s handler not setup." % (self._handler,))
-        return keyboard
-
     def _Set_key(self, duration):
         """Press key combo for |duration| seconds.
 
@@ -52,25 +41,8 @@ class kb(hw_driver.HwDriver):
 
         Args:
           duration: seconds to hold the key pressed.
-
-        Raises:
-          KbError: if key is not a member of kb_precanned map.
         """
-        turn_off_needed = False
-        keyboard = self._GetKeyboard()
-        if not keyboard.is_open():
-            turn_off_needed = True
-            self._logger.info(
-                "Keyboard %s handler not setup. Turning on now.", self._handler
-            )
-            keyboard.open()
-        func = getattr(keyboard, self._key, None)
-        if func is None:
-            raise KbError("Key %r not found." % (self._key,))
-        func(press_secs=duration)
-        if turn_off_needed:
-            self._logger.info("Keyboard was not on for call. Turning it off again.")
-            keyboard.close()
+        self._driver_client.SetKeyboardKey(key=self._key, handler=self._handler, duration=duration)
 
     def _Set_arb_key_config(self, key):
         """Set the key to be pressed when arb_key control is called
@@ -78,7 +50,8 @@ class kb(hw_driver.HwDriver):
         Args:
           key: the key to press when arb_key is called
         """
-        self._GetKeyboard().arb_key_config(key)
+        # Call core gRPC to set arb_key
+        self._driver_client.SetArbKeyConfig(key=key, handler=self._handler)
 
     def _Set_arb_keys_config(self, key):
         """Set the keys to be pressed when arb_key control is called
@@ -86,4 +59,5 @@ class kb(hw_driver.HwDriver):
         Args:
           key: the key to press when arb_key is called
         """
-        self._GetKeyboard().arb_keys_config(key)
+        # Call core gRPC to set arb_keys
+        self._driver_client.SetArbKeysConfig(key=key, handler=self._handler)

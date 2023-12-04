@@ -7,8 +7,8 @@
 See ftdii2c.py for details on controls available.
 """
 
+from servo.common.interface import ftdii2c
 from servo.data.drv import hw_driver
-from servo.interface import ftdii2c
 
 
 # pylint: disable=C0103

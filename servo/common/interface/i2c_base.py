@@ -7,7 +7,7 @@
 import logging
 import threading
 
-from servo.interface import interface
+from servo.common.interface import interface
 
 
 def _format_write_list(write_list):

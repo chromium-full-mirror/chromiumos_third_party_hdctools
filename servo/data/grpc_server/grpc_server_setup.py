@@ -9,7 +9,9 @@ import time
 
 import grpc
 
+from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
+from servo.data.impl import driver_impl
 from servo.data.impl import system_config_impl
 
 
@@ -27,6 +29,10 @@ def grpc_server_start():
     # Add the SystemConfigServicer implementation to the gRPC server
     system_config_grpc.add_SystemConfigServicer_to_server(
         system_config_impl.SystemConfigImpl(), server)
+
+    # Add the DriverServicer implementation to the gRPC server
+    driver_grpc.add_DriverServiceServicer_to_server(
+        driver_impl.DriverImpl(), server)
 
     # Bind the server on port 50051
     server.add_insecure_port("[::]:50051")

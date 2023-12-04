@@ -9,7 +9,7 @@ import time
 
 import usb
 
-from servo.interface import common as c
+from servo.common.interface import common as c
 from servo.utils import usb_hierarchy
 
 

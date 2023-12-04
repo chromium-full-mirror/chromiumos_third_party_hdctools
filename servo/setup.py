@@ -56,6 +56,7 @@ class servo_build_py(build_py.build_py):
         # run generate_ina_controls.py over all the files,
         # giving the file an output directory?
         data_dir = self.get_package_dir(self.packages.pop(1))
+        print("YoLo: {}".format(data_dir))
         module_name = "generate_ina_controls"
         spec = importlib.util.spec_from_file_location(
             module_name, "%s/%s.py" % (data_dir, module_name)
@@ -66,7 +67,7 @@ class servo_build_py(build_py.build_py):
 
     def build_protos(self):
         """Build protos."""
-        proto_src = ["proto/servo_dev.proto"]
+        proto_src = ["common/proto/servo_dev.proto"]
         for file in proto_src:
             generate_proto(file)
 
@@ -86,25 +87,34 @@ setup(
     packages=[
         "servo",
         "servo.data",
-        "servo.proto",
-        "servo.drv",
-        "servo.interface",
+        "servo.data.config",
+        "servo.data.grpc_server",
+        "servo.data.impl",
+        "servo.data.drv",
+        "servo.common.interface",
         "servo.tools",
         "servo.utils",
         "servo.utils.linux",
+        "servo.tests",
+        "servo.grpc_server",
+        "servo.grpc_server.impl",
         "servo.tests.e2e",
         "servo.tests.fixtures",
         "servo.tests.unit",
         "servo.tests.data",
         "servo.scripts",
         "servo.common",
+        "servo.common.config",
+        "servo.common.proto",
+        "servo.common.utils",
     ],
     package_data={
         "servo": [
             "data/*.xml",
             "data/*.scenario",
             "data/*.board",
-            "proto/*.textproto",
+            "common/proto/*.proto",
+            "common/proto/*.textproto",
         ],
     },
     cmdclass={"build_py": servo_build_py},

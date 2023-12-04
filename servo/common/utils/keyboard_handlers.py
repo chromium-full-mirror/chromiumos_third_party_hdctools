@@ -5,6 +5,8 @@
 # Expects to be run in an environment with sudo and no interactive password
 # prompt, such as within the ChromiumOS development chroot.
 
+# pylint: skip-file
+
 import ast
 import json
 import logging
@@ -13,6 +15,10 @@ import time
 
 import serial
 
+from servo.common.config.grpc_config import GRPC_CORE_PORT
+from servo.common.config.grpc_config import GRPC_CORE_SERVER
+from servo.common.grpc_client import GrpcClient
+from servo.common.proto import servo_dev_grpc
 from servo.data.drv import hw_driver
 
 
@@ -27,6 +33,21 @@ class _HandlerTemplate:
         # The base subclasses need to handle opening themselves up.
         self._logger = logging.getLogger(type(self).__name__)
         self._open = False
+        # Create a gRPC channel to the specified host and port
+        channel = GrpcClient.create_grpc_channel(GRPC_CORE_SERVER, GRPC_CORE_PORT)
+        self._driver_client = servo_dev_grpc.ServoService(channel)
+
+    def _servod_get(self, control):
+        """Get the value of the given control with proper prefix."""
+        service = self._driver_client.GetServo(control_name=control)
+        return service.response
+
+    def _servod_set(self, control, value):
+        """Set the value of the given control with proper prefix."""
+        if type(value) == int:
+            self._driver_client.SetServo(control_name=control, int_value=value)
+        else:
+            self._driver_client.SetServo(control_name=control, string_value=value)
 
     def is_open(self):
         """Query whether keyboard handler is open for use."""
@@ -96,14 +117,9 @@ class _BaseHandler(_HandlerTemplate):
 
     KEY_MATRIX = None
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
         super(_BaseHandler, self).__init__()
-        self._servo = servo
         self._arb_keys = []
 
     def power_long_press(self):
@@ -137,15 +153,15 @@ class _BaseHandler(_HandlerTemplate):
         # its current value. Use pwr_button control by default.
         # Otherwise, use pwr_button_hold which calls a single EC
         # console command to toggle power button, for the CCD case.
-        is_ccd = self._servo.get("servo_class") == "ccd"
+        is_ccd = self._servod_get("servo_class") == "ccd"
 
         self._logger.debug("power_key is_ccd: %r", is_ccd)
         if is_ccd:
             use_hold_command = True
         else:
             try:
-                value = self._servo.get("pwr_button")
-                self._servo.set("pwr_button", value)
+                value = self._servod_get("pwr_button")
+                self._servod_set("pwr_button", value)
                 use_hold_command = False
             except hw_driver.HwDriverError:
                 use_hold_command = True
@@ -166,7 +182,7 @@ class _BaseHandler(_HandlerTemplate):
           press_secs: Time in seconds to simulate the keypress.
         """
         # Convert to milliseconds
-        self._servo.set("pwr_button_hold", int(press_secs * 1000))
+        self._servod_set("pwr_button_hold", int(press_secs * 1000))
 
     def power_key_press_release(self, press_secs):
         """Simulate a power button by setting it to press and then release.
@@ -175,7 +191,7 @@ class _BaseHandler(_HandlerTemplate):
           press_secs: Time in seconds to simulate the keypress.
         """
         self._logger.info("Pressing power button for %.4f secs", press_secs)
-        self._servo.set_get_all(
+        self._driver_client.SetGetAll(
             ["pwr_button:press", "sleep:%.4f" % press_secs, "pwr_button:release"]
         )
         # TODO(tbroch) Different systems have different release times on the
@@ -183,7 +199,7 @@ class _BaseHandler(_HandlerTemplate):
         # make this delay platform specific.
         retry = 1
         while True:
-            value = self._servo.get("pwr_button")
+            value = self._servod_get("pwr_button")
             if value == "release" or retry > self.RELEASE_RETRY_MAX:
                 break
             self._logger.info("Waiting for pwr_button to release, retry %d.", retry)
@@ -308,13 +324,9 @@ class MatrixKeyboardHandler(_BaseHandler):
         "none": ["1", "1", "1", "1"],
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(MatrixKeyboardHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(MatrixKeyboardHandler, self).__init__()
         self.open()
 
     def _press_keys(self, key):
@@ -324,7 +336,7 @@ class MatrixKeyboardHandler(_BaseHandler):
             _press_and_release_keys for release procedure.
         """
         (m1_a1, m1_a0, m2_a1, m2_a0) = self.KEY_MATRIX[key]
-        self._servo.set_get_all(
+        self._driver_client.SetGetAll(
             [
                 "kbd_m2_a0:%s" % m2_a0,
                 "kbd_m2_a1:%s" % m2_a1,
@@ -340,7 +352,7 @@ class MatrixKeyboardHandler(_BaseHandler):
             press_secs = self.SERVO_KEY_PRESS_DELAY
         self._press_keys(key)
         time.sleep(press_secs)
-        self._servo.set("kbd_en", "off")
+        self._servod_set("kbd_en", "off")
 
     def ctrl_d(self, press_secs=""):
         """Simulate Ctrl-d simultaneous button presses."""
@@ -393,13 +405,9 @@ class StoutHandler(MatrixKeyboardHandler):
         "none": ["1", "1", "1", "1"],
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(StoutHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(StoutHandler, self).__init__()
         self.open()
 
 
@@ -418,13 +426,9 @@ class ParrotHandler(MatrixKeyboardHandler):
         "none": ["1", "1", "1", "1"],
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(ParrotHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(ParrotHandler, self).__init__()
         self.open()
 
 
@@ -511,14 +515,14 @@ class ChromeECHandler(_BaseHandler):
     SIMULATED_KEYS_RE = re.compile(r"Simulated keys:")
     SIMULATED_KEY_ITEM_RE = re.compile(r"\t(\d+) (\d+)[\r\s]")
 
-    def __init__(self, servo):
+    def __init__(self):
         """Sets up the servo communication infrastructure.
 
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECHandler, self).__init__(servo)
-        base_board = self._servo.get_base_board()
+        super(ChromeECHandler, self).__init__()
+        base_board = self._driver_client.GetBaseBoard().response
         if base_board:
             self._ec_uart_regexp = base_board + "_ec_uart_regexp"
             self._ec_uart_cmd = base_board + "_ec_uart_cmd"
@@ -535,8 +539,8 @@ class ChromeECHandler(_BaseHandler):
 
         @param command: The command to send.
         """
-        self._servo.set(self._ec_uart_regexp, "None")
-        self._servo.set(self._ec_uart_cmd, command)
+        self._servod_set(self._ec_uart_regexp, "None")
+        self._servod_set(self._ec_uart_cmd, command)
 
     def _send_command_get_output(self, command, regexp_list):
         """Send command through UART and return output.
@@ -747,13 +751,9 @@ class ChromeECMithraxHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(ChromeECMithraxHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(ChromeECMithraxHandler, self).__init__()
         self.open()
 
 
@@ -839,13 +839,9 @@ class ChromeECFrostflowHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(ChromeECFrostflowHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(ChromeECFrostflowHandler, self).__init__()
         self.open()
 
 
@@ -931,13 +927,9 @@ class ChromeECOsirisHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(ChromeECOsirisHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(ChromeECOsirisHandler, self).__init__()
         self.open()
 
 
@@ -1022,13 +1014,13 @@ class ChromeECBansheeHandler(ChromeECHandler):
         "<left>": (6, 11),
     }
 
-    def __init__(self, servo):
+    def __init__(self):
         """Sets up the servo communication infrastructure.
 
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECBansheeHandler, self).__init__(servo)
+        super(ChromeECBansheeHandler, self).__init__()
         self.open()
 
 
@@ -1114,25 +1106,21 @@ class ChromeECDelbinHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self, servo):
-        """Sets up the servo communication infrastructure.
-
-        @param servo: A Servo object representing
-                           the host running servod.
-        """
-        super(ChromeECDelbinHandler, self).__init__(servo)
+    def __init__(self):
+        """Sets up the servo communication infrastructure."""
+        super(ChromeECDelbinHandler, self).__init__()
 
         # Try to query SKU_ID or FW_CONFIG from EC Uart
-        servo.set("ec_uart_regexp", r'["SKU_ID:\\s+(\\d+)\\s+"]')
+        self._servod_set("ec_uart_regexp", r'["SKU_ID:\\s+(\\d+)\\s+"]')
         # servo.set('ec_uart_regexp', 'r["FW_CONFIG:\\s+(\\d+)\\s+"]')
-        servo.set("ec_uart_cmd", "cbi")
+        self._servod_set("ec_uart_cmd", "cbi")
 
-        sku_id = servo.get("ec_uart_cmd")
+        sku_id = self._servod_get("ec_uart_cmd")
 
         if "65543" in sku_id or "65542" in sku_id:
             self.KEY_MATRIX = self.KEY_MATRIX_DELBING
 
-        servo.set("ec_uart_regexp", "None")
+        self._servod_set("ec_uart_regexp", "None")
         self.open()
 
 
@@ -1548,9 +1536,9 @@ class USBkm232Handler(_BaseHandler):
         "<pause/brk>": 126,
     }
 
-    def __init__(self, servo, serial_device):
+    def __init__(self, serial_device):
         """Constructor for usbkm232 class."""
-        super(USBkm232Handler, self).__init__(servo)
+        super(USBkm232Handler, self).__init__()
         if serial_device is None:
             raise Exception(
                 "No device specified when initializing usbkm232 keyboard handler"
@@ -1769,33 +1757,48 @@ class USBkm232Handler(_BaseHandler):
 class ServoUSBkm232Handler(USBkm232Handler):
     """Keyboard handler for devices without internal keyboard."""
 
-    def __init__(self, servo, legacy):
+    def __init__(self, legacy):
         """
         Args:
-          servo: Servo device used to execute controls
           legacy: bool, true for servo v2 as they require more setup.
         """
-        servo.set("atmega_rst", "on")
-        servo.set("at_hwb", "off")
-        servo.set("atmega_rst", "off")
-        serial = servo.get("atmega_pty")
+        # Create a gRPC channel to the specified host and port
+        channel = GrpcClient.create_grpc_channel(GRPC_CORE_SERVER, GRPC_CORE_PORT)
+        self._driver_client = servo_dev_grpc.ServoService(channel)
+        time.sleep(0.5)
+        self._servod_set("atmega_rst", "on")
+        self._servod_set("at_hwb", "off")
+        self._servod_set("atmega_rst", "off")
+        serial = self._servod_get("atmega_pty")
         self.legacy = legacy
-        super(ServoUSBkm232Handler, self).__init__(servo, serial)
+        super(ServoUSBkm232Handler, self).__init__(serial)
+
+    def _servod_get(self, control):
+        """Get the value of the given control with proper prefix."""
+        service = self._driver_client.GetServo(control_name=control)
+        return service.response
+
+    def _servod_set(self, control, value):
+        """Set the value of the given control with proper prefix."""
+        if type(value) == int:
+            self._driver_client.SetServo(control_name=control, int_value=value)
+        else:
+            self._driver_client.SetServo(control_name=control, string_value=value)
 
     def open(self):
         """Take atmega out of reset, and potentially do legacy setup."""
         if self.is_open():
             return
         # Ensure that the atmega is not in reset
-        self._servo.set("atmega_rst", "off")
+        self._servod_set("atmega_rst", "off")
         # Do proper setup for legacy devices
         if self.legacy:
-            self._servo.set("atmega_baudrate", "9600")
-            self._servo.set("atmega_bits", "eight")
-            self._servo.set("atmega_parity", "none")
-            self._servo.set("atmega_sbits", "one")
-            self._servo.set("usb_mux_sel4", "on")
-            self._servo.set("usb_mux_oe4", "on")
+            self._servod_set("atmega_baudrate", "9600")
+            self._servod_set("atmega_bits", "eight")
+            self._servod_set("atmega_parity", "none")
+            self._servod_set("atmega_sbits", "one")
+            self._servod_set("usb_mux_sel4", "on")
+            self._servod_set("usb_mux_oe4", "on")
         # Give the board enough time to boot up.
         time.sleep(1)
         super(ServoUSBkm232Handler, self).open()
@@ -1806,5 +1809,5 @@ class ServoUSBkm232Handler(USBkm232Handler):
         if not self.is_open():
             return
         # If using the atmega, ensure that the atmega is in reset.
-        self._servo.set("atmega_rst", "on")
+        self._servod_set("atmega_rst", "on")
         super(ServoUSBkm232Handler, self).close()

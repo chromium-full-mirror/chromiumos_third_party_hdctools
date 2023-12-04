@@ -4,7 +4,7 @@
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 include $(HDCTOOLS_DIR)/defs/utilities.mk
 
-SUBDIRS		= proto data drv interface scripts tools utils tests common
+SUBDIRS		= data grpc_server scripts tools utils tests common
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
 PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))

@@ -1247,7 +1247,9 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                     # detokenize and print
                                     message = console.z_detokenizer.detokenize_base64(
                                         chunk,
+                                        prefix=TOKEN_PREFIX,
                                     )
+
                                     message = message.replace(b"\n", b"\r\n")
                                     console.HandleDebugPipeData(
                                         message,

@@ -1,0 +1,80 @@
+
+// Copyright 2023 The ChromiumOS Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+/*
+    The DriverService provides RPC methods for interacting with drivers and interfaces.
+ */
+service DriverService {
+    // CallDriver is used to get or set values through the driver.
+    // It takes a DriverRequest and returns a DriverResponse.
+    rpc CallDriver (DriverRequest) returns (DriverResponse);
+    // InitInterface is used to initialize interfaces for servo devices.
+    // It takes an InterfaceRequest and returns an InterfaceResponse.
+    rpc InitInterface(InterfaceRequest) returns (InterfaceResponse);
+    // ReinitializeInterfaces is used to reinitialize interfaces for servo devices.
+    rpc ReinitializeInterfaces(google.protobuf.Empty) returns (google.protobuf.Empty);
+    // CloseInterfaces is used to close interfaces identified.
+    rpc CloseInterfaces(google.protobuf.Empty) returns (google.protobuf.Empty);
+    // Set log level for interfaces in interface_list
+    rpc SetInterfacesLoglevel(LogRequest) returns (google.protobuf.Empty);
+}
+
+message DriverRequest {
+    // Default interface template
+    string interface_template = 1;
+    // PID
+    int32 pid = 2;
+    // VID
+    int32 vid = 3;
+    // Serial
+    string serial = 4;
+    // Device type
+    string device_type = 5;
+    // control name that need to be set/get on the driver
+    string control_name = 6;
+    // the value the need to be set on the driver
+    // For get, it sent empty
+     oneof set_value {
+         // set value
+        string value = 7;
+        google.protobuf.Empty set_empty_value = 8;
+    }
+}
+
+message DriverResponse {
+    // Return driver get/set result
+    oneof response {
+        string value = 1;
+        google.protobuf.Empty empty_value = 2;
+    }
+}
+
+message InterfaceRequest {
+    // vid
+    int32 vid = 1;
+    // pid
+    int32 pid = 2;
+    // serial
+    string serial = 3;
+    // interface default tempalte
+    string interface_template = 4;
+
+    bool fault_tolerant = 5;
+    // Path to tokens database
+    string token_db = 6;
+}
+
+message InterfaceResponse {
+    // init interface response
+    bool success = 1;
+}
+
+message LogRequest {
+    string name = 1;
+}

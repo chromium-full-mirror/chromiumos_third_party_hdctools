@@ -6,9 +6,9 @@
 import logging
 import struct
 
-from servo.interface import common as c
-from servo.interface import gpio_interface
-from servo.interface import stm32usb
+from servo.common.interface import common as c
+from servo.common.interface import gpio_interface
+from servo.common.interface import stm32usb
 
 
 class SgpioError(c.InterfaceError):

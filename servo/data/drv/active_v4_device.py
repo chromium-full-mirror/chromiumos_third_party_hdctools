@@ -64,16 +64,7 @@ class activeV4Device(hw_driver.HwDriver):
          - servo_v4_with_servo_micro_and_ccd_cr50
         """
         servo_type = self._servod_get("servo_type")
-        devices = servo_type.split("_with_")[-1].split("_and_")
-        usable_devices = set(devices).intersection(self.V4_DEVICES.keys())
-
-        self._servod.v4_device_info = {}
-        self._servod.v4_device_info["default"] = devices[0]
-        self._servod.v4_device_info["usable_devices"] = list(usable_devices)
-        self._servod._can_control_cr50 = self._servod.has_control("cr50_servo")
-        self._servod._can_control_servo = ("servo_micro" in devices) or (
-            "c2d2" in devices
-        )
+        self._driver_client.InitV4Device(servo_type=servo_type, devices_keys=self.V4_DEVICES.keys())
 
     def get_v4_device_info(self, info_type):
         """Get the requested v4 device information.
@@ -84,15 +75,19 @@ class activeV4Device(hw_driver.HwDriver):
         Returns:
           Returns the requested information.
         """
-        if not hasattr(self._servod, "v4_device_info"):
-            self.init_v4_device_info()
-        return self._servod.v4_device_info.get(info_type)
+        servo_type = self._servod_get("servo_type")
+        service = self._driver_client.GetInitV4Device(servo_type=servo_type, devices_keys=self.V4_DEVICES.keys(),
+                                                      info_type=info_type)
+        self._logger.debug("Info device {} ".format(service.response))
+        # for usable_devices it get as a list
+        if hasattr(service.response, "list"):
+            return service.response.list
+        return service.response
 
     def _Set_device(self, device):
         """Configure cr50 to enable using servo micro or ccd."""
         if device == "default":
             device = self.get_v4_device_info("default")
-
         devices = self.get_v4_device_info("usable_devices")
         if device not in devices:
             if device == "ccd_gsc":
@@ -115,19 +110,20 @@ class activeV4Device(hw_driver.HwDriver):
         # are the signals that interfere with ccd. Disable/enable them based on
         # whether servo micro is supposed to be active.
         uart_en = "on" if use_servo else "off"
-        if self._servod._can_control_servo:
+        can_control_servo = self._driver_client.IsServoHasAttr("_can_control_servo")
+        if can_control_servo.value:
             self._servod_set("ec_uart_en", uart_en)
             self._servod_set("cpu_uart_en", uart_en)
 
-        if self._servod._can_control_cr50:
+        can_control_cr50 = self._driver_client.IsServoHasAttr("_can_control_cr50")
+        if can_control_cr50.value:
             # Cr50 can't detect servo if CCD EC uart is enabled. Enable cr50 servo
             # detection just in case ccd is blocking it.
             if (
-                self._servod_get("cr50_servo") in ["undetectable", "ignored"]
-                and use_servo
+                    self._servod_get("cr50_servo") in ["undetectable", "ignored"]
+                    and use_servo
             ):
                 self._servod_set("cr50_force_servo_detect", "on")
-
             # Give Cr50 enough time to detect the new state.
             time.sleep(2)
 
@@ -145,13 +141,15 @@ class activeV4Device(hw_driver.HwDriver):
 
     def _using_servo(self):
         """Return True if servo uart is enabled."""
+        can_control_servo = self._driver_client.IsServoHasAttr(name="_can_control_servo")
         return (
-            self._servod._can_control_servo and self._servod_get("ec_uart_en") == "on"
+                can_control_servo.value and self._servod_get("ec_uart_en") == "on"
         )
 
     def _using_ccd(self):
         """Return True if ccd uart TX is enabled."""
-        if not self._servod._can_control_cr50:
+        can_control_cr50= self._driver_client.IsServoHasAttr(name="_can_control_cr50")
+        if not can_control_cr50.value:
             return False
         flags = self._servod_get("cr50_ccd_state_flags")
         brdprop = int(self._servod_get("cr50_brdprop"), base=16)

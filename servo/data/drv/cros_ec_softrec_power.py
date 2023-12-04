@@ -5,6 +5,7 @@ import time
 
 from servo.data.drv import cros_ec_power
 from servo.data.drv import ec
+from servo.data.drv.pty_driver import DEFAULT_UART_TIMEOUT
 
 
 class crosEcSoftrecPower(cros_ec_power.CrosECPower):
@@ -68,7 +69,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._power_key = self._params.get("power_key", "short_press")
         self._usb_power_restore = (
             "yes" == self._params.get("usb_power_restore", "no")
-        ) and self._servod.has_control(self._USB3_PWR_EN)
+        ) and self._driver_client.HasControl(self._USB3_PWR_EN).value
         self._warm_reset_ec_jump_to_rw_delay = float(
             self._params.get("warm_reset_ec_jump_to_rw_delay", 1.2)
         )
@@ -115,10 +116,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
     def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
         # ec_gpio is known to use the ec drv
-        _unused, ec_driver, _unused = self._servod.get_main_device()._get_param_drv(
-            "ec_gpio"
-        )
-        ec_driver._limit_channel()
+        self._driver_client.LimitEcDriverChannel();
         try:
             if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
                 # Need to retrieve ec_feat before warm_reset to avoid doing that while
@@ -144,11 +142,11 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # Before proceeding, we should really check that the EC has reset from
                     # our command.  Pexpect is minimally greedy so we won't be able to match
                     # the exact reset cause string.  But, this should be good enough.
-                    ec_driver._issue_cmd_get_results(
-                        "reboot wait-ext %s" % ap_off_option,
-                        ["Waiting"],
+                    self._driver_client.IssueCmdGetResult(
+                        cmds="reboot wait-ext %s" % ap_off_option,
+                        regex_list=["Waiting"],
                         flush=True,
-                        timeout=6,
+                        time_out=6,
                     )
                     self._logger.debug(
                         "EC reboot wait-ext delay: %s", self._ec_reboot_wait_ext_delay
@@ -174,8 +172,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # EC and AP when rebooting. However, the reboot will be triggered
                     # internally by the EC watchdog, and there is no external reset
                     # signal.
-                    ec_driver._issue_cmd_get_results(
-                        "reboot %s" % ap_off_option, ["Rebooting!"], flush=False
+                    self._driver_client.IssueCmdGetResult(
+                        cmds="reboot %s" % ap_off_option, regex_list=["Rebooting!"], flush=False,
+                        time_out=DEFAULT_UART_TIMEOUT
                     )
 
                 self._logger.debug("Reset recovery wait: %s", self._reset_recovery_time)
@@ -188,12 +187,18 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # Need to clear the flag in secondary (B) copy of the host events if
                 # we're in non-recovery mode.
                 cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
-                ec_driver._issue_cmd_get_results(cmd, ["Events:"])
+                self._driver_client.IssueCmdGetResult(
+                    cmds=cmd,
+                    regex_list=["Events:"],
+                    flush=False,
+                    time_out=DEFAULT_UART_TIMEOUT,
+                )
             # Tell the EC to tell the CPU we're in recovery mode or non-recovery mode.
             self._logger.debug("Hostevent delay: %s", self._hostevent_delay)
             time.sleep(self._hostevent_delay)
             cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-            ec_driver._issue_cmd_get_results(cmd, ["Events:"])
+            self._driver_client.IssueCmdGetResult(cmds=cmd, regex_list=["Events:"], flush=False,
+                                                  time_out=DEFAULT_UART_TIMEOUT)
             self._logger.debug(
                 "Recovery detection delay: %s", self._RECOVERY_DETECTION_DELAY
             )
@@ -221,9 +226,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
                 # this will be a no-op.
                 if (
-                    self._servod.has_control("root.dut_connection_type")
-                    and self._servod_get("root.dut_connection_type") == "type-c"
-                    and self._servod.has_control("dut_pd_data_role")
+                        self._driver_client.HasControl("root.dut_connection_type").value
+                        and self._servod_get("root.dut_connection_type") == "type-c"
+                        and self._driver_client.HasControl("dut_pd_data_role").value
                 ):
                     try:
                         self._servod_set("dut_pd_data_role", "DFP")
@@ -232,7 +237,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                             "Failed to set DUT's role to DFP", exc_info=True
                         )
         finally:
-            ec_driver._restore_channel()
+            self._driver_client.RestoreEcDriverChannel()
 
     def _power_on(self, rec_mode):
         if rec_mode == self.REC_ON:

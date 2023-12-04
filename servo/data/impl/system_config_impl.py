@@ -4,13 +4,10 @@
 # found in the LICENSE file.
 
 import json
-import os
-import pathlib
 
-from servo.common.config.system_config import SystemConfig
 from servo.common.proto import system_config_grpc
 from servo.common.proto import system_config_pb2
-from servo.data.config.servo_file_discover import get_default_config_by_vid_pid
+from servo.data.impl.system_config_service import get_system_config
 
 
 class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
@@ -27,7 +24,7 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             SystemConfigResponse: A response message containing formatted system configuration data.
         """
         # Retrieve the system configuration based on the provided message.
-        scfg = self.get_system_config(systemConfigRequest)
+        scfg = get_system_config(vid=systemConfigRequest.VID, pid=systemConfigRequest.PID)
 
         # Create a response message of type SystemConfigResponse.
         response = system_config_pb2.SystemConfigResponse()
@@ -42,25 +39,3 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
 
         # Return the populated response message.
         return response
-
-    def get_system_config(self, systemConfigRequest):
-        """
-        Retrieve a system configuration based on VID and PID.
-
-        Args:
-            systemConfigRequest (SystemConfigRequest): An object containing VID and PID.
-
-        Returns:
-            SystemConfig: A SystemConfig object representing the retrieved configuration.
-        """
-        # Get the default configuration file path based on VID and PID.
-        file_path = get_default_config_by_vid_pid(systemConfigRequest.VID, systemConfigRequest.PID)
-
-        # Create an empty SystemConfig object.
-        scfg = SystemConfig()
-
-        # Add the configuration file to the SystemConfig object.
-        scfg.add_cfg_file("", os.path.join(pathlib.Path(__file__).parent.parent.resolve(), file_path))
-
-        # Return the SystemConfig object with the configuration file added.
-        return scfg
