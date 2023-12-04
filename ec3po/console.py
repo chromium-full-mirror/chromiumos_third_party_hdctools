@@ -23,6 +23,7 @@ import select
 import socket
 import stat
 import sys
+from typing import Union
 
 from ec3po import interpreter
 from ec3po import threadproc_shim
@@ -142,9 +143,9 @@ class Console:
         controller_pty: int,
         user_pty: str,
         interface_pty: int,
-        cmd_pipe: socket.socket | multiprocessing.connection.Connection,
+        cmd_pipe: Union[socket.socket, multiprocessing.connection.Connection],
         dbg_pipe: multiprocessing.connection.Connection,
-        name: str | None = None,
+        name: Union[str, None] = None,
     ):
         """Initializes a Console object with the provided arguments.
 
