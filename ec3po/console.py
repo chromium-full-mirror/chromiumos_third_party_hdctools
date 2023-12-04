@@ -24,6 +24,7 @@ import select
 import socket
 import stat
 import sys
+from typing import Union
 
 from pw_tokenizer import detokenize
 
@@ -150,10 +151,10 @@ class Console:
         controller_pty: int,
         user_pty: str,
         interface_pty: int,
-        cmd_pipe: socket.socket | multiprocessing.connection.Connection,
+        cmd_pipe: Union[socket.socket, multiprocessing.connection.Connection],
         dbg_pipe: multiprocessing.connection.Connection,
-        name: str | None = None,
-        token_db: str | None = None,
+        name: Union[str, None] = None,
+        token_db: Union[str, None] = None,
     ):
         """Initializes a Console object with the provided arguments.
 
