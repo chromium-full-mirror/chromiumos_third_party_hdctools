@@ -5,10 +5,10 @@
 import errno
 import time
 
+from servo.common.interface.stm32i2c import Si2cError
 from servo.data.drv import hw_driver
 from servo.data.drv import i2c_reg
 from servo.data.drv import undefined
-from servo.interface.stm32i2c import Si2cError
 
 
 TIMEOUT_RETRIES = 10

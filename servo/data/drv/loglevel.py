@@ -5,13 +5,23 @@
 
 import logging
 
+from servo.common.config.grpc_config import GRPC_DATA_PORT
+from servo.common.config.grpc_config import GRPC_DATA_SERVER
+from servo.common.grpc_client import GrpcClient
+import servo.common.interface.ec3po_interface
+from servo.common.proto import driver_grpc
 from servo.data.drv import hw_driver
-import servo.interface.ec3po_interface
 import servo.servo_logging
 
 
 class loglevel(hw_driver.HwDriver):
     """Class to access loglevel controls."""
+
+    def _drv_init(self):
+        """Initializes the loglevel driver."""
+        # Create a gRPC channel to the specified host and port
+        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        self._data_client = driver_grpc.DriverService(channel)
 
     def _set(self, new_level):
         """Changes the current loglevel of the root logger.
@@ -45,9 +55,7 @@ class loglevel(hw_driver.HwDriver):
             root_logger.setLevel(level)
             # Set EC-3PO's logging level. This is only relevant when filtering through
             # the root-logger and not through the handlers.
-            for _unused, interface in self._servod.get_interface_list():
-                if isinstance(interface, servo.interface.ec3po_interface.EC3PO):
-                    interface.set_loglevel(new_level)
+            self._data_client.SetInterfacesLoglevel(name=new_level)
         else:
             for handler in out_handlers:
                 handler.setLevel(level)

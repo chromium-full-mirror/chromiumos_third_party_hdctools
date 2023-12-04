@@ -60,11 +60,13 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
             "servo.data.grpc_server",
             "servo.data.impl",
             "servo.data.drv",
-            "servo.interface",
+            "servo.common.interface",
             "servo.tools",
             "servo.utils",
             "servo.utils.linux",
             "servo.tests",
+            "servo.grpc_server",
+            "servo.grpc_server.impl",
             "servo.tests.e2e",
             "servo.tests.fixtures",
             "servo.tests.unit",
@@ -72,6 +74,7 @@ if "PACKAGE" in os.environ and os.environ["PACKAGE"] == "servo":
             "servo.common",
             "servo.common.config",
             "servo.common.proto",
+            "servo.common.utils",
         ],
         package_data={
             "servo": [

@@ -4,8 +4,8 @@
 
 """Driver for power button servo feature."""
 
+from servo.common.utils import keyboard_handlers
 from servo.data.drv import hw_driver
-from servo.data.drv import keyboard_handlers
 
 
 class PowerKbError(hw_driver.HwDriverError):
@@ -21,7 +21,7 @@ class powerKb(hw_driver.HwDriver):
         """Driver specific initializer."""
         super(powerKb, self)._drv_init()
         # pylint: disable=protected-access
-        self._handler = keyboard_handlers._BaseHandler(self._servod)
+        self._handler = keyboard_handlers._BaseHandler()
 
     def _set(self, duration):
         """Press power button for |duration| seconds.

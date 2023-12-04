@@ -4,8 +4,8 @@
 
 """Helper class to facilitate communication to servo ec console during mfg."""
 
+import servo.common.interface.stm32uart as stm32uart
 import servo.data.drv.pty_driver as pty_driver
-import servo.interface.stm32uart as stm32uart
 
 
 class TinyServod:

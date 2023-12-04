@@ -10,6 +10,9 @@ from servo.data.drv import hw_driver
 
 class sleep(hw_driver.HwDriver):
     """Simple HwDriver wrapper around time.sleep()."""
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(sleep, self)._drv_init()
 
     def _set(self, seconds):
         """Sleep for the given number of seconds."""

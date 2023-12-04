@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Base class to provide access to Texas Instruments INA-based ADCs."""
 
-
 from servo.data.drv import hw_driver
 
 
@@ -112,7 +111,7 @@ class basePWRADC(hw_driver.HwDriver):
           True, if this ADC control (identified by |self._base_name| has
           a register control for |reg|, False otherwise
         """
-        return self._servod.has_control(self._reg_control_name(reg))
+        return self._driver_client.HasControl(control_name=self._reg_control_name(reg)).value
 
     def _read_reg(self, reg):
         """Retrieve output for |reg|.
@@ -164,7 +163,7 @@ class basePWRADC(hw_driver.HwDriver):
           BasePWRADCError: if |self._base_name|_|suffix| is no servod control
         """
         ctrl_name = "%s_%s" % (self._base_name, suffix)
-        if not self._servod.has_control(ctrl_name):
+        if not self._driver_client.HasControl(control_name=ctrl_name).value:
             raise BasePWRADCError("Control %r unknown." % ctrl_name)
         self._servod_set(ctrl_name, value)
 

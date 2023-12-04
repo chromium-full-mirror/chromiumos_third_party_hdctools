@@ -4,7 +4,7 @@ A servo interface (effectively) maps to a usb end-point on a servo device that
 can perform a certain task. More generally, the idea is that a servo device
 supports multiple interfaces to perform multiple separate tasks. So far, we
 support GPIO, I2C, and UART interfaces. This short README is designed to give an
-overview of the servo.interface module.
+overview of the servo.common.interface module.
 
 # Overview
 

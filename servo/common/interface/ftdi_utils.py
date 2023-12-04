@@ -11,8 +11,8 @@ import os
 import subprocess
 import sys
 
-from servo.interface import common as c
-from servo.interface import ftdi_common
+from servo.common.interface import common as c
+from servo.common.interface import ftdi_common
 
 
 def get_interface_and_pid(index, pid):

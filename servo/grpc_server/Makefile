@@ -1,19 +1,29 @@
-# Copyright 2011 The ChromiumOS Authors
+# Copyright 2023 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 include $(HDCTOOLS_DIR)/defs/utilities.mk
 
-SUBDIRS		= common data scripts tools utils tests grpc_server
+SUBDIRS		= impl
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
 PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))
+XML_SRC		= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.xml))
+XML_DST		= $(addprefix $(THIS_BUILD_DIR)/,$(XML_SRC))
+
 
 $(THIS_BUILD_DIR)/%.py: $(HDCTOOLS_SOURCE_DIR)/%.py
 	$(MESSAGE) "Copying $(notdir $@)"
 	$(CP) $< $@
 
-all: 		$(PYTHON_DST) $(SUBDIRS)
+
+$(THIS_BUILD_DIR)/%.xml: $(HDCTOOLS_SOURCE_DIR)/%.xml
+	$(MESSAGE) "Copying $(notdir $@)"
+	$(CP) $< $@
+
+
+all:		$(PYTHON_DST) $(XML_DST) $(SUBDIRS)
+
 install:	$(SUBDIRS_INSTALL)
 
 $(SUBDIRS):

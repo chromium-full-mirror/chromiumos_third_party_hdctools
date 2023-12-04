@@ -122,14 +122,14 @@ class TestDevice(unittest.TestCase):
         ),
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.__init__",
+        "servo.common.interface.stm32uart.Suart.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.run", unittest.mock.MagicMock()
+        "servo.common.interface.stm32uart.Suart.run", unittest.mock.MagicMock()
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.reinitialize",
+        "servo.common.interface.stm32uart.Suart.reinitialize",
         unittest.mock.MagicMock(
             side_effect=[
                 Exception("reinit fail"),
@@ -272,14 +272,14 @@ class TestDevice(unittest.TestCase):
         ),
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.__init__",
+        "servo.common.interface.stm32uart.Suart.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.run", unittest.mock.MagicMock()
+        "servo.common.interface.stm32uart.Suart.run", unittest.mock.MagicMock()
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.reinitialize",
+        "servo.common.interface.stm32uart.Suart.reinitialize",
         unittest.mock.MagicMock(side_effect=Exception("reinit fail")),
     )
     @unittest.mock.patch("time.sleep", unittest.mock.MagicMock())

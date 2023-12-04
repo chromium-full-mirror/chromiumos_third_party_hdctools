@@ -8,6 +8,7 @@ import collections
 import ctypes
 import errno
 import functools
+import json
 import logging
 import os
 import pty
@@ -20,9 +21,14 @@ import tty
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-from servo.interface import common as c
-from servo.interface import empty
-from servo.interface import uart
+from servo import servo_interfaces
+from servo.common.config.grpc_config import GRPC_DATA_PORT
+from servo.common.config.grpc_config import GRPC_DATA_SERVER
+from servo.common.grpc_client import GrpcClient
+from servo.common.interface import common as c
+from servo.common.interface import empty
+from servo.common.interface import uart
+from servo.common.proto import driver_grpc
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
@@ -264,20 +270,29 @@ class EC3PO(uart.Uart):
         servo_device,
     ):
         """Factory method to implement the interface."""
+        c.build_logger.debug("Servo: {}".format(servo_device))
         device_info = DeviceInfo(vid, pid, sid)
         raw_uart_name = interface_data["raw_pty"]
         raw_uart_source = interface_data["source"]
-        if servo_device.syscfg.is_control(raw_uart_name):
-            raw_ec_uart = servo_device.get(raw_uart_name)
-            return EC3PO(raw_ec_uart, raw_uart_source, device_info)
-
-        # The overlay doesn't have the raw PTY defined, therefore we can skip
-        # initializing this interface since no control relies on it.
-        c.build_logger.debug(
-            "Skip initializing EC3PO for %s, no control specified.",
-            raw_uart_name,
-        )
-        return empty.Empty.Build()
+        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        driver_client = driver_grpc.DriverService(channel)
+        try:
+            drv = driver_client.CallDriver(
+                vid=vid,
+                pid=pid,
+                serial=sid,
+                interface_template=str(servo_interfaces.INTERFACE_DEFAULTS[vid][pid]),
+                control_name=raw_uart_name,
+                device_type="",
+            )
+            raw_ec_uart = json.loads(drv.value)
+            return EC3PO(raw_ec_uart["response"], raw_uart_source, device_info)
+        except Exception:
+            c.build_logger.info(
+                "Skip initializing EC3PO for %s, no control specified.",
+                raw_uart_name,
+            )
+            return empty.Empty.Build()
 
     @staticmethod
     def name():

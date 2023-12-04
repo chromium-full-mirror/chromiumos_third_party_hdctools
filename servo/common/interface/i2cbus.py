@@ -6,7 +6,7 @@
 import fcntl
 import io
 
-from servo.interface import i2c_base
+from servo.common.interface import i2c_base
 
 
 class I2CBus(i2c_base.BaseI2CBus):

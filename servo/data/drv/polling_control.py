@@ -13,17 +13,17 @@ DEFAULT_POLLING_TIMEOUT = None  # meaning no timeout
 class PollingControl:
     """Object to poll a control on a servo until it reaches an expected result"""
 
-    def _found_expected_result(self, servod, control, expected_results, logger):
+    def _found_expected_result(self, hw_driver, control, expected_results, logger):
         """
         Get a control from a servod and compare it to the expected results
 
         Args:
-          servod: a servod object with a get method
+          hw_driver: a hwDriver object
           control: the control to get
           expected_results: a list of the expected values for the control
         """
         try:
-            value = servod.get(control)
+            value = hw_driver._servod_get(control)
         except HwDriverError as hw_error:
             # If a HwDriverError is raised during the get command, just continue
             # polling until the timeout.
@@ -55,7 +55,7 @@ class PollingControl:
 
     def poll(
         self,
-        servod,
+        hw_driver,
         control,
         expected_results,
         logger=None,
@@ -66,7 +66,6 @@ class PollingControl:
         Poll a control until either the control is at the expected values or it timeouts
 
         Args:
-          servod: a servod object with a get method
           control: the control to get
           expected_results: a list of the expected outputs for the control
           logger: an object to log errors when trying to get the control
@@ -79,7 +78,7 @@ class PollingControl:
         """
         self._start_polling_timer()
         while True:
-            if self._found_expected_result(servod, control, expected_results, logger):
+            if self._found_expected_result(hw_driver, control, expected_results, logger):
                 return True
             if self._polling_timeout(polling_timeout):
                 return False

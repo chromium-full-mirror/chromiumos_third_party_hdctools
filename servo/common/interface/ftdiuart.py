@@ -8,10 +8,10 @@ import os
 import sys
 import time
 
-from servo.interface import common as c
-from servo.interface import ftdi_common
-from servo.interface import ftdi_utils
-from servo.interface import uart
+from servo.common.interface import common as c
+from servo.common.interface import ftdi_common
+from servo.common.interface import ftdi_utils
+from servo.common.interface import uart
 
 
 # TODO(tbroch) need some way to xref these to values in ftdiuart.h

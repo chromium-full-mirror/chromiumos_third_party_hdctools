@@ -8,9 +8,9 @@ import mock
 import serial
 
 from servo import servo_server
+from servo.common.interface import interface
 from servo.data.drv import hw_driver
 from servo.data.drv import relay_switch
-from servo.interface import interface
 
 
 class TestRelaySwitch(unittest.TestCase):

@@ -9,9 +9,9 @@ import unittest
 import mock
 
 from servo import servo_server
+from servo.common.interface import interface
 from servo.data.drv import hw_driver
 from servo.data.drv import usb_image_manager
-from servo.interface import interface
 
 
 class TestUsbImageManager(unittest.TestCase):

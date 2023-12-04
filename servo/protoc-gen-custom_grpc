@@ -65,7 +65,10 @@ def import_type(
     python_path = file.name.replace(".proto", "").replace("/", ".")
     module_path = python_path[: python_path.rindex(".")]
     module_name = python_path[python_path.rindex(".") + 1 :] + "_pb2"
-    add_import(imports, f"from servo.{module_path} import {module_name}")
+    if "protobuf" in module_path:
+        add_import(imports, f"from {module_path} import {module_name}")
+    else:
+        add_import(imports, f"from servo.{module_path} import {module_name}")
     dft_import = ""
     if isinstance(desc, EnumDescriptorProto):
         dft_import = f"from {module_path}.{module_name} import {desc.value[0].name}"

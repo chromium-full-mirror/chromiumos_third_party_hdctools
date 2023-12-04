@@ -55,12 +55,15 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         return firmware_version_string.split("_")[-1].split("-")[0]
 
     def _fetch_versions(self) -> tuple[version.Version, version.Version]:
-        current_raw = self._servod_get(self._current_fw_cmd)
+        return "", ""
+        current_raw = version.parse(self._servod_get(self._current_fw_cmd))
         current_ver = sversion_util.normalize_version(current_raw)
         current = version.parse(current_ver)
-        latest_raw = self._servod_get(self._latest_fw_cmd)
+
+        latest_raw = version.parse(self._servod_get(self._latest_fw_cmd))
         latest_ver = sversion_util.normalize_version(latest_raw)
         latest = version.parse(latest_ver)
+
         return current, latest
 
     def _get(self) -> int:

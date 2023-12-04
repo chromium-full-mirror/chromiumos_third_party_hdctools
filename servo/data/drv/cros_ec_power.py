@@ -45,7 +45,7 @@ class CrosECPower(power_state.PowerStateDriver):
 
         if manage_delay:
             if not polling_control.PollingControl().poll(
-                self._servod,
+                self,
                 CONTROL_COMMAND,
                 CONTROL_OUTPUT_EXPECTED,
                 logger=self._logger,

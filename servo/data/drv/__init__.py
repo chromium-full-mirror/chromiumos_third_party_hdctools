@@ -44,7 +44,6 @@ from servo.data.drv import ina231
 from servo.data.drv import ina3221
 from servo.data.drv import kb
 from servo.data.drv import kb_handler_init
-from servo.data.drv import keyboard_handlers
 from servo.data.drv import larvae_adc
 from servo.data.drv import lcm2004
 from servo.data.drv import loglevel

@@ -7,6 +7,11 @@ import logging
 import re
 import weakref
 
+from servo.common.config.grpc_config import GRPC_CORE_PORT
+from servo.common.config.grpc_config import GRPC_CORE_SERVER
+from servo.common.grpc_client import GrpcClient
+from servo.common.proto import servo_dev_grpc
+
 
 VALID_IO_TYPES = ["PU", "PP"]
 
@@ -55,7 +60,7 @@ class HwDriver:
     REQUIRED_GET_PARAMS = []
     REQUIRED_SET_PARAMS = []
 
-    def __init__(self, interface, params, servod=None):
+    def __init__(self, interface, params):
         """Driver constructor.
 
         Args:
@@ -87,7 +92,7 @@ class HwDriver:
         self._logger.debug("")
         self._complement = None
         self._interface = interface
-        self._servod = servod
+        self._servod = None
         self._params = params
         # Check whether all required params are provided. if 'cmd' is in params,
         # use a type-specific |REQUIRED_PARAMS| e.g. set or get. If not, use the
@@ -114,6 +119,11 @@ class HwDriver:
             self._logger.debug("Valid input choices: %s", self._choices)
         self._io_type = _get_io_type(params)
         self._prefix = self._params.get("interface_prefix")
+        # Create a gRPC channel to the specified host and port
+        channel = GrpcClient.create_grpc_channel(GRPC_CORE_SERVER, GRPC_CORE_PORT)
+        self._logger.debug("Connect to grpc server of core.....")
+        self._driver_client = servo_dev_grpc.ServoService(channel)
+
         self._drv_init()
 
     def _drv_init(self):
@@ -136,15 +146,15 @@ class HwDriver:
 
     def _servod_get(self, control):
         """Get the value of the given control with proper prefix."""
-        if not self._servod:
-            raise HwDriverError("No valid servod instance.")
-        return self._servod.get(control)
+        service = self._driver_client.GetServo(control_name=control)
+        return service.response
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        if not self._servod:
-            raise HwDriverError("No valid servod instance.")
-        return self._servod.set(control, value)
+        if type(value) == int:
+            self._driver_client.SetServo(control_name=control, int_value=value)
+        else:
+            self._driver_client.SetServo(control_name=control, string_value=value)
 
     def __repr__(self):
         """Return same as __str__()"""
