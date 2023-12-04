@@ -14,7 +14,7 @@ import os
 import select
 import threading
 
-from servo.interface import i2c_pseudo_base
+from servo.common.interface import i2c_pseudo_base
 
 
 _CONTROLLER_DEVICE_PATH = b"/dev/i2c-pseudo-controller"

@@ -34,7 +34,7 @@ class studEvb(hw_driver.HwDriver):
     LEGO_RST_PIN_PORT = 2
     LEGO_RST_PIN_IOEX_I2C_ADDR = 0x21
 
-    def __init__(self, interface, params, servod=None):
+    def __init__(self, interface, params):
         """Constructor
 
         Args:
@@ -47,7 +47,7 @@ class studEvb(hw_driver.HwDriver):
           i2c_mux: Pi4Msd instance to talk to on-board i2c muxer
           ioex: Pi4Ioe5 instance to talk to on-board ioexpander
         """
-        super(studEvb, self).__init__(interface, params, servod)
+        super(studEvb, self).__init__(interface, params)
         if "subtype" in self._params:
             # Below controls only use control names, so no direct access to i2c
             # interface required
@@ -58,7 +58,6 @@ class studEvb(hw_driver.HwDriver):
             ]:
                 self.i2c_mux = None
                 self.ioex = None
-                self.servod = servod
                 return
         self.i2c_mux = pi4msd.pi4Msd(interface, params)
         self.ioex = pi4ioe5.pi4Ioe5(interface, params)

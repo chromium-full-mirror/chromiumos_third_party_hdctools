@@ -23,9 +23,9 @@ class relaySwitch(hw_driver.HwDriver):
     The other USB ports might be muxed to the DUT or Servo Host.
     """
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Initialize driver by initializing HwDriver."""
-        super(relaySwitch, self).__init__(interface, params, servod)
+        super(relaySwitch, self).__init__(interface, params)
 
     def _Get_relay_serial_port(self):
         """Returns the url of the serial port connected to the relay (/dev/ttyUSB0).

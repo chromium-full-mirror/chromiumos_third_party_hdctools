@@ -11,15 +11,14 @@ from servo.data.drv import hw_driver
 class sleep(hw_driver.HwDriver):
     """Simple HwDriver  wrapper around time.sleep()."""
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
           interface: driver interface object; ignored.
           params: dictionary of params; ignored.
-          servod: Servod that is used for cross-servo-device communication
         """
-        super(sleep, self).__init__(interface, params.copy(), servod)
+        super(sleep, self).__init__(interface, params.copy())
 
     def _set(self, seconds):
         """Sleep for the given number of seconds."""

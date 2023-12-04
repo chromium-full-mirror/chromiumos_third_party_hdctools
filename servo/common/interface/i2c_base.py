@@ -11,9 +11,9 @@ import sys
 import threading
 import weakref
 
-from servo.interface import i2c_pseudo_v1
-from servo.interface import i2c_pseudo_v2
-from servo.interface import interface
+from servo.common.interface import i2c_pseudo_v1
+from servo.common.interface import i2c_pseudo_v2
+from servo.common.interface import interface
 
 
 def _format_write_list(write_list):

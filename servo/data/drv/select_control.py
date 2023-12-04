@@ -1,6 +1,7 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import json
 
 from servo.data.drv import hw_driver
 
@@ -25,7 +26,7 @@ class selectControl(hw_driver.HwDriver):
 
     __SELECT_SUFFIX = "_select"
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
@@ -37,9 +38,9 @@ class selectControl(hw_driver.HwDriver):
         # the maps. servo.get(selected_control) will handle the mapping.
         if "map" in params:
             del params["map"]
-        super(selectControl, self).__init__(interface, params, servod)
-        if not hasattr(self._servod, "selected_controls"):
-            self._servod.selected_controls = {}
+        super(selectControl, self).__init__(interface, params)
+        if not json.loads(self._driver_client.GetSelectedControls().response):
+            self._driver_client.InitSelectedControls()
         servo_type = self._params.get("device_type", "")
         self.__prefix = (servo_type + ".") if servo_type else ""
 
@@ -56,14 +57,14 @@ class selectControl(hw_driver.HwDriver):
             val = self._params[servo_init]
         control_key = self._get_control_key()
         self._logger.info("%r -> %r", control_key, val)
-        self._servod.selected_controls[control_key] = val
+        self._driver_client.SetSelectedControls(control_name=control_key, control_value=val)
 
     def _Get_select(self):
         """Get the control value."""
         control_key = self._get_control_key()
-        if control_key not in self._servod.selected_controls:
+        if control_key not in json.loads(self._driver_client.GetSelectedControls().response):
             self._Set_select(self._params["init"])
-        rv = self._servod.selected_controls.get(control_key, "")
+        rv = json.loads(self._driver_client.GetSelectedControls().response).get(control_key, "")
         if rv:
             self._logger.debug("using %r for %r", rv, control_key)
         return rv

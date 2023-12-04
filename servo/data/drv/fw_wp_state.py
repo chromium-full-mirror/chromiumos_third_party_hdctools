@@ -34,9 +34,8 @@ class FwWpStateDriver(hw_driver.HwDriver):
         Args:
           interface: driver interface object
           params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
         """
-        super(FwWpStateDriver, self).__init__(interface, params, servod)
+        super(FwWpStateDriver, self).__init__(interface, params)
 
     def _force_on(self):
         """Force the firmware to write-protected."""

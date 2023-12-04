@@ -10,6 +10,7 @@ import errno
 import itertools
 import json
 import logging
+import multiprocessing
 import os
 import signal
 import socket
@@ -32,6 +33,7 @@ from servo import servo_server
 from servo import watchdog
 from servo.common.config.system_config import SystemConfig
 from servo.common.proto import system_config_grpc
+from servo.grpc_server import grpc_server_setup
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 from servo.utils import servo_dev_prober
@@ -125,8 +127,14 @@ class ServodStarter:
         (dev_entries, main_dev_entry) = self._discover_servos(sopts, devopts_list)
 
         self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
+
         prober = servo_dev_prober.DeviceProber()
         self._setup_servos(dev_entries, main_dev_entry, prober)
+        grpc_server_process = multiprocessing.Process(
+            target=grpc_server_setup.run_grpc_server, args=(self._servod,)
+        )
+        # Start the process in the background
+        grpc_server_process.start()
         # Small timeout to allow interface threads to initialize.
         time.sleep(0.5)
 

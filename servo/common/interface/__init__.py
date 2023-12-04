@@ -6,18 +6,18 @@
 
 import logging
 
-from servo.interface import common as c
-from servo.interface import ec3po_interface
-from servo.interface import empty
-from servo.interface import ftdi_common
-from servo.interface import ftdigpio
-from servo.interface import ftdii2c
-from servo.interface import ftdiuart
-from servo.interface import i2cbus
-from servo.interface import interface
-from servo.interface import stm32gpio
-from servo.interface import stm32i2c
-from servo.interface import stm32uart
+from servo.common.interface import common as c
+from servo.common.interface import ec3po_interface
+from servo.common.interface import empty
+from servo.common.interface import ftdi_common
+from servo.common.interface import ftdigpio
+from servo.common.interface import ftdii2c
+from servo.common.interface import ftdiuart
+from servo.common.interface import i2cbus
+from servo.common.interface import interface
+from servo.common.interface import stm32gpio
+from servo.common.interface import stm32i2c
+from servo.common.interface import stm32uart
 
 
 # Keep track of known interfaces, and map their factory function to their name.

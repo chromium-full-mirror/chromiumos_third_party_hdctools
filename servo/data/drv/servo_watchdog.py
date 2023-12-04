@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Driver for controlling the watchdog."""
+import json
 
 from servo import servo_dev_templates
 from servo.data.drv import hw_driver
@@ -14,9 +15,9 @@ class servoWatchdogError(hw_driver.HwDriverError):
 class servoWatchdog(hw_driver.HwDriver):
     """Class to control the watchdog."""
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Initialize all information needed by servo watchdog."""
-        super(servoWatchdog, self).__init__(interface, params, servod)
+        super(servoWatchdog, self).__init__(interface, params)
 
     def _update_device_disconnect_ok(self, name, disconnect_ok):
         """Update if it's ok for the device to disconnect.
@@ -32,14 +33,17 @@ class servoWatchdog(hw_driver.HwDriver):
         Raises:
           servoWatchdogError: if the device isn't found.
         """
-        serialnames = self._servod.get_servo_serials()
-        devices = self._servod.get_devices()
+        try:
+            serialnames = json.loads(self._driver_client.GetSerial().get_value)
+        except Exception:
+            serialnames = {}
+        devices = self._driver_client.GetDeviceList().servo_devices
         if name in devices:
             device = devices.get(name)
         # If the name isn't a device prefix, then it might be the serialname
         elif name in serialnames.values():
             for dev in devices:
-                if name in dev.get_id():
+                if name in self.get_id(dev):
                     device = dev
                     break
         # If the name isn't a device prefix or serialname, it could be
@@ -62,7 +66,7 @@ class servoWatchdog(hw_driver.HwDriver):
         """Get the connected state of all devices."""
         # add blank line at start, so formatting looks a bit better
         states = [""]
-        for device in self._servod.get_devices():
+        for device in self._driver_client.GetDeviceList().servo_devices:
             states.append(self._get_device_state(device))
         return "\n".join(states)
 
@@ -78,13 +82,13 @@ class servoWatchdog(hw_driver.HwDriver):
         """Returns the device with the given type."""
         if type:
             # Check main device before checking other devices
-            main_device = self._servod.get_main_device()
-            if type in self._servod.get_main_device().template.TYPE:
+            main_device = self._driver_client.GetMainDevice()
+            if type in main_device.template.TYPE:
                 return main_device
 
             # If the name matches with multiple devices, error out.
             candidates = []
-            for device in self._servod.get_devices():
+            for device in self._driver_client.GetDeviceList().servo_devices:
                 if type in device.template.TYPE:
                     candidates.append(device)
             if len(candidates) == 1:
@@ -104,3 +108,8 @@ class servoWatchdog(hw_driver.HwDriver):
         """
         ccd_device = self._get_device_from_type("ccd")
         return int(ccd_device.is_connected()) if ccd_device else 0
+
+
+    def get_id(self, device):
+        """Return a tuple of the device information."""
+        return device.vendor_id, device.product_id, device.serial

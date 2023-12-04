@@ -10,8 +10,8 @@ import logging
 import os
 import sys
 
-from servo.interface import common as c
-from servo.interface import ftdi_common
+from servo.common.interface import common as c
+from servo.common.interface import ftdi_common
 import servo.libftdi_for_servo
 
 

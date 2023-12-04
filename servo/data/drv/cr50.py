@@ -61,7 +61,7 @@ class cr50(pty_driver.ptyDriver):
         r"Rdd:\s+(?P<rdd>\S+)[\r\n]+(KeepAlive:\s+(?P<keepalive>\S+)\s)?"
     )
 
-    def __init__(self, interface, params, servod=None):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
@@ -71,9 +71,8 @@ class cr50(pty_driver.ptyDriver):
             devices. The only params used now is 'subtype', which is used
             by get/set method of base class to decide how to dispatch
             request.
-          servod: Servod that is used for cross-servo-device communication
         """
-        super(cr50, self).__init__(interface, params, servod)
+        super(cr50, self).__init__(interface, params)
         self._logger.debug("")
         self._interface = interface
         if not hasattr(self._interface, "ccd_uart_bitbang_settings"):

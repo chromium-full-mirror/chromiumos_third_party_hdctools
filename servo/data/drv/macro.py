@@ -96,15 +96,14 @@ class macro(hw_driver.HwDriver):
 
     _STATE_UNKNOWN = "unknown"
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
           interface: hardware interface for low-level communication; ignored here
           params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
         """
-        super(macro, self).__init__(interface, params, servod)
+        super(macro, self).__init__(interface, params)
         str_prefix = "set_value_"
 
         self._states = {}
@@ -151,7 +150,7 @@ class macro(hw_driver.HwDriver):
             )
 
         for control, state in self._states[state_name]:
-            if not self._servod.has_control(control):
+            if not self._driver_client.HasControl(control_name=control).value:
                 logging.info(
                     "Ignore setting non-exist control '%s' to '%s'.", control, state
                 )
@@ -179,7 +178,7 @@ class macro(hw_driver.HwDriver):
             for control, state in rules:
                 if self._get_controls is not None and control not in self._get_controls:
                     continue
-                if not self._servod.has_control(control):
+                if not self._driver_client.HasControl(control_name=control).value:
                     continue
                 if get_value(control) == "not_applicable":
                     continue

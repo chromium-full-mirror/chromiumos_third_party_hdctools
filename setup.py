@@ -58,9 +58,11 @@ setup(
         "servo.data.grpc_server",
         "servo.data.impl",
         "servo.data.drv",
-        "servo.interface",
+        "servo.common.interface",
         "servo.tools",
         "servo.utils",
+        "servo.grpc_server",
+        "servo.grpc_server.impl",
         "servo.utils.linux",
         "servo.tests.e2e",
         "servo.tests.fixtures",
@@ -70,6 +72,7 @@ setup(
         "servo.common",
         "servo.common.config",
         "servo.common.proto",
+        "servo.common.utils",
     ],
     package_data={
         "servo": [

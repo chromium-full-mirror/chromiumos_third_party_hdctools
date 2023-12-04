@@ -7,11 +7,11 @@ import json
 import unittest
 import unittest.mock
 
-from servo import interface as _interface
 from servo import servo_dev
 from servo import servo_dev_templates as tmpl
 from servo import servo_interfaces
 from servo import servo_server
+from servo.common import interface as _interface
 from servo.common.config import system_config
 from servo.data.drv import na
 from servo.utils import servo_dev_hierarchy
@@ -247,7 +247,7 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev.get_interface_list(), self.v4_dev._interface_list)
 
     @unittest.mock.patch(
-        "servo.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
     )
     def test_init_servo_interfaces(self):
         """Test init_servo_interfaces()."""
@@ -270,7 +270,7 @@ class TestServoDevice(unittest.TestCase):
                 self.assertTrue(self.micro_dev._interface_init[i])
 
     @unittest.mock.patch(
-        "servo.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
     )
     def test_init_servo_interfaces_error(self):
         """Test init_servo_interfaces()."""
@@ -289,7 +289,7 @@ class TestServoDevice(unittest.TestCase):
                 self.assertTrue(self.v4_dev._interface_init[i])
 
     @unittest.mock.patch(
-        "servo.interface.Build",
+        "servo.common.interface.Build",
         unittest.mock.MagicMock(side_effect=ValueError("valueerr")),
     )
     def test_init_servo_interfaces_fault_tolerant(self):
@@ -391,7 +391,8 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev.base_board, "grunt")
 
     @unittest.mock.patch(
-        "servo.interface.interface.Interface.reinitialize", unittest.mock.MagicMock()
+        "servo.common.interface.interface.Interface.reinitialize",
+        unittest.mock.MagicMock(),
     )
     def test_reinitialize(self):
         """Test reinitialize()."""
@@ -405,22 +406,22 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.connect.assert_called_once()
 
     @unittest.mock.patch(
-        "servo.interface.ec3po_interface.EC3PO.Build",
+        "servo.common.interface.ec3po_interface.EC3PO.Build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.ec3po_interface.EC3PO)
         ),
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.Build",
+        "servo.common.interface.stm32uart.Suart.Build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.stm32uart.Suart)
         ),
     )
     @unittest.mock.patch(
-        "servo.interface.ec3po_interface.EC3PO.close", unittest.mock.MagicMock()
+        "servo.common.interface.ec3po_interface.EC3PO.close", unittest.mock.MagicMock()
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.close", unittest.mock.MagicMock()
+        "servo.common.interface.stm32uart.Suart.close", unittest.mock.MagicMock()
     )
     def test_close(self):
         """Test close()."""

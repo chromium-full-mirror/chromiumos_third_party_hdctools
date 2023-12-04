@@ -53,9 +53,9 @@ class usbImageManager(hw_driver.HwDriver):
 
     _DEFAULT_ERROR_MSG = "No USB storage device found for image transfer."
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Initialize driver by initializing HwDriver."""
-        super(usbImageManager, self).__init__(interface, params, servod)
+        super(usbImageManager, self).__init__(interface, params)
         # This delay is required to safely switch the usb image mux direction
         self._poweroff_delay = params.get("usb_power_off_delay", 0)
         if self._poweroff_delay:

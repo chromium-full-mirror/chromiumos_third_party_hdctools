@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 """Base class to provide access to Texas Instruments INA-based ADCs."""
 
-
 from servo.data.drv import hw_driver
 
 
@@ -46,13 +45,12 @@ class basePWRADC(hw_driver.HwDriver):
     # offset of the bus voltage reading, in case some bits are unused.
     BUSV_MV_OFFSET = 0
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
           interface: hardware interface for low-level communication; ignored here
           params: params passed for the servod control through config
-          servod: Servod that is used for cross-servo-device communication
 
         Mandatory Params:
           base_name: the symbolic name for this INA e.g. pp3300_wlan_dx
@@ -117,7 +115,7 @@ class basePWRADC(hw_driver.HwDriver):
           True, if this ADC control (identified by |self._base_name| has
           a register control for |reg|, False otherwise
         """
-        return self._servod.has_control(self._reg_control_name(reg))
+        return self._driver_client.HasControl(control_name=self._reg_control_name(reg)).value
 
     def _read_reg(self, reg):
         """Retrieve output for |reg|.
@@ -169,7 +167,7 @@ class basePWRADC(hw_driver.HwDriver):
           BasePWRADCError: if |self._base_name|_|suffix| is no servod control
         """
         ctrl_name = "%s_%s" % (self._base_name, suffix)
-        if not self._servod.has_control(ctrl_name):
+        if not self._driver_client.HasControl(control_name=ctrl_name).value:
             raise BasePWRADCError("Control %r unknown." % ctrl_name)
         self._servod_set(ctrl_name, value)
 

@@ -33,7 +33,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
     REQUIRED_GET_PARAMS = ["board"]
     REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
@@ -42,7 +42,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
             - board: the servo board name
           servod: Servod that is used for cross-servo-device communication
         """
-        super(servoFirmwareChecker, self).__init__(interface, params, servod)
+        super(servoFirmwareChecker, self).__init__(interface, params)
 
         # Set can be used by passing 'print' as an argument.
         self._choices = re.compile("^0$")
@@ -54,6 +54,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         self._always_warn = WARN_ONLY_ON_UNKNOWN_ENV not in os.environ
 
     def _fetch_versions(self) -> tuple[version, version]:
+        return "", ""
         current = version.parse(self._servod_get(self._current_fw_cmd))
         latest = version.parse(self._servod_get(self._latest_fw_cmd))
         return current, latest

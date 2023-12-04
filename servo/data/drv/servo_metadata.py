@@ -18,7 +18,7 @@ class metadataError(hw_driver.HwDriverError):
 class servoMetadata(hw_driver.HwDriver):
     """Class to access loglevel controls."""
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Initializes the ServoType driver.
 
         Args:
@@ -26,7 +26,7 @@ class servoMetadata(hw_driver.HwDriver):
           params: A dictionary of parameters, but is ignored.
           servod: Servod that is used for cross-servo-device communication
         """
-        super(servoMetadata, self).__init__(interface, params, servod)
+        super(servoMetadata, self).__init__(interface, params)
 
     def _Get_type(self):
         """Gets the type of the servo device setups.
@@ -34,14 +34,12 @@ class servoMetadata(hw_driver.HwDriver):
         NOTE: please avoid assuming the format of servo type string and parsing it.
         Use 'devices' control to fetch all servo devices of this servod instance instead.
         """
-        return self._servod._get_version()
+        service = self._driver_client.GetVersion()
+        return service.response
 
     def _Get_devices(self):
         """Gets detailed information about the devices set up for the servod instance."""
-        devices_json = []
-        for device in self._servod.get_devices():
-            devices_json.append(json.loads(device.to_json()))
-        return json.dumps(devices_json, indent=4)
+        return self._driver_client.GetDevices().response
 
     def _Get_pid(self):
         """Return servod instance pid"""
@@ -49,24 +47,27 @@ class servoMetadata(hw_driver.HwDriver):
 
     def _Get_serial(self):
         """Gets the serialname of the root device, if exists, or the main device."""
-        root_dev = self._servod.get_root_device()
-        if root_dev is not None:
-            return root_dev._serial
-        return self._servod.get_main_device()._serial
+        return self._driver_client.GetSerial().get_value
 
     def _Get_serials(self):
         """Gets the all servo device's serialnames."""
-        return json.dumps(self._servod.get_servo_serials(), sort_keys=True, indent=4)
+        try:
+            serials = json.loads(self._driver_client.GetSerial().get_value)
+        except Exception:
+            serials = {}
+        return json.dumps(serials, sort_keys=True, indent=4)
 
     def _Get_config_files(self):
         """Gets the configuration files used for this servo server invocation"""
-        return json.dumps(self._servod.get_config_files(), sort_keys=True, indent=4)
+        return self._driver_client.GetFileConfig().response
 
     def _Get_tagged_controls(self):
         """Retrieve all controls under a certain tag."""
-        if "tag" not in self._params:
+        try:
+            tagged_controls = self._driver_client.GetTaggedControls(name=json.dumps(self._params))
+            return json.loads(tagged_controls.response)
+        except metadataError:
             raise metadataError("tag needs to be specified in params.")
-        return self._servod.get_controls_for_tag(self._params["tag"])
 
     def _Set_rotate_logs(self, _unused):
         """Force a servo log rotation."""
@@ -97,4 +98,4 @@ class servoMetadata(hw_driver.HwDriver):
 
     def _Get_all_controls(self):
         """Return all controls supported by current servod instance."""
-        return self._servod._controls
+        return json.loads(self._driver_client.GetAllControls().get_value)

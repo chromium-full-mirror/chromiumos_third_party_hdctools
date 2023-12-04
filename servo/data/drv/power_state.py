@@ -3,6 +3,10 @@
 # found in the LICENSE file.
 import time
 
+from servo.common.config.grpc_config import GRPC_DATA_PORT
+from servo.common.config.grpc_config import GRPC_DATA_SERVER
+from servo.common.grpc_client import GrpcClient
+from servo.common.proto import driver_grpc
 from servo.data.drv import hw_driver
 
 
@@ -47,15 +51,18 @@ class PowerStateDriver(hw_driver.HwDriver):
     REC_OFF = "off"
     REC_ON_FORCE_MRC = "force_mrc"
 
-    def __init__(self, interface, params, servod):
+    def __init__(self, interface, params):
         """Constructor.
 
         Args:
           interface: hardware interface for low-level communication; ignored here
           params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
         """
-        super(PowerStateDriver, self).__init__(interface, params, servod)
+        super(PowerStateDriver, self).__init__(interface, params)
+        # Create a gRPC channel to the specified host and port
+        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        self._logger.debug("Connect to grpc server of data.....")
+        self._data_client = driver_grpc.DriverService(channel)
         self._reset_hold_time = float(self._params.get("reset_hold", 0.5))
         self._reset_recovery_time = float(self._params.get("reset_recovery", 5.0))
 
@@ -144,7 +151,7 @@ class PowerStateDriver(hw_driver.HwDriver):
         # Attempt to reinitialize the device in case the gsc reenumerated quicker
         # than the polling resolution. By now, if the device did not reenumerate,
         # the Watchdog should be attempting to catch & reinitialize it.
-        self._servod.reinitialize()
+        self._data_client.ReinitializeInterfaces()
 
     def _set(self, statename):
         """Set power state according to `statename`."""

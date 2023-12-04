@@ -7,10 +7,10 @@ devices."""
 import ctypes
 import logging
 
-from servo.interface import common as c
-from servo.interface import ftdi_common
-from servo.interface import ftdi_utils
-from servo.interface import gpio_interface
+from servo.common.interface import common as c
+from servo.common.interface import ftdi_common
+from servo.common.interface import ftdi_utils
+from servo.common.interface import gpio_interface
 
 
 class FgpioError(c.InterfaceError):

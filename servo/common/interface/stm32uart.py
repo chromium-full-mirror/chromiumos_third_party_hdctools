@@ -14,9 +14,9 @@ import tty
 
 import usb
 
-from servo.interface import common as c
-from servo.interface import stm32usb
-from servo.interface import uart
+from servo.common.interface import common as c
+from servo.common.interface import stm32usb
+from servo.common.interface import uart
 
 
 class SuartError(c.InterfaceError):

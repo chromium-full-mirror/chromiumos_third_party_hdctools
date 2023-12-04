@@ -15,7 +15,7 @@ import os
 import select
 import threading
 
-from servo.interface import i2c_pseudo_base
+from servo.common.interface import i2c_pseudo_base
 from servo.utils.linux import i2c
 from servo.utils.linux import i2c_pseudo
 
