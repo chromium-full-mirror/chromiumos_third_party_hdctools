@@ -119,11 +119,13 @@ export PATH=~/chromiumos/src/third_party/hdctools/scripts:$PATH
 ```
 
 To set it for every session you can also add this line at the end of yours shell
-configuration, like .bashrc (NOTE: make sure you use proper path to chromiumos in your
-setup):
+configuration, like .bashrc. Below you can find example how to do it, that should work
+for you, just NOTE:
+- make sure you use proper path to chromiumos in your setup
+- this grep should prevent re-adding extra line to your .bashrc
 
 ```text
-echo "export PATH=~/chromiumos/src/third_party/hdctools/scripts:\$PATH" >> ~/.bashrc
+grep "src/third_party/hdctools/scripts" ~/.bashrc || echo "export PATH=~/chromiumos/src/third_party/hdctools/scripts:\$PATH" >> ~/.bashrc
 ```
 
 ## Quick start
