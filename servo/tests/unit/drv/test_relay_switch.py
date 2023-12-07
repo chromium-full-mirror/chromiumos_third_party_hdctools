@@ -58,7 +58,7 @@ class TestRelaySwitch(unittest.TestCase):
         comport2 = self.generate_comport(vid=0x1A86, pid=0x7523)
         comports_mock.return_value = [comport1, comport2]
         # Set up mock serial object whose member functions are expected to be called
-        serial_mock.return_value = mock.Mock(serial.Serial)
+        serial_mock.return_value = serial.Serial
 
         # Run the function being tested
         self.relay_switch._Set_relay_pwrbtn_press(0)
