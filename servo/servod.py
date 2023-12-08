@@ -43,6 +43,9 @@ DEFAULT_LOG_DIR = "/var/log"
 # port numbers are 4 digits).
 DEFAULT_PORT_RANGE = (9200, 9999)
 
+_GENESYS_USB3_HUB_VID = 0x05E3
+_GENESYS_USB3_HUB_PID = 0x0625
+
 
 class ServodError(Exception):
     """Exception class for servod server."""
@@ -88,7 +91,8 @@ class ServodStarter:
         sopts, devopts_list = self._parse_args(cmdline)
         self._host = sopts.host
 
-        disable_unusable_usb3_hubs()
+        if sopts.disable_host_usb3:
+            disable_unusable_usb3_hubs()
 
         # Turn on recovery mode if requested.
         if sopts.recovery_mode:
@@ -244,6 +248,24 @@ class ServodStarter:
             help="number of seconds (approx.) to allow for device "
             "reconnect, default is unspecified but is ~20 "
             "seconds depending on internal polling rate.",
+        )
+        # TODO: With Python 3.9+ use argparse.BooleanOptionalAction and delete
+        # "--no-disable-host-usb3" as a separate option.
+        server_pars.add_argument(
+            "--disable-host-usb3",
+            action="store_true",
+            default=True,
+            help="Early in servod startup, before servo device discovery, "
+            "disable USB3 on all Genesys USB3 hub controllers with VID:PID of "
+            "%04x:%04x attached to this system. This is a workaround for "
+            "https://issuetracker.google.com/233912806 servo_v4p1 bug."
+            % (_GENESYS_USB3_HUB_VID, _GENESYS_USB3_HUB_PID),
+        )
+        server_pars.add_argument(
+            "--no-disable-host-usb3",
+            action="store_false",
+            dest="disable_host_usb3",
+            help="Turn off the --disable-host-usb3 option. See its help for details.",
         )
         # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
         dev_pars = servo_parsing.ServodRCParser(add_help=False)
@@ -612,7 +634,10 @@ def disable_unusable_usb3_hubs():
     # The Product ID matches the USB3 side of the hub.
     hubs = list(
         usb.core.find(
-            find_all=True, idVendor=0x05E3, idProduct=0x0625, serial_number=None
+            find_all=True,
+            idVendor=_GENESYS_USB3_HUB_VID,
+            idProduct=_GENESYS_USB3_HUB_PID,
+            serial_number=None,
         )
     )
     for hub in hubs:
