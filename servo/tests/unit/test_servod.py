@@ -19,7 +19,6 @@ from servo import servo_parsing
 from servo import servo_server
 from servo import servod
 from servo import watchdog
-from servo.common.config import system_config
 from servo.utils import scratch
 from servo.utils import servo_dev_prober
 
@@ -72,6 +71,10 @@ class TestServoStarter(unittest.TestCase):
     @unittest.mock.patch(
         "servo.servod.disable_unusable_usb3_hubs", unittest.mock.MagicMock()
     )
+    @unittest.mock.patch(
+        "servo.common.proto.system_config_grpc", unittest.mock.MagicMock()
+    )
+    @unittest.mock.patch("grpc.insecure_channel", unittest.mock.MagicMock())
     def test_init(self):
         """Test __init__()."""
         sopts = unittest.mock.MagicMock()
@@ -502,19 +505,6 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.system_config.SystemConfig.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.system_config.SystemConfig.add_cfg_file", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.system_config.SystemConfig.display_config", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.system_config.SystemConfig.finalize", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
         "servo.servo_dev.ServoDevice.init_servo_interfaces", unittest.mock.MagicMock()
     )
     @unittest.mock.patch(
@@ -530,6 +520,7 @@ class TestServoStarter(unittest.TestCase):
         starter._logger = unittest.mock.MagicMock()
         starter._servod = servo_server.Servod()
         starter._servod.update_known_ctrls = unittest.mock.MagicMock()
+        starter._servod._get_system_config = unittest.mock.MagicMock()
         prober = servo_dev_prober.DeviceProber()
         prober.get_board_from_ec = unittest.mock.MagicMock(return_value="atlas")
         prober.get_model_from_ec = unittest.mock.MagicMock(return_value="nuvoton")
@@ -563,12 +554,6 @@ class TestServoStarter(unittest.TestCase):
         dev_entries = [dev_entry_1, dev_entry_2]
 
         starter._setup_servos(dev_entries, main_dev_entry, prober)
-
-        self.assertEqual(
-            system_config.SystemConfig.add_cfg_file.call_count,
-            2 + len(dev_entry_1.devopts.config),
-        )
-        self.assertEqual(system_config.SystemConfig.display_config.call_count, 2)
         self.assertEqual(servo_dev.ServoDevice.init_servo_interfaces.call_count, 3)
         servo_dev.ServoDevice.init_servo_interfaces.assert_has_calls(
             [
@@ -586,7 +571,6 @@ class TestServoStarter(unittest.TestCase):
                 unittest.mock.call("testing", "testing"),
             ]
         )
-        self.assertEqual(system_config.SystemConfig.finalize.call_count, 2)
         self.assertEqual(starter._servod.update_known_ctrls.call_count, 2)
 
     @unittest.mock.patch(
@@ -598,17 +582,12 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.system_config.SystemConfig.__init__",
-        unittest.mock.MagicMock(return_value=None),
+        "servo.common.config.system_config.SystemConfig.display_config",
+        unittest.mock.MagicMock(),
     )
     @unittest.mock.patch(
-        "servo.system_config.SystemConfig.add_cfg_file", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.system_config.SystemConfig.display_config", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.system_config.SystemConfig.finalize", unittest.mock.MagicMock()
+        "servo.common.config.system_config.SystemConfig.finalize",
+        unittest.mock.MagicMock(),
     )
     @unittest.mock.patch(
         "servo.servo_dev.ServoDevice.init_servo_interfaces", unittest.mock.MagicMock()
@@ -626,6 +605,7 @@ class TestServoStarter(unittest.TestCase):
         starter._logger = unittest.mock.MagicMock()
         starter._servod = servo_server.Servod()
         prober = servo_dev_prober.DeviceProber()
+        starter._servod._get_system_config = unittest.mock.MagicMock()
         prober.get_board_from_ec = unittest.mock.MagicMock(return_value="atlas")
         prober.get_model_from_ec = unittest.mock.MagicMock(return_value="nuvoton")
         main_dev_entry = unittest.mock.MagicMock()
@@ -656,12 +636,6 @@ class TestServoStarter(unittest.TestCase):
             "No automatic config found, and no config specified with -c <file>",
         ):
             starter._setup_servos(dev_entries, main_dev_entry, prober)
-
-        self.assertEqual(
-            system_config.SystemConfig.add_cfg_file.call_count,
-            1 + len(dev_entry_1.devopts.config),
-        )
-        system_config.SystemConfig.display_config.assert_called_once()
         servo_dev.ServoDevice.init_servo_interfaces.assert_called_once()
         servo_dev.ServoDevice.init_servo_interfaces.assert_called_once_with(
             fault_tolerant=True
@@ -672,7 +646,6 @@ class TestServoStarter(unittest.TestCase):
         servo_dev.ServoDevice.set_board_and_model.assert_called_once_with(
             "atlas", "nuvoton"
         )
-        system_config.SystemConfig.finalize.assert_called_once()
 
     @unittest.mock.patch(
         "servo.servod.ServodStarter.__init__",
