@@ -10,4 +10,3 @@ echo "DEV: starting grpc server ...................."
 /usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py &
 echo "DEV: starting servod ...................."
 servod --host 0.0.0.0 $1
-#sleep 3600
