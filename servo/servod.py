@@ -569,6 +569,36 @@ class ServodStarter:
             sys.exit(-1)
         return (dev_entries, main_dev_entry)
 
+    def _get_system_config(self, dev_entry):
+        # Create a gRPC channel to the specified host and port
+        channel = grpc.insecure_channel(f"{GRPC_SERVER}:{GRPC_PORT}")
+
+        # Create a SystemConfig client using the generated stub
+        system_config_client = system_config_grpc.SystemConfig(channel)
+
+        # Create an instance of the SystemConfig
+        scfg = SystemConfig()
+        try:
+            # Load systemConfig using the gRPC server
+            # using the 'GetFileContent' system_config_stub
+            response = system_config_client.GetFileContent(
+                VID=dev_entry.vid, PID=dev_entry.pid
+            )
+
+            # Extract and process the received system configuration data(
+            # SystemConfig ProtoMessage)
+            for config_object in response.systemConfig:
+                # Deserialize JSON data from the gRPC response and assign it to
+                # 'scfg'
+                scfg.hwinit = json.loads(config_object.hwinit)
+                scfg.control_tags = json.loads(config_object.control_tags)
+                scfg.aliases = json.loads(config_object.aliases)
+                scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
+            return scfg
+        except grpc.RpcError as e:
+            # Handle gRPC errors, such as network issues and exit system
+            print(f"Error: {e}")
+
     def _setup_servos(self, dev_entries, _main_dev_entry, prober):
         """Setup servo devices for this servod instance.
 
@@ -577,12 +607,6 @@ class ServodStarter:
           main_dev_entry: the main device's ServoDeviceEntry
           prober: a ServoDeviceProber to probe the board and model information
         """
-
-        # Create a gRPC channel to the specified host and port
-        channel = grpc.insecure_channel(f"{GRPC_SERVER}:{GRPC_PORT}")
-
-        # Create a SystemConfig client using the generated stub
-        system_config_client = system_config_grpc.SystemConfig(channel)
 
         for dev_entry in dev_entries:
             self._logger.debug("Start initializing servo device %s", dev_entry)
@@ -601,29 +625,7 @@ class ServodStarter:
                     "No automatic config found,"
                     " and no config specified with -c <file>"
                 )
-
-            # Create an instance of the SystemConfig
-            scfg = SystemConfig()
-            try:
-                # Load systemConfig using the gRPC server
-                # using the 'GetFileContent' system_config_stub
-                response = system_config_client.GetFileContent(
-                    VID=dev_entry.vid, PID=dev_entry.pid
-                )
-
-                # Extract and process the received system configuration data(
-                # SystemConfig ProtoMessage)
-                for config_object in response.systemConfig:
-                    # Deserialize JSON data from the gRPC response and assign it to
-                    # 'scfg'
-                    scfg.hwinit = json.loads(config_object.hwinit)
-                    scfg.control_tags = json.loads(config_object.control_tags)
-                    scfg.aliases = json.loads(config_object.aliases)
-                    scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
-
-            except grpc.RpcError as e:
-                # Handle gRPC errors, such as network issues and exit system
-                print(f"Error: {e}")
+            scfg = self._get_system_config(dev_entry)
 
             servo_device = servo_dev.ServoDevice(
                 dev_entry=dev_entry,
@@ -656,13 +658,13 @@ class ServodStarter:
                         devopts.board,
                         servo_device,
                     )
-
-            servo_device.syscfg.finalize()
-            self._logger.debug(
-                "System configs for device %s\n%s",
-                dev_entry,
-                servo_device.syscfg.display_config(),
-            )
+            if servo_device.syscfg:
+                servo_device.syscfg.finalize()
+                self._logger.debug(
+                    "System configs for device %s\n%s",
+                    dev_entry,
+                    servo_device.syscfg.display_config(),
+                )
 
             for prefix in dev_entry.devopts.prefix:
                 self._servod.add_device(servo_device, prefix)
