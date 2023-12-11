@@ -45,9 +45,46 @@ DEFAULT_PORT_RANGE = (9200, 9999)
 _GENESYS_USB3_HUB_VID = 0x05E3
 _GENESYS_USB3_HUB_PID = 0x0625
 
+_BOOL_ENV_VAR_VALUES = {
+    "0": False,
+    "false": False,
+    "1": True,
+    "true": True,
+}
+
 
 class ServodError(Exception):
     """Exception class for servod server."""
+
+
+def _GetBoolEnvVar(env_name, default_val):
+    """Get the bool value of a boolean environment variable.
+
+    Args:
+      env_name: str - the environment variable name
+      default_val: bool - the default value to use if the environment variable
+          is not set or empty
+
+    Returns:
+      bool
+
+    Raises:
+      ServodError: the environment variable is set to an unrecognized value
+    """
+    env_val = os.environ.get(env_name)
+    if not env_val:  # deliberately match None or ""
+        return default_val
+    bool_val = _BOOL_ENV_VAR_VALUES.get(env_val.lower())
+    if bool_val is None:
+        raise ServodError(
+            "environment variable {!r} value {!r} is not supported, try these "
+            "boolean values: {}".format(
+                env_name,
+                env_val,
+                " ".join(repr(s) for s in sorted(_BOOL_ENV_VAR_VALUES)),
+            ),
+        )
+    return bool_val
 
 
 class ServodStarter:
@@ -262,7 +299,7 @@ class ServodStarter:
         server_pars.add_argument(
             "--disable-host-usb3",
             action="store_true",
-            default=True,
+            default=_GetBoolEnvVar("SERVOD_DISABLE_HOST_USB3", True),
             help="Early in servod startup, before servo device discovery, "
             "disable USB3 on all Genesys USB3 hub controllers with VID:PID of "
             "%04x:%04x attached to this system. This is a workaround for "
