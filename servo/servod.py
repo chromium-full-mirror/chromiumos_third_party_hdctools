@@ -655,7 +655,7 @@ def disable_unusable_usb3_hubs():
         )
 
     if len(hubs) > 0:
-        time.sleep(2)
+        time.sleep(3)
 
 
 # pylint: disable=dangerous-default-value
