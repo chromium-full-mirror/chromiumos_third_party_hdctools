@@ -94,22 +94,45 @@ Common interfaces are:
 
 ## How do I reroute/overwrite a control for a board? {#reroute-control}
 
-### tl;dr:
+By default, redefining an existing control of the same name or alias is an
+error. This behavior can be changed using the `<params>` attribute `clobber_ok`.
+There are several behaviors supported:
 
-If you want to overwrite `control_name` for a board, just write a control named
-the same in the board overlay and make sure that [clobber_ok=""][4] inside its
-params. This ensures it will clobber a previous definition of the control if it
-exists.
+* `clobber_ok="patch"`: This will update the params of an existing control, but
+  will quietly (without error) avoid defining a new control. Use this when
+  overriding a specific subset of params of a control that you expect to already
+  exist from an included config.
 
-Board overlays are some of the last configs to be pulled in, so you redefine
-there.
+   * With `"patch"` only the specified `<params>` will be updated. Any
+     `<params>` of the existing control that are not specified will remain
+     unchanged in the patched control.
 
-IMPORTANT: With `clobber_ok=""` only individual attributes of `<params>` are
-clobbered! Any `<params>` attributes of the clobbered control that are not
-specified by the control doing the clobbering will remain in the final `params`
-dict.  To avoid this and *fully* clobber, use `clobber_ok="full"`, which will
-cause the entire `<params>` of the clobbered control to get thrown out, in favor
-of only those specified in the control doing the clobbering.
+* `clobber_ok="full"`: This will completely replace all params of any existing
+  control, and will define a new control if there isn't one to replace. Use this
+  when fully reimplementing a control that has a default implementation. For
+  example, if you are changing `drv=` to a different driver, that should usually
+  use `"full"`, not `"patch"`, because params from the original control might
+  not be valid or have the same meaning for the different driver.
+
+   * With `"full`" any `<params>` attributes from an existing control will NOT
+     be retained.
+
+* `clobber_ok="never"`: This will control definition will be quietly (no error)
+  **ignored** and not override anything if there is an existing control of the
+  same name/alias. If there is no existing control, a new one will be defined.
+
+* `clobber_ok=""`: **DEPRECATED, do not use in new control definitions!**
+  https://issuetracker.google.com/287541200 tracks removal of this option.
+  This is like `"patch"` except this will define a new control if there isn't
+  one to update. Don't use this! If your control is meant to update one already
+  defined, use `"patch"`. If your control is fully specified and needs to
+  replace one that's already defined, use `"full"`. If there is no
+  already-defined control that your control needs to patch or replace, don't use
+  `clobber_ok` at all!
+
+   * With `""` only the specified `<params>` will be updated. Any `<params>` of
+     an existing control that are not specified will remain unchanged in the
+     patched control.
 
 ## How do I add a new control?
 
@@ -205,7 +228,6 @@ In general, there are several key changes to support a device
 [1]: ../servo/servo_server.py#519
 [2]: ../servo/dut_control.py#354
 [3]: https://chromium.googlesource.com/chromiumos/third_party/autotest/+/HEAD/server/hosts/servo_host.py#177
-[4]: ../servo/system_config.py#134
 [5]: ./servod.md#servod-tool
 [6]: ./servod.md#servo-device-watchdog
 [7]: ../servo/servo_dev_templates.py

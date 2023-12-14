@@ -319,9 +319,11 @@ class SystemConfig:
               "never": This control will be ignored if there is already a control
                 under the same name or alias.  Otherwise, this will define a new
                 control.
-              "" (or any string not listed above): This control will update the
-                params of an existing control if present, or if not, this will
-                define a new control.
+              "" (or any string not listed above): DEPRECATED, DO NOT USE in new
+                control definitions!  https://issuetracker.google.com/287541200
+                tracks removal of this option.  With clobber_ok="" this control
+                will update the params of an existing control if present, or
+                will define a new control if there isn't one to update.
 
         NOTE, method is recursive when parsing 'include' elements from XML.
 
