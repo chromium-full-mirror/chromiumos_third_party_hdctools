@@ -208,3 +208,26 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         """
         InterfaceUtils.set_interface_loglevel(new_level=request.name)
         return empty_pb2.Empty()
+
+    def SyncInterfaceList(self, request, context):
+        """
+        Service to reinitialize interfaces list for servo device
+
+        Args:
+            request InterfaceRequest
+            context
+        """
+        InterfaceUtils.sync_interface_lists(interfaces=request.interface_template, serial=request.serial,
+                                            pid=request.pid, vid=request.vid)
+        return empty_pb2.Empty()
+
+    def SetFtdii2cCmd(self, request, context):
+        """
+        Service to set ftdii2c cmd
+
+        Args:
+            request InterfaceRequest
+            context
+        """
+        InterfaceUtils.set_interface_ftdii2c(request.cmd)
+        return empty_pb2.Empty()

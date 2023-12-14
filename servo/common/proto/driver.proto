@@ -23,6 +23,10 @@ service DriverService {
     rpc CloseInterfaces(google.protobuf.Empty) returns (google.protobuf.Empty);
     // Set log level for interfaces in interface_list
     rpc SetInterfacesLoglevel(LogRequest) returns (google.protobuf.Empty);
+    // sync interface list
+    rpc SyncInterfaceList(InterfaceRequest) returns (google.protobuf.Empty);
+    // Set ftdii2c cmd
+    rpc SetFtdii2cCmd(Ftdii2cCmdRequest) returns (google.protobuf.Empty);
 }
 
 message DriverRequest {
@@ -77,4 +81,8 @@ message InterfaceResponse {
 
 message LogRequest {
     string name = 1;
+}
+
+message Ftdii2cCmdRequest {
+    string cmd = 1;
 }

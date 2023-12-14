@@ -6,8 +6,11 @@
 
 See ftdii2c.py for details on controls available.
 """
-
+from servo.common.config.grpc_config import GRPC_DATA_PORT
+from servo.common.config.grpc_config import GRPC_DATA_SERVER
+from servo.common.grpc_client import GrpcClient
 from servo.common.interface import ftdii2c
+from servo.common.proto import driver_grpc
 from servo.data.drv import hw_driver
 
 
@@ -28,13 +31,9 @@ class ftdii2cCmd(hw_driver.HwDriver):
         """Driver specific initializer."""
         # pylint: disable=protected-access
         super(ftdii2cCmd, self)._drv_init()
-
-        for _unused, interface in servod.get_interface_list():
-            if isinstance(interface, ftdii2c.Fi2c):
-                self._ftdii2c = interface
-                break
-        else:
-            raise ftdii2cCmdError("No ftdi_i2c object found.")
+        # Create a gRPC channel to the specified host and port
+        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        self._data_client = driver_grpc.DriverService(channel)
 
     def _set(self, cmd):
         """Execute |cmd| on |self._ftdii2c| object.
@@ -42,12 +41,7 @@ class ftdii2cCmd(hw_driver.HwDriver):
         Args:
           cmd: str representing the ftdi i2c command to execute
         """
-        try:
-            func = getattr(self._ftdii2c, cmd)
-        except AttributeError:
-            raise ftdii2cCmdError("ftdi_i2c object does not have method %r" % cmd)
-        self._logger.debug("Running %s on ftdii2c interface.", cmd)
-        func()
+        self._data_client.SetFtdii2cCmd(cmd=cmd)
 
     def _get(self):
         """Raise error as a command needs to be specified."""
