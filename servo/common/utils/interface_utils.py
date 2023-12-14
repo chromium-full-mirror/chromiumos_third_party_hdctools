@@ -4,6 +4,11 @@
 import logging
 
 from servo.common import interface as _interface
+from servo.common.interface import ftdii2c
+
+
+class InterfaceUtilsError(Exception):
+    """Error class for interface utils"""
 
 
 class InterfaceUtils:
@@ -178,7 +183,7 @@ class InterfaceUtils:
 
     @staticmethod
     def close_interfaces():
-        """
+        """InterfaceUtilsError
         Close interfaces based on the provided VID, PID, and serial.
         """
         logger = logging.getLogger("InterfaceUtils")
@@ -210,3 +215,24 @@ class InterfaceUtils:
             for _unused, interface in interface_list:
                 if isinstance(interface, _interface.ec3po_interface.EC3PO):
                     interface.set_loglevel(new_level)
+
+    @staticmethod
+    def set_interface_ftdii2c(cmd):
+        """Set cmd for ftdii2c interface"""
+        logger = logging.getLogger("InterfaceUtil")
+        _ftdii2c = None
+        interface_dict = InterfaceUtils._interface_dict
+        for device in interface_dict:
+            interface_list = interface_dict[device]
+            for _unused, interface in interface_list:
+                if isinstance(interface, ftdii2c.Fi2c):
+                    _ftdii2c = interface
+                    break
+            else:
+                raise InterfaceUtilsError("No ftdi_i2c object found.")
+        try:
+            func = getattr(_ftdii2c, cmd)
+        except AttributeError:
+            raise InterfaceUtilsError("ftdi_i2c object does not have method %r" % cmd)
+        logger.debug("Running %s on ftdii2c interface.", cmd)
+        func()

@@ -17,6 +17,10 @@ from servo.data.drv import hw_driver
 class na(hw_driver.HwDriver):
     """Object to access drv=na controls."""
 
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(na, self)._drv_init()
+
     def get(self):
         """Return not_applicable"""
         self._logger.debug("na drv called. returning 'not_applicable'.")

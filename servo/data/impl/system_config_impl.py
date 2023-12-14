@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import json
+import logging
 
 from servo.common.proto import system_config_grpc
 from servo.common.proto import system_config_pb2
@@ -25,6 +26,30 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         """
         # Retrieve the system configuration based on the provided message.
         scfg = get_system_config(vid=systemConfigRequest.VID, pid=systemConfigRequest.PID)
+
+        # Create a response message of type SystemConfigResponse.
+        response = system_config_pb2.SystemConfigResponse()
+
+        # Populate the response message with data from the retrieved system configuration.
+        response.systemConfig.add(
+            control_tags=json.dumps(scfg.control_tags),
+            aliases=json.dumps(scfg.aliases),
+            syscfg_dict=json.dumps(scfg.syscfg_dict),
+            hwinit=json.dumps(scfg.hwinit)
+        )
+
+        # Return the populated response message.
+        return response
+    def AddCfgFile(self, request, context):
+        """
+        Add a file to system config dict.
+
+        Returns:
+            SystemConfigResponse: A response message containing formatted system configuration data.
+        """
+        # Retrieve the system configuration based on the provided message.
+        scfg = get_system_config(vid=request.vid, pid=request.pid)
+        scfg.add_cfg_file(name_prefix=request.prefix, filename=request.filename)
 
         # Create a response message of type SystemConfigResponse.
         response = system_config_pb2.SystemConfigResponse()

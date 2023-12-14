@@ -84,6 +84,7 @@ ignored-modules=
     sweetberry_preprocessor,
     usb,
     usbkm232,
+    grpc,
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

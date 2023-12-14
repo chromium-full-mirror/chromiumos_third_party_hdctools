@@ -11,6 +11,8 @@ from servo.common.proto import servo_dev_pb2
 from servo.utils.keyboard import get_keyboard
 from servo.utils.keyboard import set_keyboard
 from servo.utils.keyboard import set_usb_keyboard
+from servo.utils.watchdog_util import get_device_from_type
+from servo.utils.watchdog_util import get_device_state
 
 
 class ServoImplError(Exception):
@@ -364,3 +366,76 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         )
         ec_driver._restore_channel()
         return empty_pb2.Empty()
+
+    def GetWatchdog(self, request, context):
+        """Get watchdog devices"""
+        self.logger.debug(
+            "Handle request for {}, in context {}".format(request, context)
+        )
+        states = [""]
+        for device in self.servod.get_devices():
+            states.append(get_device_state(device))
+
+        state_devices = "\n".join(states)
+        return servo_dev_pb2.ServiceResponse(response=state_devices)
+
+    def UpdateDeviceDisconnectOk(self, request, context):
+        """
+        Update if it's ok for the device to disconnect.
+        If it's not ok for the device to disconnect, the watchdog may kill servod.
+        If you know you're going to disconnect a device, you should update let servo
+        know.
+        """
+        self.logger.debug(
+            "Handle request for {}, in context {}".format(request, context)
+        )
+        serialnames = self.servod.get_servo_serials()
+        devices = self.servod.get_devices()
+        if request.name in devices:
+            device = devices.get(request.name)
+        # If the name isn't a device prefix, then it might be the serialname
+        elif request.name in serialnames.values():
+            for dev in devices:
+                if request.name in dev.get_id():
+                    device = dev
+                    break
+        # If the name isn't a device prefix or serialname, it could be
+        # just the device type
+        else:
+            device = get_device_from_type(self.servod, request.name)
+            if device is None:
+                raise ServoImplError("Invalid device %s" % request.name)
+
+        device.set_disconnect_ok(request.disconnect_ok)
+        return empty_pb2.Empty()
+
+    def GetCcdState(self, request, context):
+        """
+        Get ccd_state
+        """
+        self.logger.debug(
+            "Handle request for {}, in context {}".format(request, context)
+        )
+        ccd_device = get_device_from_type(self.servod, "ccd")
+        state = int(ccd_device.is_connected()) if ccd_device else 0
+        return servo_dev_pb2.CcdStateResponse(state=state)
+
+    def GetCrosChip(self, request, context):
+        """
+        Get chip of main device
+        """
+        self.logger.debug(
+            "Handle request for {}, in context {}".format(request, context)
+        )
+        params = json.loads(request.name)
+        default_chip = params.get("chip", "unknown")
+        devices = self.servod.get_devices()
+        default_device = self.servod.get_main_device()
+
+        _chips = {}
+        for device in devices:
+            self._chips[device] = params.get(
+                "chip_for_" + device.template.TYPE, default_chip
+            )
+        _chip = _chips[default_device]
+        return servo_dev_pb2.ServiceResponse(response=_chip)
