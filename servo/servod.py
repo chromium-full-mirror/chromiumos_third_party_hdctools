@@ -329,7 +329,7 @@ class ServodStarter:
         )
         dev_pars.add_argument(
             "--token_db",
-            default="/usr/share/cros_ec/tokens.bin",
+            default="/usr/share/cros_ec/historical.bin",
             type=str,
             help="Path to CrOS EC token database",
         )
