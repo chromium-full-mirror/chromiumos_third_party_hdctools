@@ -392,8 +392,8 @@ COPY --link --from=ec-builder \
 
 COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
-#TODO(b/287265152): Fetch token database from GCS
-#COPY --from=ec-builder /ec/tokens.bin /tmp/tokens.bin
+# Fetch EC Token Database from GCS
+RUN wget https://storage.googleapis.com/chromeos-localmirror/cros_ec/tokens/historical.bin -P /usr/share/cros_ec/
 
 # Install uhubctl
 COPY --link --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
