@@ -65,8 +65,8 @@ class pac1934(ina2xx.ina2xx):
     # Mask that only has 1s on the sampling bit positions.
     SAMPLING_MASK = 0xC0
 
-    def __init__(self, interface, params, servod):
-        super(pac1934, self).__init__(interface, params, servod)
+    def __init__(self, interface, params):
+        super(pac1934, self).__init__(interface, params)
         # Pre-calculate a few important values.
         # full scale current and power full scale range
         self._fsc = self._pwr_fsr = None

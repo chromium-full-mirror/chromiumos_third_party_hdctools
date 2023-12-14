@@ -202,7 +202,6 @@ class SystemConfig:
         default_path = os.path.join(
             pathlib.Path(__file__).parent.parent.parent.resolve(), "data"
         )
-        self._logger.error(default_path)
         fullname = os.path.join(default_path, filename)
         if os.path.isfile(fullname):
             return fullname

@@ -33,6 +33,15 @@ message SystemConfigObjectResponse {
     string hwinit = 4;
 }
 
+message SystemFileRequest {
+    string prefix = 1;
+    string filename = 2;
+    int32 vid = 3;
+    int32 pid = 4;
+}
+
 service SystemConfig {
     rpc GetFileContent (SystemConfigRequest) returns (SystemConfigResponse);
+    // Add a file to system config dict
+    rpc AddCfgFile (SystemFileRequest) returns (SystemConfigResponse);
 }

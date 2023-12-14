@@ -96,6 +96,10 @@ service ServoService {
     rpc LimitEcDriverChannel(google.protobuf.Empty) returns (google.protobuf.Empty);
     rpc IssueCmdGetResult(IssueCmdRequest) returns (google.protobuf.Empty);
     rpc RestoreEcDriverChannel(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc GetWatchdog(google.protobuf.Empty) returns (ServiceResponse);
+    rpc UpdateDeviceDisconnectOk(WatchdogRequest) returns (google.protobuf.Empty);
+    rpc GetCcdState(google.protobuf.Empty) returns (CcdStateResponse);
+    rpc GetCrosChip(ServiceRequest) returns (ServiceResponse);
 }
 
 message GetRequest {
@@ -216,4 +220,13 @@ message IssueCmdRequest {
     repeated string regex_list = 2;
     bool flush = 3;
     int32 time_out = 4;
+}
+
+message WatchdogRequest {
+    string name = 1;
+    bool disconnect_ok = 2;
+}
+
+message CcdStateResponse {
+    int32 state = 1;
 }

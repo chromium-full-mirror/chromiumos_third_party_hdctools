@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Driver for controlling the watchdog."""
-import json
 
 from servo import servo_dev_templates
 from servo.data.drv import hw_driver
@@ -19,85 +18,17 @@ class servoWatchdog(hw_driver.HwDriver):
         """Initialize all information needed by servo watchdog."""
         super(servoWatchdog, self).__init__(interface, params)
 
-    def _update_device_disconnect_ok(self, name, disconnect_ok):
-        """Update if it's ok for the device to disconnect.
-
-        If it's not ok for the device to disconnect, the watchdog may kill servod.
-        If you know you're going to disconnect a device, you should update let servo
-        know.
-
-        Args:
-          name: String of the interface name or serial number.
-          disconnect_ok: True if it's ok if the device can disconnect.
-
-        Raises:
-          servoWatchdogError: if the device isn't found.
-        """
-        try:
-            serialnames = json.loads(self._driver_client.GetSerial().get_value)
-        except Exception:
-            serialnames = {}
-        devices = self._driver_client.GetDeviceList().servo_devices
-        if name in devices:
-            device = devices.get(name)
-        # If the name isn't a device prefix, then it might be the serialname
-        elif name in serialnames.values():
-            for dev in devices:
-                if name in self.get_id(dev):
-                    device = dev
-                    break
-        # If the name isn't a device prefix or serialname, it could be
-        # just the device type
-        else:
-            device = self._get_device_from_type(name)
-            if device is None:
-                raise servoWatchdogError("Invalid device %s" % name)
-
-        device.set_disconnect_ok(disconnect_ok)
-
-    def _get_device_state(self, device):
-        """String of the current device state."""
-        connected_str = "" if device.is_connected() else "dis"
-        disconnect_ok_str = " (disconnect ok)" if device.disconnect_is_ok() else ""
-        name = ", ".join(device.get_prefixes())
-        return "%s: %sconnected%s" % (name, connected_str, disconnect_ok_str)
-
     def _Get_watchdog(self):
         """Get the connected state of all devices."""
-        # add blank line at start, so formatting looks a bit better
-        states = [""]
-        for device in self._driver_client.GetDeviceList().servo_devices:
-            states.append(self._get_device_state(device))
-        return "\n".join(states)
+        return self._driver_client.GetWatchdog().response
 
     def _Set_watchdog_add(self, val):
         """Signal a device may not be disconnected."""
-        self._update_device_disconnect_ok(val, False)
+        self._driver_client.UpdateDeviceDisconnectOk(name=val, disconnect_ok=False)
 
     def _Set_watchdog_remove(self, val):
         """Signal a device may be disconnected."""
-        self._update_device_disconnect_ok(val, True)
-
-    def _get_device_from_type(self, type):
-        """Returns the device with the given type."""
-        if type:
-            # Check main device before checking other devices
-            main_device = self._driver_client.GetMainDevice()
-            if type in main_device.template.TYPE:
-                return main_device
-
-            # If the name matches with multiple devices, error out.
-            candidates = []
-            for device in self._driver_client.GetDeviceList().servo_devices:
-                if type in device.template.TYPE:
-                    candidates.append(device)
-            if len(candidates) == 1:
-                return candidates[0]
-            if len(candidates) > 1:
-                raise servoWatchdogError(
-                    "Multiple devices %s matching with type %s" % (candidates, type)
-                )
-        return None
+        self._driver_client.UpdateDeviceDisconnectOk(name=val, disconnect_ok=True)
 
     def _Get_ccd_state(self):
         """Check the watchdog to see if ccd is enabled.
@@ -106,10 +37,4 @@ class servoWatchdog(hw_driver.HwDriver):
           0: ccd is off.
           1: ccd is on.
         """
-        ccd_device = self._get_device_from_type("ccd")
-        return int(ccd_device.is_connected()) if ccd_device else 0
-
-
-    def get_id(self, device):
-        """Return a tuple of the device information."""
-        return device.vendor_id, device.product_id, device.serial
+        return self._driver_client.GetCcdState().state

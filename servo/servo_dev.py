@@ -9,14 +9,16 @@ import logging
 import os
 import threading
 
+import grpc
+
 from servo import servo_dev_templates
 from servo import servo_interfaces
 from servo import servo_logging
-from servo.common import interface as _interface
 from servo.common.config.grpc_config import GRPC_DATA_PORT
 from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
+from servo.common.proto import system_config_grpc
 from servo.data import drv as servo_drv
 import servo.utils.usb_hierarchy as usb_hierarchy
 
@@ -107,12 +109,12 @@ class ServoDevice:
         self._interface_list = []
         # Whether an interface has initialized to be the proper interface
         self._interface_init = []
-        self._sync_interface_lists()
         self._servod = servod
         # Create a gRPC channel to the specified host and port
         channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
         self._logger.debug("Connect to grpc server of data.....")
         self._driver_client = driver_grpc.DriverService(channel)
+        self._system_config_client = system_config_grpc.SystemConfig(channel)
 
     def __repr__(self):
         return str(self)
@@ -260,20 +262,41 @@ class ServoDevice:
         if model and board_id and board_id.endswith(model):
             self.model = model
         if cfg:
-            self.syscfg.add_cfg_file(self.prefixes[0], cfg)
+            try:
+                # Load systemConfig using the gRPC server
+                response = self._system_config_client.AddCfgFile(
+                    prefix=self.prefixes[0],
+                    filename=cfg,
+                    vid=self.template.VID,
+                    pid=self.template.PID,
+                )
+                self.set_system_config(response.systemConfig)
+            except grpc.RpcError as e:
+                # Handle gRPC errors, such as network issues and exit system
+                self._logger.error("gRPC error in: {}".format(e))
             return True
         return False
 
+    def set_system_config(self, system_config):
+        # Extract and process the received system configuration data(
+        # SystemConfig ProtoMessage)
+        for config_object in system_config:
+            # Deserialize JSON data from the gRPC response and assign it to
+            # 'scfg'
+            self.syscfg.hwinit = json.loads(config_object.hwinit)
+            self.syscfg.control_tags = json.loads(config_object.control_tags)
+            self.syscfg.aliases = json.loads(config_object.aliases)
+            self.syscfg.syscfg_dict = json.loads(config_object.syscfg_dict)
+
     def _sync_interface_lists(self):
         """Ensure when interfaces are changed, bookkeeping is kept in sync."""
-        # Extend the interface list if we need to.
-        interfaces_len = len(self._interfaces)
-        interface_list_len = len(self._interface_list)
-        if interfaces_len > interface_list_len:
-            self._interface_list += [_interface.empty.Empty()] * (
-                interfaces_len - interface_list_len
-            )
-            self._interface_init += [False] * (interfaces_len - interface_list_len)
+        self._driver_client.SyncInterfaceList(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            interface_template=json.dumps(self._interfaces),
+            fault_tolerant=False,
+        )
 
     def set_base_board(self, board):
         """Set the board probed from ec.
