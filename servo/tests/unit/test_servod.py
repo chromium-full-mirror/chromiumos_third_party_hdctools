@@ -78,6 +78,7 @@ class TestServoStarter(unittest.TestCase):
         sopts.host = "localhost"
         sopts.recovery_mode = True
         sopts.usbkm232 = None
+        sopts.step_init = False
         with unittest.mock.patch(
             "servo.servod.ServodStarter._parse_args",
             unittest.mock.MagicMock(return_value=(sopts, [])),
@@ -92,7 +93,10 @@ class TestServoStarter(unittest.TestCase):
         servod.ServodStarter._setup_servod_server.assert_called_once()
         recovery.set_recovery_active.assert_called_once()
         servo_logging.setup.assert_called_once()
-        servo_server.Servod.hwinit.assert_called_once_with(verbose=True)
+        servo_server.Servod.hwinit.assert_called_once_with(
+            verbose=True,
+            step_init=False,
+        )
         servo_server.Servod.validate_dut_controller.assert_called_once()
         servod.disable_unusable_usb3_hubs.assert_called_once()
         self.assertTrue(isinstance(starter._server_thread, threading.Thread))

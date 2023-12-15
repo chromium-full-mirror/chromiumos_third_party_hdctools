@@ -599,7 +599,7 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.hwinit(True, ["control1"])
 
         self.v4_dev._logger.debug.assert_called_once_with(
-            "Skip initializing %s because it is already initialized"
+            "Skip initializing control %r because it is already initialized "
             "for a child device.",
             "control1",
         )
@@ -633,7 +633,7 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.hwinit(True, ["control1"])
 
         self.v4_dev._logger.debug.assert_called_once_with(
-            "Skip initializing %s because it is already initialized"
+            "Skip initializing control %r because it is already initialized "
             "for a child device.",
             "control1",
         )

@@ -199,7 +199,7 @@ class Servod:
         self._logger.debug("Using servo device %s for control %s.", dev, name)
         return (dev, processed_name)
 
-    def hwinit(self, verbose=True):
+    def hwinit(self, verbose=True, step_init=False):
         """Initialize controls for servo devices."""
         for servo_device in self.get_devices():
             skip_controls = set()
@@ -207,7 +207,9 @@ class Servod:
                 skip_controls.update(
                     set(control_name for control_name, _unused in dev.syscfg.hwinit)
                 )
-            servo_device.hwinit(verbose=verbose, skip_controls=skip_controls)
+            servo_device.hwinit(
+                verbose=verbose, skip_controls=skip_controls, step_init=step_init
+            )
 
         # Autotest directly uses this method, so we have to return True
         # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
