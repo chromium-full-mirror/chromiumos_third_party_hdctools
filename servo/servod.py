@@ -126,7 +126,7 @@ class ServodStarter:
         time.sleep(0.5)
 
         self._servod.validate_dut_controller()
-        self._servod.hwinit(verbose=True)
+        self._servod.hwinit(verbose=True, step_init=sopts.step_init)
         self._setup_servod_server()
         self._server_thread = threading.Thread(target=self._serve)
         self._server_thread.daemon = True
@@ -216,6 +216,15 @@ class ServodStarter:
             action="store_true",
             help="Start servod through issues to allow for "
             "inspection and recovery mechanisms.",
+        )
+        server_pars.add_argument(
+            "--step-init",
+            default=False,
+            action="store_true",
+            help="Interactively prompt y/n for each control initialization? "
+            "This is for troubleshooting purposes only! Do NOT use or depend "
+            "on this option for regular servo use. This feature may be changed "
+            "or removed without warning.",
         )
         # In the long term we might want to enable pulling in all servo devices
         # including all DUT controllers by default. Currently we default to pull

@@ -7,7 +7,11 @@
 import json
 import logging
 import os
+import sys
+import termios
 import threading
+import time
+import tty
 
 from servo import drv as servo_drv
 from servo import interface as _interface
@@ -19,6 +23,58 @@ import servo.utils.usb_hierarchy as usb_hierarchy
 
 
 HwDriverError = servo_drv.hw_driver.HwDriverError
+
+
+def _YesNoInput(message):
+    """Prompt for y/n character input.
+
+    The y/n question will be repeated after any character input that is not
+    y/Y/n/N, until one of those characters is received.
+
+    Args:
+        message: str or bytes - The prompt message to print, usually with a
+            trailing whitespace character.  "[y/n] " will be appended
+            automatically.
+
+    Returns: bool - True if user typed  y or Y, False if they typed  n or N.
+    """
+    sys.stdout.write(message)
+    while True:
+        stdin_fd = sys.stdin.fileno()
+        stdin_termios = termios.tcgetattr(stdin_fd)
+        try:
+            # If stdin is a terminal (which it should be when this function is
+            # used) it is almost certainly line buffered. Temporarily set it to
+            # the "raw" mode termios settings so any character the user types is
+            # sent immediately.
+            #
+            # This way we can respond to Y and N keys without making the user
+            # type Y/N + Enter for each prompt.
+            #
+            # TODO(b/316639135): Instead of using the predefined "raw" mode,
+            # minimally modify the termios settings to disable line buffering
+            # while leaving other settings unchanged, especially input echo and
+            # SIGINT / SIGQUIT from keyboard. Then no need to write the
+            # character back to stdout, nor any need for the non-printable
+            # character sleep().
+            tty.setraw(stdin_fd)
+            sys.stdout.write("[y/n] ")
+            sys.stdout.flush()
+            onechar = sys.stdin.read(1).lower()
+            if onechar and onechar.isprintable():
+                sys.stdout.write(onechar)
+                sys.stdout.write("\n")
+                sys.stdout.flush()
+                if onechar in ("y", "Y"):
+                    return True
+                if onechar in ("n", "N"):
+                    return False
+        finally:
+            termios.tcsetattr(stdin_fd, termios.TCSADRAIN, stdin_termios)
+        if not (onechar and onechar.isprintable()):
+            # Make sure that if the user is mashing ctrl+c or ctrl+\ it gets
+            # through before the next loop iteration.
+            time.sleep(0.5)
 
 
 class ServoDeviceError(Exception):
@@ -550,7 +606,7 @@ class ServoDevice:
             return self.syscfg.get_control_docstring(name)
         raise NameError("No control %s" % name)
 
-    def hwinit(self, verbose, skip_controls):
+    def hwinit(self, verbose, skip_controls, step_init=False):
         """Initialize all controls.
 
         These values are part of the system config XML files of the form
@@ -567,6 +623,8 @@ class ServoDevice:
           skip_controls: a list of controls not to hwinit. For a root hub device,
             if a control is already initialized for its children, do not initialized
             the control for this device.
+          step_init: bool - if True, interactively prompt y/n whether to
+            initialize this control
 
         Returns:
           This function is called across RPC and as such is expected to return
@@ -576,8 +634,17 @@ class ServoDevice:
         for control_name, value in self.syscfg.hwinit:
             if control_name in skip_controls:
                 self._logger.debug(
-                    "Skip initializing %s because it is already initialized"
+                    "Skip initializing control %r because it is already initialized "
                     "for a child device.",
+                    control_name,
+                )
+                continue
+            if step_init and not _YesNoInput(
+                "Initialize control {!r} to value {!r}? ".format(control_name, value)
+            ):
+                self._logger.debug(
+                    "Skip initializing control %r because step_init is enabled and "
+                    "the user requested to not initialize this control.",
                     control_name,
                 )
                 continue

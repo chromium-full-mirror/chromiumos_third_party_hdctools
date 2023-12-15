@@ -580,9 +580,15 @@ class TestServod(unittest.TestCase):
 
         servod.hwinit(verbose=True)
 
-        dev1.hwinit.assert_called_once_with(verbose=True, skip_controls=set())
+        dev1.hwinit.assert_called_once_with(
+            verbose=True,
+            skip_controls=set(),
+            step_init=False,
+        )
         dev2.hwinit.assert_called_once_with(
-            verbose=True, skip_controls=set(["ctr1", "ctr2"])
+            verbose=True,
+            skip_controls={"ctr1", "ctr2"},
+            step_init=False,
         )
 
 
