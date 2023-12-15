@@ -68,14 +68,6 @@ from servo.utils import scratch
 #   command line <- environment definition <- rc config file
 
 
-DEFAULT_RC_FILE = os.path.join(
-    os.path.expanduser("~" + os.environ.get("SUDO_USER", "")),
-    ".servodrc",
-)
-# If homedir expansion failed we'll end up with "~user" in the variable.
-if len(DEFAULT_RC_FILE) > 1 and DEFAULT_RC_FILE.startswith("~"):
-    DEFAULT_RC_FILE = "/dev/null"
-
 NAME_ENV_VAR = "SERVOD_NAME"
 PORT_ENV_VAR = "SERVOD_PORT"
 ALL_ENV_VARS = NAME_ENV_VAR, PORT_ENV_VAR
@@ -87,6 +79,21 @@ ARG_BY_USER_MARKER = "supplied_by_user"
 # internal version system, and provide arguments to print those.
 VERSION = "%(prog)s " + sversion_util.setuptools_version()
 SVERSION = "%(prog)s " + sversion_util.extended_version()
+
+
+def _DefaultRcFile():
+    tilde = "~"
+    # cros_sdk uses sudo from root to non-root. Avoid SUDO_USER in that situation.
+    if int(os.environ.get("SUDO_UID", "0")):
+        tilde += os.environ.get("SUDO_USER")
+    homedir = os.path.expanduser(tilde)
+    # If homedir expansion failed we'll end up with "~user" in the variable.
+    if homedir.startswith("~"):
+        return "/dev/null"
+    return os.path.join(homedir, ".servodrc")
+
+
+DEFAULT_RC_FILE = _DefaultRcFile()
 
 
 def ArgMarkedAsUserSupplied(namespace, arg_name):
