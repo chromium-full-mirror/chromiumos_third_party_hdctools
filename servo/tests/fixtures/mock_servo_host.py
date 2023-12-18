@@ -1,18 +1,27 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
 # pylint: disable=redefined-outer-name
 # pylint: disable=unused-argument
+# pylint: disable=unused-variable
+# pylint: disable=unused-import
 
+import argparse
 import logging
+from unittest.mock import patch
 
+from mock.mock import Mock
 import pytest
 
+from servo import servo_dev
+from servo import servo_dev_templates as tmpl
+from servo import servo_server
 from servo import servod as sd
+from servo.common.config import system_config
 from servo.tests.fixtures import common
 from servo.tests.fixtures.mock_pyusb import clear_interfaces
 from servo.tests.fixtures.mock_pyusb import dump_interfaces
+from servo.utils import servo_dev_hierarchy
 
 
 _logger = logging.getLogger("mock_servod")
@@ -152,7 +161,8 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    def generate_host(board, model):
+    @patch("servo.servo_dev.ServoDevice")
+    def generate_host(board, model, mock_servo_device):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -162,7 +172,24 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
         Yields:
             Mock: mock host device with a servo 4.1, CCD and servod started on it.
         """
+        servod = servo_server.Servod()
+        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
+            tmpl.GetVID("servo_v4p1"),
+            tmpl.GetPID("servo_v4p1"),
+            "servo_v4p1_serial",
+            "/sys/bus/usb/devices/-2-1.2",
+        )
+        v4_entry.devopts = argparse.Namespace()
+        v4_entry.devopts.prefix = ["v4"]
+        v4_entry.devopts.board = board
+        v4_entry.devopts.model = model
+        v4_dev = servo_dev.ServoDevice(
+            v4_entry, system_config.SystemConfig(), None, servod
+        )
+
         servo_host = mock_servo_host()
+
+        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         ccd_device = servo_host.add_device("ccd_cr50", 1, 57, "2.3")
@@ -180,7 +207,8 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    def generate_host(board, model):
+    @patch("servo.servo_dev.ServoDevice")
+    def generate_host(board, model, mock_servo_device):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -191,7 +219,24 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
             Mock: mock host device with a servo 4.1, servo micro and servod
                   started on it.
         """
+        servod = servo_server.Servod()
+        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
+            tmpl.GetVID("servo_v4p1"),
+            tmpl.GetPID("servo_v4p1"),
+            "servo_v4p1_serial",
+            "/sys/bus/usb/devices/-2-1.2",
+        )
+        v4_entry.devopts = argparse.Namespace()
+        v4_entry.devopts.prefix = ["v4"]
+        v4_entry.devopts.board = board
+        v4_entry.devopts.model = model
+        v4_dev = servo_dev.ServoDevice(
+            v4_entry, system_config.SystemConfig(), None, servod
+        )
+
         servo_host = mock_servo_host()
+
+        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         servo_micro_device = servo_host.add_device("servo_micro", 1, 57, "2.3")
@@ -210,7 +255,8 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    def generate_host(board, model):
+    @patch("servo.servo_dev.ServoDevice")
+    def generate_host(board, model, mock_servo_device):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -221,7 +267,24 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
             Mock: mock host device with a servo 4.1, servo micro and servod
                   started on it.
         """
+        servod = servo_server.Servod()
+        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
+            tmpl.GetVID("servo_v4p1"),
+            tmpl.GetPID("servo_v4p1"),
+            "servo_v4p1_serial",
+            "/sys/bus/usb/devices/-2-1.2",
+        )
+        v4_entry.devopts = argparse.Namespace()
+        v4_entry.devopts.prefix = ["v4"]
+        v4_entry.devopts.board = board
+        v4_entry.devopts.model = model
+        v4_dev = servo_dev.ServoDevice(
+            v4_entry, system_config.SystemConfig(), None, servod
+        )
+
         servo_host = mock_servo_host()
+
+        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         servo_micro_device = servo_host.add_device("servo_micro", 1, 57, "2.3")
@@ -302,7 +365,8 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    def generate_host(board, model):
+    @patch("servo.servo_dev.ServoDevice")
+    def generate_host(board, model, mock_servo_device):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -312,7 +376,24 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         Yields:
             Mock: mock host device with a servo 4.1, C2D2 and servod started on it.
         """
+        servod = servo_server.Servod()
+        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
+            tmpl.GetVID("servo_v4p1"),
+            tmpl.GetPID("servo_v4p1"),
+            "servo_v4p1_serial",
+            "/sys/bus/usb/devices/-2-1.2",
+        )
+        v4_entry.devopts = argparse.Namespace()
+        v4_entry.devopts.prefix = ["v4"]
+        v4_entry.devopts.board = board
+        v4_entry.devopts.model = model
+        v4_dev = servo_dev.ServoDevice(
+            v4_entry, system_config.SystemConfig(), None, servod
+        )
+
         servo_host = mock_servo_host()
+
+        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         c2d2_device = servo_host.add_device("c2d2", 1, 57, "2.3")
@@ -331,7 +412,8 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    def generate_host(board, model):
+    @patch("servo.servo_dev.ServoDevice")
+    def generate_host(board, model, mock_servo_device):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -341,7 +423,24 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         Yields:
             Mock: mock host device with a servo 4.1, C2D2 and servod started on it.
         """
+        servod = servo_server.Servod()
+        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
+            tmpl.GetVID("servo_v4p1"),
+            tmpl.GetPID("servo_v4p1"),
+            "servo_v4p1_serial",
+            "/sys/bus/usb/devices/-2-1.2",
+        )
+        v4_entry.devopts = argparse.Namespace()
+        v4_entry.devopts.prefix = ["v4"]
+        v4_entry.devopts.board = board
+        v4_entry.devopts.model = model
+        v4_dev = servo_dev.ServoDevice(
+            v4_entry, system_config.SystemConfig(), None, servod
+        )
+
         servo_host = mock_servo_host()
+
+        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         c2d2_device = servo_host.add_device("c2d2", 1, 57, "2.3")
