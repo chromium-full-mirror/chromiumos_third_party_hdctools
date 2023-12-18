@@ -18,6 +18,7 @@ class InterfaceUtils:
 
     # interfaces
     _interface_dict = {}
+    _logger = logging.getLogger("InterfaceUtils")
 
     @staticmethod
     def get_interface_key(vid, pid, serial):
@@ -74,7 +75,6 @@ class InterfaceUtils:
         Raises:
           ServoDeviceError: if unable to locate init method for particular interface.
         """
-        logger = logging.getLogger("InterfaceUtils")
         interface_key = InterfaceUtils.get_interface_key(vid, pid, serial)
         InterfaceUtils.init_interface_dict(vid, pid, serial)
         interface_list = InterfaceUtils._interface_dict[interface_key]["interface_list"]
@@ -98,7 +98,7 @@ class InterfaceUtils:
                 name = interface_data
             else:
                 raise TypeError("Illegal interface data type %s" % type(interface_data))
-            logger.error("Initializing interface %d to %s", i, name)
+            InterfaceUtils._logger.error("Initializing interface %d to %s", i, name)
             try:
                 result = _interface.Build(
                     name=name,
@@ -111,11 +111,13 @@ class InterfaceUtils:
                 )
             except Exception:
                 if fault_tolerant:
-                    raise (
+                    InterfaceUtils._logger.warning(
                         "Failure trying to initialize interface %s (%s) "
-                        "in fault toleratant mode, so this will not crash servod."
-                        % (i, name)
+                        "in fault toleratant mode, so this will not crash servod.",
+                        i,
+                        name,
                     )
+                    continue
                 raise
             if isinstance(result, tuple):
                 result_len = len(result)
@@ -177,7 +179,7 @@ class InterfaceUtils:
         """Reinitialize the interfaces based on the provided VID, PID, and serial."""
         interface_dict = InterfaceUtils._interface_dict
         for device in interface_dict:
-            interface_list = interface_dict[device]
+            interface_list = interface_dict[device]["interface_list"]
             for _unused, interface in enumerate(interface_list):
                 interface.reinitialize()
 
@@ -186,15 +188,14 @@ class InterfaceUtils:
         """InterfaceUtilsError
         Close interfaces based on the provided VID, PID, and serial.
         """
-        logger = logging.getLogger("InterfaceUtils")
         interface_dict = InterfaceUtils._interface_dict
         for device in interface_dict:
-            interface_list = interface_dict[device]
+            interface_list = interface_dict[device]["interface_list"]
             # Close ec3po interfaces first to remove
             # all wrappers/pointers on the raw pty
             for i, interface in enumerate(interface_list):
                 if isinstance(interface, _interface.ec3po_interface.EC3PO):
-                    logger.info("Turning down interface %d", i)
+                    InterfaceUtils._logger.info("Turning down interface %d", i)
                     interface.close()
 
             # Close all the other non-placeholder interfaces
@@ -203,7 +204,7 @@ class InterfaceUtils:
                     interface, _interface.ec3po_interface.EC3PO
                 ):
                     # Only print this on real interfaces and not place holders.
-                    logger.info("Turning down interface %d", i)
+                    InterfaceUtils._logger.info("Turning down interface %d", i)
                     interface.close()
 
     @staticmethod
@@ -211,7 +212,7 @@ class InterfaceUtils:
         """Set loglevel for interfaces"""
         interface_dict = InterfaceUtils._interface_dict
         for device in interface_dict:
-            interface_list = interface_dict[device]
+            interface_list = interface_dict[device]["interface_list"]
             for _unused, interface in interface_list:
                 if isinstance(interface, _interface.ec3po_interface.EC3PO):
                     interface.set_loglevel(new_level)

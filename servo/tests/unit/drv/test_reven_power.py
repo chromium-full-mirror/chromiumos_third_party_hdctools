@@ -21,10 +21,9 @@ class TestRevenPower(unittest.TestCase):
 
     def setUp(self):
         intfc = mock.Mock(interface.Interface)
-        servod = mock.Mock(servo_server.Servod)
         params = {"cmd": "set"}
         hw_drv = hw_driver.HwDriver(intfc, params)
-        self.reven_power = reven_power.revenPower(hw_drv, params, servod)
+        self.reven_power = reven_power.revenPower(hw_drv, params)
 
     @mock.patch("servo.data.drv.hw_driver.HwDriver._servod_set")
     def test_power_off(self, servod_set_mock):
