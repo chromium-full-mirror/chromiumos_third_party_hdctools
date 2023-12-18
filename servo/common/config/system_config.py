@@ -524,10 +524,7 @@ class SystemConfig:
                         continue
                     self._logger.debug("Applying clobber patch to %s %r", tag, name)
                 elif clobber_ok is None and name in self.syscfg_dict[tag]:
-                    raise SystemConfigError(
-                        "Duplicate %s %r without %r key\n%s"
-                        % (tag, name, CLOBBER_ATTR, element_str)
-                    )
+                    clobber_ok = CLOBBER_FULL
 
                 if "init" in set_dict:
                     hwinit_found = False
