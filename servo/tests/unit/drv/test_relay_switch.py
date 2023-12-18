@@ -20,10 +20,9 @@ class TestRelaySwitch(unittest.TestCase):
 
     def setUp(self):
         intfc = mock.Mock(interface.Interface)
-        servod = mock.Mock(servo_server.Servod)
         params = {"cmd": "set"}
         hw_drv = hw_driver.HwDriver(intfc, params)
-        self.relay_switch = relay_switch.relaySwitch(hw_drv, params, servod)
+        self.relay_switch = relay_switch.relaySwitch(hw_drv, params)
 
     def generate_comport(self, vid, pid):
         """Create a populated serial comport object."""

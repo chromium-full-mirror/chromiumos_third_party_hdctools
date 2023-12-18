@@ -6,6 +6,7 @@ import argparse
 import json
 import unittest
 import unittest.mock
+from unittest.mock import patch
 
 from servo import servo_dev
 from servo import servo_dev_templates as tmpl
@@ -13,7 +14,6 @@ from servo import servo_interfaces
 from servo import servo_server
 from servo.common import interface as _interface
 from servo.common.config import system_config
-from servo.data.drv import na
 from servo.utils import servo_dev_hierarchy
 
 
@@ -246,58 +246,19 @@ class TestServoDevice(unittest.TestCase):
         """Test get_interface_list()."""
         self.assertEqual(self.v4_dev.get_interface_list(), self.v4_dev._interface_list)
 
-    @unittest.mock.patch(
-        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
-    )
     def test_init_servo_interfaces(self):
         """Test init_servo_interfaces()."""
-        self.v4_dev.init_servo_interfaces()
-        for i, interface in enumerate(self.v4_dev._interface_list):
-            if i not in [22, 23, 24, 25, 26]:
-                self.assertTrue(isinstance(interface, _interface.empty.Empty))
-                self.assertFalse(self.v4_dev._interface_init[i])
-            else:
-                self.assertIsNone(interface)
-                self.assertTrue(self.v4_dev._interface_init[i])
-
-        self.micro_dev.init_servo_interfaces()
-        for i, interface in enumerate(self.micro_dev._interface_list):
-            if i not in [1, 2, 3, 6, 7, 8, 9, 10, 11]:
-                self.assertTrue(isinstance(interface, _interface.empty.Empty))
-                self.assertFalse(self.micro_dev._interface_init[i])
-            else:
-                self.assertIsNone(interface)
-                self.assertTrue(self.micro_dev._interface_init[i])
-
-    @unittest.mock.patch(
-        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
-    )
-    def test_init_servo_interfaces_error(self):
-        """Test init_servo_interfaces()."""
-        self.v4_dev._interfaces = self.v4_dev._interfaces.copy()
-        self.v4_dev._interfaces[26] = 2
-        with self.assertRaisesRegex(
-            servo_dev.ServoDeviceError, "Illegal interface data type"
-        ):
+        with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
+            mock_init_interface_list = unittest.mock.MagicMock()
+            mock_driver_client.InitInterface = mock_init_interface_list
             self.v4_dev.init_servo_interfaces()
-        for i, interface in enumerate(self.v4_dev._interface_list):
-            if i not in [22, 23, 24, 25]:
-                self.assertTrue(isinstance(interface, _interface.empty.Empty))
-                self.assertFalse(self.v4_dev._interface_init[i])
-            else:
-                self.assertIsNone(interface)
-                self.assertTrue(self.v4_dev._interface_init[i])
-
-    @unittest.mock.patch(
-        "servo.common.interface.Build",
-        unittest.mock.MagicMock(side_effect=ValueError("valueerr")),
-    )
-    def test_init_servo_interfaces_fault_tolerant(self):
-        """Test init_servo_interfaces()."""
-        self.v4_dev.init_servo_interfaces(fault_tolerant=True)
-        for i, interface in enumerate(self.v4_dev._interface_list):
-            self.assertTrue(isinstance(interface, _interface.empty.Empty))
-            self.assertFalse(self.v4_dev._interface_init[i])
+            mock_init_interface_list.assert_called_once_with(
+                vid=self.v4_dev.template.VID,
+                pid=self.v4_dev.template.PID,
+                serial=self.v4_dev._serial,
+                interface_template=json.dumps(self.v4_dev._interfaces),
+                fault_tolerant=False,
+            )
 
     def test_set_board_and_model(self):
         """Test set_board_and_model()."""
@@ -372,184 +333,40 @@ class TestServoDevice(unittest.TestCase):
 
     def test_sync_interface_lists(self):
         """Test _sync_interface_lists()."""
-        self.v4_dev._interfaces = [True] * 68
-        self.v4_dev._interface_list = []
-        self.v4_dev._interface_init = []
-
-        self.v4_dev._sync_interface_lists()
-
-        self.assertEqual(len(self.v4_dev._interface_list), len(self.v4_dev._interfaces))
-        for interface in self.v4_dev._interface_list:
-            self.assertTrue(isinstance(interface, _interface.empty.Empty))
-        self.assertEqual(
-            self.v4_dev._interface_init, [False] * len(self.v4_dev._interfaces)
-        )
+        with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
+            mock_sync_interface_list = unittest.mock.MagicMock()
+            mock_driver_client.SyncInterfaceList = mock_sync_interface_list
+            self.v4_dev._sync_interface_lists()
+            mock_sync_interface_list.assert_called_once_with(
+                vid=self.v4_dev.template.VID,
+                pid=self.v4_dev.template.PID,
+                serial=self.v4_dev._serial,
+                interface_template=json.dumps(self.v4_dev._interfaces),
+                fault_tolerant=False,
+            )
 
     def test_set_base_board(self):
         """Test set_base_board()."""
         self.v4_dev.set_base_board("grunt")
         self.assertEqual(self.v4_dev.base_board, "grunt")
 
-    @unittest.mock.patch(
-        "servo.common.interface.interface.Interface.reinitialize",
-        unittest.mock.MagicMock(),
-    )
     def test_reinitialize(self):
         """Test reinitialize()."""
-        self.v4_dev.connect = unittest.mock.MagicMock()
-        self.v4_dev.reinitialize()
+        with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
+            self.v4_dev.connect = unittest.mock.MagicMock()
+            mock_reinitialize_interface = unittest.mock.MagicMock()
+            mock_driver_client.ReinitializeInterfaces = mock_reinitialize_interface
+            self.v4_dev.reinitialize()
+            mock_reinitialize_interface.assert_called_once()
+            self.v4_dev.connect.assert_called_once()
 
-        self.assertEqual(
-            _interface.interface.Interface.reinitialize.call_count,
-            len(self.v4_dev._interface_list),
-        )
-        self.v4_dev.connect.assert_called_once()
-
-    @unittest.mock.patch(
-        "servo.common.interface.ec3po_interface.EC3PO.Build",
-        unittest.mock.MagicMock(
-            return_value=unittest.mock.MagicMock(spec=_interface.ec3po_interface.EC3PO)
-        ),
-    )
-    @unittest.mock.patch(
-        "servo.common.interface.stm32uart.Suart.Build",
-        unittest.mock.MagicMock(
-            return_value=unittest.mock.MagicMock(spec=_interface.stm32uart.Suart)
-        ),
-    )
-    @unittest.mock.patch(
-        "servo.common.interface.ec3po_interface.EC3PO.close", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.common.interface.stm32uart.Suart.close", unittest.mock.MagicMock()
-    )
     def test_close(self):
         """Test close()."""
-        self.v4_dev._interface_list = [
-            _interface.ec3po_interface.EC3PO.Build(),
-            _interface.stm32uart.Suart.Build(),
-            _interface.empty.Empty.Build(),
-            _interface.ec3po_interface.EC3PO.Build(),
-        ]
-        self.v4_dev._logger.info = unittest.mock.MagicMock()
-
-        self.v4_dev.close()
-
-        self.v4_dev._logger.info.assert_has_calls(
-            [
-                unittest.mock.call("Turning down interface %d", 0),
-                unittest.mock.call("Turning down interface %d", 3),
-                unittest.mock.call("Turning down interface %d", 1),
-            ]
-        )
-
-    def test_get(self):
-        """Test get()."""
-        na_drv = unittest.mock.MagicMock(spec=na.na)
-        self.v4_dev._get_param_drv = unittest.mock.MagicMock(
-            return_value=({}, na_drv, self.v4_dev)
-        )
-        self.v4_dev.wait = unittest.mock.MagicMock()
-        na_drv.get = unittest.mock.MagicMock(return_value="return_value")
-        self.v4_dev.syscfg.reformat_val = unittest.mock.MagicMock(
-            return_value="reformatted_return_value"
-        )
-
-        self.assertEqual(self.v4_dev.get("cold_reset"), "reformatted_return_value")
-
-    def test_set(self):
-        """Test set()."""
-        na_drv = unittest.mock.MagicMock(spec=na.na)
-        self.v4_dev._get_param_drv = unittest.mock.MagicMock(
-            return_value=({}, na_drv, self.v4_dev)
-        )
-        self.v4_dev.wait = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.resolve_val = unittest.mock.MagicMock(
-            return_value="reformatted_set_value"
-        )
-        na_drv.set = unittest.mock.MagicMock()
-
-        self.assertTrue(self.v4_dev.set("cold_reset", "on"))
-
-    def test_get_param_drv_get_cache(self):
-        """Test _get_param_drv()."""
-        self.v4_dev._drv_dict["cold_reset"] = {"get": ["testing"]}
-        self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True), ["testing"])
-
-    def test_get_param_drv_set_cache(self):
-        """Test _get_param_drv()."""
-        self.v4_dev._drv_dict["cold_reset"] = {"set": ["testing"]}
-        self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False), ["testing"])
-
-    @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
-    )
-    @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
-    )
-    def test_get_param_drv_get_no_cache(self):
-        """Test _get_param_drv()."""
-        get_params = {
-            "cmd": "get",
-            "uart_cmd": "ecrst",
-            "regex": "EC_RST_L is (asserted|deasserted)",
-            "group": "1",
-            "interface": "9",
-            "drv": "cr50",
-            "map": "asserted_re",
-            "clobber_ok": "",
-        }
-        set_params = {
-            "cmd": "set",
-            "subtype": "cold_reset",
-            "interface": "9",
-            "drv": "cr50",
-            "map": "onoff_i",
-            "clobber_ok": "",
-        }
-        map_params = {"deasserted", "asserted"}
-        self.v4_dev.syscfg.lookup_control_params = unittest.mock.MagicMock(
-            return_value=(set_params, get_params)
-        )
-        self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(
-            return_value=(map_params)
-        )
-        self.assertEqual(self.v4_dev._get_param_drv("cold_reset", True)[0], get_params)
-
-    @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
-    )
-    @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
-    )
-    def test_get_param_drv_set_no_cache(self):
-        """Test _get_param_drv()."""
-        get_params = {
-            "cmd": "get",
-            "uart_cmd": "ecrst",
-            "regex": "EC_RST_L is (asserted|deasserted)",
-            "group": "1",
-            "interface": "9",
-            "drv": "cr50",
-            "map": "asserted_re",
-            "clobber_ok": "",
-        }
-        set_params = {
-            "cmd": "set",
-            "subtype": "cold_reset",
-            "interface": "9",
-            "drv": "cr50",
-            "map": "onoff_i",
-            "clobber_ok": "",
-        }
-        map_params = {"0", "1"}
-        self.v4_dev.syscfg.lookup_control_params = unittest.mock.MagicMock(
-            return_value=(set_params, get_params)
-        )
-        self.v4_dev.syscfg.lookup_map_params = unittest.mock.MagicMock(
-            return_value=(map_params)
-        )
-        self.assertEqual(self.v4_dev._get_param_drv("cold_reset", False)[0], set_params)
+        with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
+            mock_close_interface = unittest.mock.MagicMock()
+            mock_driver_client.CloseInterfaces = mock_close_interface
+            self.v4_dev.close()
+            mock_close_interface.assert_called_once()
 
     def test_clear_cached_drv(self):
         """Test clear_cached_drv()."""
