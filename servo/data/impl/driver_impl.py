@@ -231,3 +231,15 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         """
         InterfaceUtils.set_interface_ftdii2c(request.cmd)
         return empty_pb2.Empty()
+
+    def ResetInterfaceRequest(self, request, context):
+        """
+        Service to reset interface init
+
+        Args:
+            request InterfaceRequest
+            context
+        """
+        interface_key = InterfaceUtils.get_interface_key(vid=request.vid, pid=request.pid, serial=request.serial)
+        InterfaceUtils.reset_interface_init(interface_key, request.interface_index)
+        return empty_pb2.Empty()

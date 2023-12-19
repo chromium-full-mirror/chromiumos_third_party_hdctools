@@ -298,7 +298,12 @@ class ServoDevice:
                     if self._interfaces[i] != interface_data:
                         # If an interface is overwritten ensure that it's marked as not
                         # initialized regardless of previous status.
-                        self._interface_init[i] = False
+                        self._driver_client.ResetInterface(
+                            vid=self.template.VID,
+                            pid=self.template.PID,
+                            serial=self._serial,
+                            interface_index=i,
+                        )
                     self._interfaces[i] = interface_data
                 self._sync_interface_lists()
             except KeyError:

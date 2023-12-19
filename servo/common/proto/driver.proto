@@ -27,6 +27,8 @@ service DriverService {
     rpc SyncInterfaceList(InterfaceRequest) returns (google.protobuf.Empty);
     // Set ftdii2c cmd
     rpc SetFtdii2cCmd(Ftdii2cCmdRequest) returns (google.protobuf.Empty);
+    // reset init interface
+    rpc ResetInterface(ResetInterfaceRequest) returns (google.protobuf.Empty);
 }
 
 message DriverRequest {
@@ -83,4 +85,15 @@ message LogRequest {
 
 message Ftdii2cCmdRequest {
     string cmd = 1;
+}
+
+message ResetInterfaceRequest {
+    // vid
+    int32 vid = 1;
+    // pid
+    int32 pid = 2;
+    // serial
+    string serial = 3;
+    // interface index
+    int32 interface_index = 4;
 }
