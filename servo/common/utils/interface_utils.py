@@ -237,3 +237,17 @@ class InterfaceUtils:
             raise InterfaceUtilsError("ftdi_i2c object does not have method %r" % cmd)
         logger.debug("Running %s on ftdii2c interface.", cmd)
         func()
+
+    @staticmethod
+    def reset_interface_init(interface_key, index):
+        """
+            Marked interface as not initialized
+
+        Args:
+            interface_key: (string) a combination of vid, pid and serial
+            index: interface index
+
+        return:
+            interface_init
+        """
+        InterfaceUtils._interface_dict[interface_key]["interface_init"][index] = False
