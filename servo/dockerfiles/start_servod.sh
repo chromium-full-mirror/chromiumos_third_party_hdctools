@@ -114,7 +114,7 @@ fi
 
 log_output "Launching servod for $BOARD $MODEL_MSG on port $PORT $SERIAL_MSG"
 
-servod \
+exec servod \
     --host 0.0.0.0 \
     --log-dir-backup-count $LOG_BACKUP_COUNT \
     $BOARD_FLAG \
