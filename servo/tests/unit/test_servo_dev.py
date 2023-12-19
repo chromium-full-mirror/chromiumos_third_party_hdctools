@@ -76,12 +76,6 @@ class TestServoDevice(unittest.TestCase):
                 tmpl.GetPID("servo_v4")
             ],
         )
-        self.assertEqual(len(self.v4_dev._interface_list), len(self.v4_dev._interfaces))
-        for interface in self.v4_dev._interface_list:
-            self.assertTrue(isinstance(interface, _interface.empty.Empty))
-        self.assertEqual(
-            self.v4_dev._interface_init, [False] * len(self.v4_dev._interfaces)
-        )
         self.assertEqual(self.v4_dev._servod, self.servod)
 
     def test_init_manual_interfaces(self):
@@ -92,11 +86,6 @@ class TestServoDevice(unittest.TestCase):
 
         self.assertTrue(self.v4_dev._manual_interfaces)
         self.assertEqual(self.v4_dev._interfaces, [1])
-        self.assertEqual(len(self.v4_dev._interface_list), 1)
-        self.assertTrue(
-            isinstance(self.v4_dev._interface_list[0], _interface.empty.Empty)
-        )
-        self.assertEqual(self.v4_dev._interface_init, [False])
 
     def test_repr(self):
         """Test __repr__()."""
@@ -285,14 +274,23 @@ class TestServoDevice(unittest.TestCase):
         v2_dev.syscfg.set_board_cfg = unittest.mock.MagicMock()
         v2_dev.syscfg.add_cfg_file = unittest.mock.MagicMock()
         v2_dev._manual_interfaces = False
+        with patch.object(v2_dev, "_driver_client") as mock_driver_client:
+            mock_driver_client.ResetInterface = unittest.mock.MagicMock()
+            v2_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
+            res = v2_dev.set_board_and_model("atlas", "default")
 
-        res = v2_dev.set_board_and_model("atlas", "default")
-
-        self.assertTrue(res)
-        v2_dev._sync_interface_lists.assert_called_once()
-        v2_dev.syscfg.get_board_model_config.assert_called_once_with("atlas", "default")
-        v2_dev.syscfg.set_board_cfg.assert_called_once_with("config")
-        v2_dev.syscfg.add_cfg_file.assert_called_once_with("v2", "config")
+            self.assertTrue(res)
+            v2_dev._sync_interface_lists.assert_called_once()
+            v2_dev.syscfg.get_board_model_config.assert_called_once_with(
+                "atlas", "default"
+            )
+            v2_dev.syscfg.set_board_cfg.assert_called_once_with("config")
+            v2_dev._system_config_client.AddCfgFile.assert_called_once_with(
+                prefix="v2",
+                filename="config",
+                vid=tmpl.GetVID("servo_v2"),
+                pid=tmpl.GetPID("servo_v2"),
+            )
 
     def test_set_board_and_model_keyerror(self):
         """Test set_board_and_model()."""
@@ -301,7 +299,7 @@ class TestServoDevice(unittest.TestCase):
             return_value=("config", "board_id")
         )
         self.v4_dev.syscfg.set_board_cfg = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.add_cfg_file = unittest.mock.MagicMock()
+        self.v4_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
         self.v4_dev._manual_interfaces = False
 
         res = self.v4_dev.set_board_and_model("atlas", "default")
@@ -312,7 +310,12 @@ class TestServoDevice(unittest.TestCase):
             "atlas", "default"
         )
         self.v4_dev.syscfg.set_board_cfg.assert_called_once_with("config")
-        self.v4_dev.syscfg.add_cfg_file.assert_called_once_with("v4", "config")
+        self.v4_dev._system_config_client.AddCfgFile.assert_called_once_with(
+            prefix="v4",
+            filename="config",
+            vid=tmpl.GetVID("servo_v4"),
+            pid=tmpl.GetPID("servo_v4"),
+        )
 
     def test_set_board_and_model_no_config(self):
         """Test set_board_and_model()."""
