@@ -70,6 +70,9 @@ TOKEN_SUFFIX = b"~"
 # List of valid token modes
 TOKEN_MODES = {b"off": False, b"on": True}
 
+TOKEN_PREINST_DB = "/usr/share/cros_ec/tokens/historical.bin"
+TOKEN_FETCHED_DB = "/var/cache/cros_ec/tokens/historical.bin"
+
 
 class EscState:
     """Class which contains an enumeration for states of ESC sequences."""
@@ -237,6 +240,11 @@ class Console:
 
         Loads the token database and configures the detokenizer.
 
+        If token_path is preinstalled token database path (not user specified) and
+        fetched database exists then load the fetched database.
+        Else DO NOT load preinstalled and fetched database, load user specified
+        token database.
+
         Args:
           token_path: path to the token database to load.
                       if None, reload last used token_db path.
@@ -246,9 +254,20 @@ class Console:
         if token_path is not None:
             self.token_db = token_path
 
+        token_files = []
+
+        if (
+            self.token_db == TOKEN_PREINST_DB
+            and pathlib.Path(TOKEN_FETCHED_DB).is_file()
+        ):
+            token_files.append(TOKEN_FETCHED_DB)
+
         if self.token_db:
-            self.logger.info(f"Loading detokenizer database(s): {self.token_db}")
-            self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(self.token_db)
+            token_files.append(self.token_db)
+
+        if len(token_files) > 0:
+            self.logger.info(f"Loading detokenizer database(s): {token_files}")
+            self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(*token_files)
             self.z_detokenizer.show_errors = True
             self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
 
