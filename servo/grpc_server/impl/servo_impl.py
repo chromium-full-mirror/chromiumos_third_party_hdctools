@@ -157,23 +157,6 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         )
         return servo_dev_pb2.BoolResponse(value=bool(has_attr))
 
-    def GetDeviceList(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
-        device_list = servo_dev_pb2.ServoDeviceList()
-        for device in self.servod.get_devices():
-            device_list.servo_devices.append(json.loads(device.to_json()))
-        return device_list
-
-    def GetMainDevice(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
-        servo_device = servo_dev_pb2.ServoDevice()
-        servo_device = json.loads(self.servod.get_main_device().to_json())
-        return servo_device
-
     def GetSerial(self, request, context):
         self.logger.debug(
             "Handle request for {}, in context {}".format(request, context)
@@ -434,7 +417,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
         _chips = {}
         for device in devices:
-            self._chips[device] = params.get(
+            _chips[device] = params.get(
                 "chip_for_" + device.template.TYPE, default_chip
             )
         _chip = _chips[default_device]
