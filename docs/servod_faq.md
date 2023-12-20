@@ -117,9 +117,10 @@ There are several behaviors supported:
    * With `"full`" any `<params>` attributes from an existing control will NOT
      be retained.
 
-* `clobber_ok="never"`: This will control definition will be quietly (no error)
-  **ignored** and not override anything if there is an existing control of the
-  same name/alias. If there is no existing control, a new one will be defined.
+* `clobber_ok="never"`: This control definition will be quietly ignored
+  (no error) without overriding anything if there is an existing control of the
+  same name/alias. If there is no existing control, then this control definition
+  will be used.
 
 * `clobber_ok=""`: **DEPRECATED, do not use in new control definitions!**
   https://issuetracker.google.com/287541200 tracks removal of this option.
