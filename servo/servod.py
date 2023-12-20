@@ -7,6 +7,7 @@
 # pkg_resources is erroneously suggested to be in the 3rd party segment
 
 import errno
+import fcntl
 import itertools
 import json
 import logging
@@ -17,6 +18,7 @@ import socket
 import sys
 import threading
 import time
+import urllib.request
 import weakref
 from xmlrpc.server import SimpleXMLRPCServer
 
@@ -168,6 +170,20 @@ class ServodStarter:
             env_vars,
         )
         self._logger.info("Start")
+
+        if not os.environ.get("CROS_WORKON_SRCROOT") and sopts.fetch_token_db:
+            token_file = "/var/cache/cros_ec/tokens/historical.bin"
+            token_lock_file = token_file + ".lock"
+            os.makedirs(os.path.dirname(token_lock_file), exist_ok=True)
+            with open(token_lock_file, "wb") as fd:
+                fcntl.lockf(fd, fcntl.LOCK_EX)
+                self._logger.info("Fetching latest EC token database")
+                urllib.request.urlretrieve(
+                    "https://storage.googleapis.com/chromeos-localmirror/cros_ec/tokens/historical.bin",  # pylint: disable=line-too-long
+                    token_file,
+                )
+                self._logger.info("Successfully fetched EC token database")
+                fcntl.lockf(fd, fcntl.LOCK_UN)
 
         (dev_entries, main_dev_entry) = self._discover_servos(sopts, devopts_list)
 
@@ -348,6 +364,12 @@ class ServodStarter:
             dest="disable_host_usb3",
             help="Turn off the --disable-host-usb3 option. See its help for details.",
         )
+        if not os.environ.get("CROS_WORKON_SRCROOT"):
+            server_pars.add_argument(
+                "--fetch-token-db",
+                action="store_true",
+                help="Automatically fetch latest EC token database",
+            )
         # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
         dev_pars = servo_parsing.ServodRCParser(add_help=False)
         dev_pars.add_argument(
@@ -409,8 +431,8 @@ class ServodStarter:
             help="prefix(s) used to route controls to this device",
         )
         dev_pars.add_argument(
-            "--token_db",
-            default="/usr/share/cros_ec/historical.bin",
+            "--token-db",
+            default="/usr/share/cros_ec/tokens/historical.bin",
             type=str,
             help="Path to CrOS EC token database",
         )

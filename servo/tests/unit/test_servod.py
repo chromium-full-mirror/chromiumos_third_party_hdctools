@@ -82,6 +82,7 @@ class TestServoStarter(unittest.TestCase):
         sopts.servo_recovery = True
         sopts.usbkm232 = None
         sopts.step_init = False
+        sopts.fetch_token_db = False
         with unittest.mock.patch(
             "servo.servod.ServodStarter._parse_args",
             unittest.mock.MagicMock(return_value=(sopts, [])),
