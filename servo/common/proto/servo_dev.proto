@@ -60,10 +60,6 @@ service ServoService {
     rpc GetInitV4Device (V4DeviceRequest) returns (V4DeviceResponse);
     // check servo attribute on servod instance
     rpc IsServoHasAttr (ServiceRequest) returns (BoolResponse);
-    // Get servo devices
-    rpc GetDeviceList (google.protobuf.Empty) returns (ServoDeviceList);
-    // Get servo main device
-    rpc GetMainDevice (google.protobuf.Empty) returns (ServoDevice);
     // Get serial
     rpc GetSerial (google.protobuf.Empty) returns (GetResponse);
     // Get all serials
