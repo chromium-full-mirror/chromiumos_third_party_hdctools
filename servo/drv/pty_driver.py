@@ -294,7 +294,7 @@ class ptyDriver(hw_driver.HwDriver):
     def _issue_cmd_get_results(
         self, cmds, regex_list, flush=None, timeout=DEFAULT_UART_TIMEOUT
     ):
-        """Send command to the device and wait for response.
+        r"""Send command to the device and wait for response.
 
         This function waits for response message matching a regular
         expressions.
@@ -442,7 +442,7 @@ class ptyDriver(hw_driver.HwDriver):
         return self._interface._uart_state["uart_timeout"]
 
     def _Set_uart_regexp(self, regexp):
-        """Set the list of regular expressions which matches the command response.
+        r"""Set the list of regular expressions which matches the command response.
 
         Example usage:
         dut-control cr50_uart_regexp:'[r"Chip:\s+(\S+)\s"]'
@@ -457,7 +457,7 @@ class ptyDriver(hw_driver.HwDriver):
             % str(regexp)
         )
         sample_usage = (
-            '\nExample valid input: \'[r"Chip:\s+(\S+)\s", r"Board:\s+(\S+)\s"]\''
+            r'\nExample valid input: \'[r"Chip:\s+(\S+)\s", r"Board:\s+(\S+)\s"]\''
         )
         if not isinstance(regexp, str):
             raise ptyError(err_msg + sample_usage)
