@@ -67,6 +67,15 @@ start-servod
 
        By default -f will show the debug logs but you can specify -f=WARNING or -f=INFO
        if you wish another level of logging.
+
+    [--allow_offline]
+        Every time you run start-servod the code will check for a newer version of the
+        servod docker image.   If you are not connected to the internet this check will
+        fail with an error.
+
+        This option suppresses that error and allows the servod to start with whatever
+        version of the image is cached to the disk.  If there is no cached version the
+        script will still fail with an access error.
 """
 
 
@@ -74,7 +83,7 @@ def setup():
     return docker.from_env()
 
 
-def get_image(client, channel):
+def get_image(client, channel, allow_offline):
     if channel == "local":
         if client.images.list(filters={"reference": DEFAULT_IMAGE}):
             return DEFAULT_IMAGE
@@ -84,10 +93,15 @@ def get_image(client, channel):
         )
         channel = "release"
     image = ARTIFACT_URL_TEMPLATE % channel
-    resp = client.api.pull(image, stream=True, decode=True)
-    for unused_update in resp:
-        print("+", end="", flush=True)
-    print("", flush=True)
+    try:
+        resp = client.api.pull(image, stream=True, decode=True)
+        for unused_update in resp:
+            print("+", end="", flush=True)
+        print("", flush=True)
+    except (docker.errors.APIError, docker.errors.DockerException):
+        if not allow_offline:
+            raise
+        print("Failed to check for new version, offline mode specified.")
     return image
 
 
@@ -266,6 +280,10 @@ def parse_args():
     parser.add_argument(
         "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
     )
+    parser.add_argument(
+        "--allow_offline",
+        action=argparse.BooleanOptionalAction,
+    )
     args = parser.parse_args()
     if args.help:
         parser.print_usage()
@@ -286,7 +304,7 @@ def main():
     client = setup()
     args = parse_args()
     print("Checking docker image is up to date and downloading updates as necessary.")
-    image = get_image(client, args.channel)
+    image = get_image(client, args.channel, args.allow_offline)
     print("\nStarting the server.\n")
     start_servod(
         client=client,
