@@ -94,7 +94,7 @@ class ServodStarter:
             disable_unusable_usb3_hubs()
 
         # Turn on recovery mode if requested.
-        if sopts.recovery_mode:
+        if sopts.servo_recovery:
             recovery.set_recovery_active()
 
         servo_port = self._start_xml_server(sopts)
@@ -206,15 +206,23 @@ class ServodStarter:
             dest="dual_v4",
             default=False,
             action="store_true",
-            help="DEPRECATED.  Backwards compatible way to set "
+            help="DEPRECATED. Backwards compatible way to set "
             "--device-discovery=full",
         )
         server_pars.add_argument(
-            "--recovery_mode",
+            "--servo-recovery",
             default=False,
             action="store_true",
-            help="Start servod through issues to allow for "
-            "inspection and recovery mechanisms.",
+            help="Start servod through normally fatal issues, such as missing "
+            "DUT controller servo, to allow for inspection and recovery of "
+            "servo devices themselves. (This is not related to CrOS recovery "
+            "features.)",
+        )
+        server_pars.add_argument(
+            "--recovery_mode",
+            action="store_true",
+            dest="servo_recovery",
+            help="DEPRECATED. Old name for --servo-recovery",
         )
         server_pars.add_argument(
             "--step-init",
