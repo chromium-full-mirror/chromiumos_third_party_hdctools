@@ -26,6 +26,7 @@ Current status: **Dogfood**
     - [Can I use podman instead of docker ?](#can-i-use-podman-instead-of-docker-)
     - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred-)
     - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts-)
+    - [I need to run servod when not connected to the internet.](#i-need-to-run-servod-when-not-connected-to-the-internet)
 
 ## Overview
 
@@ -222,6 +223,15 @@ start-servod
 
       By default -f will show the debug logs but you can specify -f=WARNING or -f=INFO
       if you wish another level of logging.
+
+   [--allow_offline]
+      Every time you run start-servod the code will check for a newer version of the
+      servod docker image.   If you are not connected to the internet this check will
+      fail with an error.
+
+      This option suppresses that error and allows the servod to start with whatever
+      version of the image is cached to the disk.  If there is no cached version the
+      script will still fail with an access error.
 ```
 
 ```text
@@ -476,3 +486,22 @@ At this time we have some experimental ARM builds but they are not ready for dog
 
 Please file a feature request with your use case for running on ARM as this makes it
 more likely that the ARM project will be prioritized.
+
+### I need to run servod when not connected to the internet.
+
+Building servod or getting a new version of servod requires a connection to the
+internet.  However it is possible to use a previously cached version of the docker
+image to run servod without needing an internet connection.
+
+You must have previously have run start-servod with the channel=[release | beta ] whilst
+connected to populate the cache.
+
+Then when disconnected you can add the --allow-offline option to the command line
+
+```text
+start-servod --allow-offline  [ other start-servod options ]
+```
+
+There will still be a check to see if there is a newer version but the script will
+continue on with a cached version if it exists rather than failing with an error.  If
+there is no cached version you still will get an error.

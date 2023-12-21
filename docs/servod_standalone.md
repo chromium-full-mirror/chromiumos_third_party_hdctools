@@ -14,8 +14,8 @@ This actually only installs some wrapper scripts and dependencies that will make
   - [Example usage](#example-usage)
   - [Advanced Usage](#advanced-usage)
 
-
 ## Install Pre-Requisites
+
 ```text
 sudo apt-get install apt-transport-https ca-certificates gnupg curl sudo
 ```
@@ -41,6 +41,7 @@ sudo apt install servod
 ```
 
 ## Allow use of docker without sudo
+
 ```text
 sudo addgroup docker
 sudo usermod -aG docker $USER
@@ -116,6 +117,15 @@ start-servod
 
       By default -f will show the debug logs but you can specify -f=WARNING or -f=INFO
       if you wish another level of logging.
+
+   [--allow_offline]
+      Every time you run start-servod the code will check for a newer version of the
+      servod docker image.   If you are not connected to the internet this check will
+      fail with an error.
+
+      This option suppresses that error and allows the servod to start with whatever
+      version of the image is cached to the disk.  If there is no cached version the
+      script will still fail with an access error.
 ```
 
 ```text
