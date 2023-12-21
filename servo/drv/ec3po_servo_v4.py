@@ -76,7 +76,11 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         cc polarity: cc1
         pd enabled: on
         """
-        rx = ["dts mode:\s*(off|on)", "chg mode:\s*(off|on)", "chg allowed:\s*(off|on)"]
+        rx = [
+            r"dts mode:\s*(off|on)",
+            r"chg mode:\s*(off|on)",
+            r"chg allowed:\s*(off|on)",
+        ]
         res = self._issue_safe_cmd_get_results("cc", rx)
 
         if len(res) != len(rx):
@@ -111,12 +115,12 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
         # Old firmware can't change CC polarity, i.e. always cc1.
         cc_dict["pol"] = _get_optional_field(
-            "cc polarity:\s*(cc1|cc2)", "cc1", "CC polarity"
+            r"cc polarity:\s*(cc1|cc2)", "cc1", "CC polarity"
         )
 
         # Old firmware can't control PD comm, it always the same as 'chg allowed'.
         cc_dict["pd"] = _get_optional_field(
-            "pd enabled:\s*(off|on)", cc_dict["chg"], "PD comm"
+            r"pd enabled:\s*(off|on)", cc_dict["chg"], "PD comm"
         )
 
         return cc_dict
@@ -214,7 +218,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         """
         pd_cmd = "pd %s state" % port
         # Two FW versions for this command, get full line.
-        m = self._issue_safe_cmd_get_results(pd_cmd, ["State:\s+([\w]+)_([\w]+)"])[0]
+        m = self._issue_safe_cmd_get_results(pd_cmd, [r"State:\s+([\w]+)_([\w]+)"])[0]
         if m is None:
             raise ec3poServoV4Error("Cannot retrieve pd state.")
 

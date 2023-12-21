@@ -70,9 +70,8 @@ class ec3poServoMicro(ec3po_servo.ec3poServo):
           0 if EC_TX and EC_RX are in normal UART mode
         """
         # EC UART is connected to USART2
-        result = self._issue_cmd_get_results("hold_usart usart2", ["status: (\w+)"])[0][
-            1
-        ]
+        result = self._issue_cmd_get_results("hold_usart usart2", [r"status: (\w+)"])
+        result = result[0][1]
         if result == "normal":
             return 0
         return 1
