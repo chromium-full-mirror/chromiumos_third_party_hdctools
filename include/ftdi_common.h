@@ -5,6 +5,9 @@
 #ifndef __FTDI_UTILS_H__
 #define __FTDI_UTILS_H__
 
+/* remove when ftdi_usb_purge_buffers has been replaced to follow libftdi */
+#define _FTDI_DISABLE_DEPRECATED
+
 #include <ftdi.h>
 #include <sys/time.h>
 #include <stdint.h>
