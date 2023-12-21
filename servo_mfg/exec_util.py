@@ -7,6 +7,7 @@
 import logging
 import subprocess
 import time
+from typing import Optional
 
 
 # Frequency with which to poll the subprocess.
@@ -16,7 +17,7 @@ PROCESS_POLL_S = 0.01
 PROCESS_TIMEOUT_S = 1 * 60
 
 
-def _exec_line(cmd, hint=None):
+def _exec_line(cmd: list[str], hint: Optional[str] = None) -> str:
     """Helper to format the exec line for logging purposes.
 
     Args:
@@ -29,7 +30,9 @@ def _exec_line(cmd, hint=None):
     return "%s (%s)" % (cmd[0], hint) if hint else cmd[0]
 
 
-def exec_nonblocking(cmd, hint=None):
+def exec_nonblocking(
+    cmd: list[str], hint: Optional[str] = None
+) -> subprocess.Popen[bytes]:
     """Helper to run |cmd| and return subprocess.
 
     Args:
@@ -45,7 +48,9 @@ def exec_nonblocking(cmd, hint=None):
     return subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
 
 
-def exec_blocking(cmd, hint=None, timeout=PROCESS_TIMEOUT_S):
+def exec_blocking(
+    cmd: list[str], hint: Optional[str] = None, timeout: float = PROCESS_TIMEOUT_S
+) -> tuple[Optional[int], bytes, bytes]:
     """Helper to run |cmd| and capture all output to logs before errors.
 
     Args:
