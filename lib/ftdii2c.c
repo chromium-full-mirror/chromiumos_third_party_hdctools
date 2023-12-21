@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <assert.h>
-#include <ftdi.h>
 #include <stdio.h>
 #include <stdlib.h>
 
