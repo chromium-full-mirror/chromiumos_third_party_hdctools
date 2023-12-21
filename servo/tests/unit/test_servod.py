@@ -426,7 +426,6 @@ class TestServoStarter(unittest.TestCase):
         starter._scratchutil = None
         sopts = argparse.Namespace()
         sopts.device_discovery = "full"
-        sopts.dual_v4 = False
 
         res = starter._discover_servos(sopts, None)
 
@@ -477,7 +476,6 @@ class TestServoStarter(unittest.TestCase):
         starter._logger.fatal = unittest.mock.MagicMock()
         sopts = argparse.Namespace()
         sopts.device_discovery = "full"
-        sopts.dual_v4 = False
 
         with self.assertRaises(SystemExit) as result:
             starter._discover_servos(sopts, None)

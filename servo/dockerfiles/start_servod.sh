@@ -89,8 +89,6 @@ if [ ! -z "$REC_MODE" ]; then
 fi
 
 if [ "$DUAL_V4" = "1" ]; then
-    # --allow-dual-v4 is deprecated and replaced by
-    # --device-discovery=full
     DEVICE_DISCOVERY_FLAG="--device-discovery=full"
 else
     DEVICE_DISCOVERY_FLAG=""
