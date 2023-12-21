@@ -73,7 +73,7 @@ class ec3poGpio(ec3po_servo.ec3poServo):
           name: name of the GPIO to modify
           value: the state to set into the GPIO
         """
-        cmd = "{} {} {}\r".format(self._set_cmd, name, GPIO_STATE[value])
+        cmd = "{} {} {}".format(self._set_cmd, name, GPIO_STATE[value])
         self._issue_cmd(cmd)
 
     def get_gpio(self, name):
