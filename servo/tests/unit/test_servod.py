@@ -76,7 +76,7 @@ class TestServoStarter(unittest.TestCase):
         """Test __init__()."""
         sopts = unittest.mock.MagicMock()
         sopts.host = "localhost"
-        sopts.recovery_mode = True
+        sopts.servo_recovery = True
         sopts.usbkm232 = None
         sopts.step_init = False
         with unittest.mock.patch(
