@@ -199,7 +199,7 @@ class ec(pty_driver.ptyDriver):
     def _Get_volume_up(self):
         """Getter of Volup for Ryu"""
         result = self._issue_cmd_get_results(
-            "btnpress volup", ["Button volup pressed = (\d+)"]
+            "btnpress volup", [r"Button volup pressed = (\d+)"]
         )[0]
         return int(result[1])
 
@@ -214,7 +214,7 @@ class ec(pty_driver.ptyDriver):
     def _Get_volume_down(self):
         """Getter of Voldown for Ryu"""
         result = self._issue_cmd_get_results(
-            "btnpress voldown", ["Button voldown pressed = (\d+)"]
+            "btnpress voldown", [r"Button voldown pressed = (\d+)"]
         )[0]
         return int(result[1])
 
