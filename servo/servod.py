@@ -202,14 +202,6 @@ class ServodStarter:
             "request or when they grow past %d bytes." % servo_logging.MAX_LOG_BYTES,
         )
         server_pars.add_argument(
-            "--allow-dual-v4",
-            dest="dual_v4",
-            default=False,
-            action="store_true",
-            help="DEPRECATED. Backwards compatible way to set "
-            "--device-discovery=full",
-        )
-        server_pars.add_argument(
             "--servo-recovery",
             default=False,
             action="store_true",
@@ -369,9 +361,9 @@ class ServodStarter:
 
         Returns:
           tuple: (server, dev) args Namespaces after parsing & processing cmdline
-            server: holds --port, --host, --log-dir, --allow-dual-v4, --debug flags
-            dev: holds all the device flags (serialname, interfaces, configs etc -
-                 see below) necessary to configure a servo device.
+            server: holds server scoped options, such as --port --host --log-dir
+            dev: holds servo device scoped options, such as --serialname,
+                 that apply to specific servo devices
         """
         if any(True for argstr in cmdline if argstr in ["-h", "--help"]):
             self.help_parser.print_help()
@@ -456,7 +448,7 @@ class ServodStarter:
           a tuple of all the ServoDeviceEntry's, the main device's ServoDeviceEntry
         """
         dev_hierarchy = servo_dev_hierarchy.ServoDeviceHierarchy()
-        if sopts.device_discovery == "full" or sopts.dual_v4:
+        if sopts.device_discovery == "full":
             discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO
         elif sopts.device_discovery == "min":
             discover_mode = servo_dev_finder.ServoDeviceDiscoveryMode.MIN_AUTO
