@@ -21,7 +21,7 @@ class CustomArgHelpParser(argparse.ArgumentParser):
         )
 
     def print_usage(self, file=None):
-        print(self.message)
+        print(self.message, file=file)
 
 
 class RunCommandBase:
@@ -46,7 +46,8 @@ class RunCommandBase:
                     "Error - unknown arguments '%s' - if you want to pass through"
                     " arguments use the -- separator"
                 )
-                % " ".join(args.passthrough)
+                % " ".join(args.passthrough),
+                file=sys.stderr,
             )
             sys.exit(3)
         return args
@@ -61,7 +62,10 @@ class RunCommandBase:
 
         containers = client.containers.list(filters={"name": name_search})
         if not containers:
-            print("Can not find a container that matches name %s" % name_search)
+            print(
+                "Can not find a container that matches name %s" % name_search,
+                file=sys.stderr,
+            )
         elif len(containers) == 1:
             exit_code, output = self.execute_command(
                 containers[0], args.passthrough[1:]
@@ -75,7 +79,8 @@ class RunCommandBase:
                     "More than one container matches %s, "
                     "please re-run with --container_name"
                 )
-                % name_search
+                % name_search,
+                file=sys.stderr,
             )
 
     def execute_command(self, container, passthrough):
