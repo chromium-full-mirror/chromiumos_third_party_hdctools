@@ -415,7 +415,7 @@ COPY --link --from=cbfstool /coreboot-4.21/util/cbfstool/cbfstool /usr/local/bin
 RUN chmod 755 /usr/local/bin/cbfstool
 
 # Install shflags
-COPY --link --from=shflags-builder shflags /usr/share/misc/shflags
+COPY --link --from=shflags-builder shflags/shflags /usr/share/misc/shflags
 
 RUN mkdir -p /usr/share/ec-devutils
 
