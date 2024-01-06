@@ -44,7 +44,7 @@
             <item>spi2_buf_en:on</item>
             <item>spi2_buf_on_flex_en:on</item>
           </item>
-	  <item key="0">
+          <item key="0">
             <item>spi2_buf_on_flex_en:off</item>
             <item>spi2_buf_en:off</item>
             <item>spi2_vref:off</item>
@@ -103,12 +103,19 @@
   </control>
 
   <control>
-    <name>fw_up</name>
-    <!-- The dut_i2c_en alias is used by the flash_ec script to determine when it is
-    valid to assert the FW_UP signal as part of the ITE I2C programming sequence. -->
-    <alias>dut_i2c_en</alias>
+    <name>dut_i2c_en</name>
+    <!-- The dut_i2c_en alias is used by the flash_ec script to assert the FW_UP signal as part of the ITE I2C programming sequence. -->
+    <alias>fw_up</alias>
     <doc>Enable servo connection to the I2C programming interface on ITE.</doc>
     <params clobber_ok="patch" od="PP" map="onoff" init="off" />
   </control>
 
+  <control>
+    <name>chassis_open</name>
+    <doc>
+    Assert Chassis Open signal in order to open ccd with servo micro when AP RO verification fails.
+    This will bypass the dev mode and 5 minute physical presence requirements to open ccd.
+    </doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1" offset="0" map="onoff_i" init="off" />
+  </control>
 </root>
