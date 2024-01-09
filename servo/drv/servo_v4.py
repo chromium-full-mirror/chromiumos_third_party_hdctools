@@ -122,7 +122,7 @@ class servoV4(hw_driver.HwDriver):
         elif value == 1:
             new = "enabled"
         elif value == 2:  # 'automatic'
-            serialnum = self._servod_get("serialname")
+            serialnum = self._servod_get("root.serialname")
             new = self._dut_usb3_servos.get(serialnum, self._dut_usb3_default)
         else:
             raise ValueError("invalid reinit_dut_usb3_en map value: %r" % (value,))
