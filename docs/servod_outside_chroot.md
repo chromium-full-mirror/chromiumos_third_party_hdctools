@@ -48,7 +48,7 @@ at least up to the “Getting the source code section”
 
 ## How to give feedback / report issues
 
-- Googlers please file feedback at <http://go/file-hwtools-bug>
+- Googlers please file feedback at <https://goto.google.com/file-hwtools-bug>
 - Non-Googlers please email your feedback to <cros-servod-outside-chroot-external@google.com>
 this feedback will only been seen by Google and we will reach out to you directly if we
 need any further information or to update you with progress.
@@ -57,7 +57,7 @@ need any further information or to update you with progress.
 
 **Googlers:**
 
-Follow the [instructions](http://go/docker) for **Installation**, **Sudoless Docker** And **GCR
+Follow the [instructions](https://goto.google.com/docker) for **Installation**, **Sudoless Docker** And **GCR
 credential helper**
 
 *Note that sudoless docker and GCR credential helper are ***REQUIRED*** for servod to
