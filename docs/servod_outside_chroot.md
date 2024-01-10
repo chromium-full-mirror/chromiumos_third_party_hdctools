@@ -57,11 +57,11 @@ need any further information or to update you with progress.
 
 **Googlers:**
 
-Follow the instructions for **Installation**, **Sudoless Docker** And **GCR
+Follow the [instructions](http://go/docker) for **Installation**, **Sudoless Docker** And **GCR
 credential helper**
 
 *Note that sudoless docker and GCR credential helper are ***REQUIRED*** for servod to
-work, even though the general instructions suggest it is optional.* [Instructions](http://go/docker)
+work, even though the general instructions suggest it is optional.*
 
 **Non-Googlers:**
 
