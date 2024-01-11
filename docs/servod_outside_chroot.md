@@ -27,6 +27,7 @@ Current status: **Dogfood**
     - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred-)
     - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts-)
     - [I need to run servod when not connected to the internet.](#i-need-to-run-servod-when-not-connected-to-the-internet)
+    - [dut-console is failing with an error.](#dut-console-is-failing-with-an-error)
 
 ## Overview
 
@@ -508,3 +509,18 @@ start-servod --allow-offline  [ other start-servod options ]
 There will still be a check to see if there is a newer version but the script will
 continue on with a cached version if it exists rather than failing with an error.  If
 there is no cached version you still will get an error.
+
+### dut-console is failing with an error.
+
+dut-console script ( not maintained by HW Tools team ) uses the XML RPC api to query
+the servod.  start-servod does not expose that port to the host by default.   If you
+wish to use dut-console you will need to run start-servod with a port number of your
+choosing on the host.
+
+As an example:
+
+```text
+start-servod -p 9999
+```
+
+
