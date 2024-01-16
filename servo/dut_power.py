@@ -283,18 +283,18 @@ class DutPower:
             logfilehandler = logging.StreamHandler(tmplogfile)
             logfilehandler.setLevel(logging.DEBUG)
             pm_logger.addHandler(logfilehandler)
-        if args.time < args.adc_accum_rate * 2:
-            # We ask the measurement time to be at least 2x of the tracker rate because:
-            # - ADC accumulator tracker is meaningless when the total measurement time
-            #   is less than the tracker rate.
-            # - If the tracker rate and measurement time are just too close, the
-            #   measurement may end too early and leave no time for the tracker to
-            #   collect and process any samples.
-            pm_logger.info(
-                "Disabling ADC accumulator queries because the "
-                "measurement time is too short."
-            )
-            args.adc_accum_rate = 0
+        if args.adc_accum_rate:
+            # We can't set the accumulator time too long since we will lose the
+            # samples. Ideally we'd send a shutdown event early and wait for each
+            # driver to finish but the transactions take a very long time to
+            # complete and dut-power has no knowledge of the drivers and limits.
+            # As a work around, we'll artificially reduce the time.
+            # Benchmarks with ServoMicro and a single PAC1954 show it requires
+            # 10ms for each rail's accumulator due to Servod and the devices not
+            # optimizing and batching transactions. The max read time should be
+            # under 1 second but GPIO-I2C setups may take longer.
+            max_adc_accum_rate = max(0, args.time - 2)
+            args.adc_accum_rate = min(args.adc_accum_rate, max_adc_accum_rate)
         self.pm_logger = pm_logger
         self.tmplogfile = tmplogfile
 
