@@ -242,8 +242,8 @@ class TestDutPower(unittest.TestCase):
         args.debug = False
         args.no_output = False
         args.save_logs = True
-        args.time = 5
-        args.adc_accum_rate = 3
+        args.time = 10
+        args.adc_accum_rate = 12
         tmplogfile = tempfile.NamedTemporaryFile(mode="w+")
         with unittest.mock.patch(
             "tempfile.NamedTemporaryFile",
@@ -255,7 +255,7 @@ class TestDutPower(unittest.TestCase):
         self.assertEqual(len(dp.pm_logger.handlers), 2)
         self.assertEqual(dp.pm_logger.handlers[0].stream, sys.stdout)
         self.assertEqual(dp.pm_logger.handlers[1].stream, tmplogfile)
-        self.assertEqual(args.adc_accum_rate, 0)
+        self.assertEqual(args.adc_accum_rate, 8)
         self.assertEqual(dp.tmplogfile, tmplogfile)
 
     @unittest.mock.patch(
