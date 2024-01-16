@@ -82,6 +82,14 @@
   </control>
 
   <control>
+    <!--  Enable Brox to use tokenizing in the future. Servod will still
+    properly handle non-tokenized output. -->
+    <name>uses_cros_ec_tokens</name>
+    <doc>CrOS EC logging is tokenized</doc>
+    <params drv="echo" value="always" interface="servo"/>
+  </control>
+
+  <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params clobber_ok="patch" cmd="set" drv="cros_ec_softrec_power"/>
