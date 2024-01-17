@@ -18,7 +18,7 @@ See [Servo][5] for more information on Servo.
 
 ### Sweetberry
 
-Sweetberry, Servo V1, or Servo INA adapter can be used when there are no ADCs on
+Sweetberry or Servo INA adapter can be used when there are no ADCs on
 the DUT. Sweetberry is the preferred method. A hardware rework on the DUT is
 often required to place sense resistors on the power rails and to attach 'Medusa
 style' header (HIROSE DF13A-40DP-1.25V(55)) to the sense resistors and ground.

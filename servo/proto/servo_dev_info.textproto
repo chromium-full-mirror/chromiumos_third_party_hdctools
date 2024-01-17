@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Servo v1 template class.
-servo_devices {
-  TYPE: 'servo_v1'
-  VID: 0x18d1
-  PID: 0x5001
-  LOTIDS: ['483881', '498432']
-  DEFAULT_CONFIG: 'servo.xml'
-}
-
 # Servo v2 r0 template class.
 servo_devices {
   TYPE: 'servo_v2_r0'

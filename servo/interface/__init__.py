@@ -10,7 +10,6 @@ from servo.interface import common as c
 from servo.interface import ec3po_interface
 from servo.interface import empty
 from servo.interface import ftdi_common
-from servo.interface import ftdigpio
 from servo.interface import ftdii2c
 from servo.interface import ftdiuart
 from servo.interface import i2cbus
@@ -24,7 +23,6 @@ from servo.interface import stm32uart
 _interfaces = [
     # Known FTDI interfaces
     ftdii2c.Fi2c,
-    ftdigpio.Fgpio,
     ftdiuart.Fuart,
     # Known STM32 interfaces
     stm32gpio.Sgpio,

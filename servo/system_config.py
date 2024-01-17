@@ -991,7 +991,7 @@ def test():
     )
     scfg = SystemConfig()
     # TODO(tbroch) make this a comprehensive test xml file
-    scfg.add_cfg_file("", os.path.join("data", "servo.xml"))
+    scfg.add_cfg_file("", os.path.join("data", "servo_micro.xml"))
     scfg.display_config()
 
     control_dict = scfg._lookup("control", "rec_mode")
