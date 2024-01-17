@@ -2,9 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# for use with servo INA adapter board.  If measuring via servo V1 this can just
-# be ignored.  clobber_ok added if user wishes to include servo_loc.xml
-# additionally.
+# For use with servo INA adapter board.
+# clobber_ok added if user wishes to include servo_loc.xml additionally.
 inline = """
   <map>
     <name>adc_mux</name>

@@ -8,15 +8,6 @@ import collections
 
 INTERFACE_DEFAULTS = collections.defaultdict(dict)
 
-# servo v1
-INTERFACE_DEFAULTS[0x18D1][0x5001] = [
-    "empty",
-    "ftdi_gpio",
-    "ftdi_i2c",
-    "ftdi_gpio",
-    "ftdi_gpio",
-]
-
 # servo V2
 # Empty interface 1 == JTAG via openocd
 # Empty interface 5,6 == SPI via flashrom
