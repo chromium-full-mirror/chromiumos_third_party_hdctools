@@ -3,11 +3,6 @@
 # found in the LICENSE file.
 
 SERVO_DEVICE_DATA = {
-    "miniservo_v1": (
-        (0x18D1, 0x5000),
-        ("001", "540052"),
-        "miniservo.xml",
-    ),
     "servo_v1": (
         (0x18D1, 0x5001),
         ("483881", "498432"),

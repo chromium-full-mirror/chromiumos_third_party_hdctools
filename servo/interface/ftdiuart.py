@@ -11,7 +11,6 @@ import time
 from servo.interface import common as c
 from servo.interface import ftdi_common
 from servo.interface import ftdi_utils
-from servo.interface import ftdigpio
 from servo.interface import uart
 
 
@@ -83,7 +82,6 @@ class Fuart(uart.Uart):
         product=ftdi_common.DEFAULT_PID,
         interface=3,
         serialname=None,
-        ftdi_context=None,
     ):
         """Fuart constructor.
 
@@ -96,9 +94,6 @@ class Fuart(uart.Uart):
           product: usb product id of FTDI device
           interface: interface number of FTDI device to use
           serialname: string of device serialname/number as defined in FTDI eeprom.
-          ftdi_context: ftdi context created previously or None if one should be
-            allocated here.  This shared context functionality is seen in miniservo
-            which has a uart + 4 gpios
 
         Raises:
           FuartError: If either ftdi or fuart inits fail
@@ -120,14 +115,11 @@ class Fuart(uart.Uart):
         )
         self._is_closed = True
         self._fuartc = FuartContext()
+        self._fc = ftdi_common.FtdiContext()
 
-        if ftdi_context:
-            self._fc = ftdi_context
-        else:
-            self._fc = ftdi_common.FtdiContext()
-            err = self._flib.ftdi_init(ctypes.byref(self._fc))
-            if err:
-                raise FuartError("doing ftdi_init", err)
+        err = self._flib.ftdi_init(ctypes.byref(self._fc))
+        if err:
+            raise FuartError("doing ftdi_init", err)
 
         err = self._lib.fuart_init(ctypes.byref(self._fuartc), ctypes.byref(self._fc))
         if err:
@@ -142,23 +134,6 @@ class Fuart(uart.Uart):
 
         c.build_logger.info("%s" % fobj.get_pty())
         return fobj
-
-    @staticmethod
-    def BuildGPIOUart(index, vid, pid, sid, **_kwargs):
-        """Initialize special gpio + uart interface and open for use."""
-        fgpio = ftdigpio.Fgpio.Build(index=index, vid=vid, pid=pid, sid=sid)
-        interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
-        fuart = Fuart(
-            vendor=vid,
-            product=pid,
-            interface=interface,
-            serialname=sid,
-            ftdi_context=fgpio._fc,
-        )
-        fuart.run()
-
-        c.build_logger.info("uart pty: %s" % fuart.get_pty())
-        return fgpio, fuart
 
     @staticmethod
     def name():

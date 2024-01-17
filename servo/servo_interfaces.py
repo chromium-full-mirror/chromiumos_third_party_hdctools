@@ -285,16 +285,6 @@ for vid, pid in SERVO_V4_DEFAULTS:
     # Slots for relocating Hammer interfaces.
     INTERFACE_DEFAULTS[vid][pid] += ["empty"] * SERVO_V4_SLOT_SIZE
 
-# miniservo
-MINISERVO_ID_DEFAULTS = [(0x403, 0x6001), (0x18D1, 0x5000)]
-for vid, pid in MINISERVO_ID_DEFAULTS:
-    INTERFACE_DEFAULTS[vid][pid] = [
-        "empty",
-        "ftdi_gpiouart",  # occupies 2 slots
-        "empty",  # reserved for the above ftdi_gpiouart
-        {"name": "ec3po_uart", "raw_pty": "raw_ec_uart_pty", "source": "EC"},
-    ]
-
 # Fluffy
 FLUFFY_ID_DEFAULTS = [(0x18D1, 0x503B)]
 for vid, pid in FLUFFY_ID_DEFAULTS:

@@ -2,15 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Mini-servo template class.
-servo_devices {
-  TYPE: 'miniservo_v1'
-  VID: 0x18d1
-  PID: 0x5000
-  LOTIDS: ['001', '540052']
-  DEFAULT_CONFIG: 'miniservo.xml'
-}
-
 # Servo v1 template class.
 servo_devices {
   TYPE: 'servo_v1'

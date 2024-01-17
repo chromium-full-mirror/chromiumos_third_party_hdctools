@@ -39,12 +39,6 @@ _interfaces = [
 # Generate a look-up table for these interface names to factory method.
 _interface_map = {i.name(): i.Build for i in _interfaces}
 
-# There is one special-case where an interface is actually two interfaces, and
-# they are bundled together. For this, there is a special builder, and a special
-# name. This is for compatibility reasons and new interfaces should not follow
-# this template, but rather try to have independent interfaces.
-_interface_map["ftdi_gpiouart"] = ftdiuart.Fuart.BuildGPIOUart
-
 
 # General factory function
 def Build(name, **kwargs):

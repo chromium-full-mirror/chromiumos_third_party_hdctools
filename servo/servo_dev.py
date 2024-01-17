@@ -307,13 +307,8 @@ class ServoDevice:
                     )
                     continue
                 raise
-            if isinstance(result, tuple):
-                result_len = len(result)
-                self._interface_list[i : (i + result_len)] = result
-                self._interface_init[i : (i + result_len)] = True
-            else:
-                self._interface_list[i] = result
-                self._interface_init[i] = True
+            self._interface_list[i] = result
+            self._interface_init[i] = True
 
     def set_board_and_model(self, board, model=None):
         """Set the board and model (if applicable) for this servo device.

@@ -475,8 +475,6 @@ milliamps
 milliwatt
 milliwatts
 minicom
-miniservo
-MINISERVO
 mipi
 MIPI
 misprogrammed
