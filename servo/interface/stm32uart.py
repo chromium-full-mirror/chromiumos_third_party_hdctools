@@ -47,7 +47,6 @@ class Suart(uart.Uart):
         product=0x501A,
         interface=0,
         serialname=None,
-        _ftdi_context=None,
     ):
         """Suart constructor.
 
@@ -58,7 +57,6 @@ class Suart(uart.Uart):
           product: usb product id of stm32 device
           interface: interface number of stm32 device to use
           serialname: n/a. Defaults to None.
-          ftdi_context: n/a. Defaults to None.
 
         Raises:
           SuartError: If init fails
