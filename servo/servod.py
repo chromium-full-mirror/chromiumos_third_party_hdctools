@@ -196,21 +196,25 @@ class ServodStarter:
         description = (
             "%(prog)s is server to interact with servo debug & control board. "
             "This server communicates to the board via USB and the client via "
-            "xmlrpc library. Launcher most specify at least one --config <file> "
-            "in order for the server to provide any functionality. In most cases, "
-            "multiple configs will be needed to expose complete functionality "
-            "between debug & DUT board."
+            "xmlrpc library."
         )
         examples = [
             (
-                "-c <path>/data/servo.xml",
-                "Launch server on default host:port with native servo config",
+                "-b brya -m vell",
+                "Launch server on default listening port connected to Vell DUT. "
+                "The servo device is not specified so any servo device on the system "
+                "might get chosen, and it might be incorrect if there are "
+                "multiple servo devices.",
             ),
-            ("-c <file> -p 8888", "Launch server listening on port 8888"),
             (
-                "-c <file> --vendor 0x18d1 --product 0x5001",
-                "Launch targeting usb device with vid:pid == 0x18d1:0x5001 "
-                "(Google/Servo)",
+                "-s <serialnum> -b atlas -m atlas -p 8888",
+                "Launch server listening on port 8888 using Servo device <serialnum> "
+                "connected to Atlas DUT",
+            ),
+            (
+                "-n <name> -b octopus -m ampton",
+                "Launch server listening on default listening port using Servo device "
+                "named <name> (configured in ~/.servodrc) connected to Ampton DUT",
             ),
         ]
         # BaseServodParser adds port, host, debug args.
