@@ -31,24 +31,14 @@ class sx1506(hw_driver.HwDriver):
     INIT_DATA = 0xFFFF
     INIT_DIR = 0xFFFF
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: i2c interface object to handle low-level communication to
-              control
-          params: dictionary of params needed to perform operations on an sx1506
-              io expander.  All items are strings initially but should be cast to
-                types
-              detailed below.
-
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
           offset: integer, gpio's bit position from lsb
-        Optional Params:
         """
-        super(sx1506, self).__init__(interface, params)
+        super(sx1506, self)._drv_init()
         child = self._get_child()
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

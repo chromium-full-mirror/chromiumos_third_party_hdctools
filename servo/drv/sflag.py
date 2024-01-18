@@ -20,9 +20,9 @@ class sflag(hw_driver.HwDriver):
     # an instance variable if we write into the lists' 0th element.
     vstore = [None]
 
-    def __init__(self, interface, params, servod=None):
-        """Setup the commands."""
-        super(sflag, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(sflag, self)._drv_init()
         # Set the valid input choices for this driver. Choices need to be set
         # to be strings.
         self._choices = re.compile("^(0|1)$")

@@ -53,11 +53,11 @@ class usbImageManager(hw_driver.HwDriver):
 
     _DEFAULT_ERROR_MSG = "No USB storage device found for image transfer."
 
-    def __init__(self, interface, params, servod):
-        """Initialize driver by initializing HwDriver."""
-        super(usbImageManager, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(usbImageManager, self)._drv_init()
         # This delay is required to safely switch the usb image mux direction
-        self._poweroff_delay = params.get("usb_power_off_delay", 0)
+        self._poweroff_delay = self._params.get("usb_power_off_delay", 0)
         if self._poweroff_delay:
             self._poweroff_delay = float(self._poweroff_delay)
         # This is required to determine if the usbkey is connected to the host.
@@ -67,15 +67,15 @@ class usbImageManager(hw_driver.HwDriver):
         # do not use the hub_ports logic. Do not raise error here if the param
         # is not available, but rather inside the controls that leverage it.
         self._image_usbkey_hub_ports = None
-        if "hub_ports" in params:
-            self._image_usbkey_hub_ports = params.get("hub_ports").split(",")
+        if "hub_ports" in self._params:
+            self._image_usbkey_hub_ports = self._params.get("hub_ports").split(",")
         # Flag to indicate whether the usb port supports having a hub attached to
         # it. In that case, the image will be searched on the |STORAGE_ON_HUB_PORT|
         # of the hub.
-        self._supports_hub_on_port = params.get("hub_on_port", False)
+        self._supports_hub_on_port = self._params.get("hub_on_port", False)
         self._error_msg = self._DEFAULT_ERROR_MSG
-        if "error_amendment" in params:
-            self._error_msg += " " + params["error_amendment"]
+        if "error_amendment" in self._params:
+            self._error_msg += " " + self._params["error_amendment"]
 
         # Retrieve map_params(if exists) and create a reversed dict to allow reverse lookup
         self._MAP_DICT = self._params.get("map_params")

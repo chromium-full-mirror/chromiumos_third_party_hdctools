@@ -93,17 +93,9 @@ class m24c02(hw_driver.HwDriver):
         child = int(self._params["child"], 0)
         return child
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: Interface object to handle low-level communication.
-          params: Dictionary of params needed to perform operations on the device.
-
-        Raises:
-          ValueError: If child address doesn't make sense.
-        """
-        super(m24c02, self).__init__(interface, params)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(m24c02, self)._drv_init()
 
         child = self._get_child()
         if child not in m24c02.SUPPORTED_ADDRESS:
@@ -111,7 +103,7 @@ class m24c02(hw_driver.HwDriver):
 
         offset = 0
         read_count = m24c02._EEPROM_SIZE
-        device_key = (interface, child)
+        device_key = (self._interface, child)
         if device_key not in m24c02_devices:
             m24c02_devices[device_key] = M24C02Device(offset, read_count)
 

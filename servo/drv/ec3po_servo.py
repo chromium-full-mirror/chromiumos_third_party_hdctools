@@ -57,29 +57,24 @@ def _GetIteChipidReStr(command):
 class ec3poServo(pty_driver.ptyDriver):
     """Parent object to servo console controls."""
 
-    def __init__(self, interface, params, board=""):
+    def _drv_init(self):
         """Constructor.
 
-        Args:
-          interface: ec3po interface object to handle low-level communication to
-            control
-          params: dictionary of params needed
         Raises:
           ec3poServoError: on init failure
         """
-        super(ec3poServo, self).__init__(interface, params)
+        super(ec3poServo, self)._drv_init()
 
-        if "console" in params:
+        if "console" in self._params:
             if (
-                params["console"] == "enhanced"
-                and type(interface) is servo.ec3po_interface.EC3PO
+                self._params["console"] == "enhanced"
+                and type(self._interface) is servo.ec3po_interface.EC3PO
             ):
                 # Make sure that only bytes are passed on to the oobm_queue
-                interface._console.oobm_queue.put(b"interrogate never enhanced")
+                self._interface._console.oobm_queue.put(b"interrogate never enhanced")
             else:
                 raise ec3poServoError("Enhanced console must be ec3po!")
 
-        self._board = board
         self._logger.debug("")
 
     def _limit_channel(self):

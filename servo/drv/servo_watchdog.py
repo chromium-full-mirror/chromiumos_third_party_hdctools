@@ -14,10 +14,6 @@ class servoWatchdogError(hw_driver.HwDriverError):
 class servoWatchdog(hw_driver.HwDriver):
     """Class to control the watchdog."""
 
-    def __init__(self, interface, params, servod):
-        """Initialize all information needed by servo watchdog."""
-        super(servoWatchdog, self).__init__(interface, params, servod)
-
     def _update_device_disconnect_ok(self, name, disconnect_ok):
         """Update if it's ok for the device to disconnect.
 

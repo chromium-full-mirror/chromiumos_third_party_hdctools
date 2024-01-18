@@ -46,21 +46,16 @@ class basePWRADC(hw_driver.HwDriver):
     # offset of the bus voltage reading, in case some bits are unused.
     BUSV_MV_OFFSET = 0
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: params passed for the servod control through config
-          servod: Servod that is used for cross-servo-device communication
-
-        Mandatory Params:
+        Required params:
           base_name: the symbolic name for this INA e.g. pp3300_wlan_dx
           subtype: string, used by get/set method of base class to decide
             how to dispatch request.  Examples are: millivolts, milliamps,
             milliwatts
 
-        Optional Params:
+        Optional params:
           rsense: float, sense resistor size for adc in ohms.  Needed to properly
                   compute current and power measurements. Mandatory on
                   `milliwatts` and `milliamps` subtype
@@ -68,7 +63,7 @@ class basePWRADC(hw_driver.HwDriver):
         Raises:
           BasePWRADCError: if needed params are absent
         """
-        super(basePWRADC, self).__init__(interface, params, servod)
+        super(basePWRADC, self)._drv_init()
         self._logger.debug("")
         self._base_name = self._params["base_name"]
         # Single channel ADCs can be thought of as running on channel 0.

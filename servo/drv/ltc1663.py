@@ -37,22 +37,17 @@ class Ltc1663Error(hw_driver.HwDriverError):
 class ltc1663(hw_driver.HwDriver):
     """Object to access drv=ltc1663 controls."""
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
         Note, LTC1663 I2C transaction is ONLY to set the DAC via:
           <child address> + <cmd> + <lsb byte> + <msb byte>
 
-        Args:
-          interface: interface object to handle low-level communication to control
-          params: dictionary of params needed to perform operations on ltc1663
-              devices.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
           i2c_obj: I2cReg object
         """
-        super(ltc1663, self).__init__(interface, params)
+        super(ltc1663, self)._drv_init()
         self._logger.debug("")
         self._child = int(self._params["child"], 0)
         self._i2c_obj = i2c_reg.I2cReg.get_device(

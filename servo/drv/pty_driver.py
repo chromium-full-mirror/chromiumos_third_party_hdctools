@@ -41,9 +41,9 @@ class ptyDriver(hw_driver.HwDriver):
     # the control has actually finished executing on the console.
     SET_RE_DEFAULT = ">"
 
-    def __init__(self, interface, params, servod=None):
-        """."""
-        super(ptyDriver, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ptyDriver, self)._drv_init()
         self._child = None
         self._fd = None
         self._cmd_iface = False

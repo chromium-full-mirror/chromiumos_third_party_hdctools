@@ -24,17 +24,10 @@ class ftdii2cCmd(hw_driver.HwDriver):
 
     """
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params needed to perform operations on
-            devices.
-          servod: Servod that is used for cross-servo-device communication
-        """
+    def _drv_init(self):
+        """Driver specific initializer."""
         # pylint: disable=protected-access
-        super(ftdii2cCmd, self).__init__(interface, params, servod)
+        super(ftdii2cCmd, self)._drv_init()
         self._logger.debug("")
         for _unused, interface in servod.get_interface_list():
             if isinstance(interface, ftdii2c.Fi2c):

@@ -25,15 +25,9 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
     _REC_TYPE_REC_ON = cros_ec_softrec_power.crosEcSoftrecPower._REC_TYPE_REC_ON
 
-    def __init__(self, interface, params, servod):
-        """Constructor
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(crosEcPdSoftrecPower, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(crosEcPdSoftrecPower, self)._drv_init()
         self._boot_to_rec_screen_delay = float(
             self._params.get("boot_to_rec_screen_delay", 5.0)
         )

@@ -25,19 +25,13 @@ class selectControl(hw_driver.HwDriver):
 
     __SELECT_SUFFIX = "_select"
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
+    def _drv_init(self):
+        """Driver specific initializer."""
         # Maps don't translate correctly when the selected control changes. Ignore
         # the maps. servo.get(selected_control) will handle the mapping.
-        if "map" in params:
-            del params["map"]
-        super(selectControl, self).__init__(interface, params, servod)
+        if "map" in self._params:
+            del self._params["map"]
+        super(selectControl, self)._drv_init()
         if not hasattr(self._servod, "selected_controls"):
             self._servod.selected_controls = {}
         servo_type = self._params.get("device_type", "")

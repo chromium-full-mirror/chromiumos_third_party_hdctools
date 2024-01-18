@@ -8,10 +8,6 @@ from servo.drv import ec3po_servo
 from servo.drv import pty_driver
 
 
-class ec3poC2d2Error(pty_driver.ptyError):
-    """Exception class for c2d2 ec3po."""
-
-
 class ec3poC2d2(ec3po_servo.ec3poServo):
     """Object to access drv=ec3po_c2d2 controls.
 
@@ -23,18 +19,9 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     call _Get_kbd_en.
     """
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: ec3po interface object to handle low-level communication to
-            control
-          params: dictionary of params needed
-        Raises:
-          ec3poC2d2Error: on init failure
-        """
-        ec3po_servo.ec3poServo.__init__(self, interface, params, board="c2d2")
-
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ec3poC2d2, self)._drv_init()
         self._logger.debug("")
 
     def _Get_ec_uart_en(self):

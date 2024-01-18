@@ -19,17 +19,13 @@ class gscI2cError(hw_driver.HwDriverError):
 class gscI2c(hw_driver.HwDriver):
     """Object to access gsc via i2c."""
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-        interface: interface object to handle low-level communication to control
-        params: dictionary of params needed to perform operations on GSC
-
-        Mandatory Params:
-        child: integer, 7-bit i2c child address
+        Required params:
+            child: integer, 7-bit i2c child address
         """
-        super(gscI2c, self).__init__(interface, params)
+        super(gscI2c, self)._drv_init()
         self._logger.debug("")
         self._child = int(self._params["child"], 0)
 

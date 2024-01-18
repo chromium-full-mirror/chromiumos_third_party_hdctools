@@ -30,33 +30,31 @@ class ec3poGpio(ec3po_servo.ec3poServo):
     call _Get_kbd_en.
     """
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: ec3po interface object to handle low-level communication to
-            control
-          params: dictionary of params needed to perform operations on
-            devices. Must contain name:"GPIO_NAME" or names:"GPIO_b0,GPIO_b1"
+        Required params:
+            Must contain name:"GPIO_NAME" or names:"GPIO_b0,GPIO_b1"
             Must contain subtype=single or multi.
             May contain ioex:"false" (default if absent) or ioex:"true" to indicate
             whether the GPIO is on an I/O expander and therefore needs to be
             accessed via ioexget/ioexset instead of gpioget/gpioset.
+
         Raises:
           ec3poGpioError: on init failure
         """
-        super(ec3poGpio, self).__init__(interface, params)
+        super(ec3poGpio, self)._drv_init()
 
-        if "name" in params:
-            self._gpio_name = params["name"]
-        elif "names" in params:
+        if "name" in self._params:
+            self._gpio_name = self._params["name"]
+        elif "names" in self._params:
             self._gpio_names = []
-            for name in params["names"].split(","):
+            for name in self._params["names"].split(","):
                 self._gpio_names.insert(0, name.strip())
         else:
             raise ec3poGpioError("No GPIO name specified")
 
-        ioex = params.get("ioex", "false")
+        ioex = self._params.get("ioex", "false")
         if ioex == "false":
             self._get_cmd = "gpioget"
             self._set_cmd = "gpioset"

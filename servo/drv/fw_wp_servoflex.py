@@ -8,15 +8,9 @@ from servo.drv import fw_wp_state
 class fwWpServoflex(fw_wp_state.FwWpStateDriver):
     """Driver for fw_wp_state for boards connecting servoflex's."""
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(fwWpServoflex, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(fwWpServoflex, self)._drv_init()
         self._fw_wp_vref = self._params.get("fw_wp_vref", "pp1800")
         self._is_open_drain = self._params.get("open_drain", "no") == "yes"
         if self._is_open_drain:

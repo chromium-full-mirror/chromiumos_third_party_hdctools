@@ -15,16 +15,17 @@ class gpioError(hw_driver.HwDriverError):
 class gpio(hw_driver.HwDriver):
     """Object to access type=gpio controls.
 
-    Mandatory Params:
+    Required params:
       offset: integer, shift amount (left) to align GPIO bit correctly
 
-    Optional Params:
+    Optional params:
       chip: Beaglebone gpio chip id.
       width: integer, number of contiguous bits in GPIO control
     """
 
-    def __init__(self, interface, params):
-        super(gpio, self).__init__(interface, params)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(gpio, self)._drv_init()
         # TODO (sbasi/tbroch) crbug.com/241507 - Deprecate chip & muxfile params.
         self._chip = params.get("chip", None)
         self._muxfile = params.get("muxfile", None)

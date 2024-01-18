@@ -96,15 +96,9 @@ class macro(hw_driver.HwDriver):
 
     _STATE_UNKNOWN = "unknown"
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(macro, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(macro, self)._drv_init()
         str_prefix = "set_value_"
 
         self._states = {}
@@ -116,7 +110,7 @@ class macro(hw_driver.HwDriver):
         get_ctrls = self._params.get("get_controls")
         self._get_controls = None if get_ctrls is None else set(get_ctrls.split())
 
-        mconf = params["CONTENT"]
+        mconf = self._params["CONTENT"]
         if mconf is None:
             return
 
@@ -126,7 +120,7 @@ class macro(hw_driver.HwDriver):
                 raise hw_driver.HwDriverError(
                     '"get_controls" must only be specified in a control params once, '
                     "either as an attribute or in <content>, but not in both places.  "
-                    "params=%r" % (params,)
+                    "self._params=%r" % (self._params,)
                 )
             self._get_controls = set(map(str, get_ctrls))
 
@@ -136,7 +130,7 @@ class macro(hw_driver.HwDriver):
                 raise hw_driver.HwDriverError(
                     "Macro values must only be specified in one part of the control "
                     "params, either as attributes (deprecated) or in <content>, but "
-                    "not in both places.  params=%r" % (params,)
+                    "not in both places.  self._params=%r" % (self._params,)
                 )
             for macro_val, value in macro_map.items():
                 self._states[macro_val] = [str(item).split(":", 1) for item in value]

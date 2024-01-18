@@ -17,17 +17,6 @@ DUT_VOLTAGE_RE = r"PPVAR_VBUS_DUT: (\d+)mV"
 class fluffy(pty_driver.ptyDriver):
     """Object to control fluffy debug board"""
 
-    def __init__(self, interface, params, board=""):
-        """Constructor.
-
-        Args:
-        interface: interface object to handle low-level communication to
-          control
-        params: dictionary of params needed
-        """
-        super(fluffy, self).__init__(interface, params)
-        self._board = board
-
     def _Get_active_chg_port(self):
         """Getter of the active charge port.
 

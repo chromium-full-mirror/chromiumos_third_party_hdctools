@@ -11,8 +11,6 @@ class Tca6416Error(hw_driver.HwDriverError):
     """Error occurred accessing TCA6416."""
 
 
-# TODO(tbroch) style guide wants these to be camel-case but can we have
-# exception as these get loaded dynamically
 class tca6416(hw_driver.HwDriver):
     """Object to access drv=tca6416 controls."""
 
@@ -26,15 +24,8 @@ class tca6416(hw_driver.HwDriver):
     PORT_VALID_MASK = 0x1
     PORT_VALID_ERR_STR = "0 | 1"
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-              control
-          params: dictionary of params needed to perform operations on ina219
-              devices.  All items are strings initially but should be cast to types
-              detailed below.
+    def _drv_init(self):
+        """Driver specific initializer.
 
         Per TCA6416 datasheet Pg8 ( SCPS153A-DECEMBER 2007-REVISED FEBUARY 2009 )
         the device does support register index caching, 'Once a new command has been
@@ -55,13 +46,12 @@ class tca6416(hw_driver.HwDriver):
         to adding this complication to manage register caching.  For that reason it
         remains off ( use_reg_cache=False )
 
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
           port: integer, either 0 || 1
           offset: integer, gpio's bit position from lsb
-        Optional Params:
         """
-        super(tca6416, self).__init__(interface, params)
+        super(tca6416, self)._drv_init()
         child = self._get_child()
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

@@ -19,32 +19,30 @@ _DUT_USB3_ON_DATA_GLOB = "/usr/share/servo/dut_usb3.yes.*"
 class servoV4(hw_driver.HwDriver):
     """Class to access drv=servo_v4 controls."""
 
-    def __init__(self, interface, params, servod):
-        """Initializer.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: {str: str} - Driver parameters from XML config.  Must include:
+        Required params:
             'usb_reset_ms': str(int) e.g. '500' - How long in milliseconds to hold
                 the DUT-facing USB hub in reset for triggering DUT re-enumeration of
                 Servo USB devices.
             'automatic_default': 'disabled' or 'enabled' - The default value for the
                 automatic USB3-to-DUT choice setting when the current Servo v4 is
                 not present in either the default-enable or default-disable lists.
-          servod: Servod that is used for cross-servo-device communication
         """
-        usb_reset_ms = int(params["usb_reset_ms"])
+        super(servoV4, self)._drv_init()
+
+        usb_reset_ms = int(self._params["usb_reset_ms"])
         if usb_reset_ms < 0:
             raise ValueError(
                 "usb_reset_ms param value must be non-negative, instead "
                 "it is: %d" % (usb_reset_ms,)
             )
 
-        default = params["automatic_default"]
+        default = self._params["automatic_default"]
         if default not in ("disabled", "enabled"):
             raise ValueError("invalid automatic_default param value: %r" % (default,))
 
-        super(servoV4, self).__init__(interface, params, servod)
         # float for time.sleep()
         self._usb_reset_seconds = usb_reset_ms / 1000.0
         # 'disabled' or 'enabled'

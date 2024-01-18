@@ -28,14 +28,9 @@ class simpleEc(ec.ec):
     # the control has actually finished executing on the ec console.
     SET_RE_DEFAULT = ">"
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: cros ec based console interface
-          params: dictionary containing data to run the command and get output
-        """
-        super(simpleEc, self).__init__(interface, params)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(simpleEc, self)._drv_init()
         self._uart_cmd = self._params["uart_cmd"]
         if self._is_get():
             # These controls are required for |get| but not for |set|.

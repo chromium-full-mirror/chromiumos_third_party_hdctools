@@ -16,23 +16,22 @@ class KbError(hw_driver.HwDriverError):
 class kb(hw_driver.HwDriver):
     """HwDriver wrapper around servod's keyboard functions."""
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params;
-            'key' attribute indicates what key should be pressed with each instance.
-            'handler' optional, indicate if default or usb keyboard handler should
-                      be used for key press execution.
-          servod: Servod that is used for cross-servo-device communication
+        Required params:
+            key: indicates what key should be pressed with each instance.
+
+        Optional params:
+            handler: indicate if default or usb keyboard handler should
+                     be used for key press execution.
         """
-        super(kb, self).__init__(interface, params.copy(), servod)
+        super(kb, self)._drv_init()
         # pylint: disable=protected-access
         self._handler = self._params.get("handler", "default")
         if self._handler not in ["default", "usb"]:
             raise KbError("Unknown keyboard handler requested: %s" % self._handler)
-        self._key = params["key"]
+        self._key = self._params["key"]
 
     def _GetKeyboard(self):
         """Get the correct keyboard to use."""

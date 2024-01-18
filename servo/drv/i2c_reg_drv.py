@@ -23,35 +23,35 @@ class i2cRegDrv(hw_driver.HwDriver):
     REQUIRED_GET_PARAMS = ["reg_len", "addr", "offset"]
     REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
-    def __init__(self, interface, params):
-        """I2cRegDrv constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: i2c supporting interface e.g. stm32i2c
-          params: params to read/write from this register. Please see above for
-                  required param values. Additional optional param options:
-                  - msb_last: if this param is present, we assume that most
-                    significant byte comes last. Default is False
-                  - no_read: if this param is present, we will not read after
-                    writing to the register. Default is False
-                  - read_only: when a register cannot be written to. This will then
-                    cause an error to be thrown when a write is attempted. Default
-                    is False
-                  - write_only: when a register cannot be read from. This will then
-                    cause an error to be thrown when a read is attempted. Default
-                    is False
+        Required params:
+            See REQUIRED_GET_PARAMS and REQUIRED_SET_PARAMS above.
+
+        Optional params:
+            msb_last: if this param is present, we assume that most
+                      significant byte comes last. Default is False
+            no_read: if this param is present, we will not read after
+                     writing to the register. Default is False
+            read_only: when a register cannot be written to. This will then
+                       cause an error to be thrown when a write is attempted.
+                       Default is False
+            write_only: when a register cannot be read from. This will then
+                        cause an error to be thrown when a read is attempted.
+                        Default is False
         """
-        super(i2cRegDrv, self).__init__(interface, params)
+        super(i2cRegDrv, self)._drv_init()
         msb_first = "msb_last" not in self._params
         self._no_read = "no_read" in self._params
         self._read_only = "read_only" in self._params
         self._write_only = "write_only" in self._params
         self._offset = int(self._params["offset"])
-        self._reg_len = int(params["reg_len"])
+        self._reg_len = int(self._params["reg_len"])
         self._dev = i2c_reg.I2cReg.get_device(
-            interface,
+            self._interface,
             addr_len=1,
-            child=int(params["addr"], 0),
+            child=int(self._params["addr"], 0),
             reg_len=self._reg_len,
             msb_first=msb_first,
             no_read=self._no_read,

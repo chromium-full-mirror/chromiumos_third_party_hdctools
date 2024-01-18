@@ -22,21 +22,13 @@ class pca9537(tca6416.tca6416):
     REG_POL = 2
     REG_DIR = 3
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-              control
-          params: dictionary of params needed to perform operations on ina219
-              devices.  All items are strings initially but should be cast to types
-              detailed below.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
-        Optional Params:
         """
-        local_params = params.copy()
-        local_params["port"] = "0"
-        super(pca9537, self).__init__(interface, local_params)
+        self._params = self._params.copy()
+        self._params["port"] = "0"
+        super(pca9537, self)._drv_init()
         self._logger.debug("")

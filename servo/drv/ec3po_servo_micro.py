@@ -48,18 +48,9 @@ class ec3poServoMicro(ec3po_servo.ec3poServo):
     call _Get_kbd_en.
     """
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: ec3po interface object to handle low-level communication to
-            control
-          params: dictionary of params needed
-        Raises:
-          ec3poServoMicroError: on init failure
-        """
-        ec3po_servo.ec3poServo.__init__(self, interface, params, board="servo_micro")
-
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ec3poServoMicro, self)._drv_init()
         self._logger.debug("")
 
     def _Get_uut_boot_mode(self):

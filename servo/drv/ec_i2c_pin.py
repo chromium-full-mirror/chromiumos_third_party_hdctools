@@ -50,9 +50,9 @@ class ecI2cPin(ec.ec):
     REQUIRED_GET_PARAMS = ["bus", "addr", "offset", "mask"]
     REQUIRED_SET_PARAMS = REQUIRED_GET_PARAMS
 
-    def __init__(self, interface, params):
-        """Setup the commands."""
-        super(ecI2cPin, self).__init__(interface, params)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ecI2cPin, self)._drv_init()
         # Set the valid input choices for this driver.
         # _choices needs to be a compiled regex
         self._choices = re.compile("^(0|1)$")

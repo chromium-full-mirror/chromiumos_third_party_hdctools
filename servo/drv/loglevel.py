@@ -13,18 +13,6 @@ import servo.servo_logging
 class loglevel(hw_driver.HwDriver):
     """Class to access loglevel controls."""
 
-    def __init__(self, interface, params, servod):
-        """Initializes the loglevel driver.
-
-        Args:
-          interface: A driver interface object, but is ignored.
-          params: A dictionary of parameters, but is ignored.
-          servod: Servod that is used for cross-servo-device communication
-        """
-        self._interface = interface
-        self._params = params
-        self._servod = servod
-
     def _set(self, new_level):
         """Changes the current loglevel of the root logger.
 
