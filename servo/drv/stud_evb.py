@@ -53,9 +53,10 @@ class studEvb(hw_driver.HwDriver):
                 self.i2c_mux = None
                 self.ioex = None
                 return
-        # TODO(b/275723447,b/281610370): Untangle this mess. Drivers should not
-        # be instantiating other drivers. Most likely these can be replaced by
-        # set/get of the appropriate control names.
+        # TODO(b/275723447): Untangle this mess. Drivers should not be
+        # instantiating other drivers.  This can be fixed either by defining
+        # and using controls for these driver classes, or by changing them
+        # to not be driver classes at all, i.e. to not inherit from HwDriver.
         self.i2c_mux = pi4msd.pi4Msd(self._interface, self._params)
         self.ioex = pi4ioe5.pi4Ioe5(self._interface, self._params)
 
