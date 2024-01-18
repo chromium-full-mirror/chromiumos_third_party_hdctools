@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 #!/bin/bash
-
-/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
-
+# TODO(b/320508176) Figure out a more targeted way to update the genesys firmware.
+#/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
+echo $(date +"%Y-%m-%d %H:%M:%S,%3N") "Starting servod"
 servod --host 0.0.0.0 $1
