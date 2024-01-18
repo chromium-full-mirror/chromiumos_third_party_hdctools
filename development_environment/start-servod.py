@@ -5,6 +5,7 @@
 
 import argparse
 from datetime import datetime
+import logging
 import os
 import signal
 import sys
@@ -155,6 +156,7 @@ def start_servod(
     if port:
         ports = {"9999": port}
 
+    logging.info("Container run")
     cont = client.containers.run(
         image,
         remove=True,
@@ -185,7 +187,18 @@ def start_servod(
                 if follow:
                     log_lines = cont.logs()
                 else:
-                    log_lines = cont.logs(tail=3)
+                    log_lines = b""
+                    i = 0
+                    # To reduce the clutter on screens print 3 lines at the start of
+                    # the servod logs ( to get a timestamp ), then three lines at the
+                    # end which is typically the most relevant information.
+                    for line in cont.logs(stream=True):
+                        i += 1
+                        if i > 3:
+                            break
+                        log_lines += line
+                    log_lines += b"\n...............\n\n"
+                    log_lines += cont.logs(tail=3)
                 print(log_lines.decode("utf-8"))
                 if port:
                     print(
@@ -301,11 +314,19 @@ def parse_args():
 
 
 def main():
+    logging.basicConfig(
+        stream=sys.stdout,
+        level=logging.INFO,
+        format="%(asctime)s %(message)s",
+    )
+    logging.info("Setup.")
     client = setup()
     args = parse_args()
-    print("Checking docker image is up to date and downloading updates as necessary.")
+    logging.info(
+        "Checking docker image is up to date and downloading updates as necessary."
+    )
     image = get_image(client, args.channel, args.allow_offline)
-    print("\nStarting the server.\n")
+    logging.info("Image check complete, Starting the server.")
     start_servod(
         client=client,
         container_name=args.container_name,
