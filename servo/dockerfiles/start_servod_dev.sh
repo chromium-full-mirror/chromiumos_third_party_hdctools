@@ -12,7 +12,7 @@ for dev in /sys/bus/usb/devices/[0-9]*; do
 	found_updatable=1
 done
 if [ $found_updatable -eq 1 ]; then
-	/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
+	/usr/bin/fwupdtool install --plugins genesys --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
 fi
 echo $(date +"%Y-%m-%d %H:%M:%S,%3N") "Starting servod"
 exec servod --host 0.0.0.0 $1
