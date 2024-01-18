@@ -51,18 +51,9 @@ class ec(pty_driver.ptyDriver):
     call _Get_kbd_en.
     """
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-            control
-          params: dictionary of params needed to perform operations on
-            devices. The only params used now is 'subtype', which is used
-            by get/set method of base class to decide how to dispatch
-            request.
-        """
-        super(ec, self).__init__(interface, params)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ec, self)._drv_init()
         self._logger.debug("")
         self._role_swap_delay = float(self._params.get("role_swap_delay", 1.0))
         # Add locals to the values dictionary.

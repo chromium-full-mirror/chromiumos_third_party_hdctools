@@ -114,6 +114,17 @@ class HwDriver:
             self._logger.debug("Valid input choices: %s", self._choices)
         self._io_type = _get_io_type(params)
         self._prefix = self._params.get("interface_prefix")
+        self._drv_init()
+
+    def _drv_init(self):
+        """Subclasses may override this to perform custom initialization.
+
+        The attributes documented in __init__() will be available when this is
+        called.
+
+        **Do** use super() to call this base class implementation, in case it
+        gains functionality in the future.
+        """
 
     def __str__(self):
         """Return a string representation of this drv."""

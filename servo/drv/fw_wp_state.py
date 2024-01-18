@@ -28,16 +28,6 @@ class FwWpStateDriver(hw_driver.HwDriver):
     _STATE_OFF = "off"
     _STATE_FOLLOW_BATTERY_PRESENT = "follow_batt_pres"
 
-    def __init__(self, interface, params, servod=None):
-        """Constructor.
-
-        Args:
-          interface: driver interface object
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(FwWpStateDriver, self).__init__(interface, params, servod)
-
     def _force_on(self):
         """Force the firmware to write-protected."""
         raise NotImplementedError()

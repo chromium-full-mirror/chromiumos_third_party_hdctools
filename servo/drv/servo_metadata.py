@@ -18,16 +18,6 @@ class metadataError(hw_driver.HwDriverError):
 class servoMetadata(hw_driver.HwDriver):
     """Class to access loglevel controls."""
 
-    def __init__(self, interface, params, servod):
-        """Initializes the ServoType driver.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: A dictionary of parameters, but is ignored.
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(servoMetadata, self).__init__(interface, params, servod)
-
     def _Get_type(self):
         """Gets the type of the servo device setups.
 

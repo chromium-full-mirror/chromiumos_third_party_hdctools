@@ -22,20 +22,13 @@ class pi4Msd(hw_driver.HwDriver):
 
     VALID_CTRL_REG_VAL = [0b101, 0b100, 0b001, 0b000]
 
-    def __init__(self, interface, params):
-        """Constructor
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-              control
-          params: dictionary of params (k=v pairs) needed to perform operations on a driver.
-            Notables for this class:
-              mux_chan: Number of PI4MSD5V954 i2c channel to be enabled/disabled
-
-            Additional param keys are described in HwDriver class constructor
+        Params:
+            mux_chan: Number of PI4MSD5V954 i2c channel to be enabled/disabled
         """
-
-        super(pi4Msd, self).__init__(interface, params)
+        super(pi4Msd, self)._drv_init()
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,
             self.PI4MSD_I2C_ADDR,

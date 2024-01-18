@@ -16,18 +16,13 @@ class Pca9546Error(hw_driver.HwDriverError):
 class pca9546(hw_driver.HwDriver):
     """Object to access drv=pca9546 controls."""
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: interface object to handle low-level communication to control
-          params: dictionary of params needed to perform operations on pca9546
-              devices.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
         """
-        super(pca9546, self).__init__(interface, params)
+        super(pca9546, self)._drv_init()
         self._logger.debug("")
         self._child = int(self._params["child"], 0)
 

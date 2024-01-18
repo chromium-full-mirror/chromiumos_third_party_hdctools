@@ -36,14 +36,9 @@ class ap(pty_driver.ptyDriver):
     # invocation to overwrite them.
     _login_info = {"username": "root", "password": "test0000"}
 
-    def __init__(self, interface, params):
-        """Initializes the AP driver.
-
-        Args:
-          interface: A driver interface object. This is the AP uart interface.
-          params: A dictionary of parameters, but is ignored.
-        """
-        super(ap, self).__init__(interface, params)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ap, self)._drv_init()
         self._logger.debug("")
 
     def _Get_password(self):

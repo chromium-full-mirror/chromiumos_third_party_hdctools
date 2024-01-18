@@ -47,15 +47,9 @@ class PowerStateDriver(hw_driver.HwDriver):
     REC_OFF = "off"
     REC_ON_FORCE_MRC = "force_mrc"
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(PowerStateDriver, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(PowerStateDriver, self)._drv_init()
         self._reset_hold_time = float(self._params.get("reset_hold", 0.5))
         self._reset_recovery_time = float(self._params.get("reset_recovery", 5.0))
 

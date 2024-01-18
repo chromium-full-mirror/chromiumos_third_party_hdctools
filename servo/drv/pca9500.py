@@ -45,27 +45,20 @@ class pca9500(hw_driver.HwDriver):
 
     _byte_addr = 0
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-           control
-          params: dict of params needed to perform operations on pca9500 devices.
-           All items are strings initially but should be cast to types detailed
-           below.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
 
-        Optional Params:
+        Optional params:
           offset: integer, left shift amount for location of gpio
           width: integer, bit width of gpio
 
         Attributes:
           _child: integer value of the 7-bit i2c child address.
         """
-        super(pca9500, self).__init__(interface, params)
+        super(pca9500, self)._drv_init()
         if "child" not in self._params:
             raise pca9500Error("getting child address")
         self._child = int(self._params["child"], 0)

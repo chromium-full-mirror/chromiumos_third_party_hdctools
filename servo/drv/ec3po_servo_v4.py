@@ -30,18 +30,9 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     CC_POLARITY = ["cc1", "cc2"]
 
-    def __init__(self, interface, params):
-        """Constructor.
-
-        Args:
-          interface: ec3po interface object to handle low-level communication to
-            control
-          params: dictionary of params needed
-        Raises:
-          ec3poServoV4Error: on init failure
-        """
-        ec3po_servo.ec3poServo.__init__(self, interface, params, board="servo_v4")
-
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(ec3poServoV4, self)._drv_init()
         self._logger.debug("")
 
     def batch_set(self, batch, index):

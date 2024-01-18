@@ -16,15 +16,9 @@ class sarienPower(power_state.PowerStateDriver):
     # Time in seconds to wait before taking action after cold reset.
     _COLD_RESET_DELAY = 5
 
-    def __init__(self, interface, params, servod):
-        """Constructor
-
-        Args:
-          interface: driver interface object
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(sarienPower, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(sarienPower, self)._drv_init()
         # Delay to allow boot into recovery before passing back control.
         self._boot_to_rec_screen_delay = float(
             self._params.get("boot_to_rec_screen_delay", 5.0)

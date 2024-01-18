@@ -34,20 +34,14 @@ class studEvb(hw_driver.HwDriver):
     LEGO_RST_PIN_PORT = 2
     LEGO_RST_PIN_IOEX_I2C_ADDR = 0x21
 
-    def __init__(self, interface, params, servod=None):
-        """Constructor
-
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-              control or the servo_server.Servod for a whole_bank subtype
-          params: dictionary of params (k=v pairs) needed to perform operations on a driver
-          servod: Servod that is used for cross-servo-device communication
+    def _drv_init(self):
+        """Driver specific initializer.
 
         Attributes:
           i2c_mux: Pi4Msd instance to talk to on-board i2c muxer
           ioex: Pi4Ioe5 instance to talk to on-board ioexpander
         """
-        super(studEvb, self).__init__(interface, params, servod)
+        super(studEvb, self)._drv_init()
         if "subtype" in self._params:
             # Below controls only use control names, so no direct access to i2c
             # interface required
@@ -58,10 +52,12 @@ class studEvb(hw_driver.HwDriver):
             ]:
                 self.i2c_mux = None
                 self.ioex = None
-                self.servod = servod
                 return
-        self.i2c_mux = pi4msd.pi4Msd(interface, params)
-        self.ioex = pi4ioe5.pi4Ioe5(interface, params)
+        # TODO(b/275723447,b/281610370): Untangle this mess. Drivers should not
+        # be instantiating other drivers. Most likely these can be replaced by
+        # set/get of the appropriate control names.
+        self.i2c_mux = pi4msd.pi4Msd(self._interface, self._params)
+        self.ioex = pi4ioe5.pi4Ioe5(self._interface, self._params)
 
     def _get(self):
         """Get level and flags of particular stud_evb pin

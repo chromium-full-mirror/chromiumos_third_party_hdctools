@@ -29,16 +29,13 @@ class kbHandlerInit(hw_driver.HwDriver):
     # pylint: disable=protected-access
     # This class needs to set the private handlers inside Servod instance
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-            -handler_type(key) type of keyboard handler to use
-          servod: Servod that is used for cross-servo-device communication
+        Optional params:
+            handler_type: type of keyboard handler to use
         """
-        super(kbHandlerInit, self).__init__(interface, params, servod)
+        super(kbHandlerInit, self)._drv_init()
         self._handler_type = self._params.get("handler_type", None)
 
     def _Get_init_usb_keyboard(self):

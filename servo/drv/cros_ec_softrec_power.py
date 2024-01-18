@@ -49,15 +49,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
     # EC console mask for enabling only command channel
     COMMAND_CHANNEL_MASK = 0x1
 
-    def __init__(self, interface, params, servod):
-        """Constructor
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(crosEcSoftrecPower, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(crosEcSoftrecPower, self)._drv_init()
         # Delay to allow boot into recovery before passing back control.
         self._boot_to_rec_screen_delay = float(
             self._params.get("boot_to_rec_screen_delay", 5.0)
@@ -74,7 +68,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._power_key = self._params.get("power_key", "short_press")
         self._usb_power_restore = (
             "yes" == self._params.get("usb_power_restore", "no")
-        ) and servod.has_control(self._USB3_PWR_EN)
+        ) and self._servod.has_control(self._USB3_PWR_EN)
         self._warm_reset_ec_jump_to_rw_delay = float(
             self._params.get("warm_reset_ec_jump_to_rw_delay", 1.2)
         )

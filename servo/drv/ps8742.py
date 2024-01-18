@@ -21,22 +21,14 @@ class ps8742(hw_driver.HwDriver):
     # USB3 line passthrough enable.
     USB_MUX_CTRL_USB3_EN = 0x20
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: i2c interface object to handle low-level communication to
-              control
-          params: dictionary of params needed to perform operations on this
-              i2c device. All items are strings initially but should be cast to
-              types detailed below.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
           offset: integer, gpio's bit position from lsb
-        Optional Params:
         """
-        super(ps8742, self).__init__(interface, params)
+        super(ps8742, self)._drv_init()
         child = self._get_child()
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

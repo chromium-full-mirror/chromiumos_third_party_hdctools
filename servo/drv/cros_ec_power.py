@@ -15,15 +15,9 @@ POWER_OFF_POLLING_INTERVAL_S = 0.5
 class CrosECPower(power_state.PowerStateDriver):
     """Driver for power_state for boards support EC command."""
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(CrosECPower, self).__init__(interface, params, servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(CrosECPower, self)._drv_init()
         self._apreset_ec_commands = self._params.get("apreset_ec_commands", "")
         self._shutdown_ec_commands = self._params.get(
             "shutdown_ec_commands", "apshutdown"

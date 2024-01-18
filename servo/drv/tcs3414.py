@@ -77,8 +77,6 @@ tcs3414_devices = {}
 class Tcs3414Error(hw_driver.HwDriverError):
     """Error occurred accessing TCS3414."""
 
-    pass
-
 
 class Tcs3414Device:
     """Define a TCS3414 device shared among many tcs3414 drivers.
@@ -105,24 +103,15 @@ class tcs3414(hw_driver.HwDriver):
       hsv = drv.get()
     """
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: interface object to handle low-level communication.
-          params: dictionary of params needed to perform operations on the device.
-              All items are strings initially but should be cast to types detailed
-              below.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
-
-        Optional Params:
-          N/A
         """
-        super(tcs3414, self).__init__(interface, params)
+        super(tcs3414, self)._drv_init()
 
-        device_key = (interface, self._get_child())
+        device_key = (self._interface, self._get_child())
         if device_key not in tcs3414_devices:
             tcs3414_devices[device_key] = Tcs3414Device()
 

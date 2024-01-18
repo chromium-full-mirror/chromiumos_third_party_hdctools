@@ -40,23 +40,15 @@ class Ad5248Error(hw_driver.HwDriverError):
 class ad5248(hw_driver.HwDriver):
     """Object to access drv=ad5248 controls."""
 
-    def __init__(self, interface, params):
-        """Constructor.
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-              control
-          params: dictionary of params needed to perform operations on ad5248
-              devices.  All items are strings initially but should be cast to types
-              detailed below.
-
-        Mandatory Params:
+        Required params:
           child: integer, 7-bit i2c child address
           port: integer, either 0 || 1
           subtype: string, supporting 'rdac', 'r2p5k', 'r10k', 'r50k', and 'r100k'
-        Optional Params:
         """
-        super(ad5248, self).__init__(interface, params)
+        super(ad5248, self)._drv_init()
         self._child = self._get_child()
         self._port = self._get_port()
         self._subtype = self._get_subtype()

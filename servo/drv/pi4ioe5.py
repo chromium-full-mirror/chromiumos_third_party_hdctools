@@ -28,22 +28,16 @@ class pi4Ioe5(hw_driver.HwDriver):
     PINS_PER_PORT = 8
     PULLUP_VALID_ERR_STR = "-1, 0 or 1"
 
-    def __init__(self, interface, params):
-        """Constructor
+    def _drv_init(self):
+        """Driver specific initializer.
 
-        Args:
-          interface: FTDI interface object to handle low-level communication to
-              control
-          params: dictionary of params (k=v pairs) needed to perform operations on a driver.
-            Notables for this class:
-              child: integer, 7-bit i2c child address
-              port: integer in [0 .. 4] range
-              offset: integer, gpio's bit position from lsb
-
-            Additional param keys are described in HwDriver class constructor
+        Params:
+            child: integer, 7-bit i2c child address
+            port: integer in [0 .. 4] range
+            offset: integer, gpio's bit position from lsb
         """
 
-        super(pi4Ioe5, self).__init__(interface, params)
+        super(pi4Ioe5, self)._drv_init()
         child = self._get_child()  # i2c address of ioex
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

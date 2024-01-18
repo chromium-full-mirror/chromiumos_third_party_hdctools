@@ -26,10 +26,6 @@ class revenPower(power_state.PowerStateDriver):
     _DEFAULT_POWER_ON_PRESS_LENGTH_S = 0.3
     _DEFAULT_RESET_TIME_BUFFER_S = 3
 
-    def __init__(self, interface, params, servod):
-        """Initialize driver by initializing HwDriver."""
-        super(revenPower, self).__init__(interface, params, servod)
-
     def _Get_power_off_time(self):
         """Get value of power_off_time.
 

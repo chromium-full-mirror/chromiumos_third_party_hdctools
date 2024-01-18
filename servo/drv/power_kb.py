@@ -17,15 +17,9 @@ class PowerKbError(hw_driver.HwDriverError):
 class powerKb(hw_driver.HwDriver):
     """HwDriver wrapper around servod's power key functions."""
 
-    def __init__(self, interface, params, servod):
-        """Constructor.
-
-        Args:
-          interface: hardware interface for low-level communication; ignored here
-          params: dictionary of params;
-          servod: Servod that is used for cross-servo-device communication
-        """
-        super(powerKb, self).__init__(interface, params.copy(), servod)
+    def _drv_init(self):
+        """Driver specific initializer."""
+        super(powerKb, self)._drv_init()
         # pylint: disable=protected-access
         self._handler = keyboard_handlers._BaseHandler(self._servod)
 
