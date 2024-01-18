@@ -60,8 +60,6 @@ from servo.drv import pca95xx
 from servo.drv import pca9500
 from servo.drv import pca9537
 from servo.drv import pca9546
-from servo.drv import pi4ioe5
-from servo.drv import pi4msd
 from servo.drv import power_kb
 from servo.drv import ps8742
 from servo.drv import pty_driver
@@ -78,7 +76,6 @@ from servo.drv import servo_watchdog
 from servo.drv import sflag
 from servo.drv import simple_ec
 from servo.drv import sleep
-from servo.drv import stud_evb
 from servo.drv import sx1505
 from servo.drv import sx1506
 from servo.drv import sx1506_v4
