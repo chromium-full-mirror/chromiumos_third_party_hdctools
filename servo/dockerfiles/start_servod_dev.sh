@@ -1,8 +1,8 @@
+#!/bin/bash
 # Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-#!/bin/bash
 found_updatable=0
 for dev in /sys/bus/usb/devices/[0-9]*; do
 	grep -q 05e3 $dev/idVendor 2>/dev/null && \
