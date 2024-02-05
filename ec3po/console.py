@@ -1233,7 +1233,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                         chunk,
                                         prefix=TOKEN_PREFIX,
                                     )
-
+                                    message = message.replace(b"\n", b"\r\n")
                                     console.HandleDebugPipeData(
                                         message,
                                         controller_connected,
