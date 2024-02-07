@@ -75,8 +75,7 @@
     <doc>FASTBOOT_DUTHUB_MUX_SEL: Select DUT USB routed as device
     to host, or as host to duthub</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="FASTBOOT_DUTHUB_MUX_SEL" map="onoff_fastboot_duthub_sel"
-     init="host"></params>
+     name="FASTBOOT_DUTHUB_MUX_SEL" map="onoff_fastboot_duthub_sel"></params>
   </control>
   <control>
     <name>sbu_mux_enable</name>
@@ -88,7 +87,7 @@
     <name>dut_usb_mux_enable</name>
     <doc>FASTBOOT_DUTHUB_MUX_EN_L: enable DUT's USB interface</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="FASTBOOT_DUTHUB_MUX_EN_L" map="onoff_i" init="on"></params>
+     name="FASTBOOT_DUTHUB_MUX_EN_L" map="onoff_i"></params>
   </control>
   <control>
     <name>dut_hub_usb_reset</name>
@@ -136,61 +135,167 @@
     <params interface="23" drv="tca6416" child="0x21" port="0"
     offset="2" map="onoff"></params>
   </control>
+
+  <!-- USB ports settings -->
   <control>
     <name>usb3_mux_sel</name>
-    <alias>usb_mux_sel1,image_usbkey_mux,top_usbkey_mux</alias>
+    <alias>top_usb_mux_sel,usb_mux_sel1,image_usbkey_mux,top_usbkey_mux</alias>
     <doc>(top) muxable usb port mux. Designated for recovery images
       in the lab.</doc>
     <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="3" map="usbkey" init="dut_sees_usbkey"></params>
+    offset="3" map="usbkey"></params>
+  </control>
+  <control>
+    <name>usb3_mux_sel_at_poweron</name>
+    <alias>top_usb_mux_sel_at_poweron</alias>
+    <doc>Read/set how top usb is muxed at servo poweron.
+    Use "servo_sees_usbkey" or "dut_sees_usbkey</doc>
+    <params cmd="get" uart_cmd="poweron_conf top_usb"
+    regex="mux_sel:(servo_sees_usbkey|dut_sees_usbkey)" group="1" interface="26"
+    drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf top_usb mux_sel" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(servo_sees_usbkey|dut_sees_usbkey)$"/>
   </control>
   <control>
     <name>usb3_mux_en</name>
-    <alias>usb_mux_oe1</alias>
+    <alias>top_usb_mux_en,usb_mux_oe1</alias>
     <doc>USB3.0_TYPEA_MUX_EN_L</doc>
     <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="4" map="onoff_i" init="on"></params>
+    offset="4" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>usb3_mux_en_at_poweron</name>
+    <alias>top_usb_mux_en_at_poweron</alias>
+    <doc>Read/set top usb muxer eneblement at servo poweron. Use "on" or "off"</doc>
+    <params cmd="get" uart_cmd="poweron_conf top_usb" regex="mux_en:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf top_usb mux_en" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
   </control>
   <control>
     <name>usb3_pwr_en</name>
-    <alias>prtctl4_pwren,image_usbkey_pwr,top_usbkey_pwr</alias>
+    <alias>top_usb_pwr_en,prtctl4_pwren,image_usbkey_pwr,top_usbkey_pwr</alias>
     <doc>(top) muxable usb port power enable. Designated for recovery images
       in the lab.</doc>
     <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="5" map="onoff" init="on"></params>
+    offset="5" map="onoff"></params>
   </control>
   <control>
-    <name>uservo_pwr_en</name>
-    <doc>USERVO_POWER_EN</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="7" map="onoff" init="on"></params>
+    <name>usb3_pwr_en_at_poweron</name>
+    <alias>top_usb_pwr_en_at_poweron</alias>
+    <doc>Read/set how top usb port power is set at servo poweron.
+    Use "on" or "off"</doc>
+    <params cmd="get" uart_cmd="poweron_conf top_usb" regex="pwr_en:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf top_usb pwr_en" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
   </control>
   <control>
     <name>uservo_fastboot_mux_sel</name>
     <doc>USERVO_FASTBOOT_MUX_SEL</doc>
     <params interface="23" drv="tca6416" child="0x21" port="1"
-    offset="0" map="onoff_uservo_fastboot_sel" init="uservo">
+    offset="0" map="onoff_uservo_fastboot_sel">
     </params>
   </control>
   <control>
-    <name>dut_eth_pwr_en</name>
-    <doc>Power enable for DUT-facing ethernet dongle.</doc>
-    <params interface="23" drv="tca6424" child="0x23" port="0"
-    offset="1" map="onoff" init="on"></params>
+    <name>uservo_fastboot_mux_sel_at_poweron</name>
+    <alias>uservo_usb_mux_sel_at_poweron</alias>
+    <doc>Read/set how uservo usb is muxed at servo poweron.
+    Use "uservo" or "fastboot</doc>
+    <params cmd="get" uart_cmd="poweron_conf uservo_usb"
+    regex="mux_sel:(uservo|fastboot)" group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf uservo_usb mux_sel" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(uservo|fastboot)$"/>
+  </control>
+    <control>
+    <name>uservo_mux_en</name>
+    <alias>uservo_usb_mux_en</alias>
+    <doc>FASTBOOT_DUTHUB_MUX_EN_L</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="FASTBOOT_DUTHUB_MUX_EN_L" map="onoff_i"></params>
   </control>
   <control>
-    <name>aux_usbkey_pwr</name>
-    <doc>(bottom) muxable usb port power enable.</doc>
-    <alias>bottom_usbkey_pwr</alias>
-    <params interface="23" drv="tca6416" child="0x21" port="1"
-    offset="1" map="onoff" init="on"></params>
+    <name>uservo_mux_en_at_poweron</name>
+    <alias>uservo_usb_mux_en_at_poweron</alias>
+    <doc>Read/set uservo usb muxer eneblement at servo poweron. Use "on" or "off"</doc>
+    <params cmd="get" uart_cmd="poweron_conf uservo_usb" regex="mux_en:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf uservo_usb mux_en" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
   </control>
   <control>
-    <name>aux_usbkey_mux</name>
+    <name>uservo_pwr_en</name>
+    <doc>USERVO_POWER_EN</doc>
+    <params interface="23" drv="tca6416" child="0x21" port="0"
+    offset="7" map="onoff"></params>
+  </control>
+  <control>
+    <name>uservo_pwr_en_at_poweron</name>
+    <alias>uservo_usb_pwr_en_at_poweron</alias>
+    <doc>Read/set how uservo usb port power is initialized at servo poweron.
+    Use "on" or "off" </doc>
+    <params cmd="get" uart_cmd="poweron_conf uservo_usb" regex="pwr_en:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf uservo_usb pwr_en" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
+  </control>
+    <control>
+    <name>aux_usbkey_mux_sel</name>
+    <alias>bottom_usb_mux_sel,aux_usbkey_mux,bottom_usbkey_mux</alias>
     <doc>(bottom) muxable usb port mux.</doc>
-    <alias>bottom_usbkey_mux</alias>
     <params interface="23" drv="tca6416" child="0x21" port="1"
-    offset="2" map="usbkey" init="dut_sees_usbkey"></params>
+    offset="2" map="usbkey"></params>
+  </control>
+  <control>
+    <name>aux_usbkey_mux_sel_at_poweron</name>
+    <alias>bottom_usb_mux_sel_at_poweron,bottom_usbkey_mux_at_poweron</alias>
+    <doc>Read/set how bottom usb is muxed at servo poweron.
+    Use "servo_sees_usbkey" or "dut_sees_usbkey.</doc>
+    <params cmd="get" uart_cmd="poweron_conf bottom_usb"
+    regex="mux_sel:(servo_sees_usbkey|dut_sees_usbkey)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf bottom_usb mux_sel" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(servo_sees_usbkey|dut_sees_usbkey)$"/>
+  </control>
+    <control>
+    <name>aux_usbkey_mux_en</name>
+    <alias>bottom_usb_mux_en</alias>
+    <doc>USB3_A1_MUX_EN_L</doc>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB3_A1_MUX_EN_L" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>aux_usbkey_mux_en_at_poweron</name>
+    <alias>bottom_usb_mux_en_at_poweron</alias>
+    <doc>Read/set top usb muxer eneblement at servo poweron. Use "on" or "off"</doc>
+    <params cmd="get" uart_cmd="poweron_conf bottom_usb" regex="mux_en:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf bottom_usb mux_en" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
+  </control>
+  <control>
+    <name>aux_usbkey_pwr_en</name>
+    <alias>bottom_usb_pwr_en,aux_usbkey_pwr,bottom_usbkey_pwr</alias>
+    <doc>(bottom) muxable usb port power enable.</doc>
+    <params interface="23" drv="tca6416" child="0x21" port="1"
+    offset="1" map="onoff"></params>
+  </control>
+  <control>
+    <name>aux_usbkey_pwr_en_at_poweron</name>
+    <alias>bottom_usb_pwr_en_at_poweron</alias>
+    <doc>Read/set how bottom usb port power is initialized at servo poweron.
+    Use "on" or "off" </doc>
+    <params cmd="get" uart_cmd="poweron_conf bottom_usb" regex="pwr_en:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf bottom_usb pwr_en" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
+  </control>
+
+  <control>
+    <name>servo_poweron_conf_default</name>
+    <doc>Set all servo poweron config to default values." </doc>
+    <params uart_cmd="poweron_conf default" interface="26" regex="(brought to default)"
+    group="0" drv="ec3po_servo"/>
   </control>
 
   <control>
@@ -200,6 +305,13 @@
       hub_ports="2" usb_power_off_delay="2" hub_on_port="True"
       error_amendment="Make sure you are using the usb port next to the
       ethernet adapter."></params>
+  </control>
+
+  <control>
+    <name>dut_eth_pwr_en</name>
+    <doc>Power enable for DUT-facing ethernet dongle.</doc>
+    <params interface="23" drv="tca6424" child="0x23" port="0"
+    offset="1" map="onoff" init="on"></params>
   </control>
 
   <control>
@@ -243,6 +355,7 @@
     <params cmd="get" uart_cmd="adc" regex="SBU2_DET = (\d+)" interface="26"
       drv="simple_ec" group="1"></params>
   </control>
+
   <control>
     <name>macaddr</name>
     <doc>cached mac address for NIC on servo v4</doc>
@@ -453,7 +566,15 @@
     <name>servo_dts_mode</name>
     <doc>Enable/disable DTS mode on servo_v4p1</doc>
     <params subtype="servo_v4_dts_mode" interface="26" drv="ec3po_servo_v4"
-    input_type="str" init="on"></params>
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>servo_dts_mode_at_poweron</name>
+    <doc>Enable/disable DTS mode on servo_v4p1 poweron. Use "on", "off".</doc>
+    <params cmd="get" uart_cmd="poweron_conf cc" regex="dts:(on|off)"
+    group="1" interface="26" drv="ec3po_servo"/>
+    <params cmd="set" uart_cmd="poweron_conf cc dts" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
   </control>
   <control>
     <name>ada_srccaps</name>
