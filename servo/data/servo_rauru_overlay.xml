@@ -1,0 +1,56 @@
+<root>
+  <!-- ******** Includes ******** -->
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>ti50.xml</name>
+  </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
+    <name>ec_efs2.xml</name>
+  </include>
+  <include>
+    <name>dev_mode_to_ap_download_reconf.xml</name>
+  </include>
+  <!-- ******** Maps ******** -->
+
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok=""
+      shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
+      warm_reset_can_hold_ap="yes"
+      reset_hold="1" />
+  </control>
+  <control>
+    <!-- Do not use PP1800 (SPI2_VREF) to control WP, because SPI2_VREF is
+    used as AP SPI programming, and the on state will cause leakage when AP off.
+    Use CCD to control WP instead. -->
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
+    init="force_off"/>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
+      set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
+      spi2_vref:pp1800"
+      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
+      warm_reset:off"
+      />
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="it8xxx2"/>
+  </control>
+</root>
