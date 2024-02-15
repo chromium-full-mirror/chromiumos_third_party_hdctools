@@ -28,6 +28,7 @@ Current status: **Dogfood**
     - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts-)
     - [I need to run servod when not connected to the internet.](#i-need-to-run-servod-when-not-connected-to-the-internet)
     - [dut-console is failing with an error.](#dut-console-is-failing-with-an-error)
+    - [start-servod sent me here after authenticating with the registry failed](#start_servod-sent-me-here-after-authenticating-with-the-registry-failed)
 
 ## Overview
 
@@ -522,5 +523,17 @@ As an example:
 ```text
 start-servod -p 9999
 ```
+### start-servod sent me here after authenticating with the registry failed
 
+There should be no authentication issues because our registry is
+configured to be wide open.
 
+If your docker install is set up to authenticate with us-docker.pkg.dev
+using gcloud, and the gcloud credentials are broken for whatever reason,
+docker fails to authenticate and doesn't retry unauthenticated.  To see
+if you might be impacted, check if `$HOME/.docker/config.json` contains
+a line stating `"us-docker.pkg.dev": "gcloud"`. If so, docker will call
+into the gcloud tool to authenticate. Try running `gcloud auth login`
+to refresh the credentials and try again.
+
+If this didn't help, please file an issue.
