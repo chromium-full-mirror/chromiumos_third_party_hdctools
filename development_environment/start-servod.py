@@ -99,7 +99,22 @@ def get_image(client, channel, allow_offline):
         for unused_update in resp:
             print("+", end="", flush=True)
         print("", flush=True)
-    except (docker.errors.APIError, docker.errors.DockerException):
+    except docker.errors.APIError as e:
+        if (
+            e.is_server_error()
+            and e.response is not None
+            and str(e.response.content).find("unauthorized") > 0
+        ):
+            print("Authentication with docker registry failed. This should not happen.")
+            print(
+                "Please check https://chromium.googlesource.com/chromiumos/third_party/"
+                "hdctools/+/main/docs/servod_outside_chroot.md#faq"
+            )
+            sys.exit(1)
+        if not allow_offline:
+            raise
+        print("Failed to check for new version, offline mode specified.")
+    except docker.errors.DockerException:
         if not allow_offline:
             raise
         print("Failed to check for new version, offline mode specified.")
