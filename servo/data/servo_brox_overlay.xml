@@ -40,14 +40,12 @@
           <item key="1">
             <item>cold_reset:on</item>
             <item>servo_spi_programming:on</item>
-            <item>spi2_vref:pp3300</item>
             <item>spi2_buf_en:on</item>
             <item>spi2_buf_on_flex_en:on</item>
           </item>
           <item key="0">
             <item>spi2_buf_on_flex_en:off</item>
             <item>spi2_buf_en:off</item>
-            <item>spi2_vref:off</item>
             <item>servo_spi_programming:off</item>
             <item>cold_reset:off</item>
           </item>
@@ -69,9 +67,9 @@
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
-    device, and the AP SPI Flash is 3.3V, so set fw_wp_vref to
-    match. -->
-    <params clobber_ok="patch" fw_wp_vref="pp3300" />
+    device. Disable the SPI2_VREF output load switch to avoid pushing power
+    into the DUT. -->
+    <params clobber_ok="patch" fw_wp_vref="off" />
   </control>
 
   <control>
@@ -108,6 +106,13 @@
     <alias>fw_up</alias>
     <doc>Enable servo connection to the I2C programming interface on ITE.</doc>
     <params clobber_ok="patch" od="PP" map="onoff" init="off" />
+  </control>
+
+  <control>
+    <name>spi2_vref</name>
+    <!-- Disable the SPI2_VREF output load switch to avoid pushing power
+    into the DUT. -->
+    <params clobber_ok="patch" init="off" />
   </control>
 
   <control>
