@@ -253,9 +253,10 @@ class DutPower:
         args = parser.parse_args(cmdline)
         # Save all logic
         if args.save_all:
-            args.save_logs = (
-                args.save_raw_data
-            ) = args.save_summary = args.save_json = True
+            args.save_logs = True
+            args.save_raw_data = True
+            args.save_summary = True
+            args.save_json = True
         return args
 
     def _setup_logging(self, args):

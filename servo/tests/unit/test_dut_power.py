@@ -462,9 +462,11 @@ class TestDutPower(unittest.TestCase):
         dp.tmplogfile = tempfile.NamedTemporaryFile(mode="w+")
         dp.http_server_handler = http_server.HttpRequestHandler(None)
         args = argparse.Namespace()
-        args.save_summary = (
-            args.save_raw_data
-        ) = args.save_json = args.save_logs = args.visualization = True
+        args.save_summary = True
+        args.save_raw_data = True
+        args.save_json = True
+        args.save_logs = True
+        args.visualization = True
         args.outdir = "dir"
         args.message = "msg"
         pm = measure_power.PowerMeasurement()
