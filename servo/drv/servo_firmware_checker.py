@@ -50,9 +50,16 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         self._fw_channel_cmd = "%s_firmware_channel" % (self._board,)
         self._always_warn = WARN_ONLY_ON_UNKNOWN_ENV not in os.environ
 
-    def _fetch_versions(self) -> tuple[version, version]:
-        current = version.parse(self._servod_get(self._current_fw_cmd))
-        latest = version.parse(self._servod_get(self._latest_fw_cmd))
+    def _separate_dev_ver(self, firmware_version_string: str) -> str:
+        return firmware_version_string.split("_")[-1].split("-")[0]
+
+    def _fetch_versions(self) -> tuple[version.Version, version.Version]:
+        current_raw = self._servod_get(self._current_fw_cmd)
+        current_ver = self._separate_dev_ver(current_raw)
+        current = version.parse(current_ver)
+        latest_raw = self._servod_get(self._latest_fw_cmd)
+        latest_ver = self._separate_dev_ver(latest_raw)
+        latest = version.parse(latest_ver)
         return current, latest
 
     def _get(self) -> int:
