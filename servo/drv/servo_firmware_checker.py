@@ -10,6 +10,7 @@ import re
 
 from packaging import version
 
+from servo import sversion_util
 from servo.drv import hw_driver
 
 
@@ -54,10 +55,10 @@ class servoFirmwareChecker(hw_driver.HwDriver):
 
     def _fetch_versions(self) -> tuple[version.Version, version.Version]:
         current_raw = self._servod_get(self._current_fw_cmd)
-        current_ver = self._separate_dev_ver(current_raw)
+        current_ver = sversion_util.normalize_version(current_raw)
         current = version.parse(current_ver)
         latest_raw = self._servod_get(self._latest_fw_cmd)
-        latest_ver = self._separate_dev_ver(latest_raw)
+        latest_ver = sversion_util.normalize_version(latest_raw)
         latest = version.parse(latest_ver)
         return current, latest
 

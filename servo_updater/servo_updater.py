@@ -22,6 +22,7 @@ from typing import Tuple
 from packaging import version
 
 from servo import servo_parsing
+from servo import sversion_util
 from servo_updater.ecusb import tiny_servod
 import servo_updater.ecusb.tiny_servo_common as c
 import servo_updater.fw_update as fw_update
@@ -369,29 +370,6 @@ def get_files_and_version(cname, fname=None, channel=DEFAULT_CHANNEL):
     return cname, fname, binvers
 
 
-def _normalize_version(fwversion: str) -> str:
-    """Simplify firmware version string
-
-    Takes a full firmware version string and return out the
-    major.minor.build triplet for consumption by python-packaging.
-
-    Args:
-        fwversion: A firmware version string of the form
-                   "{device_name}_v{major.minor.build}±{githash}".
-                   {device_name} may contain an arbitrary number of
-                   underscores (notable user of that quirk:
-                   servo_v4p1)
-
-    Returns:
-        string containing "v{major.minor.build}"
-
-    """
-    matches = re.findall(r"^[-0-9a-z_]+_v([0-9.]+)[-+][0-9a-f]+$", fwversion)
-    if len(matches) != 1:
-        raise ValueError(f"firmware version {fwversion} unsupported")
-    return matches[0]
-
-
 def update(dev, serialno, args, devmap):
     """Update |dev|'s firmware
 
@@ -419,8 +397,8 @@ def update(dev, serialno, args, devmap):
                 select(tinys, "ro")
             return
         if not args.allow_rollback and version.parse(
-            _normalize_version(vers)
-        ) > version.parse(_normalize_version(newvers)):
+            sversion_util.normalize_version(vers)
+        ) > version.parse(sversion_util.normalize_version(newvers)):
             print("Installed version is newer than candidate, skipping.")
             if args.reboot:
                 select(tinys, "ro")
