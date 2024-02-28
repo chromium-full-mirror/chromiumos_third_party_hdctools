@@ -4,8 +4,6 @@
 
 """Allow creation of uart/console interface via stm32 usb endpoint."""
 
-from __future__ import print_function
-
 import os
 import select
 import sys

@@ -4,9 +4,6 @@
 # found in the LICENSE file.
 
 # Upload firmware over USB
-# Note: This is a py2/3 compatible file.
-
-from __future__ import print_function
 
 import argparse
 import json
