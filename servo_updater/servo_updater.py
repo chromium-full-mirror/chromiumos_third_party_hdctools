@@ -3,11 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Note: This is a py2/3 compatible file.
-
 """USB updater tool for servo and similar boards."""
-
-from __future__ import print_function
 
 import argparse
 import json
