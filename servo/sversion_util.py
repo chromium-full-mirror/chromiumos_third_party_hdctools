@@ -4,6 +4,9 @@
 
 """Use the generated sversion.py info to provide version strings."""
 
+import re
+
+
 UNKNOWN_VALUE = "unknown"
 
 try:
@@ -47,3 +50,26 @@ def extended_version():
         vdict["ghash"],
         vdict["branch"],
     )
+
+
+def normalize_version(fwversion: str) -> str:
+    """Simplify firmware version string
+
+    Takes a full firmware version string and return out the
+    major.minor.build triplet for consumption by python-packaging.
+
+    Args:
+        fwversion: A firmware version string of the form
+                   "{device_name}_v{major.minor.build}±{githash}".
+                   {device_name} may contain an arbitrary number of
+                   underscores (notable user of that quirk:
+                   servo_v4p1)
+
+    Returns:
+        string containing "v{major.minor.build}"
+
+    """
+    matches = re.findall(r"^[-0-9a-z_]+_v([0-9.]+)[-+][0-9a-f]+$", fwversion)
+    if len(matches) != 1:
+        raise ValueError(f"firmware version {fwversion} unsupported")
+    return matches[0]
