@@ -49,38 +49,51 @@ class sx1506(hw_driver.HwDriver):
             no_read=False,
             use_reg_cache=False,
         )
-        # Remember what GPIOs we have set.
-        global reg_cache
-        self._reg_cache = reg_cache
-        self._cacheindex = (self._interface, child)
-        # Cache REG_DIR
-        dir = self._reg_cache.get((self._cacheindex, self.REG_DIR), self.INIT_DIR)
-        self._reg_cache[(self._cacheindex, self.REG_DIR)] = dir
-        self.write16(self.REG_DIR, dir)
+        try:
+            # Remember what GPIOs we have set.
+            global reg_cache
+            self._reg_cache = reg_cache
+            self._cacheindex = (self._interface, child)
+            # Cache REG_DIR
+            dir = self._reg_cache.get((self._cacheindex, self.REG_DIR), self.INIT_DIR)
+            self._reg_cache[(self._cacheindex, self.REG_DIR)] = dir
+            self.write16(self.REG_DIR, dir, auto_release=False)
 
-        # Cache REG_DATA
-        outputs = self._reg_cache.get((self._cacheindex, self.REG_DATA), self.INIT_DATA)
-        self._reg_cache[(self._cacheindex, self.REG_DATA)] = outputs
-        self.write16(self.REG_DATA, outputs)
+            # Cache REG_DATA
+            outputs = self._reg_cache.get(
+                (self._cacheindex, self.REG_DATA), self.INIT_DATA
+            )
+            self._reg_cache[(self._cacheindex, self.REG_DATA)] = outputs
+            self.write16(self.REG_DATA, outputs, auto_release=False)
 
-        # Initialize pullup
-        if self._io_type == "PU":
-            (offset, mask) = self._get_offset_mask()
+            # Initialize pullup
+            if self._io_type == "PU":
+                (offset, mask) = self._get_offset_mask()
 
-            pu_reg = self.read16(self.REG_PU)
-            pu_reg = pu_reg | mask
-            self.write16(self.REG_PU, pu_reg)
+                pu_reg = self.read16(self.REG_PU, auto_release=False)
+                pu_reg = pu_reg | mask
+                self.write16(self.REG_PU, pu_reg, auto_release=False)
+        finally:
+            self._i2c_obj.release()
 
-    def read16(self, reg):
-        value_low = self._i2c_obj._read_reg(reg + 1)
-        value_high = self._i2c_obj._read_reg(reg)
+    def read16(self, reg, auto_release=True):
+        try:
+            value_low = self._i2c_obj._read_reg(reg + 1, auto_release=False)
+            value_high = self._i2c_obj._read_reg(reg, auto_release=False)
 
-        value = value_low | (value_high << 8)
-        return value
+            value = value_low | (value_high << 8)
+            return value
+        finally:
+            if auto_release:
+                self._i2c_obj.release()
 
-    def write16(self, reg, val):
-        self._i2c_obj._write_reg(reg + 1, (val & 0xFF))
-        self._i2c_obj._write_reg(reg, (val >> 8))
+    def write16(self, reg, val, auto_release=True):
+        try:
+            self._i2c_obj._write_reg(reg + 1, (val & 0xFF), auto_release=False)
+            self._i2c_obj._write_reg(reg, (val >> 8), auto_release=False)
+        finally:
+            if auto_release:
+                self._i2c_obj.release()
 
     def _get(self):
         """Get gpio value.
@@ -112,43 +125,46 @@ class sx1506(hw_driver.HwDriver):
           Sx1506Error: If width of open drain driver is != 1 or open drain type is
             not recognized.
         """
-        self._logger.debug("sx1506 set %s" % fmt_value)
-        (_, mask) = self._get_offset_mask()
-        if mask is None:
-            raise Sx1506Error("Unable to determine mask.  Is offset declared?")
+        try:
+            self._logger.debug("sx1506 set %s" % fmt_value)
+            (_, mask) = self._get_offset_mask()
+            if mask is None:
+                raise Sx1506Error("Unable to determine mask.  Is offset declared?")
 
-        change_to_input = False
-        if self._io_type == "PU" and fmt_value == 1:
-            self._logger.debug("Set to input because its io type is PU")
-            change_to_input = True
+            change_to_input = False
+            if self._io_type == "PU" and fmt_value == 1:
+                self._logger.debug("Set to input because its io type is PU")
+                change_to_input = True
 
-        # output register handling
-        if not change_to_input:
-            hw_value = 0
-            if fmt_value:
-                hw_value = self._create_hw_value(fmt_value)
+            # output register handling
+            if not change_to_input:
+                hw_value = 0
+                if fmt_value:
+                    hw_value = self._create_hw_value(fmt_value)
 
-            current_out_reg = self._reg_cache[(self._cacheindex, self.REG_DATA)]
-            new_out_reg = hw_value | (current_out_reg & ~mask)
-            self._reg_cache[(self._cacheindex, self.REG_DATA)] = new_out_reg
-            self.write16(self.REG_DATA, new_out_reg)
+                current_out_reg = self._reg_cache[(self._cacheindex, self.REG_DATA)]
+                new_out_reg = hw_value | (current_out_reg & ~mask)
+                self._reg_cache[(self._cacheindex, self.REG_DATA)] = new_out_reg
+                self.write16(self.REG_DATA, new_out_reg, auto_release=False)
 
-        current_dir_reg = self._reg_cache[(self._cacheindex, self.REG_DIR)]
-        actual_dir_reg = self.read16(self.REG_DIR)
-        if current_dir_reg != actual_dir_reg:
-            self._logger.error(
-                "sx1506 REG_DIR should be 0x%x, actually is 0x%x!"
-                % (current_dir_reg, actual_dir_reg)
-            )
-            current_dir_reg = actual_dir_reg
-        if change_to_input:
-            new_dir_reg = current_dir_reg | mask
-        else:
-            new_dir_reg = current_dir_reg & ~mask
+            current_dir_reg = self._reg_cache[(self._cacheindex, self.REG_DIR)]
+            actual_dir_reg = self.read16(self.REG_DIR, auto_release=False)
+            if current_dir_reg != actual_dir_reg:
+                self._logger.error(
+                    "sx1506 REG_DIR should be 0x%x, actually is 0x%x!"
+                    % (current_dir_reg, actual_dir_reg)
+                )
+                current_dir_reg = actual_dir_reg
+            if change_to_input:
+                new_dir_reg = current_dir_reg | mask
+            else:
+                new_dir_reg = current_dir_reg & ~mask
 
-        if new_dir_reg != current_dir_reg:
-            self._reg_cache[(self._cacheindex, self.REG_DIR)] = new_dir_reg
-            self.write16(self.REG_DIR, new_dir_reg)
+            if new_dir_reg != current_dir_reg:
+                self._reg_cache[(self._cacheindex, self.REG_DIR)] = new_dir_reg
+                self.write16(self.REG_DIR, new_dir_reg, auto_release=False)
+        finally:
+            self._i2c_obj.release()
 
     def _get_child(self):
         """Check and return needed params to call driver.

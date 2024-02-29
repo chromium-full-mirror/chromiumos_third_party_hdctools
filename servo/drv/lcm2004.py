@@ -112,29 +112,39 @@ class lcm2004(hw_driver.HwDriver):
         The initial process refers the figure 24
             in the page 46 of HD44780U datasheet.
         """
-        # start in 8bit mode, try to set 4 bit mode
-        self._write_expander(LCD_DATA1_AS_INIT)
+        try:
+            # start in 8bit mode, try to set 4 bit mode
+            self._write_expander(LCD_DATA1_AS_INIT, auto_release=False)
 
-        # second try
-        self._write_expander(LCD_DATA1_AS_INIT)
+            # second try
+            self._write_expander(LCD_DATA1_AS_INIT, auto_release=False)
 
-        # set to 4-bit interface
-        self._write_expander(LCD_DATA2_AS_INIT)
+            # set to 4-bit interface
+            self._write_expander(LCD_DATA2_AS_INIT, auto_release=False)
 
-        # function set
-        self._command(LCD_FUNCTION_SET | LCD_4BIT_MODE | LCD_2LINE | LCD_5x8_DOTS)
+            # function set
+            self._command(
+                LCD_FUNCTION_SET | LCD_4BIT_MODE | LCD_2LINE | LCD_5x8_DOTS,
+                auto_release=False,
+            )
 
-        # turn on the display with cursor
-        self._command(
-            LCD_DISPLAY_CONTROL | LCD_DISPLAY_ON | LCD_CURSOR_ON | LCD_BLINK_OFF
-        )
+            # turn on the display with cursor
+            self._command(
+                LCD_DISPLAY_CONTROL | LCD_DISPLAY_ON | LCD_CURSOR_ON | LCD_BLINK_OFF,
+                auto_release=False,
+            )
 
-        # entry mode set
-        self._command(LCD_ENTRY_MODE_SET | LCD_ENTRY_LEFT | LCD_ENTRY_SHIFT_DECREMENT)
+            # entry mode set
+            self._command(
+                LCD_ENTRY_MODE_SET | LCD_ENTRY_LEFT | LCD_ENTRY_SHIFT_DECREMENT,
+                auto_release=False,
+            )
 
-        self._home()
+            self._home(auto_release=False)
 
-        self._clear()
+            self._clear(auto_release=False)
+        finally:
+            self._interface.release()
 
     def _check_8bit(self, v):
         """Checks if v uses only lower 8 bits."""
@@ -155,16 +165,17 @@ class lcm2004(hw_driver.HwDriver):
         child = int(self._params["child"], 0)
         return child
 
-    def _write_byte(self, byte):
+    def _write_byte(self, byte, auto_release=True):
         """Writes one byte to PCF8574(remote IO expander).
 
         Args:
           byte: One byte sent to IIC bus.
+          auto_release: if true, release the USB device after this operation
         """
         self._check_8bit(byte)
-        self._interface.wr_rd(self._get_child(), [byte], 0)
+        self._interface.wr_rd(self._get_child(), [byte], 0, auto_release=auto_release)
 
-    def _write_expander(self, byte):
+    def _write_expander(self, byte, auto_release=True):
         """Writes the byte to expander.
 
            By controlling the high/low of the En pin(bit 2),
@@ -183,14 +194,19 @@ class lcm2004(hw_driver.HwDriver):
             bit 2: The En pin high(1)/low(0).
             bit 1: Read from(1)/Write to(0) LCM.
             bit 0: Data(1)/command(0) mode.
+          auto_release: if true, release the USB device after this operation
         """
-        self._write_byte(byte)
+        try:
+            self._write_byte(byte, auto_release=False)
 
-        # Pull a pulse of EN pin
-        self._write_byte(byte | LCD_EN_BIT)
-        self._write_byte(byte & ~LCD_EN_BIT)
+            # Pull a pulse of EN pin
+            self._write_byte(byte | LCD_EN_BIT, auto_release=False)
+            self._write_byte(byte & ~LCD_EN_BIT, auto_release=False)
+        finally:
+            if auto_release:
+                self._interface.release()
 
-    def _send(self, data, mode):
+    def _send(self, data, mode, auto_release=True):
         """Sends one byte data to either instruction or data register.
 
            Because of byte layout describing in _write_expander(),
@@ -202,39 +218,45 @@ class lcm2004(hw_driver.HwDriver):
         Args:
           data: One byte.
           mode: LCD_REGISTER_CMD or LCD_REGISTER_DATA.
+          auto_release: if true, release the USB device after this operation
         """
-        high_nibble = data & 0xF0
-        low_nibble = (data << 4) & 0xF0
-        backlight = self._device.backlight_value
+        try:
+            high_nibble = data & 0xF0
+            low_nibble = (data << 4) & 0xF0
+            backlight = self._device.backlight_value
 
-        self._write_expander(high_nibble | backlight | mode)
-        self._write_expander(low_nibble | backlight | mode)
+            self._write_expander(high_nibble | backlight | mode, auto_release=False)
+            self._write_expander(low_nibble | backlight | mode, auto_release=False)
+        finally:
+            if auto_release:
+                self._interface.release()
 
-    def _command(self, data):
+    def _command(self, data, auto_release=True):
         """Sends command to instruction register.
 
         Args:
           data: One byte command.
+          auto_release: if true, release the USB device after this operation
         """
-        self._send(data, LCD_REGISTER_CMD)
+        self._send(data, LCD_REGISTER_CMD, auto_release=auto_release)
 
-    def _clear(self):
+    def _clear(self, auto_release=True):
         """Cleans full screen."""
-        self._command(LCD_CLEAR_DISPLAY)
+        self._command(LCD_CLEAR_DISPLAY, auto_release=auto_release)
 
-    def _home(self):
+    def _home(self, auto_release=True):
         """Sets cursor to column 0 and row 0."""
-        self._command(LCD_RETURN_HOME)
+        self._command(LCD_RETURN_HOME, auto_release=auto_release)
 
-    def _backlight_on(self):
+    def _backlight_on(self, auto_release=True):
         """Turns on backlight."""
         self._device.backlight_value = LCD_BACKLIGHT_ON
-        self._write_byte(LCD_BACKLIGHT_ON)
+        self._write_byte(LCD_BACKLIGHT_ON, auto_release=auto_release)
 
-    def _backlight_off(self):
+    def _backlight_off(self, auto_release=True):
         """Turns off backlight."""
         self._device.backlight_value = LCD_BACKLIGHT_OFF
-        self._write_byte(LCD_BACKLIGHT_OFF)
+        self._write_byte(LCD_BACKLIGHT_OFF, auto_release=auto_release)
 
     def _Set_lcm_text(self, text):
         """Prints text to LCM.

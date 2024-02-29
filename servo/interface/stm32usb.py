@@ -241,6 +241,20 @@ class Susb:
 
             self._logger.debug("Set up stm32 usb")
 
+    def release(self):
+        devid = self.get_device_info()
+        if devid not in self.DEV_EP_STORE:
+            raise SusbError("Device %r has no endpoints setup" % (devid,))
+        if self._interface not in self.DEV_EP_STORE[devid]:
+            raise SusbError(
+                "Device %r has no endpoints setup for interface %d"
+                % (devid, self._interface)
+            )
+        with self._hold_lock(self._read_ep_lock):
+            with self._hold_lock(self._write_ep_lock):
+                usb.util.release_interface(self._dev, self._interface)
+        self._logger.debug("Released InterfaceNumber: %d", self._interface)
+
     def _get_ep(self, write=False):
         """Retrieve the ep.
 

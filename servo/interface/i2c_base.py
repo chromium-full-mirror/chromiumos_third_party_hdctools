@@ -115,7 +115,7 @@ class BaseI2CBus(interface.Interface):
         """
         return self.__pseudo_adap
 
-    def multi_wr_rd(self, transactions):
+    def multi_wr_rd(self, transactions, auto_release=True):
         """Allows for multiple write/read/write+read I2C transactions.
 
         This guarantees that no other I2C messages/transactions are sent by this
@@ -130,6 +130,7 @@ class BaseI2CBus(interface.Interface):
             write_list: list of output byte values [0~255], or None for no write
             read_count: number of byte values to read from device, or None for no
                 read
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           [None or [int]] - A list of .wr_rd() return values, one for each
@@ -143,9 +144,15 @@ class BaseI2CBus(interface.Interface):
               may be used, such as ctypes.c_ubyte.
         """
         with self.__lock:
-            return [self._raw_wr_rd(*args) for args in transactions]
+            try:
+                return [
+                    self._raw_wr_rd(*args, auto_release=False) for args in transactions
+                ]
+            finally:
+                if auto_release:
+                    self.release()
 
-    def wr_rd(self, child_address, write_list, read_count):
+    def wr_rd(self, child_address, write_list, read_count, auto_release=True):
         """Implements hdctools wr_rd() interface.
 
         This function writes byte values list to I2C device (if given), then reads
@@ -159,6 +166,7 @@ class BaseI2CBus(interface.Interface):
           child_address: 7 bit I2C child address.
           write_list: list of output byte values [0~255], or None for no write
           read_count: number of byte values to read from device, or None for no read
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           None or [int] - A list of the bytes read.  If no bytes were read, either
@@ -173,7 +181,9 @@ class BaseI2CBus(interface.Interface):
                 _format_write_list(write_list),
                 read_count,
             )
-            retval = self._raw_wr_rd(child_address, write_list, read_count)
+            retval = self._raw_wr_rd(
+                child_address, write_list, read_count, auto_release=auto_release
+            )
             self.__logger.debug(
                 "i2c_base.BaseI2CBus.wr_rd(0x%02X, %r, %s) returning %s",
                 child_address,
@@ -183,7 +193,7 @@ class BaseI2CBus(interface.Interface):
             )
         return retval
 
-    def _raw_wr_rd(self, child_address, write_list, read_count):
+    def _raw_wr_rd(self, child_address, write_list, read_count, auto_release=True):
         """Implements hdctools wr_rd() interface.
 
         This function writes byte values list to I2C device (if given), then reads
@@ -197,6 +207,7 @@ class BaseI2CBus(interface.Interface):
           child_address: 7 bit I2C child address.
           write_list: list of output byte values [0~255], or None for no write
           read_count: number of byte values to read from device, or None for no read
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           None or [int] - A list of the bytes read.  If no bytes were read, either
@@ -205,6 +216,9 @@ class BaseI2CBus(interface.Interface):
               ctypes.c_ubyte.
         """
         raise NotImplementedError
+
+    def release(self):
+        """For usb devices only, release device so that external tools can use it."""
 
     def close(self):
         """Stop the I2C pseudo interface, if it was started."""
