@@ -36,7 +36,7 @@ class I2CBus(i2c_base.BaseI2CBus):
         """Name to request interface by in interface config maps."""
         return "dev_i2c"
 
-    def _raw_wr_rd(self, child_address, write_list, read_count=None):
+    def _raw_wr_rd(self, child_address, write_list, read_count=None, auto_release=True):
         """Implements hdctools wr_rd() interface.
 
         This function writes byte values list to I2C device, then reads
@@ -46,7 +46,9 @@ class I2CBus(i2c_base.BaseI2CBus):
           child_address: 7 bit I2C child address.
           write_list: list of output byte values [0~255].
           read_count: number of byte values to read from device.
+          auto_release: Ignored for compatibility with Si2cBus.
         """
+        del auto_release
         bus = io.open(self._interface, mode="r+b", buffering=0)
         fcntl.ioctl(bus.fileno(), self._I2C_WORKER_FORCE, child_address)
         if write_list:

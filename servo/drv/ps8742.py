@@ -58,12 +58,15 @@ class ps8742(hw_driver.HwDriver):
         Args:
           enable: 0 - USB2 only. 1 - enable USB3.
         """
-        value = self._i2c_obj._read_reg(self.USB_MUX_CTRL)
-        if not enable:
-            value = value & ~(self.USB_MUX_CTRL_USB3_EN)
-        else:
-            value = value | self.USB_MUX_CTRL_USB3_EN
-        self._i2c_obj._write_reg(self.USB_MUX_CTRL, value)
+        try:
+            value = self._i2c_obj._read_reg(self.USB_MUX_CTRL, auto_release=False)
+            if not enable:
+                value = value & ~(self.USB_MUX_CTRL_USB3_EN)
+            else:
+                value = value | self.USB_MUX_CTRL_USB3_EN
+            self._i2c_obj._write_reg(self.USB_MUX_CTRL, value, auto_release=False)
+        finally:
+            self._i2c_obj.release()
 
     def _get_child(self):
         """Check and return needed params to call driver.

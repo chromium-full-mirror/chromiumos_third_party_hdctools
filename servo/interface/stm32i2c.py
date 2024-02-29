@@ -64,13 +64,16 @@ class Si2cBus(i2c_base.BaseI2CBus):
             serialname=serialname,
             logger=self._logger,
         )
+        # Allow external tools like iteflash to access the device when we're not
+        # using it.
+        self._susb.release()
 
         self._logger.debug("Set up stm32 i2c")
 
     @staticmethod
     def Build(vid, pid, sid, interface_data, **_kwargs):
         """Factory method to implement the interface."""
-        c.build_logger.info("Si2cBus: interface: %s" % interface_data)
+        c.build_logger.info("Si2cBus: interface: %s", interface_data)
         port = interface_data.get("port", 0)
         return Si2cBus(
             vendor=vid,
@@ -88,12 +91,13 @@ class Si2cBus(i2c_base.BaseI2CBus):
     def reinitialize(self):
         """Reinitialize the usb endpoint"""
         self._susb.reset_usb()
+        self._susb.release()
 
     def get_device_info(self):
         """The usb device information."""
         return self._susb.get_device_info()
 
-    def _raw_wr_rd(self, child_address, write_list, read_count=0):
+    def _raw_wr_rd(self, child_address, write_list, read_count=0, auto_release=True):
         """Implements hdctools wr_rd() interface.
 
         This function writes byte values list to I2C device, then reads
@@ -114,70 +118,78 @@ class Si2cBus(i2c_base.BaseI2CBus):
         Raises:
           Si2cError on transaction failure.
         """
-        self._logger.debug(
-            "Si2c.wr_rd(port=%d, child_address=0x%x, write_list=%s, read_count=%s)",
-            self._port,
-            child_address,
-            write_list,
-            read_count,
-        )
-
-        # Clean up args from python style to correct types.
-        if not write_list:
-            write_list = []
-        write_length = len(write_list)
-        if write_length > _MAX_WRITE_SIZE:
-            raise Si2cError(
-                "requested write size %d exceeds the %d maximum supported by this "
-                "I2C-over-USB protocol" % (write_length, _MAX_WRITE_SIZE)
-            )
-
-        read_count = max(0, read_count)
-        if read_count > _MAX_READ_SIZE:
-            raise Si2cError(
-                "requested read size %d exceeds the %d maximum supported by this "
-                "I2C-over-USB protocol" % (read_count, _MAX_READ_SIZE)
-            )
-
-        # Encode the full write count across the multiple fields involved.
-        port_field = self._port | ((write_length >> 4) & 0xF0)
-        write_field = write_length & 0xFF
-        cmd = [port_field, child_address, write_field]
-
-        # Encode the full read count across the multiple fields involved.
-        if read_count <= 0x7F:
-            cmd.append(read_count)
-        else:
-            cmd.append((read_count & 0x7F) | 0x80)
-            cmd.append((read_count >> 7) & 0xFF)
-            cmd.append(0)  # reserved field
-
-        # Send wr_rd command to stm32.
-        cmd.extend(write_list)
         try:
-            self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
-        except IOError as e:
-            if e.errno == errno.ENODEV:
-                self._logger.error(
-                    "USB disconnected 0x%04x:%04x, servod failed.",
-                    self._susb._vendor,
-                    self._susb._product,
+            self._logger.debug(
+                "Si2c.wr_rd(port=%d, child_address=0x%x, write_list=%s, read_count=%s)",
+                self._port,
+                child_address,
+                write_list,
+                read_count,
+            )
+
+            # Clean up args from python style to correct types.
+            if not write_list:
+                write_list = []
+            write_length = len(write_list)
+            if write_length > _MAX_WRITE_SIZE:
+                raise Si2cError(
+                    "requested write size %d exceeds the %d maximum supported by this "
+                    "I2C-over-USB protocol" % (write_length, _MAX_WRITE_SIZE)
                 )
-            raise
 
-        # Read back response if necessary.
-        data = self._susb.read_ep(read_count + 4, self._susb.TIMEOUT_MS)
+            read_count = max(0, read_count)
+            if read_count > _MAX_READ_SIZE:
+                raise Si2cError(
+                    "requested read size %d exceeds the %d maximum supported by this "
+                    "I2C-over-USB protocol" % (read_count, _MAX_READ_SIZE)
+                )
 
-        if len(data) < (read_count + 4):
-            raise Si2cError("Read status failed.")
+            # Encode the full write count across the multiple fields involved.
+            port_field = self._port | ((write_length >> 4) & 0xF0)
+            write_field = write_length & 0xFF
+            cmd = [port_field, child_address, write_field]
 
-        if data[0] != 0 or data[1] != 0:
-            raise Si2cError("Read status failed: 0x%02x%02x" % (data[1], data[0]))
+            # Encode the full read count across the multiple fields involved.
+            if read_count <= 0x7F:
+                cmd.append(read_count)
+            else:
+                cmd.append((read_count & 0x7F) | 0x80)
+                cmd.append((read_count >> 7) & 0xFF)
+                cmd.append(0)  # reserved field
 
-        self._logger.debug(
-            "Si2c.wr_rd result 0x%02x%02x, read %s", data[1], data[0], data[4:]
-        )
-        return data[4:]
+            # Send wr_rd command to stm32.
+            cmd.extend(write_list)
+            try:
+                self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
+            except IOError as e:
+                if e.errno == errno.ENODEV:
+                    self._logger.error(
+                        "USB disconnected 0x%04x:%04x, servod failed.",
+                        self._susb._vendor,
+                        self._susb._product,
+                    )
+                raise
+
+            # Read back response if necessary.
+            data = self._susb.read_ep(read_count + 4, self._susb.TIMEOUT_MS)
+
+            if len(data) < (read_count + 4):
+                raise Si2cError("Read status failed.")
+
+            if data[0] != 0 or data[1] != 0:
+                raise Si2cError("Read status failed: 0x%02x%02x" % (data[1], data[0]))
+
+            self._logger.debug(
+                "Si2c.wr_rd result 0x%02x%02x, read %s", data[1], data[0], data[4:]
+            )
+            return data[4:]
+        finally:
+            if auto_release:
+                self.release()
+
+    def release(self):
+        """Release i2c usb device so that external tools can use it."""
+        self._susb.release()
 
     def close(self):
         """Stm32i2c wind down logic.

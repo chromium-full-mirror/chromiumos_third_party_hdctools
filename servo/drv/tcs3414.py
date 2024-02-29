@@ -156,12 +156,13 @@ class tcs3414(hw_driver.HwDriver):
         child = int(self._params["child"], 0)
         return child
 
-    def _write_byte(self, reg, data):
+    def _write_byte(self, reg, data, auto_release=True):
         """Writes one byte to register.
 
         Args:
           reg: Register address.
           data: One byte.
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           None
@@ -169,27 +170,36 @@ class tcs3414(hw_driver.HwDriver):
         self._check_8bit(reg)
         self._check_8bit(data)
 
-        self._interface.wr_rd(self._get_child(), [reg, data], 0)
+        self._interface.wr_rd(
+            self._get_child(), [reg, data], 0, auto_release=auto_release
+        )
 
-    def _read_word(self, reg):
+    def _read_word(self, reg, auto_release=True):
         """Reads a word by giving a register address.
 
         Args:
           reg: Register address.
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           16-bit value.
         """
         self._check_8bit(reg)
 
-        values = self._interface.wr_rd(self._get_child(), [reg], 2)
+        values = self._interface.wr_rd(
+            self._get_child(), [reg], 2, auto_release=auto_release
+        )
         return values[0] + (values[1] << 8)
 
-    def _power_on(self):
-        self._write_byte(REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWERON)
+    def _power_on(self, auto_release=True):
+        self._write_byte(
+            REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWERON, auto_release=auto_release
+        )
 
-    def _power_off(self):
-        self._write_byte(REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWEROFF)
+    def _power_off(self, auto_release=True):
+        self._write_byte(
+            REG_COMMAND_BIT | REG_CONTROL, CONTROL_POWEROFF, auto_release=auto_release
+        )
 
     def _Set_gain(self, value):
         """Sets ADC gain.
@@ -227,18 +237,33 @@ class tcs3414(hw_driver.HwDriver):
           [H, S, V]
 
         """
-        self._power_on()
+        try:
+            self._power_on(auto_release=False)
 
-        time.sleep(self._device.integ_time * MSEC + SLEEP_MORE_TIME)
+            time.sleep(self._device.integ_time * MSEC + SLEEP_MORE_TIME)
 
-        color_r = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_RED_CHANNEL)
-        color_g = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_GREEN_CHANNEL)
-        color_b = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_BLUE_CHANNEL)
-        intensity = self._read_word(REG_COMMAND_BIT | REG_WORD_BIT | REG_CLEAR_CHANNEL)
+            color_r = self._read_word(
+                REG_COMMAND_BIT | REG_WORD_BIT | REG_RED_CHANNEL, auto_release=False
+            )
+            color_g = self._read_word(
+                REG_COMMAND_BIT | REG_WORD_BIT | REG_GREEN_CHANNEL, auto_release=False
+            )
+            color_b = self._read_word(
+                REG_COMMAND_BIT | REG_WORD_BIT | REG_BLUE_CHANNEL, auto_release=False
+            )
+            intensity = self._read_word(
+                REG_COMMAND_BIT | REG_WORD_BIT | REG_CLEAR_CHANNEL, auto_release=False
+            )
 
-        self._power_off()  # Save power
+            self._power_off(auto_release=False)  # Save power
 
-        self._logger.debug(
-            "Read RGBI values (%d, %d, %d, %d)", color_r, color_g, color_b, intensity
-        )
-        return self._convert_HSV(color_r, color_g, color_b, intensity)
+            self._logger.debug(
+                "Read RGBI values (%d, %d, %d, %d)",
+                color_r,
+                color_g,
+                color_b,
+                intensity,
+            )
+            return self._convert_HSV(color_r, color_g, color_b, intensity)
+        finally:
+            self._interface.release()

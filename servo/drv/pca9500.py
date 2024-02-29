@@ -73,17 +73,20 @@ class pca9500(hw_driver.HwDriver):
         Args:
           value: integer value to write to gpio
         """
-        self._logger.debug("value = %d", value)
-        (_, mask) = self._get_offset_mask()
-        cur_value = self._read_control_reg()
-        if value:
-            hw_value = cur_value | mask
-        else:
-            hw_value = cur_value & ~mask
-        self._logger.debug(
-            "new(0x%02x) cur(0x%02x) mask(0x%02x)", hw_value, cur_value, mask
-        )
-        self._interface.wr_rd(self._child, [hw_value], 0)
+        try:
+            self._logger.debug("value = %d", value)
+            (_, mask) = self._get_offset_mask()
+            cur_value = self._read_control_reg(auto_release=False)
+            if value:
+                hw_value = cur_value | mask
+            else:
+                hw_value = cur_value & ~mask
+            self._logger.debug(
+                "new(0x%02x) cur(0x%02x) mask(0x%02x)", hw_value, cur_value, mask
+            )
+            self._interface.wr_rd(self._child, [hw_value], 0, auto_release=False)
+        finally:
+            self._interface.release()
 
     def _Get_gpio(self):
         """Get pca9500 GPIO value and return.
@@ -94,19 +97,24 @@ class pca9500(hw_driver.HwDriver):
         self._logger.debug("")
         return self._create_logical_value(self._read_control_reg())
 
-    def _read_control_reg(self):
+    def _read_control_reg(self, auto_release=True):
         """Read the pca9500 control register.
 
         pca9500 has one register for its 8bit GPIO expander functionality.  This
         control register can be read by performing a 1 byte read to the child
         address.  See datasheet for more detail.
 
+        Args:
+          auto_release: if true, release the USB device after this operation
+
         Returns:
           integer value (8bit) of control register.
         """
-        return self._interface.wr_rd(self._child, [], REG_CTRL_LEN)[0]
+        return self._interface.wr_rd(
+            self._child, [], REG_CTRL_LEN, auto_release=auto_release
+        )[0]
 
-    def _write_byte_addr(self, byte_addr):
+    def _write_byte_addr(self, byte_addr, auto_release=True):
         """Write EEPROM byte address.
 
         Byte address will be used by the next EEPROM operation providing its not
@@ -114,8 +122,9 @@ class pca9500(hw_driver.HwDriver):
 
         Args:
           byte_addr: integer, byte address to be set in EEPROM
+          auto_release: if true, release the USB device after this operation
         """
-        self._interface.wr_rd(self._child, [byte_addr], 0)
+        self._interface.wr_rd(self._child, [byte_addr], 0, auto_release=auto_release)
 
     def _Set_byte_addr(self, byte_addr):
         """Write the EEPROM's byte address.
@@ -157,27 +166,30 @@ class pca9500(hw_driver.HwDriver):
           pca9500Error: if I2c write failed to complete successfully
 
         """
-        raise pca9500Error("Fix crbug.com/294248")
-        byte_list = [int(byte_str, 0) for byte_str in value.split()]
-        self._write_byte_addr(pca9500._byte_addr)
+        try:
+            raise pca9500Error("Fix crbug.com/294248")
+            byte_list = [int(byte_str, 0) for byte_str in value.split()]
+            self._write_byte_addr(pca9500._byte_addr, auto_release=False)
 
-        if (len(byte_list) + pca9500._byte_addr) > EEPROM_BYTES:
-            raise pca9500Error(
-                "Writing %d Bytes from addr %d will be > %d"
-                % (len(byte_list), pca9500._byte_addr, EEPROM_BYTES)
-            )
-        page_list = [
-            byte_list[i : (i + PAGE_BYTES)]
-            for i in range(0, len(byte_list), PAGE_BYTES)
-        ]
-        # insert idx for writing
-        for i, page in enumerate(page_list):
-            page.insert(0, pca9500._byte_addr + (i * PAGE_BYTES))
-            try:
-                self._interface.wr_rd(self._child, page, 0)
-            except Fi2cError:
-                self._logger.error("page write of %i:%s", i, page)
-                raise pca9500Error("Setting PCA9500 EEPROM")
+            if (len(byte_list) + pca9500._byte_addr) > EEPROM_BYTES:
+                raise pca9500Error(
+                    "Writing %d Bytes from addr %d will be > %d"
+                    % (len(byte_list), pca9500._byte_addr, EEPROM_BYTES)
+                )
+            page_list = [
+                byte_list[i : (i + PAGE_BYTES)]
+                for i in range(0, len(byte_list), PAGE_BYTES)
+            ]
+            # insert idx for writing
+            for i, page in enumerate(page_list):
+                page.insert(0, pca9500._byte_addr + (i * PAGE_BYTES))
+                try:
+                    self._interface.wr_rd(self._child, page, 0, auto_release=False)
+                except Fi2cError:
+                    self._logger.error("page write of %i:%s", i, page)
+                    raise pca9500Error("Setting PCA9500 EEPROM")
+        finally:
+            self._interface.release()
 
     def _Get_eeprom(self):
         """Read the EEPROM.
@@ -200,18 +212,23 @@ class pca9500(hw_driver.HwDriver):
         Raises:
           pca9500Error: if I2c read failed to complete successfully
         """
-        raise pca9500Error("Fix crbug.com/294248")
-        error = False
-        self._write_byte_addr(0)
         try:
-            byte_list = self._interface.wr_rd(self._child, [], EEPROM_BYTES)
-        except Fi2cError:
-            self._logger.error("eeprom read")
-            raise pca9500Error("Getting PCA9500 EEPROM")
+            raise pca9500Error("Fix crbug.com/294248")
+            error = False
+            self._write_byte_addr(0, auto_release=False)
+            try:
+                byte_list = self._interface.wr_rd(
+                    self._child, [], EEPROM_BYTES, auto_release=False
+                )
+            except Fi2cError:
+                self._logger.error("eeprom read")
+                raise pca9500Error("Getting PCA9500 EEPROM")
 
-        lines = []
-        for i in range(0, len(byte_list), 16):
-            line = " ".join("0x%02x" % byte for byte in byte_list[i : i + 16])
-            lines.append(line)
+            lines = []
+            for i in range(0, len(byte_list), 16):
+                line = " ".join("0x%02x" % byte for byte in byte_list[i : i + 16])
+                lines.append(line)
 
-        return "\n%s" % "\n".join(lines)
+            return "\n%s" % "\n".join(lines)
+        finally:
+            self._interface.release()

@@ -95,36 +95,47 @@ class tca6416(hw_driver.HwDriver):
         Tca6416Error: If width of open drain driver is != 1 or open drain type is
           not recognized.
         """
-        self._logger.debug("")
-        (_, mask) = self._get_offset_mask()
-        if mask is None:
-            raise Tca6416Error("Unable to determine mask.  Is offset declared?")
+        try:
+            self._logger.debug("")
+            (_, mask) = self._get_offset_mask()
+            if mask is None:
+                raise Tca6416Error("Unable to determine mask.  Is offset declared?")
 
-        change_to_input = False
-        if self._io_type == "PU" and fmt_value == 1:
-            self._logger.debug("Set to input because its io type is PU")
-            change_to_input = True
+            change_to_input = False
+            if self._io_type == "PU" and fmt_value == 1:
+                self._logger.debug("Set to input because its io type is PU")
+                change_to_input = True
 
-        # output register handling
-        if not change_to_input:
-            hw_value = 0
-            if fmt_value:
-                hw_value = self._create_hw_value(fmt_value)
+            # output register handling
+            if not change_to_input:
+                hw_value = 0
+                if fmt_value:
+                    hw_value = self._create_hw_value(fmt_value)
 
-            current_out_reg = self._i2c_obj._read_reg(self.REG_OUT + self._port)
-            new_out_reg = hw_value | (current_out_reg & ~mask)
-            if new_out_reg != current_out_reg:
-                self._i2c_obj._write_reg(self.REG_OUT + self._port, new_out_reg)
+                current_out_reg = self._i2c_obj._read_reg(
+                    self.REG_OUT + self._port, auto_release=False
+                )
+                new_out_reg = hw_value | (current_out_reg & ~mask)
+                if new_out_reg != current_out_reg:
+                    self._i2c_obj._write_reg(
+                        self.REG_OUT + self._port, new_out_reg, auto_release=False
+                    )
 
-        # TODO(tbroch) cache direction register for speedup
-        current_dir_reg = self._i2c_obj._read_reg(self.REG_DIR + self._port)
-        if change_to_input:
-            new_dir_reg = current_dir_reg | mask
-        else:
-            new_dir_reg = current_dir_reg & ~mask
+            # TODO(tbroch) cache direction register for speedup
+            current_dir_reg = self._i2c_obj._read_reg(
+                self.REG_DIR + self._port, auto_release=False
+            )
+            if change_to_input:
+                new_dir_reg = current_dir_reg | mask
+            else:
+                new_dir_reg = current_dir_reg & ~mask
 
-        if new_dir_reg != current_dir_reg:
-            self._i2c_obj._write_reg(self.REG_DIR + self._port, new_dir_reg)
+            if new_dir_reg != current_dir_reg:
+                self._i2c_obj._write_reg(
+                    self.REG_DIR + self._port, new_dir_reg, auto_release=False
+                )
+        finally:
+            self._i2c_obj.release()
 
     def _get_child(self):
         """Check and return needed params to call driver.

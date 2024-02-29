@@ -95,12 +95,13 @@ class I2cReg:
             _devices[key] = dev_obj
         return dev_obj
 
-    def _read_reg(self, reg, reg_len=None):
+    def _read_reg(self, reg, reg_len=None, auto_release=True):
         """Read the register.
 
         Args:
           reg: i2c register to read
           reg_len: optional, if the |reg_len| is different from |self._reg_len|
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           integer value read from i2c reg
@@ -108,10 +109,10 @@ class I2cReg:
         self._logger.debug("")
         # Set potential overwrites from default.
         reg_len = reg_len if reg_len is not None else self._reg_len
-        rlist = self._wr_rd(reg, [], reg_len)
+        rlist = self._wr_rd(reg, [], reg_len, auto_release=auto_release)
         return self._convert_rd(rlist, self._msb_first)
 
-    def _write_reg(self, reg, value, reg_len=None, no_read=None):
+    def _write_reg(self, reg, value, reg_len=None, no_read=None, auto_release=True):
         """Write the register.
 
         Args:
@@ -119,6 +120,7 @@ class I2cReg:
           value: integer value to write to reg
           reg_len: optional, if the |reg_len| is different from |self._reg_len|
           no_read: optional, whether to use no_read instead of |self._no_read|
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           integer value read after the write of reg
@@ -137,7 +139,7 @@ class I2cReg:
             wlist.reverse()
 
         read_len = 0 if no_read else reg_len
-        rlist = self._wr_rd(reg, wlist, read_len)
+        rlist = self._wr_rd(reg, wlist, read_len, auto_release=auto_release)
         return self._convert_rd(rlist, self._msb_first)
 
     @staticmethod
@@ -171,13 +173,14 @@ class I2cReg:
             value |= byte << (cnt * 8)
         return value
 
-    def _wr_rd(self, reg, wlist, rcnt):
+    def _wr_rd(self, reg, wlist, rcnt, auto_release=True):
         """Convenience function for accessing i2c device.
 
         Args:
           reg: register index to access on i2c device
           wlist: list of bytes to write
           rcnt: number of bytes to read
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           list of c_ubyte's read from i2c device.
@@ -190,7 +193,11 @@ class I2cReg:
         else:
             self._logger.debug("Ignoring register index %d is cached" % reg)
 
-        rlist = self._i2c.wr_rd(self._child, wlist, rcnt)
+        rlist = self._i2c.wr_rd(self._child, wlist, rcnt, auto_release=auto_release)
         if self._use_reg_cache:
             self._reg = reg
         return rlist
+
+    def release(self):
+        """For usb devices only, release device so that external tools can use it."""
+        self._i2c.release()

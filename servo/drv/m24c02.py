@@ -109,56 +109,75 @@ class m24c02(hw_driver.HwDriver):
 
         self._device = m24c02_devices[device_key]
 
-    def _read_byte(self, offset):
+    def _read_byte(self, offset, auto_release=True):
         """Reads one byte from EEPROM.
 
         Args:
           offset: Start address for reading.
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           Read back one byte.
         """
-        buffer = self._interface.wr_rd(self._get_child(), [offset], 1)
+        buffer = self._interface.wr_rd(
+            self._get_child(), [offset], 1, auto_release=auto_release
+        )
         return buffer[0]
 
-    def _read_bytes(self, offset, count):
+    def _read_bytes(self, offset, count, auto_release=True):
         """Reads one or more bytes from EEPROM.
 
         Args:
           offset: Start address for reading.
           count: Size of reading bytes.
+          auto_release: if true, release the USB device after this operation
 
         Returns:
           A list of bytes.
         """
         # TODO(Aaron) To replace this with bulk read command.
-        return [self._read_byte(addr) for addr in range(offset, offset + count)]
+        try:
+            return [
+                self._read_byte(addr, auto_release=False)
+                for addr in range(offset, offset + count)
+            ]
+        finally:
+            if auto_release:
+                self._interface.release()
 
-    def _write_byte(self, offset, value):
+    def _write_byte(self, offset, value, auto_release=True):
         """Writes one byte to EEPROM.
 
         Args:
           offset: Start address for writing.
           value: One byte written to EEPROM.
+          auto_release: if true, release the USB device after this operation
         """
-        self._interface.wr_rd(self._get_child(), [offset, value], 0)
+        self._interface.wr_rd(
+            self._get_child(), [offset, value], 0, auto_release=auto_release
+        )
 
-    def _write_bytes(self, offset, text):
+    def _write_bytes(self, offset, text, auto_release=True):
         """Writes one or more bytes to EEPROM.
 
         Args:
           offset: Start address for writing.
           text: One or more bytes written to EEPROM.
+          auto_release: if true, release the USB device after this operation
 
         Raises:
           ValueError: If text exceeds EEPROM size.
         """
-        if (offset + len(text)) > m24c02._EEPROM_SIZE:
-            raise ValueError("Boundary(%d) error." % (offset + len(text)))
+        try:
+            if (offset + len(text)) > m24c02._EEPROM_SIZE:
+                raise ValueError("Boundary(%d) error." % (offset + len(text)))
 
-        for c in text:
-            self._write_byte(offset, ord(c))
-            offset = offset + 1
+            for c in text:
+                self._write_byte(offset, ord(c), auto_release=False)
+                offset = offset + 1
+        finally:
+            if auto_release:
+                self._interface.release()
 
     def _Get_rom_params(self):
         """Gets operating parameters.

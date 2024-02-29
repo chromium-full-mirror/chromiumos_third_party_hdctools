@@ -174,7 +174,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         if self._lib.fi2c_setclock(ctypes.byref(self._fic), speed):
             raise Fi2cError("fi2c_setclock")
 
-    def _raw_wr_rd(self, child, wlist, rcnt):
+    def _raw_wr_rd(self, child, wlist, rcnt, auto_release=True):
         """Write and/or read a child i2c device.
 
         Args:
@@ -182,10 +182,12 @@ class Fi2c(i2c_base.BaseI2CBus):
           wlist: list of bytes to write to the child.  If list length is zero its
               just a read
           rcnt: number of bytes to read from the device.  If zero, its just a write
+          auto_release: Ignored for compatibility with Si2cBus.
 
         Returns:
           list of c_ubyte's read from i2c device.
         """
+        del auto_release
         self._logger.debug("")
 
         if wlist is None:
