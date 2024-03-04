@@ -1,6 +1,6 @@
 # Servod Outside of Chroot
 
-Current status: **Dogfood**
+Current status: **Production**
 
 - [Servod Outside of Chroot](#servod-outside-of-chroot)
   - [Overview](#overview)
