@@ -567,12 +567,11 @@ def main():
     )
     # TODO: Once we can expect py3.9, replace with one
     # action=argparse.BooleanOptionalAction
-    # TODO: Once fleet is ready, switch default to --no-allow-rollback (False)
     parser.add_argument(
         "--allow-rollback",
         dest="allow_rollback",
         action="store_true",
-        default=True,
+        default=False,
         help="Allow firmware downgrades",
     )
     parser.add_argument(
