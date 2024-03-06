@@ -154,7 +154,7 @@
   <control>
     <name>dut_pd_data_role</name>
     <doc>The USB PD data role from the perspective of the DUT. It is not possible to set to UFP when servo_pd_role is SNK.</doc>
-    <params interface="10" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" />
+    <params interface="10" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" pdc="no"/>
   </control>
   <control>
     <name>cpu_fw_spi_depends_on_ec_fw</name>

@@ -376,8 +376,12 @@ class ec(pty_driver.ptyDriver):
 
         Returns: the tuple (data role, confidence score)
         """
+        pd_state_cmd = "pd %d state"
+        if self._params.get("pdc") == "yes":
+            pd_state_cmd = "pdc status %d"
+
         result = self._issue_cmd_get_results(
-            "pd %d state" % p,
+            pd_state_cmd % p,
             [
                 r"Parameter 2 invalid|Role: ([A-Z]+)-([A-Z]+)(-\S*)? (.*)\n",
             ],
@@ -464,7 +468,10 @@ class ec(pty_driver.ptyDriver):
             port, role = self._find_servo_port()
             if role == value:
                 return
-            self._issue_cmd("pd %d swap data" % port)
+            pd_role_swap_cmd = "pd %d swap data"
+            if self._params.get("pdc") == "yes":
+                pd_role_swap_cmd = "pdc drs %d"
+            self._issue_cmd(pd_role_swap_cmd % port)
             time.sleep(self._role_swap_delay)
             role, _unused = self._read_port_role(port)
             if role != value:

@@ -123,4 +123,10 @@
     </doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1" offset="0" map="onoff_i" init="off" />
   </control>
+
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="patch" pdc="yes" />
+  </control>
+
 </root>
