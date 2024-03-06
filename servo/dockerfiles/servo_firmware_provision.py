@@ -33,9 +33,7 @@ SERVO_MICRO_NAME_DEV = (
 # Alpha channel firmware
 C2D2_NAME_ALPHA = "c2d2_v2.0.18040-0fa6cb3063"  # R106-15042.0.0 build
 SERVO_MICRO_NAME_ALPHA = "servo_micro_v2.0.18040-0fa6cb3063"  # R106-15042.0.0 build
-# channel is not needed for now, so stay with same version as stable to
-# allow smooth transition in fleet
-SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.20646-1fb66a343"  # EC ToT from 03/15/2023
+SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.24151-03b2123fb"  # EC ToT from 03/06/2024
 
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
 
