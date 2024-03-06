@@ -101,9 +101,9 @@
   </control>
 
   <control>
-    <name>dut_i2c_en</name>
+    <name>fw_up</name>
     <!-- The dut_i2c_en alias is used by the flash_ec script to assert the FW_UP signal as part of the ITE I2C programming sequence. -->
-    <alias>fw_up</alias>
+    <alias>dut_i2c_en</alias>
     <doc>Enable servo connection to the I2C programming interface on ITE.</doc>
     <params clobber_ok="patch" od="PP" map="onoff" init="off" />
   </control>
