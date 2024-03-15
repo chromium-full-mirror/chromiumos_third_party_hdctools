@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import argparse
+import csv
 import json
 import subprocess
 import sys
@@ -32,8 +33,8 @@ def run_command(command):
     return subprocess.run(command, stdout=subprocess.PIPE, check=True)
 
 
-def get_hostnames(servo_select: str = "from-sheet"):
-    """Query the UFS a list of DUT hostnames.
+def get_hostnames(servo_select: str = "from-sheet", csv_file: str = ""):
+    """Query the UFS a list of DUT hostnames. Alternatively read offline CSV for list.
 
     By default ("from-sheet" mode) it returns a list based on the custom plx table
     chromeos_hardware_tools.FW_ROLLOUT_CONNECTED which is populated by the contents of
@@ -45,6 +46,9 @@ def get_hostnames(servo_select: str = "from-sheet"):
 
     Args:
         servo_select (str): Which servos to handle. Defaults to "from-sheet".
+                            Use "from-csv" to use offline file with hostnames.
+        csv_file (str): Path to CSV file containing hostnames.
+                        Can be empty if not using this mode.
 
     Returns:
         list[string]: Fleet DUT hostnames, either in the collated list or the full list
@@ -53,7 +57,11 @@ def get_hostnames(servo_select: str = "from-sheet"):
     Raises:
         ValueError: if |servo_select| is not supported.
     """
-    if servo_select == "from-sheet":
+    if servo_select == "from-csv" and csv_file:
+        with open(csv_file) as f:
+            reader = csv.reader(f)
+            return [row[0] for row in reader]
+    elif servo_select == "from-sheet":
         query = "SELECT * FROM chromeos_hardware_tools.FW_ROLLOUT_CONNECTED;"
     elif servo_select in ["servo_v4", "servo_v4p1"]:
         query = ALL_QUERY % (len(servo_select), servo_select)
@@ -265,8 +273,16 @@ def parse_args():
     parser.add_argument(
         "--select",
         default="from-sheet",
-        choices=["from-sheet", "servo_v4", "servo_v4p1", "all"],
+        choices=["from-sheet", "servo_v4", "servo_v4p1", "all", "from-csv"],
         help="What servo to update",
+    )
+    parser.add_argument(
+        "--csv-file",
+        required=False,
+        type=str,
+        help=(
+            "If you are using --select from-csv you have to provide path to this file."
+        ),
     )
     return parser.parse_args()
 
@@ -314,7 +330,7 @@ def main(unused_argv):
 
     # Retrieve all relevant data from shivas, based on a collated list of devices
     # or all of the devices for a particular servo board.
-    hostnames = get_hostnames(args.select)[1:]
+    hostnames = get_hostnames(args.select, args.csv_file)[1:]
     data_dict = get_all_dut_info(hostnames)
 
     action_hostnames = []
