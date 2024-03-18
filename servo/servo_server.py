@@ -9,6 +9,7 @@ import sys
 
 from servo import recovery
 from servo import servo_dev_templates
+from servo import sversion_util
 from servo.utils import diagnose
 from servo.utils import usb_hierarchy
 
@@ -589,3 +590,6 @@ class Servod:
                 if dev.template.DUT_CONTROLLER and dev != main_device:
                     type_ += "_and_" + dev.template.TYPE
         return type_
+
+    def servod_version(self):
+        return sversion_util.extended_version()
