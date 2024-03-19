@@ -456,7 +456,6 @@ ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages
 FROM base
 
 WORKDIR /hdctools/chromeos/
-COPY --link --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --link --from=hdctools-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/dist/* ./
