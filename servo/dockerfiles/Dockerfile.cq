@@ -184,8 +184,6 @@ RUN apt-get update --no-install-recommends \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
 
 
-WORKDIR /hdctools/chromeos/
-COPY --link --from=hdctools-builder /hdctools/chromeos/servod_utils.sh .
 WORKDIR /wheels
 COPY --link --from=hdctools-builder /hdctools/dist/* ./
 COPY --link --from=hdctools-ec3po-builder /hdctools/dist/* ./
