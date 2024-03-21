@@ -153,6 +153,10 @@ a new CL lands in the main branch of hdctools. Typically there is about a 20 min
 lag from the submit to the image being ready to use. It is going to be pretty
 close to ToT but is not guaranteed to be as builds may finish out of order.
 
+> **_NOTE:_** start-servod DOES NOT expose servod port on 9999 host port by default.
+You should use *-p [PORT]* to map servod port to host port,
+e.g. if you want to use servod for FAFT/TAST testing.
+
 It is not necessary - but **strongly** recommended that you provide a board and
 model parameter to your start-servod. **Some servod functionality may not
 work without the board and model being passed in.**
