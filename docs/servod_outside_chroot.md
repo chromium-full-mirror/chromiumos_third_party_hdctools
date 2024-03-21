@@ -92,6 +92,10 @@ sudo usermod -aG tty $USER
 
 You may need to reboot your host for this change to take effect.
 
+> **_NOTE:_** If you want to use these serial devices also from inside chroot remember
+to add user to tty group also there. So inside chroot you need to modify `/etc/group`
+file, adding your username to tty group.
+
 ## Installing docker API
 
 ```text
