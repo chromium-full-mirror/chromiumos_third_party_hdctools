@@ -20,7 +20,7 @@
             <item>ec_uart_cmd:gpioset en_s5_rails 1</item>
           </item>
           <item key="0">
-            <item>power_state:reset</item>
+            <item>gsc_ecrst_pulse:on</item>
           </item>
         </item>
       </content>
@@ -49,7 +49,7 @@
           <item key="0">
             <item>spi2_vref:off</item>
             <item>ap_flash_select:off</item>
-            <item>power_state:reset</item>
+            <item>gsc_ecrst_pulse:on</item>
           </item>
         </item>
       </content>
