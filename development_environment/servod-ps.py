@@ -44,7 +44,10 @@ def determine_root_serial(container):
 
 
 def print_line(container):
-    servod_cmd_args = parse_args(container.attrs["Args"][1].split(" "))
+    container_args = container.attrs["Args"]
+    if len(container_args) > 1:
+        container_args = container_args[1].split(" ")
+    servod_cmd_args = parse_args(container_args)
     root_serial = determine_root_serial(container)
     host_port = determine_host_port(container)
     print(
