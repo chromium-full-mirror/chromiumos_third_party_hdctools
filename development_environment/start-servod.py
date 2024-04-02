@@ -187,11 +187,13 @@ def start_servod(
     started = False
     log_lines = cont.logs(stream=True, follow=True)
     if not test and not sleep:
+        print("Starting ", end="", flush=True)
         while not started:
             try:
                 (ec, _unused) = cont.exec_run(
                     "servodtool instance wait-for-active --timeout 1 -p 9999"
                 )
+                print(".", end="", flush=True)
             except docker.errors.APIError:
                 for line in log_lines:
                     print(line.decode("utf-8"), end="")
@@ -202,7 +204,7 @@ def start_servod(
                 if follow:
                     log_lines = cont.logs()
                 else:
-                    log_lines = b""
+                    log_lines = b"\n"
                     i = 0
                     # To reduce the clutter on screens print 3 lines at the start of
                     # the servod logs ( to get a timestamp ), then three lines at the
@@ -228,6 +230,10 @@ def start_servod(
                 if follow:
                     print(" or press CTRL+C", end="")
                 print("\n")
+                (ec, stdout) = cont.exec_run(
+                    "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty"
+                )
+                print("Main console locations:\n{}".format(stdout.decode("utf-8")))
     elif test:
         cont.reload()
         while cont.status == "running":
