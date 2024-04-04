@@ -2,33 +2,7 @@
 
 Current status: **Production**
 
-- [Servod Outside of Chroot](#servod-outside-of-chroot)
-  - [Overview](#overview)
-  - [Assumptions](#assumptions)
-  - [How to give feedback / report issues](#how-to-give-feedback--report-issues)
-  - [Install docker](#install-docker)
-  - [Add your user to the tty group](#add-your-user-to-the-tty-group)
-  - [Installing docker API](#installing-docker-api)
-  - [Setting up your PATH](#setting-up-your-path)
-  - [Quick start](#quick-start)
-  - [Advanced Usage](#advanced-usage)
-  - [Making changes to servod](#making-changes-to-servod)
-    - [Building Servod](#building-servod)
-  - [Running Tests](#running-tests)
-    - [To run the same tests as the CQ does](#to-run-the-same-tests-as-the-cq-does)
-  - [Forget the wrappers just let me into the container](#forget-the-wrappers-just-let-me-into-the-container)
-  - [FAQ](#faq)
-    - [When I run dut-control -- XXX I get a message like “More than one container matches …“](#when-i-run-dut-control----xxx-i-get-a-message-like-more-than-one-container-matches-)
-    - [I want to flash firmware - how do I do that ?](#i-want-to-flash-firmware---how-do-i-do-that-)
-    - [I want to run TAST/FAFT tests locally - how do I do that ?](#i-want-to-run-tastfaft-tests-locally---how-do-i-do-that-)
-    - [Some tests fail with OSError - No space on device or similar - how to fix](#some-tests-fail-with-oserror---no-space-on-device-or-similar---how-to-fix)
-    - [I am getting docker.errors.DockerException: Error while fetching server API version: ('Connection aborted.', PermissionError(13, 'Permission denied'))](#i-am-getting-dockererrorsdockerexception-error-while-fetching-server-api-version-connection-aborted-permissionerror13-permission-denied)
-    - [Can I use podman instead of docker ?](#can-i-use-podman-instead-of-docker-)
-    - [When do I know a new release has occurred ?](#when-do-i-know-a-new-release-has-occurred-)
-    - [Is this available for ARM based hosts ?](#is-this-available-for-arm-based-hosts-)
-    - [I need to run servod when not connected to the internet.](#i-need-to-run-servod-when-not-connected-to-the-internet)
-    - [dut-console is failing with an error.](#dut-console-is-failing-with-an-error)
-    - [start-servod sent me here after authenticating with the registry failed](#start_servod-sent-me-here-after-authenticating-with-the-registry-failed)
+[TOC]
 
 ## Overview
 
