@@ -80,8 +80,25 @@ start-servod
 """
 
 
+class StartServodException(Exception):
+    pass
+
+
 def setup():
-    return docker.from_env()
+    error_message = """
+
+        start-servod is not able to communicate with your docker service.
+
+        Often a reboot of the machine can fix this but you may also need
+        to change the file permissions on the docker socket.
+        Also check your user is in the docker group.
+        If a reboot does not fix the problem try uninstall/ re-install of
+        docker.
+    """
+    try:
+        return docker.from_env()
+    except docker.errors.DockerException:
+        raise StartServodException(error_message)
 
 
 def get_image(client, channel, allow_offline):
