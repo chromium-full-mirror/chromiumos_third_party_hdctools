@@ -40,17 +40,36 @@
   </control>
   <control>
     <name>cpu_fw_spi</name>
-    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
-      set_value_1="warm_reset:on spi2_buf_en:on spi2_buf_on_flex_en:on
-      spi2_vref:pp1800"
-      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
-      warm_reset:off"
-      />
+    <doc>Enable SPI mode for flashing AP firmware over direct SPI connection</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>cold_reset:on</item>
+            <item>servo_spi_programming:on</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi2_buf_on_flex_en:on</item>
+          </item>
+          <item key="0">
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>spi2_buf_en:off</item>
+            <item>servo_spi_programming:off</item>
+            <item>cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="it8xxx2"/>
+  </control>
+  <control>
+    <name>dev_mode</name>
+    <alias>servo_spi_programming</alias>
+    <doc>Controls a mux on Rauru that switches between AP or GSC+Servo access to AP SPI flash.</doc>
+    <params clobber_ok="patch" od="PP" map="onoff" init="off" />
   </control>
 </root>
