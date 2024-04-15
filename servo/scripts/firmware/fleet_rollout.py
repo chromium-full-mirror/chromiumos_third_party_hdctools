@@ -172,7 +172,7 @@ def update_channel(hostnames, channel):
     print("Updating channels - this might take some time...")
     for hostname in hostnames:
         command = [
-            "/usr/local/bin/shivas",
+            "shivas",
             "update",
             "dut",
             "-name",
@@ -194,7 +194,7 @@ def request_repair(hostnames):
     Args:
         hostnames (list(string)): List of hostnames to ask shivas to repair.
     """
-    command = ["/usr/local/bin/shivas", "repair", "%s"] + hostnames
+    command = ["shivas", "repair", "%s"] + hostnames
     print("Requesting the repairs - this might take some time....")
     run_command(command)
     print("Done with repairs")
