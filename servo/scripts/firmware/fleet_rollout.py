@@ -271,6 +271,15 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--monitor_fw_version",
+        required=False,
+        type=str,
+        help=(
+            "Show progress in roll-out, check provided list of servos"
+            " if they recieved expected FW version."
+        ),
+    )
+    parser.add_argument(
         "--select",
         default="from-sheet",
         choices=["from-sheet", "servo_v4", "servo_v4p1", "all", "from-csv"],
@@ -299,9 +308,7 @@ def is_run_repair_needed(hostname, fw_version, data):
         _type_: _description_
     """
     if get_servo_fw_version(data) == fw_version:
-        print("Skipping", hostname)
         return False
-    print("Repairing", hostname)
     return True
 
 
@@ -320,6 +327,10 @@ def main(unused_argv):
     ps = run_command(["/usr/bin/gcertstatus", "--check_remaining=1h"])
     if ps.returncode != 0:
         print("gcert is not valid please run the gcert command and try again.")
+        sys.exit(1)
+
+    # Monitor option should be run alone
+    if args.monitor_fw_version and (args.channel or args.repair_if_not_updated):
         sys.exit(1)
 
     # Change channel and repair are exclusive options ( change channel will call
@@ -351,6 +362,18 @@ def main(unused_argv):
             if is_run_repair_needed(
                 hostname, args.repair_if_not_updated, data_dict[hostname]
             ):
+                print("Repairing", hostname)
+                action_hostnames.append(hostname)
+            else:
+                print("Skipping", hostname)
+        elif args.monitor_fw_version:
+            if is_run_repair_needed(
+                hostname, args.monitor_fw_version, data_dict[hostname]
+            ):
+                print(
+                    f"{hostname} needs repair, current FW version is \
+                      {get_servo_fw_version(data_dict[hostname])}"
+                )
                 action_hostnames.append(hostname)
         else:
             # If no action has been supplied just print status.
@@ -360,8 +383,16 @@ def main(unused_argv):
             update_servo_firmware(action_hostnames, args.channel)
         elif args.repair_if_not_updated:
             request_repair(action_hostnames)
+        elif args.monitor_fw_version:
+            print(
+                f"{len(action_hostnames)} / {len(hostnames)} \
+                  ({len(action_hostnames) / len(hostnames) * 100}%) \
+                  servos still not updated"
+            )
     elif args.channel or args.repair_if_not_updated:
         print("No devices to perform action on")
+    elif args.monitor_fw_version:
+        print("All devices updated to expected FW version.")
 
 
 if __name__ == "__main__":
