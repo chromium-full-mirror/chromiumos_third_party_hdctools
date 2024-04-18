@@ -26,8 +26,18 @@ import stat
 import sys
 from typing import Union
 
-from pw_tokenizer import detokenize
 
+# pw_tokenizer supports only python v3.11 or later
+PW_TOKENIZER_SUPPORTED = sys.version_info >= (3, 11)
+if PW_TOKENIZER_SUPPORTED:
+    from pw_tokenizer import detokenize
+else:
+    print(
+        f"Pigweed tokenizer not supported with python {sys.version_info[0:2]}"
+        " - requires python >= (3,11)"
+    )
+
+# pylint: disable=C0413
 from ec3po import interpreter
 from ec3po import threadproc_shim
 
@@ -249,27 +259,28 @@ class Console:
           token_path: path to the token database to load.
                       if None, reload last used token_db path.
         """
-        self.is_tokenized = True
+        if PW_TOKENIZER_SUPPORTED:
+            self.is_tokenized = True
 
-        if token_path is not None:
-            self.token_db = token_path
+            if token_path is not None:
+                self.token_db = token_path
 
-        token_files = []
+            token_files = []
 
-        if (
-            self.token_db == TOKEN_PREINST_DB
-            and pathlib.Path(TOKEN_FETCHED_DB).is_file()
-        ):
-            token_files.append(TOKEN_FETCHED_DB)
+            if (
+                self.token_db == TOKEN_PREINST_DB
+                and pathlib.Path(TOKEN_FETCHED_DB).is_file()
+            ):
+                token_files.append(TOKEN_FETCHED_DB)
 
-        if self.token_db:
-            token_files.append(self.token_db)
+            if self.token_db:
+                token_files.append(self.token_db)
 
-        if len(token_files) > 0:
-            self.logger.info(f"Loading detokenizer database(s): {token_files}")
-            self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(*token_files)
-            self.z_detokenizer.show_errors = True
-            self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
+            if len(token_files) > 0:
+                self.logger.info(f"Loading detokenizer database(s): {token_files}")
+                self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(*token_files)
+                self.z_detokenizer.show_errors = True
+                self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
 
     def LogConsoleOutput(self, data):
         """Log to debug user MCU output to controller_pty when line is filled.
@@ -932,7 +943,9 @@ class Console:
             #   > %tokens on                    << reuses last token db loaded
             #   > %tokens on /tmp/tokens.bin
             #   > %tokens off
-
+            if not PW_TOKENIZER_SUPPORTED:
+                self.logger.error("Tokenizer not supported")
+                return
             if len(cmd) < 2:
                 self.logger.error("Insufficient args for %r command", cmd[0])
                 return
