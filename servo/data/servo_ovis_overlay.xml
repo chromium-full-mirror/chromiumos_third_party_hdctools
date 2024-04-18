@@ -83,4 +83,11 @@
     https://issuetracker.google.com/issues/276490145#comment11 -->
     <params clobber_ok="patch" od="PP" map="ap_spi_servo_access_map" />
   </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok=""
+    shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
+    warm_reset_can_hold_ap="no"/>
+  </control>
 </root>
