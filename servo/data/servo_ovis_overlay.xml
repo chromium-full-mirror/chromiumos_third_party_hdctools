@@ -8,6 +8,9 @@
   <include>
     <name>ti50.xml</name>
   </include>
+  <include>
+    <name>chromebox.xml</name>
+  </include>
   <map>
     <name>ap_spi_servo_access_map</name>
     <doc></doc>
