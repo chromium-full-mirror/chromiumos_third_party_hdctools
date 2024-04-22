@@ -193,6 +193,9 @@
             <item>gsc_cold_reset:off</item>
           </item>
           <item key="1">
+            <!-- Send empty commands to wake GSC -->
+            <item>cr50_uart_cmd:</item>
+            <item>cr50_uart_cmd:</item>
             <item>cr50_uart_cmd:ecrst pulse</item>
           </item>
         </item>
