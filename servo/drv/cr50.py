@@ -117,6 +117,13 @@ class cr50(pty_driver.ptyDriver):
             cmds, regex_list, flush=flush, timeout=timeout
         )
 
+    def _Get_cold_reset(self):
+        """Return asserted or deasserted based on the EC_RST_L state"""
+        result = self._issue_cmd_get_results(
+            "ecrst", [r"EC_RST_L is (asserted|deasserted)"]
+        )[0]
+        return result[1]
+
     def _Set_cold_reset(self, value):
         """Setter of cold_reset (active low).
 
@@ -125,6 +132,17 @@ class cr50(pty_driver.ptyDriver):
         """
         if value == 0:
             self._issue_cmd("ecrst on")
+        else:
+            self._issue_cmd("ecrst off")
+
+    def _Set_ecrst_pulse(self, value):
+        """Setter of ecrst_pulse (active low).
+
+        Args:
+          value: 0=send ecrst pulse, 1=send ecrst off.
+        """
+        if value == 0:
+            self._issue_cmd("ecrst pulse")
         else:
             self._issue_cmd("ecrst off")
 
