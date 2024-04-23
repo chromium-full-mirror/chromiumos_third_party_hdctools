@@ -182,30 +182,17 @@
   <control>
     <name>gsc_ecrst_pulse</name>
     <doc>Send the gsc 'ecrst pulse' command</doc>
-    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
-    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
-      <content>
-        <item key="get_controls">
-          <item>gsc_cold_reset</item>
-        </item>
-        <item key="macro_map">
-          <item key="0">
-            <item>gsc_cold_reset:off</item>
-          </item>
-          <item key="1">
-            <item>cr50_uart_cmd:ecrst pulse</item>
-          </item>
-        </item>
-      </content>
-    </params>
+    <params cmd="get" subtype="cold_reset" interface="9" drv="cr50"
+    map="asserted_re"></params>
+    <params cmd="set" subtype="ecrst_pulse" interface="9" drv="cr50"
+    map="onoff_i"></params>
   </control>
   <control>
     <name>gsc_cold_reset</name>
     <alias>gsc_ec_reset</alias>
     <doc>send the gsc ec_reset command to reset the EC.</doc>
-    <params cmd="get" uart_cmd="ecrst"
-    regex="EC_RST_L is (asserted|deasserted)" group="1"
-    interface="9" drv="cr50" map="asserted_re"></params>
+    <params cmd="get" subtype="cold_reset" interface="9" drv="cr50"
+    map="asserted_re"></params>
     <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
     map="onoff_i" init="off"></params>
   </control>
