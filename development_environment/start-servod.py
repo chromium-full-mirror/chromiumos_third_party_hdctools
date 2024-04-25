@@ -7,6 +7,7 @@ import argparse
 from datetime import datetime
 import logging
 import os
+import re
 import signal
 import sys
 
@@ -251,6 +252,34 @@ def start_servod(
                     "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty"
                 )
                 print("Main console locations:\n{}".format(stdout.decode("utf-8")))
+                # Verify connected servos FW version, print warning if update needed
+                for type in (
+                    "servo_firmware_uptodate",
+                    "c2d2_firmware_uptodate",
+                    "servo_micro_firmware_uptodate",
+                ):
+                    (_, output) = cont.exec_run(f"dut-control {type}")
+                    regex_match = re.match(rf"{type}:(yes|no)", output.decode("utf-8"))
+                    if not regex_match:
+                        continue
+                    if regex_match.group(1) == "no":
+                        print("================Warning================")
+                        print(
+                            "Servo device(s) connected to your setup do not"
+                            " use latest stable version of FW. \nIf it is not"
+                            " expected please update your device(s) immediately."
+                            "\nYou can use following command after stopping servod:"
+                            "\n\nservo_updater -b [servo_type]\n"
+                        )
+                        if not follow:
+                            print(
+                                "You can find more details in servod log"
+                                "(e.g use start-servod with -f flag)"
+                            )
+                        print("================Warning================")
+                        # It is enough to print this waring only once in all cases
+                        break
+
     elif test:
         cont.reload()
         while cont.status == "running":
