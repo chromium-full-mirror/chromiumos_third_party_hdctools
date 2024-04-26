@@ -76,20 +76,25 @@ File format: `.xml` for servod, `.board` and `.scenario` for powerlog.
 
 ## Software tool to measure power
 
-Start a servod instance in chroot to talk to the Servo or Sweetberry that is
-attached to the DUT:
+With servod moved to outside of chroot, build servod after generating
+configuration and start servod with the local build:
 
 ```bash
+(outside) $ build-servod
+
 # For setup with on-board INA chip
-(chroot) $ sudo servod --board $BOARD --config $CONFIG_FILE.xml
+(outside) $ start-servod -c local -p $PORT_NUMBER --board $BOARD -- --config $CONFIG_FILE.xml
 
 # For setup with sweetberry only
-(chroot) $ sudo servod --config $CONFIG_FILE.xml
+(outside) $ start-servod -c local -p $PORT_NUMBER -- --config $CONFIG_FILE.xml
 ```
 
 Note that `$CONFIG_FILE.xml` is generated in the previous step. Both `dut-power`
 and `dut-control` are servod clients that talk to servod and fetch power data
 from the Servo or Sweetberry.
+
+You have to explicitly set $PORT_NUMBER to run servod-based tast test, such as
+meta.PowerServodWrapper, which by defaults uses 9999.
 
 ### Unlock CCD
 
@@ -141,10 +146,10 @@ factory).
 Recommended, for users who only want measurements in power.
 
 ```bash
-(chroot) $ dut-power [arguments]
+(outside) $ dut-power -- [arguments]
 
 # Example arguments for setup with sweetberry only
-(chroot) $ dut-power --vbat-rate 0 -t 5
+(outside) $ dut-power -- --vbat-rate 0 -t 5
 ```
 
 `dut-power` queries the selected servod to read power measurements from the
@@ -229,52 +234,52 @@ Config                    | Context
 1.  Create helper variable, without `ppvar_vbat`.
 
     ```bash
-    (chroot) $ mv=$(dut-control bus_voltage_rails | cut -f 2 -d: | tr -d ',')
-    (chroot) $ ma=$(dut-control current_rails | cut -f 2 -d: | tr -d ',')
-    (chroot) $ mw=$(dut-control power_rails | cut -f 2 -d: | tr -d ',')
-    (chroot) $ cfg_reg=$(echo $mv | sed 's/_mv/_cfg_reg/g')
+    (outside) $ mv=$(dut-control -- bus_voltage_rails | cut -f 2 -d: | tr -d ',')
+    (outside) $ ma=$(dut-control -- current_rails | cut -f 2 -d: | tr -d ',')
+    (outside) $ mw=$(dut-control -- power_rails | cut -f 2 -d: | tr -d ',')
+    (outside) $ cfg_reg=$(echo $mv | sed 's/_mv/_cfg_reg/g')
     ```
 
 2.  Configure on-board ADCs (everytime after running `servod`).
 
     ```bash
-    (chroot) $ for cfg in $cfg_reg ; do dut-control $cfg:regular_power $cfg; done
+    (outside) $ for cfg in $cfg_reg ; do dut-control -- $cfg:regular_power $cfg; done
     ```
 
     Or
 
     ```bash
-    (chroot) $ for cfg in $cfg_reg ; do dut-control $cfg:low_power $cfg; done
+    (outside) $ for cfg in $cfg_reg ; do dut-control -- $cfg:low_power $cfg; done
     ```
 
 3.  Measure each power rail once.
 
     ```bash
-    (chroot) $ dut-control $mv
-    (chroot) $ dut-control $ma
-    (chroot) $ dut-control $mw
+    (outside) $ dut-control -- $mv
+    (outside) $ dut-control -- $ma
+    (outside) $ dut-control -- $mw
     ```
 
     And
 
     ```bash
-    (chroot) $ dut-control avg_ppvar_vbat_mw
-    (chroot) $ dut-control avg_ppvar_vbat_ma
-    (chroot) $ dut-control avg_ppvar_vbat_mw
+    (outside) $ dut-control -- avg_ppvar_vbat_mw
+    (outside) $ dut-control -- avg_ppvar_vbat_ma
+    (outside) $ dut-control -- avg_ppvar_vbat_mw
     ```
 
     Or
 
     ```bash
-    (chroot) $ dut-control ppvar_vbat_mv
-    (chroot) $ dut-control ppvar_vbat_ma
-    (chroot) $ dut-control ppvar_vbat_mw
+    (outside) $ dut-control -- ppvar_vbat_mv
+    (outside) $ dut-control -- ppvar_vbat_ma
+    (outside) $ dut-control -- ppvar_vbat_mw
     ```
 
 4.  Measure power for 1 second 30 times.
 
     ```bash
-    (chroot) $ dut-control -t 30 -z 1000 $mw | grep @@ | cut -b 6-
+    (outside) $ dut-control -- -t 30 -z 1000 $mw | grep @@ | cut -b 6-
     ```
 
 ### powerlog
