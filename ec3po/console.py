@@ -34,7 +34,8 @@ if PW_TOKENIZER_SUPPORTED:
 else:
     print(
         f"Pigweed tokenizer not supported with python {sys.version_info[0:2]}"
-        " - requires python >= (3,11)"
+        " - requires python >= (3,11)",
+        file=sys.stderr,
     )
 
 # pylint: disable=C0413
