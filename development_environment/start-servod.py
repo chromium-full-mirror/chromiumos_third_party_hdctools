@@ -152,6 +152,7 @@ def start_servod(
     sleep,
     test,
     follow,
+    channel,
 ):
     servod_params = "--port 9999 "
 
@@ -265,11 +266,12 @@ def start_servod(
                     if regex_match.group(1) == "no":
                         print("================Warning================")
                         print(
-                            "Servo device(s) connected to your setup do not"
-                            " use latest stable version of FW. \nIf it is not"
-                            " expected please update your device(s) immediately."
+                            "Servo device(s) connected to your setup uses older/newer"
+                            " FW than stable version for this servod channel.\nIf it is"
+                            " not expected please update your device(s) immediately."
                             "\nYou can use following command after stopping servod:"
-                            "\n\nservo_updater -b [servo_type]\n"
+                            f"\n\nservo_updater --updater_channel {channel}"
+                            " -b [servo_type]\n"
                         )
                         if not follow:
                             print(
@@ -407,6 +409,7 @@ def main():
         sleep=args.sleep,
         test=args.run_tests,
         follow=args.follow,
+        channel=args.channel,
     )
 
 
