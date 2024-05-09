@@ -152,7 +152,6 @@ def start_servod(
     sleep,
     test,
     follow,
-    channel,
 ):
     servod_params = "--port 9999 "
 
@@ -260,10 +259,18 @@ def start_servod(
                     "servo_micro_firmware_uptodate",
                 ):
                     (_, output) = cont.exec_run(f"dut-control {type}")
-                    regex_match = re.match(rf"{type}:(yes|no)", output.decode("utf-8"))
-                    if not regex_match:
+                    regex_fw_uptodate = re.match(
+                        rf"{type}:(yes|no)", output.decode("utf-8")
+                    )
+                    if not regex_fw_uptodate:
                         continue
-                    if regex_match.group(1) == "no":
+                    if regex_fw_uptodate.group(1) == "no":
+                        regex_servod_channel = re.match(
+                            r".*:(dev|beta|release|latest)", image
+                        )
+                        channel = regex_servod_channel.group(1)
+                        if channel == "dev":
+                            channel = "local"
                         print("================Warning================")
                         print(
                             "Servo device(s) connected to your setup uses older/newer"
@@ -409,7 +416,6 @@ def main():
         sleep=args.sleep,
         test=args.run_tests,
         follow=args.follow,
-        channel=args.channel,
     )
 
 
