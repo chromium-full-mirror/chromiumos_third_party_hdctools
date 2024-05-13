@@ -366,9 +366,14 @@ docker exec -it flashing_servod-docker_servod bash
 ```
 
 You should then see your firmware directory in /tmp/firmware\_to\_flash and
-should be able to use flash\_ec or any any other normal firmware
+should be able to use flash\_ec or any any other normal firmware flashing
+commands.
 
-flashing commands.
+Alternatively, you can execute the flashing command directly, e.g.
+```shell
+start-servod --channel=release --mount=chromiumos/src/platform/ec:/tmp/ec -n flashing_servod
+docker exec -it flashing_servod-docker_servod /tmp/ec/util/flash_ec --board atlas
+```
 
 ### I want to run TAST/FAFT tests locally - how do I do that ?
 
