@@ -30,7 +30,8 @@ class DutControlCommand(run_command.RunCommandBase):
 """
 
     def execute_command(self, container, passthrough):
-        return container.exec_run("dut-control " + (" ".join(passthrough)))
+        cmd = ["dut-control"] + passthrough
+        return container.exec_run(cmd)
 
 
 if __name__ == "__main__":
