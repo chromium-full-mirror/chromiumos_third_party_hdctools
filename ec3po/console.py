@@ -278,6 +278,9 @@ class Console:
                 token_files.append(self.token_db)
 
             if len(token_files) > 0:
+                self.logger.info(
+                    "Tokenized logging enabled - See https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/zephyr/zephyr_tokenized_logging.md"  # pylint: disable=line-too-long
+                )
                 self.logger.info(f"Loading detokenizer database(s): {token_files}")
                 self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(*token_files)
                 self.z_detokenizer.show_errors = True
