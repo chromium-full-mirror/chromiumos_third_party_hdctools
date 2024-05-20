@@ -1184,6 +1184,99 @@ class ChromeECChinchouHandler(ChromeECHandler):
     }
 
 
+class ChromeECGreenbayupocHandler(ChromeECHandler):
+    """Greenbayupoc is a brox family device that is re-using its OEM's custom
+    keyboard matrix, thus it requires a custom key matrix here.
+    """
+
+    KEY_MATRIX = {
+        "`": (3, 1),
+        "1": (6, 1),
+        "2": (6, 5),
+        "3": (6, 2),
+        "4": (6, 4),
+        "5": (3, 4),
+        "6": (3, 8),
+        "7": (6, 8),
+        "8": (6, 6),
+        "9": (6, 11),
+        "0": (6, 10),
+        "-": (3, 10),
+        "=": (0, 10),
+        "q": (7, 1),
+        "w": (7, 5),
+        "e": (7, 2),
+        "r": (7, 4),
+        "t": (2, 4),
+        "y": (2, 8),
+        "u": (7, 8),
+        "i": (7, 6),
+        "o": (7, 11),
+        "p": (7, 10),
+        "[": (2, 10),
+        "]": (2, 6),
+        "\\": (3, 14),
+        "a": (4, 1),
+        "s": (4, 5),
+        "d": (4, 2),
+        "f": (4, 4),
+        "g": (1, 4),
+        "h": (1, 8),
+        "j": (4, 8),
+        "k": (4, 6),
+        "l": (4, 11),
+        ";": (4, 10),
+        "'": (1, 10),
+        "z": (5, 1),
+        "x": (5, 5),
+        "c": (5, 2),
+        "v": (5, 4),
+        "b": (0, 4),
+        "n": (0, 8),
+        "m": (5, 8),
+        ",": (5, 6),
+        ".": (5, 11),
+        "/": (5, 10),
+        " ": (5, 14),
+        "<right>": (6, 15),
+        "<alt_r>": (0, 13),
+        "<down>": (6, 14),
+        "<tab>": (2, 1),
+        "<shift_r>": (7, 9),
+        "<ctrl_r>": (4, 0),
+        "<esc>": (1, 1),
+        "<backspace>": (1, 14),
+        "<f2>": (3, 2),
+        "<alt_l>": (6, 13),
+        "<ctrl_l>": (2, 0),
+        "<f1>": (0, 2),
+        "<search>": (1, 3),
+        "<f3>": (2, 2),
+        "<f4>": (1, 2),
+        "<f5>": (3, 5),
+        "<f6>": (2, 5),
+        "<f7>": (1, 5),
+        "<f8>": (0, 5),
+        "<f9>": (3, 11),
+        "<f10>": (2, 11),
+        "<f11>": (1, 11),
+        "<f12>": (0, 11),
+        "<up>": (7, 14),
+        "<shift_l>": (5, 9),
+        "<enter>": (4, 14),
+        "<left>": (7, 15),
+    }
+
+    def __init__(self, servo):
+        """Sets up the servo communication infrastructure.
+
+        @param servo: A Servo object representing
+                           the host running servod.
+        """
+        super(ChromeECGreenbayupocHandler, self).__init__(servo)
+        self.open()
+
+
 class ChromeMatrix30Handler(ChromeECHandler):
     """To support scan matrix v30, add key matrix here."""
 
