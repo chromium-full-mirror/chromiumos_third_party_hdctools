@@ -6,17 +6,19 @@
 
 set -x
 
+log_output() {
+  echo "$(date -Iseconds)" "$@"
+  logger -t "${UPSTART_JOB}" "$@"
+}
+
 /usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
 
-CONFIG_FILE_DIR="/var/lib/servod"
-CONFIG_FILE=$CONFIG_FILE_DIR/config_$PORT
 LOG="/var/log/servod_$PORT.STARTUP.log"
 LOG_BACKUP_COUNT=1024
 
 # Default port to be 9999.
 PORT=${PORT:-9999}
 mkdir -p /var/lib/servod
-. /hdctools/chromeos/servod_utils.sh
 
 log_output "Pre-start PORT=$PORT BOARD=$BOARD MODEL=$MODEL SERIAL=$SERIAL."
 
@@ -24,28 +26,7 @@ for CMD in iptables-legacy ip6tables-legacy ; do
     $CMD -A INPUT -p tcp --dport $PORT -j ACCEPT || log_output "Failed to configure $CMD."
 done
 
-log_output "Update config. PORT=$PORT BOARD=$BOARD MODEL=$MODEL SERIAL=$SERIAL."
-
-# We'll want to update the config file with all the args passed in.
-update_config $CONFIG_FILE BOARD $BOARD
-update_config $CONFIG_FILE MODEL $MODEL
-update_config $CONFIG_FILE SERIAL $SERIAL
-update_config $CONFIG_FILE CONFIG $CONFIG
-update_config $CONFIG_FILE DUAL_V4 $DUAL_V4
-
-log_output "Store servo hub location and servo micro serial if presents. "\
-    "$CONFIG_FILE $SERIAL"
-cache_servov4_hub_and_servo_micro $CONFIG_FILE $SERIAL
 log_output "Pre-start complete."
-
-SERVO_MICRO_VIDPID="18d1:501a"
-SERVO_V4_VIDPID="18d1:501b"
-
-if [ ! -f $CONFIG_FILE ]; then
-    log_output "No configuration file ($CONFIG_FILE); terminating"
-    stop
-    exit 0
-fi
 
 if [ -z "$BOARD" ]; then
     log_output "No board specified; terminating"
