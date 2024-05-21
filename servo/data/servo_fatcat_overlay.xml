@@ -1,0 +1,63 @@
+<root>
+  <include>
+    <name>ti50.xml</name>
+  </include>
+  <include>
+    <name>x86_ec_common.xml</name>
+  </include>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok=""
+    shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
+    warm_reset_can_hold_ap="no"/>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut"/>
+  </control>
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>gsc_ec_reset:on</item>
+            <item>ap_flash_select:on</item>
+          </item>
+          <item key="0">
+            <item>ap_flash_select:off</item>
+            <item>gsc_ec_reset:off</item>
+            <!-- Additional reset pulse as a workaround to bring the dut back on. -->
+            <item>sleep:2</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI access for flashing CPU firmware over C2D2</doc>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>gsc_ec_reset:on</item>
+            <item>ap_flash_select:on</item>
+            <item>spi2_vref:pp1800</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>ap_flash_select:off</item>
+            <item>gsc_ec_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+</root>
