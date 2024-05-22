@@ -113,7 +113,7 @@ class ec3poDriver(hw_driver.HwDriver):
           state: A boolean indicating whether to turn on raw debug on the console.
         """
         if self._interface is not None:
-            mode = "on" if state else "off"
+            mode = b"on" if state else b"off"
             self._logger.debug("EC3PO raw debug set to: %r", mode)
             # Make sure that only bytes are passed on to the oobm_queue
             self._interface._console.oobm_queue.put(b"rawdebug %s" % mode)
