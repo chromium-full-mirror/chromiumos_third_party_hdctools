@@ -123,10 +123,13 @@ def get_image(client, channel, allow_offline):
             and e.response is not None
             and str(e.response.content).find("unauthorized") > 0
         ):
-            print("Authentication with docker registry failed. This should not happen.")
             print(
-                "Please check https://chromium.googlesource.com/chromiumos/third_party/"
-                "hdctools/+/main/docs/servod_outside_chroot.md#faq"
+                "!!!\nUnexpected authentication failure. Please try running: \n"
+                "\ngcloud auth login\n\n"
+                "Refresh the credentials and try again.\n"
+                "More reading: https://chromium.googlesource.com/chromiumos/"
+                "third_party/hdctools/+/main/docs/servod_outside_chroot.md#start_servod"
+                "-sent-me-here-after-authenticating-with-the-registry-failed"
             )
             sys.exit(1)
         if not allow_offline:
