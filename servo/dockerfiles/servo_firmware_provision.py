@@ -23,9 +23,9 @@ SWEETBERRY_NAME_PREV = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011
 
 # Dev channel firmware
 SERVO_V4P1_NAME_DEV = "servo_v4p1_v2.0.24151-03b2123fb"  # same as STABLE
-C2D2_NAME_DEV = "c2d2_v2.4.79-e22e94f0b9"  # servo branch builder 04/30/2024
+C2D2_NAME_DEV = "c2d2_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
 SERVO_MICRO_NAME_DEV = (
-    "servo_micro_v2.4.79-e22e94f0b9"  # servo branch builder 04/30/2024
+    "servo_micro_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
 )
 
 # Alpha channel firmware
