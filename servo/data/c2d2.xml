@@ -270,44 +270,6 @@
     <params subtype="i2c_speed" interface="6" bus="ec" drv="ec3po_c2d2"
     input_type="int"></params>
   </control>
-  <!-- I2C pseudo adapter controller -->
-  <control>
-    <name>c2d2_i2c_pseudo_is_started</name>
-    <doc>Check if the C2D2 I2C pseudo adapter has been started.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="4">
-    </params>
-  </control>
-  <control>
-    <name>c2d2_i2c_pseudo_is_running</name>
-    <doc>Check if the C2D2 I2C pseudo adapter I/O thread is running.
-    </doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="4">
-    </params>
-  </control>
-  <control>
-    <name>c2d2_i2c_pseudo_adapter_num</name>
-    <doc>Get the I2C adapter number of the C2D2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="4">
-    </params>
-  </control>
-  <control>
-    <name>c2d2_i2c_pseudo_bus_type</name>
-    <doc>Get the Servo I2C bus type used by the C2D2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="servo_i2c_bus_type" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>c2d2_i2c_pseudo_device_path</name>
-    <doc>Get the i2c-pseudo device file path used by the C2D2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="pseudo_device_path" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>c2d2_i2c_pseudo_xfer_counters</name>
-    <doc>Get the I2C pseudo controller transfer counters of the C2D2 I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="xfer_counters" interface="2">
-    </params>
-  </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>warm_reset</name>

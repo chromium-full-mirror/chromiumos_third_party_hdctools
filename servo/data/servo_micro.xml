@@ -515,42 +515,4 @@
     <params cmd="get" subtype="get_ite_chipid" interface="6"
     drv="ec3po_servo_micro" input_type="str"></params>
   </control>
-  <!-- I2C pseudo adapter controller -->
-  <control>
-    <name>servo_micro_i2c_pseudo_is_started</name>
-    <doc>Check if the Servo Micro I2C pseudo adapter has been started.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="is_started" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>servo_micro_i2c_pseudo_is_running</name>
-    <doc>Check if the Servo Micro I2C pseudo adapter I/O thread is running.
-    </doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="is_running" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>servo_micro_i2c_pseudo_adapter_num</name>
-    <doc>Get the I2C adapter number of the Servo Micro I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="i2c_adapter_num" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>servo_micro_i2c_pseudo_bus_type</name>
-    <doc>Get the Servo I2C bus type used by the Servo Micro I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="servo_i2c_bus_type" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>servo_micro_i2c_pseudo_device_path</name>
-    <doc>Get the i2c-pseudo device file path used by the Servo Micro I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="pseudo_device_path" interface="2">
-    </params>
-  </control>
-  <control>
-    <name>servo_micro_i2c_pseudo_xfer_counters</name>
-    <doc>Get the I2C pseudo controller transfer counters of the Servo Micro I2C pseudo adapter.</doc>
-    <params cmd="get" drv="i2c_pseudo" subtype="xfer_counters" interface="2">
-    </params>
-  </control>
 </root>
