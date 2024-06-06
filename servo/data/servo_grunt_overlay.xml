@@ -28,7 +28,8 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"/>
+    <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"
+      ccd_pulse_cold_reset="yes"/>
   </control>
   <control>
     <name>c0_ppc_pp1_en</name>
