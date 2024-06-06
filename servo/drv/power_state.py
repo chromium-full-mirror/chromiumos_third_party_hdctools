@@ -52,6 +52,11 @@ class PowerStateDriver(hw_driver.HwDriver):
         super(PowerStateDriver, self)._drv_init()
         self._reset_hold_time = float(self._params.get("reset_hold", 0.5))
         self._reset_recovery_time = float(self._params.get("reset_recovery", 5.0))
+        # Use ecrst pulse for ccd devices if running `ecrst off` is unreliable
+        # with the EC in reset
+        self._ccd_pulse_cold_reset = (
+            self._params.get("ccd_pulse_cold_reset", "") == "yes"
+        )
 
     def _cold_reset(self):
         """Apply cold reset to the DUT.
@@ -60,11 +65,29 @@ class PowerStateDriver(hw_driver.HwDriver):
         exact affect on the hardware varies depending on the board type.
 
         """
+        # Handle ccd cold_reset differently if the board specified a ccd
+        # cold_reset signal
+        if self._ccd_pulse_cold_reset and "ccd" in self._servod_get("servo_class"):
+            return self._ccd_cold_reset()
         self._servod_set("cold_reset", "on")
         time.sleep(self._reset_hold_time)
         self._servod_set("cold_reset", "off")
         # After the reset, give the EC the time it needs to
         # re-initialize.
+        time.sleep(self._reset_recovery_time)
+
+    def _ccd_cold_reset(self):
+        """Use the ccd cold reset signal to reset the dut.
+
+        Some boards cannot reliably run `ecrst off` after `ecrst on`. Use
+        `ecrst pulse` to ensure the device is released from reset.
+        """
+        # The ccd_cold_reset_pulse signal asserts and deasserts ecrst on its own
+        self._servod_set("gsc_ecrst_pulse", "on")
+        # After the reset, give the EC and CCD the time it needs to
+        # re-initialize.
+        time.sleep(self._reset_recovery_time)
+        self._servod_set("gsc_ecrst_pulse", "off")
         time.sleep(self._reset_recovery_time)
 
     def _warm_reset(self):
