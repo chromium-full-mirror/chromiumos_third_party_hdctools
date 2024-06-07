@@ -602,6 +602,10 @@ def main():
     )
 
     if args.board is None:
+        if args.all is False:
+            raise ServoUpdaterException(
+                "Use --board parameter to specify servo type to update"
+            )
         boards = BOARDS
     else:
         boards = args.board
