@@ -295,6 +295,11 @@
     <params cmd="get" uart_cmd="ccdstate" regex="State flags:([\S ]*)[\n\r]"
     group="1" interface="9" drv="cr50" ></params>
   </control>
+  <control>
+    <name>gsc_fw_wp_state</name>
+    <doc>Used to turn fw wp off and on through GSC</doc>
+    <params interface="9" drv="fw_wp_ccd" input_type="str" />
+  </control>
   <!-- gsc I2C controls -->
   <control>
     <name>gsc_i2c_ctrl</name>

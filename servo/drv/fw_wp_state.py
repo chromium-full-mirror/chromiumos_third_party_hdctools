@@ -27,6 +27,8 @@ class FwWpStateDriver(hw_driver.HwDriver):
     _STATE_ON = "on"
     _STATE_OFF = "off"
     _STATE_FOLLOW_BATTERY_PRESENT = "follow_batt_pres"
+    _STATE_MAIN_SERVO_FORCE_ON = "main_servo_force_on"
+    _STATE_MAIN_SERVO_FORCE_OFF = "main_servo_force_off"
 
     def _force_on(self):
         """Force the firmware to write-protected."""
@@ -44,12 +46,24 @@ class FwWpStateDriver(hw_driver.HwDriver):
         """Get the firmware write-protection state."""
         raise NotImplementedError()
 
+    def _main_servo_force_on(self):
+        """Force the firmware to write-protected."""
+        return self.force_on()
+
+    def _main_servo_force_off(self):
+        """Force the firmware to not write-protected."""
+        return self.force_off()
+
     def _set(self, statename):
         """Set firmware write-protection state according to `statename`."""
         if statename == self._STATE_FORCE_ON:
             self._force_on()
         elif statename == self._STATE_FORCE_OFF:
             self._force_off()
+        elif statename == self._STATE_MAIN_SERVO_FORCE_ON:
+            self._main_servo_force_on()
+        elif statename == self._STATE_MAIN_SERVO_FORCE_OFF:
+            self._main_servo_force_off()
         elif statename == self._STATE_RESET:
             self._reset()
         else:
@@ -60,6 +74,8 @@ class FwWpStateDriver(hw_driver.HwDriver):
                     statename,
                     self._STATE_FORCE_ON,
                     self._STATE_FORCE_OFF,
+                    self._STATE_MAIN_SERVO_FORCE_ON,
+                    self._STATE_MAIN_SERVO_FORCE_OFF,
                     self._STATE_RESET,
                 )
             )

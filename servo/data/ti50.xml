@@ -8,4 +8,10 @@
     <alias>ti50_version</alias>
     <params clobber_ok="patch" />
   </control>
+  <!-- b/346346124 - Try to keep ti50 wp state in sync with servo to avoid wp mismatch events -->
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on. Keep ti50 wp in sync with servo.</doc>
+    <params clobber_ok="patch" sync_gsc_wp="yes" />
+  </control>
 </root>
