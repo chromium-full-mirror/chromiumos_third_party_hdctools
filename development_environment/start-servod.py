@@ -10,6 +10,7 @@ import os
 import re
 import signal
 import sys
+import threading
 
 import docker
 import run_command
@@ -142,6 +143,11 @@ def get_image(client, channel, allow_offline):
     return image
 
 
+def output_logs(log_lines):
+    for line in log_lines:
+        print(line.decode("utf-8"), end="")
+
+
 def start_servod(
     client,
     container_name,
@@ -212,19 +218,25 @@ def start_servod(
         )
         started = False
         log_lines = cont.logs(stream=True, follow=True)
+        output_thread = None
         if not test and not sleep:
-            print("Starting ", end="", flush=True)
+            if not (sleep or test) and follow:
+                output_thread = threading.Thread(target=output_logs, args=(log_lines,))
+                output_thread.start()
+            else:
+                print("Starting ", end="", flush=True)
             while not started:
                 try:
-                    (ec, _unused) = cont.exec_run(
+                    (error_code, output) = cont.exec_run(
                         "servodtool instance wait-for-active --timeout 1 -p 9999"
                     )
+                    del output  # All information necessary is in the error code.
                     print(".", end="", flush=True)
                 except docker.errors.APIError:
                     for line in log_lines:
                         print(line.decode("utf-8"), end="")
                     sys.exit(2)
-                if ec == 0:
+                if error_code == 0:
                     started = True
                     log_lines = None
                     if follow:
@@ -256,10 +268,10 @@ def start_servod(
                     if follow:
                         print(" or press CTRL+C", end="")
                     print("\n")
-                    (ec, stdout) = cont.exec_run(
+                    (error_code, output) = cont.exec_run(
                         "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty"
                     )
-                    print("Main console locations:\n{}".format(stdout.decode("utf-8")))
+                    print("Main console locations:\n{}".format(output.decode("utf-8")))
                     # Verify connected servos FW version, print warning if update needed
                     for servo_type in (
                         "servo_firmware_uptodate",
@@ -315,6 +327,9 @@ def start_servod(
                 % name
             )
         if not (sleep or test) and follow:
+            if output_thread:
+                output_thread.join(timeout=0.1)
+                output_thread = None
             unused_rc, stream = cont.exec_run(
                 ["tail", "-F", "-n", "0", "/var/log/servod_9999/latest.%s" % (follow,)],
                 stream=True,
@@ -325,7 +340,6 @@ def start_servod(
         while cont:
             try:
                 cont.reload()
-                print(cont.status)
                 if cont.status in ["created", "running"]:
                     cont.kill()
                 cont = None
