@@ -375,7 +375,9 @@ class ptyDriver(hw_driver.HwDriver):
                 self._interface.resume_capture()
         return result_list
 
-    def _issue_cmd_get_multi_results(self, cmd, regex, flush=None):
+    def _issue_cmd_get_multi_results(
+        self, cmd, regex, flush=None, timeout=DEFAULT_UART_TIMEOUT
+    ):
         """Send command to the device and wait for multiple response.
 
         This function waits for arbitrary number of response message
@@ -396,7 +398,7 @@ class ptyDriver(hw_driver.HwDriver):
             if regex:
                 while True:
                     try:
-                        self._child.expect(regex, timeout=0.1)
+                        self._child.expect(regex, timeout)
                         match = self._child.match
                         lastindex = match.lastindex if match and match.lastindex else 0
                         # Create a tuple which contains the entire matched string and all
