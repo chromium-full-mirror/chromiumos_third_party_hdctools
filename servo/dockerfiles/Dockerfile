@@ -32,6 +32,8 @@ RUN apt-get update \
     python3-distutils \
     python3-setuptools \
     python3-wheel \
+    python3-build \
+    python3-venv \
     uuid-dev \
     wget
 RUN update-alternatives --auto c++
@@ -151,6 +153,14 @@ RUN git clone https://chromium.googlesource.com/external/pigweed/pigweed/pigweed
 WORKDIR /pigweed
 COPY servo/dockerfiles/setup_pigweed.py .
 RUN python3 setup_pigweed.py bdist_wheel
+
+######################################################################
+FROM libftdi as pacina-builder
+
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/dev-util
+
+WORKDIR /dev-util/contrib/power_measurement/pacina
+RUN python3 -m build
 
 ######################################################################
 FROM libftdi as gcstool-builder
@@ -344,6 +354,8 @@ COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 WORKDIR /wheels
 COPY --link --from=ec-builder /ec/dist/*.whl ./
 COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
+COPY --link --from=pacina-builder \
+    /dev-util/contrib/power_measurement/pacina/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
