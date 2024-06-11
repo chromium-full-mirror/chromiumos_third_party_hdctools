@@ -157,7 +157,6 @@ class Fi2c(i2c_base.BaseI2CBus):
         Raises:
           Fi2cError: If init fails
         """
-        super(Fi2c, self).init()
         err = self._flib.ftdi_init(ctypes.byref(self._fc))
         if err:
             raise Fi2cError("ftdi_init", err)
