@@ -119,21 +119,21 @@
   <control>
     <name>sbu_uart_sel</name>
     <doc>SBU_UART_SEL: Select between CCD or UART on SBU</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="0" map="onoff_sbu_uart_sel" init="ccd"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="SBU_UART_SEL" ioex="true" map="onoff_sbu_uart_sel" init="ccd"></params>
   </control>
   <control>
     <name>atmega_rst</name>
     <doc>ATMEL_RESET_L: reset atmega</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="1" map="onoff_i" init="off"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="ATMEL_RESET_L" ioex="true" map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>sbu_flip_sel</name>
     <doc>SBU_FLIP_SEL: Flip SBU lines based on cable
     rotation.</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="2" map="onoff"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="SBU_FLIP_SEL" ioex="true" map="onoff"></params>
   </control>
 
   <!-- USB ports settings -->
@@ -142,8 +142,8 @@
     <alias>top_usb_mux_sel,usb_mux_sel1,image_usbkey_mux,top_usbkey_mux</alias>
     <doc>(top) muxable usb port mux. Designated for recovery images
       in the lab.</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="3" map="usbkey"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB3_A0_MUX_SEL" ioex="true" map="usbkey"></params>
   </control>
   <control>
     <name>usb3_mux_sel_at_poweron</name>
@@ -160,8 +160,8 @@
     <name>usb3_mux_en</name>
     <alias>top_usb_mux_en,usb_mux_oe1</alias>
     <doc>USB3.0_TYPEA_MUX_EN_L</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="4" map="onoff_i"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB3_A0_MUX_EN_L" ioex="true" map="onoff_i"></params>
   </control>
   <control>
     <name>usb3_mux_en_at_poweron</name>
@@ -177,8 +177,8 @@
     <alias>top_usb_pwr_en,prtctl4_pwren,image_usbkey_pwr,top_usbkey_pwr</alias>
     <doc>(top) muxable usb port power enable. Designated for recovery images
       in the lab.</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="5" map="onoff"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB3_A0_PWR_EN" ioex="true" map="onoff"></params>
   </control>
   <control>
     <name>usb3_pwr_en_at_poweron</name>
@@ -193,8 +193,8 @@
   <control>
     <name>uservo_fastboot_mux_sel</name>
     <doc>USERVO_FASTBOOT_MUX_SEL</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="1"
-    offset="0" map="onoff_uservo_fastboot_sel">
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USERVO_FASTBOOT_MUX_SEL" ioex="true" map="onoff_uservo_fastboot_sel">
     </params>
   </control>
   <control>
@@ -226,8 +226,8 @@
   <control>
     <name>uservo_pwr_en</name>
     <doc>USERVO_POWER_EN</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="0"
-    offset="7" map="onoff"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USERVO_POWER_EN" ioex="true" map="onoff"></params>
   </control>
   <control>
     <name>uservo_pwr_en_at_poweron</name>
@@ -243,8 +243,8 @@
     <name>aux_usbkey_mux_sel</name>
     <alias>bottom_usb_mux_sel,aux_usbkey_mux,bottom_usbkey_mux</alias>
     <doc>(bottom) muxable usb port mux.</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="1"
-    offset="2" map="usbkey"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB3_A1_MUX_SEL" ioex="true" map="usbkey"></params>
   </control>
   <control>
     <name>aux_usbkey_mux_sel_at_poweron</name>
@@ -277,8 +277,8 @@
     <name>aux_usbkey_pwr_en</name>
     <alias>bottom_usb_pwr_en,aux_usbkey_pwr,bottom_usbkey_pwr</alias>
     <doc>(bottom) muxable usb port power enable.</doc>
-    <params interface="23" drv="tca6416" child="0x21" port="1"
-    offset="1" map="onoff"></params>
+    <params interface="26" drv="ec3po_gpio" subtype="single"
+     name="USB3_A1_PWR_EN" ioex="true" map="onoff"></params>
   </control>
   <control>
     <name>aux_usbkey_pwr_en_at_poweron</name>
