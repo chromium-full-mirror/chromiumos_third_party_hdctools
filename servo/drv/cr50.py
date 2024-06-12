@@ -1,6 +1,7 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Driver for board config controls of drv=cr50.
 
 Provides the following Cr50 controlled function:
@@ -220,7 +221,10 @@ class cr50(pty_driver.ptyDriver):
                 self._interface.ccd_uart_bitbang_settings["parity"],
             )
             try:
-                result = self._issue_cmd_get_results(cmd, ["Bit bang enabled"])
+                # Cr50 and Ti50 have different outputs.
+                result = self._issue_cmd_get_results(
+                    cmd, [r"Bit bang enabled|baud rate - parity"]
+                )
                 if result is None:
                     raise cr50Error("Unable to enable bit bang mode!")
             except pty_driver.ptyError as e:
