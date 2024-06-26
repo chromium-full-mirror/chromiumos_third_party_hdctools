@@ -11,4 +11,11 @@
     <doc>Configure the servod device to read ADCs.</doc>
     <params name="EN_I2C_DBG_PWR_L" clobber_ok="patch"></params>
   </control>
+  <control>
+    <name>ccd_ec_uart_baudrate</name>
+    <alias>ec_uart_baudrate</alias>
+    <doc>Baud rate for the EC UART console forwarded over CCD.</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate" interface="7"
+    input_type="int" clobber_ok="full"></params>
+  </control>
 </root>
