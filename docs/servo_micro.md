@@ -22,7 +22,7 @@ dut hub, and muxed usb storage.
 Like other Servo boards, the Servo Micro requires [`servod`] to be running:
 
 ```bash
-(chroot) $ sudo servod -b [board]
+$ start-servod -b [board]
 ```
 
 The Servo Micro connects to the servo header of the DUT in the orientation where
@@ -106,35 +106,51 @@ current from the Servo Micro, putting the hardware in a non-responsive state.
 Brownout detection has been enabled to escape this condition by rebooting the
 servos impacted. Impacted DUTs may require deployment using [Servo v2].
 
-## Updating Firmware
+## Updating Firmware {#updating-firmware}
 
-Servo Micro can be updated to the latest stable firmware using the
-`servo_updater` tool.
+The latest firmware is available via the servod docker image. You need to have go/servod
+configured. That would also add servo_updater CLI to your host shell.
 
 <!-- mdformat off(b/139308852) -->
 *** note
-**NOTE**: [`servod`] must not be running when updating since it locks the
-device.
+**NOTE**: [`servod`] must not be running. You should have recent versions of
+start-servod and servo_updater scripts that are in hdctools repo (repo sync)
+
 ***
 <!-- mdformat on -->
 
-Sync the latest source:
+**Update to latest stable firmware:**
 
 ```bash
-(chroot) repo sync
+$ servo_updater -b servo_micro
 ```
 
-Update `sys-firmware/servo-firmware` to the latest version:
+**Rollback to previous stable version if needed:**
+```bash
+$ servo_updater -b servo_micro -c prev --allow-rollback
+```
+---
+Advanced usage below:
+
+- Update to specific binary file
 
 ```bash
-(chroot) update_chroot
+$ servo_updater -b servo_micro -f <file_path>
 ```
 
-Update the firmware:
+- Update to specific FW channel
 
 ```bash
-(chroot) $ sudo servo_updater -b servo_micro
+$ servo_updater -b servo_micro -c [alpha|dev|prev|stable]
 ```
+
+- If you need to update FW, before it reaches monthly released servod image specify
+channel for servod docker distribution ("release" is default)
+
+```bash
+$ servo_updater --updater_channel [local|latest|beta|release] -b servo_micro [...]
+```
+
 
 ## Developing Servo Micro Firmware
 

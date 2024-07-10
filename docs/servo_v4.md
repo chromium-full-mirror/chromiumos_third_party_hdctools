@@ -155,7 +155,7 @@ It's intended to be mostly transparent, but there are some differences.
 Most functionality is exported through `dut-control`.
 
 ```bash
-(chroot) $ sudo servod -b <board> -s <serial>
+$  start-servod -b <board> -s <serial>
 ```
 
 To use with a specific board, you can connect a servo_micro to the "uServo"
@@ -164,7 +164,7 @@ which will load the board config and control both Servo v4 and Servo Micro (or
 GSC).
 
 ```bash
-(chroot) $ sudo servod -b [board] -s [serialno printed on servo v4 sticker]
+$ start-servod -b [board] -s [serialno printed on servo v4 sticker]
 ```
 
 ### Recipes
@@ -195,31 +195,31 @@ Connect to GSC Console:
 #### Switch SD to Host
 
 ```bash
-(chroot) $ dut-control sd_en:on sd_pwr_en:on sd_mux_sel:servo_sees_usbkey host_sd_usb_mux_en:on host_sd_usb_mux_sel:sd
+$ dut-control -- sd_en:on sd_pwr_en:on sd_mux_sel:servo_sees_usbkey host_sd_usb_mux_en:on host_sd_usb_mux_sel:sd
 ```
 
 #### Switch SD to DUT
 
 ```bash
-(chroot) $ dut-control sd_en:on sd_pwr_en:on sd_mux_sel:dut_sees_usbkey
+$ dut-control -- sd_en:on sd_pwr_en:on sd_mux_sel:dut_sees_usbkey
 ```
 
 #### Disable SD
 
 ```bash
-(chroot) $ dut-control sd_en:off sd_pwr_en:off
+$ dut-control -- sd_en:off sd_pwr_en:off
 ```
 
 #### Switch USB3 to Host
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
+$ dut-control -- usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
 ```
 
 #### Switch USB3 to DUT
 
 ```bash
-(chroot) $ dut-control usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
+$ dut-control -- usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
 ```
 
 ### Disable/Enable [SuzyQ] wiring (debug accessory mode)
@@ -231,7 +231,7 @@ Type-C Servo v4 only
 <!-- mdformat on -->
 
 ```bash
-(chroot) $ dut-control servo_v4_dts_mode:off [on]
+$ dut-control -- servo_v4_dts_mode:off [on]
 ```
 
 #### Connect remotely
@@ -249,7 +249,7 @@ Type-C Servo v4 only
 <!-- mdformat on -->
 
 ```bash
-(chroot) $ dut-control servo_v4_role:snk [src]
+$ dut-control -- servo_v4_role:snk [src]
 ```
 
 ## Firmware flashing and reading
@@ -270,40 +270,47 @@ Read and flash AP firmware (BIOS) with CCD or any other servo debug connection:
 
 ## Updating Firmware {#updating-firmware}
 
-The latest firmware is available in the chroot at
-`/usr/share/servo_updater/firmware/`.
-
-If the green LED on the servo does not light up when DUT POWER is connected to a
-USB charger, you probably don’t have the latest firmware and should update.
+The latest firmware is available via the servod docker image. You need to have go/servod
+configured. That would also add servo_updater CLI to your host shell.
 
 <!-- mdformat off(b/139308852) -->
 *** note
-**NOTE**: [`servod`] must not be running.
+**NOTE**: [`servod`] must not be running. You should have recent versions of
+start-servod and servo_updater scripts that are in hdctools repo (repo sync)
+
 ***
 <!-- mdformat on -->
 
-Sync the latest source:
+**Update to latest stable firmware:**
 
 ```bash
-(chroot) repo sync
+$ servo_updater -b servo_v4
 ```
 
-Update `sys-firmware/servo-firmware` to the latest version:
+**Rollback to previous stable version if needed:**
+```bash
+$ servo_updater -b servo_v4 -c prev --allow-rollback
+```
+---
+Advanced usage below:
+
+- Update to specific binary file
 
 ```bash
-(chroot) update_chroot
+$ servo_updater -b servo_v4 -f <file_path>
 ```
 
-Update to latest stable firmware:
+- Update to specific FW channel
 
 ```bash
-(chroot) $ sudo servo_updater -b servo_v4
+$ servo_updater -b servo_v4 -c [alpha|dev|prev|stable]
 ```
 
-Update to specific version:
+- If you need to update FW, before it reaches monthly released servod image specify
+channel for servod docker distribution ("release" is default)
 
 ```bash
-(chroot) $ sudo servo_updater -b servo_v4 -f <filename>
+$ servo_updater --updater_channel [local|latest|beta|release] -b servo_v4 [...]
 ```
 
 ## Enabling Case Closed Debug (CCD)
