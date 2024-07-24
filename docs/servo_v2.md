@@ -112,9 +112,9 @@ and spiflash utility can be used to send the new firmare to the chip.
 
 ## Images
 
-![servo v2 top](https://www.chromium.org/_/rsrc/1410554530438/chromium-os/servo/servo_v2_top.jpg)
+![servo v2 top](https://www.chromium.org/chromium-os/servo/servo_v2_top.jpg)
 
-![servo v2 bottom](https://www.chromium.org/_/rsrc/1410554549536/chromium-os/servo/servo_v2_bot.jpg)
+![servo v2 bottom](https://www.chromium.org/chromium-os/servo/servo_v2_bot.jpg)
 
 ## Known Issues
 
@@ -145,7 +145,7 @@ relevant to your board.
 
 ### glados_pd / kunimitsu_pd / chell_pd:
 
-![servo v2 gladus_pd rework](https://www.chromium.org/_/rsrc/1446080772852/chromium-os/servo/IMG_20151019_085815%20%281%29%20%281%29.jpg)
+![servo v2 gladus_pd rework](https://www.chromium.org/chromium-os/servo/IMG_20151019_085815%20%281%29%20%281%29.jpg)
 
 [Servo V2 block diagram, BOM, schematic and layout]: https://www.chromium.org/chromium-os/servo/chromium_os_servo_v2.tar.gz
 [AXK750347G]: http://www3.panasonic.biz/ac/ae/search_num/index.jsp?c=detail&part_no=AXK750347G
