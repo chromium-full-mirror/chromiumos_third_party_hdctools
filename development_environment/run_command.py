@@ -99,7 +99,11 @@ class RunCommandBase:
                 containers[0], args.passthrough[1:]
             )
             if output:
-                print(output.decode("utf-8"), end="")
+                if isinstance(output, docker.types.daemon.CancellableStream):
+                    for line in output:
+                        print(line.decode("utf-8"), end="")
+                else:
+                    print(output.decode("utf-8"), end="")
             sys.exit(exit_code)
         else:
             print(
@@ -113,4 +117,4 @@ class RunCommandBase:
 
     def execute_command(self, container, passthrough):
         cmd = [self.command] + passthrough
-        return container.exec_run(cmd)
+        return container.exec_run(cmd, stream=True, tty=True)
