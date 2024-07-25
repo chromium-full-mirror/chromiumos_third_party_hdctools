@@ -9,6 +9,28 @@ import sys
 import docker
 
 
+HELP_MESSAGE_BASE = """
+{0}
+
+[-n|--container_name CONTAINER_NAME]
+    If you are running multiple servod containers use this to address a
+    specific instance.
+""".strip()
+
+HELP_MESSAGE_ADV = """
+--
+
+Everything after the -- is passed to the {0} command in
+the container.
+
+Example: {1}
+
+Note the exit code for the wrapper script is set to be the exit code of the {0} command.
+
+Run {0} -- -h to get the specific help for {0}
+""".strip()
+
+
 class CustomArgHelpParser(argparse.ArgumentParser):
     def __init__(self, message):
         super().__init__(add_help=False)
@@ -25,6 +47,12 @@ class CustomArgHelpParser(argparse.ArgumentParser):
 
 
 class RunCommandBase:
+    def __init__(self, command, example_msg=None):
+        self.command = command
+        self.message = HELP_MESSAGE_BASE.format(command)
+        if example_msg is not None:
+            self.message = self.message + HELP_MESSAGE_ADV.format(command, example_msg)
+
     def parse_args(self):
         self.parser = CustomArgHelpParser(self.message)
         self.parser.add_argument(
@@ -84,4 +112,5 @@ class RunCommandBase:
             )
 
     def execute_command(self, container, passthrough):
-        raise NotImplementedError
+        cmd = [self.command] + passthrough
+        return container.exec_run(cmd)
