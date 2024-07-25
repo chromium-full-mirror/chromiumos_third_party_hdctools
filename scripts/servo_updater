@@ -101,7 +101,9 @@ def parse_args():
 def main():
     client = setup()
     args, passthrough_args = parse_args()
+    print("Getting docker image...")
     image = get_image(client, args.updater_channel)
+    print("Starting docker container...")
     ec = start_servo_updater(
         client=client,
         image=image,
