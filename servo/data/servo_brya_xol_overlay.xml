@@ -10,4 +10,9 @@
       subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok=''>
     </params>
   </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <!-- Override port_count="3" from brya overlay -->
+    <params clobber_ok="" port_count="2" />
+  </control>
 </root>
