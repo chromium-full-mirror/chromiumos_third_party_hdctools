@@ -50,10 +50,15 @@ def print_line(container):
     servod_cmd_args = parse_args(container_args)
     root_serial = determine_root_serial(container)
     host_port = determine_host_port(container)
+    image = "Unknown"
+    try:
+        container.image.tags[0].split(":")[1],
+    except IndexError:
+        pass
     print(
         format_str.format(
             container.name,
-            container.image.tags[0].split(":")[1],
+            image,
             servod_cmd_args.board,
             servod_cmd_args.model,
             root_serial,
