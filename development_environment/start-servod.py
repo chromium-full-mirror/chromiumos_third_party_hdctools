@@ -156,168 +156,184 @@ def start_servod(
     test,
     follow,
 ):
-    servod_params = "--port 9999 "
+    try:
+        # Just in case someone manages to press ctrl-c before the container object
+        # is created.
+        cont = None
 
-    if board:
-        servod_params += "--board %s " % board
-    if model:
-        servod_params += "--model %s " % model
-    if serial_no:
-        servod_params += "--serialname %s " % serial_no
-    if passthrough_args:
-        servod_params += str.join(" ", passthrough_args)
-    if not container_name:
-        now = datetime.now()
-        container_name = now.strftime("%s")
+        servod_params = "--port 9999 "
 
-    name = "%s-docker_servod" % container_name
-    logs_volume = "%s_log" % container_name
+        if board:
+            servod_params += "--board %s " % board
+        if model:
+            servod_params += "--model %s " % model
+        if serial_no:
+            servod_params += "--serialname %s " % serial_no
+        if passthrough_args:
+            servod_params += str.join(" ", passthrough_args)
+        if not container_name:
+            now = datetime.now()
+            container_name = now.strftime("%s")
 
-    command = ["bash", "/start_servod_dev.sh", servod_params]
-    if sleep:
-        command = ["sleep", "infinity"]
-    elif test:
-        command = ["pytest", "-n", "auto", "/hdctools/"]
+        name = "%s-docker_servod" % container_name
+        logs_volume = "%s_log" % container_name
 
-    volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
+        command = ["bash", "/start_servod_dev.sh", servod_params]
+        if sleep:
+            command = ["sleep", "infinity"]
+        elif test:
+            command = ["pytest", "-n", "auto", "/hdctools/"]
 
-    _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
-    if os.path.isfile(_servodrc):
-        volumes.append(f"{_servodrc}:/root/.servodrc:ro")
+        volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
 
-    if mounts:
-        for mount in mounts:
-            volumes.append("".join(mount))
-    ports = {}
-    if port:
-        ports = {"9999": port}
+        _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
+        if os.path.isfile(_servodrc):
+            volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
-    logging.info("Container run")
-    cont = client.containers.run(
-        image,
-        remove=True,
-        privileged=True,
-        name=name,
-        hostname=name,
-        cap_add=["NET_ADMIN"],
-        detach=True,
-        volumes=volumes,
-        ports=ports,
-        command=command,
-    )
-    started = False
-    log_lines = cont.logs(stream=True, follow=True)
-    if not test and not sleep:
-        print("Starting ", end="", flush=True)
-        while not started:
-            try:
-                (ec, _unused) = cont.exec_run(
-                    "servodtool instance wait-for-active --timeout 1 -p 9999"
-                )
-                print(".", end="", flush=True)
-            except docker.errors.APIError:
-                for line in log_lines:
-                    print(line.decode("utf-8"), end="")
-                sys.exit(2)
-            if ec == 0:
-                started = True
-                log_lines = None
-                if follow:
-                    log_lines = cont.logs()
-                else:
-                    log_lines = b"\n"
-                    i = 0
-                    # To reduce the clutter on screens print 3 lines at the start of
-                    # the servod logs ( to get a timestamp ), then three lines at the
-                    # end which is typically the most relevant information.
-                    for line in cont.logs(stream=True):
-                        i += 1
-                        if i > 3:
-                            break
-                        log_lines += line
-                    log_lines += b"\n...............\n\n"
-                    log_lines += cont.logs(tail=3)
-                print(log_lines.decode("utf-8"))
-                if port:
-                    print(
-                        "container port 9999 is mapped to port %s on your machine"
-                        % port
-                    )
-                print(
-                    "\nTo stop this container: $ stop-servod --container_name %s"
-                    % container_name,
-                    end="",
-                )
-                if follow:
-                    print(" or press CTRL+C", end="")
-                print("\n")
-                (ec, stdout) = cont.exec_run(
-                    "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty"
-                )
-                print("Main console locations:\n{}".format(stdout.decode("utf-8")))
-                # Verify connected servos FW version, print warning if update needed
-                for type in (
-                    "servo_firmware_uptodate",
-                    "c2d2_firmware_uptodate",
-                    "servo_micro_firmware_uptodate",
-                ):
-                    (_, output) = cont.exec_run(f"dut-control {type}")
-                    regex_fw_uptodate = re.match(
-                        rf"{type}:(yes|no)", output.decode("utf-8")
-                    )
-                    if not regex_fw_uptodate:
-                        continue
-                    if regex_fw_uptodate.group(1) == "no":
-                        regex_servod_channel = re.match(
-                            r".*:(dev|beta|release|latest)", image
-                        )
-                        channel = regex_servod_channel.group(1)
-                        if channel == "dev":
-                            channel = "local"
-                        print("================Warning================")
-                        print(
-                            "Servo device(s) connected to your setup uses older/newer"
-                            " FW than stable version for this servod channel.\nIf it is"
-                            " not expected please update your device(s) immediately."
-                            "\nYou can use following command after stopping servod:"
-                            f"\n\nservo_updater --updater_channel {channel}"
-                            " -b [servo_type]\n"
-                        )
-                        if not follow:
-                            print(
-                                "You can find more details in servod log"
-                                "(e.g use start-servod with -f flag)"
-                            )
-                        print("================Warning================")
-                        # It is enough to print this waring only once in all cases
-                        break
+        if mounts:
+            for mount in mounts:
+                volumes.append("".join(mount))
+        ports = {}
+        if port:
+            ports = {"9999": port}
 
-    elif test:
-        cont.reload()
-        while cont.status == "running":
-            try:
-                cont.reload()
-            except docker.errors.APIError:
-                sys.exit(0)
-            else:
-                for line in log_lines:
-                    print(line.decode("utf-8"), end="")
-    elif sleep:
-        print(
-            "Enter the container by running the command $ docker exec -it %s bash"
-            % name
+        logging.info("Container run")
+        cont = client.containers.run(
+            image,
+            remove=True,
+            privileged=True,
+            name=name,
+            hostname=name,
+            cap_add=["NET_ADMIN"],
+            detach=True,
+            volumes=volumes,
+            ports=ports,
+            command=command,
         )
-    if not (sleep or test) and follow:
-        try:
+        started = False
+        log_lines = cont.logs(stream=True, follow=True)
+        if not test and not sleep:
+            print("Starting ", end="", flush=True)
+            while not started:
+                try:
+                    (ec, _unused) = cont.exec_run(
+                        "servodtool instance wait-for-active --timeout 1 -p 9999"
+                    )
+                    print(".", end="", flush=True)
+                except docker.errors.APIError:
+                    for line in log_lines:
+                        print(line.decode("utf-8"), end="")
+                    sys.exit(2)
+                if ec == 0:
+                    started = True
+                    log_lines = None
+                    if follow:
+                        log_lines = cont.logs()
+                    else:
+                        log_lines = b"\n"
+                        i = 0
+                        # To reduce the clutter on screens print 3 lines at the start of
+                        # the servod logs ( to get a timestamp ), then three lines at
+                        # the end which is typically the most relevant information.
+                        for line in cont.logs(stream=True):
+                            i += 1
+                            if i > 3:
+                                break
+                            log_lines += line
+                        log_lines += b"\n...............\n\n"
+                        log_lines += cont.logs(tail=3)
+                    print(log_lines.decode("utf-8"))
+                    if port:
+                        print(
+                            "container port 9999 is mapped to port %s on your machine"
+                            % port
+                        )
+                    print(
+                        "\nTo stop this container: $ stop-servod --container_name %s"
+                        % container_name,
+                        end="",
+                    )
+                    if follow:
+                        print(" or press CTRL+C", end="")
+                    print("\n")
+                    (ec, stdout) = cont.exec_run(
+                        "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty"
+                    )
+                    print("Main console locations:\n{}".format(stdout.decode("utf-8")))
+                    # Verify connected servos FW version, print warning if update needed
+                    for servo_type in (
+                        "servo_firmware_uptodate",
+                        "c2d2_firmware_uptodate",
+                        "servo_micro_firmware_uptodate",
+                    ):
+                        (exit_code, output) = cont.exec_run(f"dut-control {servo_type}")
+                        del exit_code  # No need to check exit code.
+                        regex_fw_uptodate = re.match(
+                            rf"{servo_type}:(yes|no)", output.decode("utf-8")
+                        )
+                        if not regex_fw_uptodate:
+                            continue
+                        if regex_fw_uptodate.group(1) == "no":
+                            regex_servod_channel = re.match(
+                                r".*:(dev|beta|release|latest)", image
+                            )
+                            channel = regex_servod_channel.group(1)
+                            if channel == "dev":
+                                channel = "local"
+                            print("================Warning================")
+                            print(
+                                "Servo device(s) connected to your setup uses "
+                                "older/newer FW than stable version for this servod "
+                                "channel.\nIf it is not expected please update your "
+                                "device(s) immediately."
+                                "\nYou can use following command after stopping servod:"
+                                f"\n\nservo_updater --updater_channel {channel}"
+                                " -b [servo_type]\n"
+                            )
+                            if not follow:
+                                print(
+                                    "You can find more details in servod log"
+                                    "(e.g use start-servod with -f flag)"
+                                )
+                            print("================Warning================")
+                            # It is enough to print this waring only once in all cases
+                            break
+
+        elif test:
+            cont.reload()
+            while cont.status == "running":
+                try:
+                    cont.reload()
+                except docker.errors.APIError:
+                    sys.exit(0)
+                else:
+                    for line in log_lines:
+                        print(line.decode("utf-8"), end="")
+        elif sleep:
+            print(
+                "Enter the container by running the command $ docker exec -it %s bash"
+                % name
+            )
+        if not (sleep or test) and follow:
             unused_rc, stream = cont.exec_run(
                 ["tail", "-F", "-n", "0", "/var/log/servod_9999/latest.%s" % (follow,)],
                 stream=True,
             )
             for data in stream:
                 print(data.decode(), end="")
-        except KeyboardInterrupt:
-            cont.kill()
-            sys.exit(1)
+    except KeyboardInterrupt:
+        while cont:
+            try:
+                cont.reload()
+                print(cont.status)
+                if cont.status in ["created", "running"]:
+                    cont.kill()
+                cont = None
+            except KeyboardInterrupt:
+                pass  # Sometimes multiple ctrl-c are received.
+            except docker.errors.APIError:
+                pass  # Sometimes we try to kill a container that is shutting down.
+        sys.exit(1)
 
 
 def parse_args():
