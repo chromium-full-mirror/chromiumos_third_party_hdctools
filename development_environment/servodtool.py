@@ -3,20 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import run_command
+import sys
+
+from run_instead import RunInsteadBase
 
 
-EXAMPLE_MSG = """
-servodtool -- instance show -s example
-    No servod scratch entry found under id: 'example'.
-""".strip()
-
-
-class ServodtoolCommand(run_command.RunCommandBase):
+class ServodtoolCommand(RunInsteadBase):
     def __init__(self):
-        super().__init__("servodtool", EXAMPLE_MSG)
+        super().__init__("servodtool")
 
 
 if __name__ == "__main__":
-    command = ServodtoolCommand()
-    command.run_command_in_container()
+    servodtool = ServodtoolCommand()
+    sys.exit(servodtool.run())
