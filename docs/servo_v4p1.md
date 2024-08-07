@@ -77,7 +77,8 @@ Your contact at Google should be able to provide you with Servo v4.1.
 
 ### Googlers
 
-Stop by your local Chromestop.
+Stop by your local Chromestop, or use http://go/hwrequest and enter `Servo V4.1`
+for the `Google Code Name`.
 
 ## How to Use Servo v4.1
 
