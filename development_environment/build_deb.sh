@@ -20,7 +20,9 @@ cp start-servod.py \
     servod-ps.py \
     dut-control.py \
     servodtool.py \
-    run_command.py  \
+    servo_updater.py \
+    run_command.py \
+    run_instead.py \
     ../servod/usr/local/servod/development_environment/
 cd -
 
