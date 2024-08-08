@@ -500,7 +500,10 @@ def print_json(outfile, boards, file, channel):
     print(json.dumps(output, indent=2, sort_keys=True), file=outfile)
 
 
-def main():
+def main(cmdline=sys.argv[1:]):
+    if len(cmdline) > 0 and cmdline[0] == "--":
+        cmdline = cmdline[1:]
+
     parser = argparse.ArgumentParser(
         description="""
         Image a servo device. Normally this supports flashing the firmware
@@ -508,6 +511,9 @@ def main():
         one device is found on USB that matches the specification.
     """
     )
+    # Add double-dashes in help message to unify docker and standalone versions
+    parser.prog = parser.prog + " --"
+
     parser.add_argument(
         "-p",
         "--print",
@@ -595,7 +601,7 @@ def main():
         help="Always reboot, even after probe.",
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args(cmdline)
 
     servo_parsing.ServodRCParser.PostProcessRCElements(
         options=args, rcpath=servo_parsing.DEFAULT_RC_FILE, logger=logging

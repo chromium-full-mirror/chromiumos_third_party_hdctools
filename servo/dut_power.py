@@ -458,6 +458,8 @@ class DutPower:
           cmdline: dut-power cmdline.
         """
         parser = self._build_parser()
+        # Add double-dashes in help message to unify docker and standalone versions
+        parser.prog = parser.prog + " --"
         args = self._parse_cmdline(parser, cmdline)
         self._setup_logging(args)
 
@@ -490,6 +492,8 @@ class DutPower:
 
 
 def main(cmdline=sys.argv[1:]):
+    if len(cmdline) > 0 and cmdline[0] == "--":
+        cmdline = cmdline[1:]
     dut_power = DutPower()
     dut_power.main(cmdline)
 

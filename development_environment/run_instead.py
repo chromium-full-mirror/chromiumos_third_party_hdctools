@@ -6,12 +6,20 @@
 import argparse
 from datetime import datetime
 import os
+import sys
 
 import docker
 
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
+
+HELP_DESCRIPTION = """  --
+    Everything after the -- is passed to the %(prog)s command in the container.
+
+    Note the exit code for the wrapper script is set to be the exit code of the %(prog)s command.
+
+    Run %(prog)s -- -h to get the specific help for %(prog)s"""
 
 
 class RunInsteadBase:
@@ -35,7 +43,11 @@ class RunInsteadBase:
         return DEFAULT_IMAGE
 
     def parse_args(self):
-        parser = argparse.ArgumentParser(add_help=True)
+        parser = argparse.ArgumentParser(
+            add_help=True,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog=HELP_DESCRIPTION,
+        )
         parser.add_argument(
             "-c",
             type=str,
@@ -74,6 +86,17 @@ class RunInsteadBase:
 
     def run(self):
         args, passthrough_args = self.parse_args()
+
+        if passthrough_args and passthrough_args[0] != "--":
+            print(
+                (
+                    "Error - unknown arguments '%s' - if you want to pass through"
+                    " arguments use the -- separator"
+                )
+                % " ".join(passthrough_args),
+                file=sys.stderr,
+            )
+            sys.exit(3)
 
         if hasattr(self, "override_args"):
             self.override_args(args, passthrough_args)
