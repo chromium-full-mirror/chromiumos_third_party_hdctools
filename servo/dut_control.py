@@ -35,7 +35,7 @@ def _build_parser():
       ServodClientParser with dut_control arguments
     """
     description = (
-        "%(prog)s allows users to set and get various controls on a DUT system "
+        "dut-control allows users to set and get various controls on a DUT system "
         "via the servo debug & control board. This client communicates to the "
         "board via a socket connection to the servo server."
     )
@@ -69,6 +69,9 @@ def _build_parser():
     parser = servo_parsing.ServodClientParser(
         description=description, examples=examples
     )
+    # Add double-dashes in help message to unify docker and standalone versions
+    parser.prog = parser.prog + " --"
+
     info_g = parser.add_mutually_exclusive_group()
     info_g.add_argument(
         "-i",
@@ -413,6 +416,8 @@ def real_main(cmdline):
 def main(cmdline=sys.argv[1:]):
     """main method exception wrapper."""
     try:
+        if len(cmdline) > 0 and cmdline[0] == "--":
+            cmdline = cmdline[1:]
         real_main(cmdline)
     except KeyboardInterrupt:
         sys.exit(0)

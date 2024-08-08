@@ -193,7 +193,7 @@ class Servod:
             if candidates:
                 error_msg += "Do you mean %s?\n" % candidates
             error_msg += (
-                "You can check all servod controls with 'dut-control all_controls'."
+                "You can check all servod controls with 'dut-control -- all_controls'."
             )
             raise ServodError(error_msg)
 
