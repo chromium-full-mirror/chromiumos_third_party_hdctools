@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package diagnoseme;
+
+import "google/protobuf/empty.proto";
+
+service DolosRpcService {
+  rpc update_firmware(google.protobuf.Empty) returns (FirmwareUpdateResponse) {}
+  rpc check_dolos_from_dut(google.protobuf.Empty) returns (CheckDolosFromDutReponse) {}
+  rpc check_dolos_from_host(google.protobuf.Empty) returns (CheckDolosFromHostReponse) {}
+}
+
+// NEXT_TAG = 4
+message CommandExecutionResults {
+  string stderr = 1;
+  string stdout = 2;
+  uint32 exit_code = 3;
+}
+
+// NEXT_TAG = 2
+message FirmwareUpdateResponse {
+  repeated CommandExecutionResults result = 1;
+}
+
+enum TEST_STATUS {
+  PASS = 0;
+  FAIL = 1;
+  INFRA_ERROR = 2;
+}
+
+// NEXT_TAG = 3
+message CheckDolosFromDutReponse {
+  TEST_STATUS status = 1;
+  string error = 2;
+}
+
+// NEXT_TAG = 4
+message CheckDolosFromHostReponse {
+  TEST_STATUS status = 1;
+  string error = 2;
+  string dolos_serial_number = 3;
+}
