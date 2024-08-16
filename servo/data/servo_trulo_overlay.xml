@@ -13,7 +13,6 @@
   </include>
   
   <!-- ******** Controls ******** -->
-  
 
   <control>
     <name>ccd_cpu_fw_spi</name>
@@ -59,7 +58,7 @@
   
   <!-- misc controls -->
   
-    <control>
+  <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
     <params drv="cros_ec_softrec_power" clobber_ok=""
@@ -82,22 +81,27 @@
   
   <control>
     <name>fw_up</name>
-    <!-- The dut_i2c_en alias is used by the flash_ec script to assert the FW_UP signal as part of the ITE I2C programming sequence. -->
-    <alias>dut_i2c_en</alias>
     <params clobber_ok="patch" od="PP" map="onoff" init="off"></params>
   </control>
 
-    <control>
+  <control>
     <name>spi2_vref</name>
     <!-- Disable the SPI2_VREF output load switch to avoid pushing power
     into the DUT. -->
     <params clobber_ok="patch" init="off" />
   </control>  
 
-    <control>
+  <control>
+    <name>chassis_open</name>
+    <doc>Enable ccd unlock without battery disconnect or 5 minute pwr btn press procedure.</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="0" map="yesno_i" init="off"></params>
+  </control>
+
+  <control>
     <name>dev_mode</name>
     <alias>servo_spi_programming</alias>
-    <doc>Controls a mux on Brox that switches between AP or GSC+Servo access to AP SPI flash.</doc>
+    <doc>Controls a mux on DUT that switches between AP or GSC+Servo access to AP SPI flash.</doc>
     <params clobber_ok="patch" od="PP" map="onoff" init="off" />
   </control>
 
