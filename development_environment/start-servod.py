@@ -73,6 +73,10 @@ start-servod
        By default -f will show the debug logs but you can specify -f=WARNING or -f=INFO
        if you wish another level of logging.
 
+    [-v | --verbose]
+        Verbose output. Instead of printing pluses, all output of docker library is
+        printed. Allows to verify the reason of long start times.
+
     [--allow_offline]
         Every time you run start-servod the code will check for a newer version of the
         servod docker image.   If you are not connected to the internet this check will
@@ -128,11 +132,14 @@ def update_check_timestamp():
         file.write(current_date)
 
 
-def pull_newest_image(client, image, allow_offline):
+def pull_newest_image(client, image, allow_offline, verbose):
     try:
         resp = client.api.pull(image, stream=True, decode=True)
         for unused_update in resp:
-            print("+", end="", flush=True)
+            if verbose:
+                print("+ {}".format(unused_update))
+            else:
+                print("+", end="", flush=True)
         print("", flush=True)
         update_check_timestamp()
     except docker.errors.APIError as e:
@@ -159,7 +166,7 @@ def pull_newest_image(client, image, allow_offline):
         print("Failed to check for new version, offline mode specified.")
 
 
-def get_image(client, channel, allow_offline, force_update):
+def get_image(client, channel, allow_offline, force_update, verbose):
     if channel == "local":
         if client.images.list(filters={"reference": DEFAULT_IMAGE}):
             return DEFAULT_IMAGE
@@ -178,7 +185,7 @@ def get_image(client, channel, allow_offline, force_update):
         logging.info(
             "Checking docker image is up to date and downloading updates as necessary."
         )
-        pull_newest_image(client, image, allow_offline)
+        pull_newest_image(client, image, allow_offline, verbose)
         logging.info("Image check complete.")
     else:
         logging.info("Docker image version verified earlier today, no updates needed.")
@@ -433,6 +440,11 @@ def parse_args():
         const="DEBUG",
     )
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action=argparse.BooleanOptionalAction,
+    )
+    parser.add_argument(
         "--mount",
         type=str,
         action="append",
@@ -477,7 +489,9 @@ def main():
     logging.info("Setup.")
     client = setup()
     args = parse_args()
-    image = get_image(client, args.channel, args.allow_offline, args.force_update)
+    image = get_image(
+        client, args.channel, args.allow_offline, args.force_update, args.verbose
+    )
     logging.info("Starting the server.")
     start_servod(
         client=client,
