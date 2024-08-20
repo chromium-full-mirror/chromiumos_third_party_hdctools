@@ -10,7 +10,6 @@ import os
 import re
 import signal
 import sys
-import tempfile
 import threading
 
 import docker
@@ -19,7 +18,6 @@ import run_command
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
-UPDATE_CHECKER_FILE = os.path.join(tempfile.gettempdir(), "start-servod-timestamp")
 
 signal.signal(signal.SIGINT, signal.default_int_handler)
 
@@ -81,10 +79,6 @@ start-servod
         This option suppresses that error and allows the servod to start with whatever
         version of the image is cached to the disk.  If there is no cached version the
         script will still fail with an access error.
-
-    [--force_update]
-        Force checking if there is an update to docker image. By default, the check
-        is done only once a day for release channel, and everytime for other ones.
 """
 
 
@@ -109,32 +103,21 @@ def setup():
         raise StartServodException(error_message)
 
 
-def needs_update_check():
-    if os.path.exists(UPDATE_CHECKER_FILE) is False:
-        return True
-
-    with open(UPDATE_CHECKER_FILE, "r") as file:
-        date = file.read().strip()
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        if date == current_date:
-            return False
-        else:
-            return True
-
-
-def update_check_timestamp():
-    with open(UPDATE_CHECKER_FILE, "w") as file:
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        file.write(current_date)
-
-
-def pull_newest_image(client, image, allow_offline, verbose):
+def get_image(client, channel, allow_offline):
+    if channel == "local":
+        if client.images.list(filters={"reference": DEFAULT_IMAGE}):
+            return DEFAULT_IMAGE
+        print(
+            "\nWARNING:  local image requested but not available, "
+            "using release image.\n"
+        )
+        channel = "release"
+    image = ARTIFACT_URL_TEMPLATE % channel
     try:
         resp = client.api.pull(image, stream=True, decode=True)
         for unused_update in resp:
             print("+", end="", flush=True)
         print("", flush=True)
-        update_check_timestamp()
     except docker.errors.APIError as e:
         if (
             e.is_server_error()
@@ -157,31 +140,6 @@ def pull_newest_image(client, image, allow_offline, verbose):
         if not allow_offline:
             raise
         print("Failed to check for new version, offline mode specified.")
-
-
-def get_image(client, channel, allow_offline, force_update):
-    if channel == "local":
-        if client.images.list(filters={"reference": DEFAULT_IMAGE}):
-            return DEFAULT_IMAGE
-        print(
-            "\nWARNING:  local image requested but not available, "
-            "using release image.\n"
-        )
-        channel = "release"
-    image = ARTIFACT_URL_TEMPLATE % channel
-    if (
-        channel != "release"
-        or force_update is True
-        or needs_update_check()
-        or len(client.images.list(filters={"reference": image})) == 0
-    ):
-        logging.info(
-            "Checking docker image is up to date and downloading updates as necessary."
-        )
-        pull_newest_image(client, image, allow_offline)
-        logging.info("Image check complete.")
-    else:
-        logging.info("Docker image version verified earlier today, no updates needed.")
     return image
 
 
@@ -448,10 +406,6 @@ def parse_args():
         "--allow_offline",
         action=argparse.BooleanOptionalAction,
     )
-    parser.add_argument(
-        "--force_update",
-        action=argparse.BooleanOptionalAction,
-    )
     args = parser.parse_args()
     if args.help:
         parser.print_usage()
@@ -477,8 +431,11 @@ def main():
     logging.info("Setup.")
     client = setup()
     args = parse_args()
-    image = get_image(client, args.channel, args.allow_offline, args.force_update)
-    logging.info("Starting the server.")
+    logging.info(
+        "Checking docker image is up to date and downloading updates as necessary."
+    )
+    image = get_image(client, args.channel, args.allow_offline)
+    logging.info("Image check complete, Starting the server.")
     start_servod(
         client=client,
         container_name=args.container_name,
