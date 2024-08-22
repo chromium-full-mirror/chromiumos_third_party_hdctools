@@ -5,6 +5,7 @@
 
 import argparse
 import sys
+import types
 
 import docker
 
@@ -99,7 +100,14 @@ class RunCommandBase:
                 containers[0], args.passthrough[1:]
             )
             if output:
-                if isinstance(output, docker.types.daemon.CancellableStream):
+                # We need to check for both types due to a change in the API
+                # at version 6.1.0 of the python docker API.
+                # Remove the extra check for GeneratorType when we are sure
+                # that no-one is using older versions and we put a min version
+                # check in.
+                if isinstance(
+                    output, (docker.types.daemon.CancellableStream, types.GeneratorType)
+                ):
                     for line in output:
                         print(line.decode("utf-8"), end="")
                 else:
