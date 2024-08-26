@@ -323,14 +323,18 @@ def start_servod(
                     print("Main console locations:\n{}".format(output.decode("utf-8")))
                     # Verify connected servos FW version, print warning if update needed
                     for servo_type in (
-                        "servo_firmware_uptodate",
-                        "c2d2_firmware_uptodate",
-                        "servo_micro_firmware_uptodate",
+                        "servo_v4",
+                        "servo_v4p1",
+                        "c2d2",
+                        "servo_micro",
                     ):
-                        (exit_code, output) = cont.exec_run(f"dut-control {servo_type}")
+                        (exit_code, output) = cont.exec_run(
+                            f"dut-control {servo_type}_firmware_uptodate"
+                        )
                         del exit_code  # No need to check exit code.
                         regex_fw_uptodate = re.match(
-                            rf"{servo_type}:(yes|no)", output.decode("utf-8")
+                            rf"{servo_type}_firmware_uptodate:(yes|no)",
+                            output.decode("utf-8"),
                         )
                         if not regex_fw_uptodate:
                             continue
@@ -348,8 +352,7 @@ def start_servod(
                                 "channel.\nIf it is not expected please update your "
                                 "device(s) immediately."
                                 "\nYou can use following command after stopping servod:"
-                                f"\n\nservo_updater --updater_channel {channel}"
-                                " -b [servo_type]\n"
+                                f"\n\nservo_updater -c {channel} -- -b {servo_type}\n"
                             )
                             if not follow:
                                 print(
@@ -357,7 +360,7 @@ def start_servod(
                                     "(e.g use start-servod with -f flag)"
                                 )
                             print("================Warning================")
-                            # It is enough to print this waring only once in all cases
+                            # It is enough to print this warning only once in all cases
                             break
 
         elif test:
