@@ -98,6 +98,9 @@ class RunInsteadBase:
             )
             sys.exit(3)
 
+        # Remove --
+        if passthrough_args:
+            passthrough_args.pop(0)
         if hasattr(self, "override_args"):
             self.override_args(args, passthrough_args)
 
