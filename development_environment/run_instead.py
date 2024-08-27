@@ -77,8 +77,15 @@ class RunInsteadBase:
             entrypoint=entrypoint,
         )
         output = cont.attach(stdout=True, stderr=True, stream=True, logs=True)
+        # Setting the tty parameter to True causes the output to
+        # contain CRLF line endings instead of LF. This can cause
+        # problems when using output of this command in shell
+        # scripts or as input to other commands. Stripping lines
+        # caused empty lines to be printed periodically, so the
+        # replace *SHOULD* work correctly. We have no guarantee that
+        # the CR and LF won't be split between different calls.
         for line in output:
-            print(line.decode("utf-8"), end="")
+            print(line.decode("utf-8").replace("\r\n", "\n"), end="")
         result = cont.wait()
         ec = result["StatusCode"]
         cont.remove()
