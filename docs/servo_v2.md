@@ -97,8 +97,8 @@ j7:6 and j11:8, any value from 1k to 1M should be fine.
 To enable D2 firwmare flashing run
 
 ```
- $ dut-control spi1_buf_en:on spi1_buf_on_flex_en:on spi1_vref:pp3300
- $ dut-control dev_mode:on pch_disable:on pch_disable:off
+ $ dut-control -- spi1_buf_en:on spi1_buf_on_flex_en:on spi1_vref:pp3300
+ $ dut-control -- dev_mode:on pch_disable:on pch_disable:off
 ```
 
 At this point the boot prompt should show up on D2 console:

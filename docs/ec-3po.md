@@ -22,7 +22,7 @@ that you get from elsewhere though.
 To obtain the EC console PTY, inside the chroot run:
 
 ```shell
-$ dut-control ec_uart_pty
+$ dut-control -- ec_uart_pty
 ```
 
 **NOTE: It's important to use `dut-control` to query the PTY instead of just

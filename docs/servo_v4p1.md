@@ -313,12 +313,12 @@ start-servod and servo_updater scripts that are in hdctools repo (repo sync)
 **Update to latest stable firmware:**
 
 ```bash
-$ servo_updater -b servo_v4p1
+$ servo_updater -- -b servo_v4p1
 ```
 
 **Rollback to previous stable version if needed:**
 ```bash
-$ servo_updater -b servo_v4p1 -c prev --allow-rollback
+$ servo_updater -- -b servo_v4p1 -c prev --allow-rollback
 ```
 ---
 Advanced usage below:
@@ -326,20 +326,20 @@ Advanced usage below:
 - Update to specific binary file
 
 ```bash
-$ servo_updater -b servo_v4p1 -f <file_path>
+$ servo_updater -f <file_path> -- -b servo_v4p1
 ```
 
 - Update to specific FW channel
 
 ```bash
-$ servo_updater -b servo_v4p1 -c [alpha|dev|prev|stable]
+$ servo_updater -- -b servo_v4p1 -c [alpha|dev|prev|stable]
 ```
 
 - If you need to update FW, before it reaches monthly released servod image specify
 channel for servod docker distribution ("release" is default)
 
 ```bash
-$ servo_updater --updater_channel [local|latest|beta|release] -b servo_v4p1 [...]
+$ servo_updater --updater_channel [local|latest|beta|release] -- -b servo_v4p1 [...]
 ```
 
 ## Enabling Case Closed Debug (CCD)

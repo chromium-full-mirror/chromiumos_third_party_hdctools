@@ -64,15 +64,15 @@ Here are some commands that are available for Flex:
 
 ### Controlling the power switch
 ```
-dut-control power_state:on
-dut-control power_state:off
-dut-control power_state:reset
+dut-control -- power_state:on
+dut-control -- power_state:off
+dut-control -- power_state:reset
 ```
 
 ### Controlling the usb mux direction
 ```
-dut-control image_usbkey_direction:dut_sees_usbkey
-dut-control image_usbkey_direction:servo_sees_usbkey
-dut-control second_usbkey_direction:dut_sees_usbkey
-dut-control second_usbkey_direction:servo_sees_usbkey
+dut-control -- image_usbkey_direction:dut_sees_usbkey
+dut-control -- image_usbkey_direction:servo_sees_usbkey
+dut-control -- second_usbkey_direction:dut_sees_usbkey
+dut-control -- second_usbkey_direction:servo_sees_usbkey
 ```
