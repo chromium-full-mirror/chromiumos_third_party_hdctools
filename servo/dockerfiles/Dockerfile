@@ -51,11 +51,13 @@ RUN equivs-build equivs-control
 RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
 
 ######################################################################
-FROM clang-builder as cbfstool
+FROM clang-builder as coreboot
 
 RUN wget https://coreboot.org/releases/coreboot-4.21.tar.xz && tar xf coreboot-4.21.tar.xz && rm /coreboot-4.21.tar.xz
 RUN cd /coreboot-4.21/util/cbfstool && make
 RUN strip /coreboot-4.21/util/cbfstool/cbfstool
+RUN cd /coreboot-4.21/util/ifdtool && make
+RUN strip /coreboot-4.21/util/ifdtool/ifdtool
 
 ######################################################################
 FROM clang-builder as libusb-builder
@@ -410,8 +412,10 @@ RUN ln -s /usr/bin/futility /usr/bin/dump_fmap; \
     ln -s /usr/bin/futility /usr/bin/vbutil_keyblock
 
 # Install cbfstool for flashrom and ec.
-COPY --link --from=cbfstool /coreboot-4.21/util/cbfstool/cbfstool /usr/local/bin/
+COPY --link --from=coreboot /coreboot-4.21/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
+COPY --link --from=coreboot /coreboot-4.21/util/ifdtool/ifdtool /usr/local/bin/
+RUN chmod 755 /usr/local/bin/ifdtool
 
 # Install shflags
 COPY --link --from=shflags-builder shflags/shflags /usr/share/misc/shflags
