@@ -124,7 +124,7 @@ If you instead build in (~/chromiumos/src/third_party/hdctools) some (?) files w
 
 
 ```
-$ sudo servo_updater --board=servo_v4p1 -v -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin --force
+$ sudo servo_updater -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin -- --board=servo_v4p1 -v --force
 ```
 
 ### CCD not working out-of-box

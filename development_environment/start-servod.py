@@ -51,8 +51,8 @@ start-servod
 
     [-d | --sleep | --no-sleep]
        Run/setup the container but execute sleep infinity, useful in advanced use
-       cases like running servo_updater where the servod can not be running but
-       the container needs to be setup.
+       cases like running commands inside docker container without servod
+       running in it.
 
     [--mount [MOUNT ...]]
        Mount a directory from the host to the container in the format:
@@ -352,7 +352,7 @@ def start_servod(
                                 "channel.\nIf it is not expected please update your "
                                 "device(s) immediately."
                                 "\nYou can use following command after stopping servod:"
-                                f"\n\nservo_updater -c {channel} -- -b {servo_type}\n"
+                                f"\n\nservo_updater --updater_channel {channel} -- -b {servo_type}\n"
                             )
                             if not follow:
                                 print(

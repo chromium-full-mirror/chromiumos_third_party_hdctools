@@ -66,6 +66,7 @@ class RunInsteadBase:
         )
         parser.add_argument(
             "-c",
+            "--updater_channel",
             type=str,
             choices=["local", "latest", "beta", "release"],
             default="release",

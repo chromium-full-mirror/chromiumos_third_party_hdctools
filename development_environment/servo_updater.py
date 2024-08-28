@@ -18,7 +18,8 @@ class RunServoUpdater(RunInsteadBase):
             "-f",
             "--file",
             type=str,
-            help="Update servo with specific file.",
+            help="Update servo with specific firmware file. Do not use "
+            "additional -f flag after the -- argument",
         )
 
     def override_args(self, args, passthrough_args):
