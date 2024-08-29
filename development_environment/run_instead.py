@@ -38,7 +38,23 @@ class RunInsteadBase:
     def get_image(self, channel):
         if channel != "local":
             image = ARTIFACT_URL_TEMPLATE % channel
-            self.client.images.pull(image)
+            try:
+                self.client.images.pull(image)
+            except docker.errors.APIError as e:
+                if (
+                    e.is_server_error()
+                    and e.response is not None
+                    and str(e.response.content).find("unauthorized") > 0
+                ):
+                    print(
+                        "!!!\nUnexpected authentication failure. Please try running: \n"
+                        "\ngcloud auth login\n\n"
+                        "Refresh the credentials and try again.\n"
+                        "More reading: https://chromium.googlesource.com/chromiumos/"
+                        "third_party/hdctools/+/main/docs/servod_outside_chroot.md#start_servod"
+                        "-sent-me-here-after-authenticating-with-the-registry-failed"
+                    )
+                    sys.exit(1)
             return image
         return DEFAULT_IMAGE
 
