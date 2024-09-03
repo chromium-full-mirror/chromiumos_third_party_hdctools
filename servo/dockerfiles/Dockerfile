@@ -51,15 +51,6 @@ RUN equivs-build equivs-control
 RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
 
 ######################################################################
-FROM clang-builder as coreboot
-
-RUN wget https://coreboot.org/releases/coreboot-4.21.tar.xz && tar xf coreboot-4.21.tar.xz && rm /coreboot-4.21.tar.xz
-RUN cd /coreboot-4.21/util/cbfstool && make
-RUN strip /coreboot-4.21/util/cbfstool/cbfstool
-RUN cd /coreboot-4.21/util/ifdtool && make
-RUN strip /coreboot-4.21/util/ifdtool/ifdtool
-
-######################################################################
 FROM clang-builder as libusb-builder
 
 RUN git clone https://github.com/libusb/libusb
@@ -293,6 +284,16 @@ RUN make && make install
 RUN strip /usr/bin/futility
 
 ######################################################################
+FROM futility-builder as coreboot
+
+WORKDIR /
+RUN git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/coreboot
+RUN cd /coreboot/util/cbfstool && make VBOOT_SOURCE=/vboot_reference
+RUN strip /coreboot/util/cbfstool/cbfstool
+RUN cd /coreboot/util/ifdtool && make
+RUN strip /coreboot/util/ifdtool/ifdtool
+
+######################################################################
 FROM debian:bookworm-slim as base
 
 COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
@@ -412,9 +413,9 @@ RUN ln -s /usr/bin/futility /usr/bin/dump_fmap; \
     ln -s /usr/bin/futility /usr/bin/vbutil_keyblock
 
 # Install cbfstool for flashrom and ec.
-COPY --link --from=coreboot /coreboot-4.21/util/cbfstool/cbfstool /usr/local/bin/
+COPY --link --from=coreboot /coreboot/util/cbfstool/cbfstool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/cbfstool
-COPY --link --from=coreboot /coreboot-4.21/util/ifdtool/ifdtool /usr/local/bin/
+COPY --link --from=coreboot /coreboot/util/ifdtool/ifdtool /usr/local/bin/
 RUN chmod 755 /usr/local/bin/ifdtool
 
 # Install shflags
