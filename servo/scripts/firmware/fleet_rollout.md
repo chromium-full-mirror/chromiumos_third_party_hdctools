@@ -212,3 +212,8 @@ Run the updater
 servodtool device -s <serial number> reboot servo_updater -b servo_v4p1 -s
 <serial number> -c <channel>
 ```
+
+# Disclaimer
+- This script and instructions are provided as-is and may require modifications to fit your specific use case.
+- Always exercise caution when performing firmware updates on production devices.
+- Ensure you understand what you are doing and have recovery plan in place.
