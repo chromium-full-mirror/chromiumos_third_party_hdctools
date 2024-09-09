@@ -8,11 +8,11 @@ import ctypes
 import ctypes.util
 import logging
 import os
+import subprocess
 import sys
 
 from servo.interface import common as c
 from servo.interface import ftdi_common
-import servo.libftdi_for_servo
 
 
 def get_interface_and_pid(index, pid):
@@ -64,6 +64,14 @@ def ftdi_locate_lib(lib_name):
     return "lib" + lib_name + lib_ext
 
 
+def find_ftdi_lib_name():
+    """Find the name of the FTDI library."""
+    cmd = "x86_64-pc-linux-gnu-pkg-config --exists libftdi1"
+    if subprocess.run(cmd.split(), check=False).returncode == 0:
+        return "ftdi1"
+    return "ftdi"
+
+
 def load_libs(*args):
     """Load libraries and return dll objects.
 
@@ -78,7 +86,7 @@ def load_libs(*args):
     dll_list = []
     for lib_name in args:
         if lib_name == "ftdi":
-            lib_name = servo.libftdi_for_servo.LIB_NAME
+            lib_name = find_ftdi_lib_name()
 
         lib_path = ftdi_locate_lib(lib_name)
         logging.debug("lib_path for %s is %s\n", lib_name, lib_path)
