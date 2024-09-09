@@ -194,7 +194,7 @@ def request_repair(hostnames):
     Args:
         hostnames (list(string)): List of hostnames to ask shivas to repair.
     """
-    command = ["shivas", "repair", "%s"] + hostnames
+    command = ["shivas", "repair", "-namespace", "os", "%s"] + hostnames
     print("Requesting the repairs - this might take some time....")
     run_command(command)
     print("Done with repairs")
