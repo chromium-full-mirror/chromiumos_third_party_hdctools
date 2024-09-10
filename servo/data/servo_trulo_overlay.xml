@@ -114,4 +114,9 @@
     <params clobber_ok="patch" fw_wp_vref="off" />
   </control>
 
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="patch" pdc="yes" />
+  </control>
+
 </root>
