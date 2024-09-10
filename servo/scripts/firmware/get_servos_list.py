@@ -114,7 +114,16 @@ def define_query(
         AND {FILTER % (join_helper(pools), "pool")}
         AND {FILTER % (join_helper(states), "state")}
         AND {FILTER % (join_helper(servo_fw_channels), "servo_fw_channel")}
-        AND {FILTER % (join_helper(servo_states), "servo_state")};
+        AND {FILTER % (join_helper(servo_states), "servo_state")}
+        AND pool NOT LIKE "%satlab%"
+        AND hostname NOT like "%satlab%"
+        AND servo_hostname NOT IN (
+            SELECT
+                DISTINCT hostname
+            FROM chrome_fleet_analytics.cros_fleet.latest_dut_info
+            WHERE hostname LIKE "%labstation%"
+            AND model LIKE "%guado%"
+        );
     """
 
     return query
@@ -420,14 +429,14 @@ def main(unused_argv):
         hostnames = define_manual_list(args)
 
     print(
-        f"Writing {len(hostnames)} DUT hostnames to {args.stage}_list.csv and additional information to {args.stage}_list_debug.csv"
+        f"Writing {len(hostnames)} DUT hostnames to {args.stage}_{args.servo_type[0]}_list.csv and additional information to {args.stage}_{args.servo_type[0]}_list_debug.csv"
     )
-    write_csv(hostnames, f"{args.stage}_list.csv")
-    write_csv(hostnames, f"{args.stage}_list_debug.csv", True)
+    write_csv(hostnames, f"{args.stage}_{args.servo_type[0]}_list.csv")
+    write_csv(hostnames, f"{args.stage}_{args.servo_type[0]}_list_debug.csv", True)
     print("Please review these lists before going forward.")
     print("To proceed with release run below command:")
     print(
-        f"\t./fleet_rollout.py --channel ALPHA --select from-csv --csv-file {args.stage}_list.csv"
+        f"\t./fleet_rollout.py --channel ALPHA --select from-csv --csv-file {args.stage}_{args.servo_type[0]}_list.csv"
     )
 
 
