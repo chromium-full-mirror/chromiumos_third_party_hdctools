@@ -24,3 +24,6 @@ TAGS
 
 # build-time generated version file
 servo/sversion.py
+
+# checksum for script bootstrap
+scripts/checksum

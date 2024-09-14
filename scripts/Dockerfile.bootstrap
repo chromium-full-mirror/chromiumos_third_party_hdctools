@@ -1,0 +1,13 @@
+# syntax=docker/dockerfile:1.4
+# Copyright 2024 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+FROM python:3.11-slim-bookworm
+
+RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
+    python3-docker
+
+ENV PYTHONPATH=${PYTHONPATH}:/usr/lib/python3/dist-packages/
+WORKDIR /development_environment
+COPY . .
