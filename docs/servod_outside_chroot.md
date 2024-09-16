@@ -70,32 +70,6 @@ You may need to reboot your host for this change to take effect.
 to add user to tty group also there. So inside chroot you need to modify `/etc/group`
 file, adding your username to tty group.
 
-## Installing docker API
-
-```text
-sudo apt install python3-docker
-```
-
-Some users have reported that apt install did not correctly install the docker
-API module. To check if you run the command:
-
-```text
-echo "import docker" | python3
-```
-
-And you see an error like:
-
-```text
-Traceback (most recent call last): File "<stdin>",
-line 1, in <module> ModuleNotFoundError: No module named 'docker'
-```
-
-You may have to install via pip:
-
-```text
-pip install --user docker --break-system-packages docker
-```
-
 ## Setting up your PATH
 
 ```text
