@@ -44,7 +44,7 @@ echo "Version: ${date}+${short_hash}" >> servod/DEBIAN/control
 echo "Maintainer: ChromeOS Developers" >> servod/DEBIAN/control
 echo "Architecture: all" >> servod/DEBIAN/control
 echo "Description: Script that allow easy start/stop of servod" >> servod/DEBIAN/control
-echo "Depends: python3, python3-docker, docker-ce, docker-ce-cli, containerd.io" >> servod/DEBIAN/control
+echo "Depends: python3, docker-ce, docker-ce-cli, containerd.io" >> servod/DEBIAN/control
 
 dpkg-deb --build servod
 rm -rf servod
