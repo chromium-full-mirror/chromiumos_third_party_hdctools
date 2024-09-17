@@ -116,7 +116,7 @@
 
   <control>
     <name>dut_pd_data_role</name>
-    <params clobber_ok="patch" pdc="yes" />
+    <params clobber_ok="patch" pdc="yes" port_count="1" />
   </control>
 
 </root>
