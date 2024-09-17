@@ -1,7 +1,9 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Allow creation of uart/console interface via stm32 usb endpoint."""
+
 import errno
 import logging
 import os
@@ -107,6 +109,7 @@ class Suart(uart.Uart):
 
     def close(self):
         """Suart wind down logic."""
+        self._logger.debug("%s uart closing down", self.get_pty())
         self._done.set()
         for t in [self._rx_thread, self._tx_thread]:
             t.join(timeout=0.2)
@@ -123,26 +126,30 @@ class Suart(uart.Uart):
 
     def run_rx_thread(self):
         self._logger.debug("rx thread started on %s", self.get_pty())
-
-        ep = select.epoll()
-        ep.register(self._ptym, select.EPOLLHUP)
-        while not self._done.is_set():
-            events = ep.poll(0)
-            # Check if the pty is connected to anything, or hungup.
-            if not events:
-                try:
-                    r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
-                    if r:
-                        os.write(self._ptym, r)
-                except (OSError, usb.core.USBError):
-                    # Expected and forgiven here, just pass
-                    pass
-                except Exception as e:
-                    # If we miss some characters on pty disconnect, that's fine.
-                    # ep.read() also throws USBError on timeout, which we discard.
-                    self._logger.debug("rx %s: %s", self.get_pty(), e)
-            else:
-                self._done.wait(0.1)
+        try:
+            ep = select.epoll()
+            ep.register(self._ptym, select.EPOLLHUP)
+            while not self._done.is_set():
+                events = ep.poll(0)
+                # Check if the pty is connected to anything, or hungup.
+                if not events:
+                    try:
+                        r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
+                        if r:
+                            os.write(self._ptym, r)
+                    except (OSError, usb.core.USBError):
+                        # Expected and forgiven here, just pass
+                        pass
+                    except Exception as e:
+                        # If we miss some characters on pty disconnect, that's fine.
+                        # ep.read() also throws USBError on timeout, which we discard.
+                        self._logger.debug("rx %s: %s", self.get_pty(), e)
+                else:
+                    self._done.wait(0.1)
+        finally:
+            self._logger.debug(
+                "rx %s: done (event=%s)", self.get_pty(), self._done.is_set()
+            )
 
     def run_tx_thread(self):
         self._logger.debug("tx thread started on %s", self.get_pty())
@@ -162,22 +169,28 @@ class Suart(uart.Uart):
                             # v4/micro console issues are fixed.
                             time.sleep(0.001)
                             if r:
-                                self._susb.write_ep(r, self._susb.TIMEOUT_MS)
-
-                    except IOError as e:
-                        self._logger.debug("tx %s: %s", self.get_pty(), e)
-                        if e.errno == errno.ENODEV:
-                            self._logger.error(
-                                "USB disconnected 0x%04x:%04x, servod failed.",
-                                self._susb._vendor,
-                                self._susb._product,
-                            )
+                                try:
+                                    self._susb.write_ep(r, self._susb.TIMEOUT_MS)
+                                except IOError as e:
+                                    self._logger.exception(
+                                        "uarttx %s: %s", self.get_pty(), e
+                                    )
+                                    if e.errno == errno.ENODEV:
+                                        self._logger.error(
+                                            "USB disconnected 0x%04x:%04x:%d",
+                                            self._susb._vendor,
+                                            self._susb._product,
+                                            self._susb._interface,
+                                        )
+                                        self._susb.release()
                     except Exception as e:
-                        self._logger.debug("tx %s: %s", self.get_pty(), e)
+                        self._logger.exception("tx %s: %s", self.get_pty(), e)
                 else:
                     self._done.wait(0.1)
         finally:
-            self._logger.debug("tx %s: done", self.get_pty())
+            self._logger.debug(
+                "tx %s: done (event=%s)", self.get_pty(), self._done.is_set()
+            )
 
     def run(self):
         """Creates pthreads to poll stm32 & PTY for data."""
