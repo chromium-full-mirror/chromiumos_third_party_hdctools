@@ -1,10 +1,10 @@
-# Copyright 2011 The ChromiumOS Authors
+# Copyright 2024 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 include $(HDCTOOLS_DIR)/defs/utilities.mk
 
-SUBDIRS		= proto data drv interface scripts tools utils tests common
+SUBDIRS		=
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
 PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))
@@ -13,7 +13,8 @@ $(THIS_BUILD_DIR)/%.py: $(HDCTOOLS_SOURCE_DIR)/%.py
 	$(MESSAGE) "Copying $(notdir $@)"
 	$(CP) $< $@
 
-all: 		$(PYTHON_DST) $(SUBDIRS)
+all:		$(PYTHON_DST) $(SUBDIRS)
+
 install:	$(SUBDIRS_INSTALL)
 
 $(SUBDIRS):

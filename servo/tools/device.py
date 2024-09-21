@@ -11,10 +11,10 @@ import time
 
 import usb
 
+from servo.common import tiny_servod
 from servo.drv.pty_driver import ptyError
 from servo.tools import tool
 import servo.utils.usb_hierarchy as uh
-from servo_mfg import tiny_servod
 
 
 # VID to find all servo devices.

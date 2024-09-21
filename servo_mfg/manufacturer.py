@@ -5,7 +5,7 @@
 
 import logging
 
-from servo_mfg import tiny_servod as _tiny_servod
+from servo.common import tiny_servod as _tiny_servod
 
 
 class ManufacturerError(Exception):

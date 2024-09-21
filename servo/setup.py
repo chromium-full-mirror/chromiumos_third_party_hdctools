@@ -102,6 +102,7 @@ setup(
         "servo.tests.unit",
         "servo.tests.data",
         "servo.scripts",
+        "servo.common",
     ],
     package_data={
         "servo": [
