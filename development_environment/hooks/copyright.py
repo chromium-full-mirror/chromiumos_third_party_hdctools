@@ -20,9 +20,9 @@ def _get_new_files():
     for line in lines:
         if line:
             if len(line.decode("utf-8").split("\t")) == 2:
-                (status, name) = line.decode("utf-8").split("\t")
-                if status == "A":
-                    new_files.append(name)
+                items = line.decode("utf-8").split("\t")
+                if items[0] == "A":
+                    new_files.append(items[1])
     return new_files
 
 
