@@ -11,6 +11,7 @@ date=$(date +"%y.%m.%d%H%M")
 short_hash=$(git rev-parse --short HEAD || echo "localbuild")
 
 mkdir -p servod/usr/local/servod/development_environment
+mkdir -p servod/usr/local/servod/scripts
 mkdir -p servod/usr/local/bin
 mkdir servod/DEBIAN
 
@@ -26,17 +27,25 @@ cp start-servod.py \
     ../servod/usr/local/servod/development_environment/
 cd -
 
+cd scripts
+cp bootstrap.sh \
+  Dockerfile.bootstrap \
+  ../servod/usr/local/servod/scripts/
+cd -
+
 cd servod/usr/local/bin/
-ln -s /usr/local/servod/development_environment/start-servod.py \
+ln -s /usr/local/servod/scripts/bootstrap.sh \
     ./start-servod
-ln -s /usr/local/servod/development_environment/stop-servod.py \
+ln -s /usr/local/servod/scripts/bootstrap.sh \
     ./stop-servod
-ln -s /usr/local/servod/development_environment/servod-ps.py \
+ln -s /usr/local/servod/scripts/bootstrap.sh \
     ./servod-ps
-ln -s /usr/local/servod/development_environment/dut-control.py \
+ln -s /usr/local/servod/scripts/bootstrap.sh \
     ./dut-control
-ln -s /usr/local/servod/development_environment/servodtool.py \
+ln -s /usr/local/servod/scripts/bootstrap.sh \
     ./servodtool
+ln -s /usr/local/servod/scripts/bootstrap.sh \
+    ./servo_updater
 cd -
 
 echo "Package: servod" > servod/DEBIAN/control
