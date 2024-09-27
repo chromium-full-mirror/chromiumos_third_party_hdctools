@@ -9,7 +9,7 @@ if [ -n "${SERVOD_BOOTSTRAP_DEBUG}" ]; then
   set -x
 fi
 
-pushd "$(dirname "$0")" > /dev/null
+pushd "$(dirname "$(readlink -f "$0")")" > /dev/null
 checksum=$(tar cfP - ../development_environment/ | md5sum)
 script_name=$(basename "$0")
 image_exists=$(docker images -q servod-bootstrap:latest 2> /dev/null)
