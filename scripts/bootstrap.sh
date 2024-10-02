@@ -22,5 +22,5 @@ if [ -z "${image_exists}" ] ||
     echo "${checksum}" > checksum
 fi
 popd > /dev/null
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw servod-bootstrap \
-    "./${script_name}.py" "$@"
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw \
+    -v /tmp:/tmp:rw servod-bootstrap "./${script_name}.py" "$@"
