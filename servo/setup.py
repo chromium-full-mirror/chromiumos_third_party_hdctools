@@ -12,11 +12,6 @@ import sys
 from setuptools import setup
 from setuptools.command import build_py
 
-import servo.sversion_util as svu
-
-
-__version__ = svu.setuptools_version()
-
 
 def generate_proto(source):
     """Invokes the Protocol Compiler to generate a _pb2.py from the given
@@ -85,8 +80,8 @@ class servo_build_py(build_py.build_py):
 
 setup(
     name="servo",
-    version=__version__,
-    package_dir={"": "../build", "servo": "../servo"},
+    version="0.1",
+    package_dir={"": "../build", "servo": "."},
     py_modules=["servo.servod", "servo.dut_control"],
     packages=[
         "servo",

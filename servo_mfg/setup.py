@@ -8,16 +8,12 @@
 
 from setuptools import setup
 
-import servo.sversion_util as svu
-
-
-__version__ = svu.setuptools_version()
 
 setup(
     name="servo_mfg",
-    version=__version__,
+    version="0.1",
     py_modules=["servo_mfg"],
-    package_dir={"servo_mfg": "../servo_mfg"},
+    package_dir={"servo_mfg": "."},
     packages=["servo_mfg"],
     package_data={
         "servo_mfg": [

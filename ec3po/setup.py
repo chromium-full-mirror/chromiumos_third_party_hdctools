@@ -6,20 +6,15 @@
 
 from setuptools import setup
 
-import servo.sversion_util as svu
-
-
-__version__ = svu.setuptools_version()
-
 
 setup(
     name="ec3po",
-    version=__version__,
+    version="0.1",
     maintainer="chromium os",
     maintainer_email="chromium-os-dev@chromium.org",
     license="Chromium",
     url="http://www.chromium.org",
-    package_dir={"ec3po": "../ec3po"},
+    package_dir={"ec3po": "."},
     packages=["ec3po"],
     py_modules=["ec3po.console", "ec3po.interpreter"],
     description="EC console interpreter.",

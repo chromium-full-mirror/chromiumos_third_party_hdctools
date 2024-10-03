@@ -6,21 +6,16 @@
 
 from setuptools import setup
 
-import servo.sversion_util as svu
-
-
-__version__ = svu.setuptools_version()
-
 
 setup(
     name="servo_updater",
-    version=__version__,
+    version="0.1",
     maintainer="chromium os",
     maintainer_email="chromium-os-dev@chromium.org",
     license="Chromium",
     url="https://www.chromium.org/chromium-os/ec-development",
     install_requires=["servo"],
-    package_dir={"servo_updater": "../servo_updater"},
+    package_dir={"servo_updater": "."},
     packages=["servo_updater", "servo_updater.ecusb"],
     entry_points={
         "console_scripts": ["servo_updater=servo_updater.servo_updater:main"],
