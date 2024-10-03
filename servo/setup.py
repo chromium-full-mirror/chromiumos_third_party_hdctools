@@ -12,11 +12,6 @@ import sys
 from setuptools import setup
 from setuptools.command import build_py
 
-import servo.sversion_util as svu
-
-
-__version__ = svu.setuptools_version()
-
 
 def generate_proto(source):
     """Invokes the Protocol Compiler to generate a _pb2.py from the given
@@ -71,7 +66,7 @@ class servo_build_py(build_py.build_py):
 
     def build_protos(self):
         """Build protos."""
-        proto_src = ["proto/servo_dev.proto"]
+        proto_src = ["common/proto/servo_dev.proto"]
         for file in proto_src:
             generate_proto(file)
 
@@ -85,31 +80,40 @@ class servo_build_py(build_py.build_py):
 
 setup(
     name="servo",
-    version=__version__,
-    package_dir={"": "../build", "servo": "../servo"},
+    version="0.1",
+    package_dir={"": "../build", "servo": "."},
     py_modules=["servo.servod", "servo.dut_control"],
     packages=[
         "servo",
         "servo.data",
-        "servo.proto",
-        "servo.drv",
-        "servo.interface",
+        "servo.data.config",
+        "servo.data.grpc_server",
+        "servo.data.impl",
+        "servo.data.drv",
+        "servo.common.interface",
         "servo.tools",
         "servo.utils",
         "servo.utils.linux",
+        "servo.tests",
+        "servo.grpc_server",
+        "servo.grpc_server.impl",
         "servo.tests.e2e",
         "servo.tests.fixtures",
         "servo.tests.unit",
         "servo.tests.data",
         "servo.scripts",
         "servo.common",
+        "servo.common.config",
+        "servo.common.proto",
+        "servo.common.utils",
     ],
     package_data={
         "servo": [
             "data/*.xml",
             "data/*.scenario",
             "data/*.board",
-            "proto/*.textproto",
+            "common/proto/*.textproto",
+            "common/proto/*.proto",
         ],
     },
     cmdclass={"build_py": servo_build_py},

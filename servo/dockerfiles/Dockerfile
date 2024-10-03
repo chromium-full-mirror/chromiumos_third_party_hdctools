@@ -166,6 +166,7 @@ FROM libftdi as hdctools-builder-base
 RUN apt-get update \
     && apt-get install -y \
     protobuf-compiler \
+    python3-grpc-tools \
     python3-pytest
 
 ######################################################################
@@ -181,21 +182,25 @@ RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
 RUN make -j $(nproc)
 RUN make install
 
-# Setuptools skips nested entry point. Adding custom setup.py to overcome.
-COPY /servo/dockerfiles/setup_hdctools.py .
+WORKDIR /hdctools/servo
+RUN python3 setup.py bdist_wheel
 
-RUN PACKAGE="servo" python3 setup_hdctools.py bdist_wheel
-RUN PACKAGE="servo_updater" python3 setup_hdctools.py bdist_wheel
+#####################################################################
+FROM hdctools-builder as hdctools-servo-updater-builder
+WORKDIR /hdctools/servo_updater
+RUN python3 setup.py bdist_wheel
 
 #####################################################################
 FROM hdctools-builder as hdctools-usbkm232-builder
 
-RUN PACKAGE="usbkm232" python3 setup_hdctools.py bdist_wheel
+WORKDIR /hdctools/usbkm232
+RUN python3 setup.py bdist_wheel
 
 #####################################################################
 FROM hdctools-builder as hdctools-ec3po-builder
 
-RUN PACKAGE="ec3po" python3 setup_hdctools.py bdist_wheel
+WORKDIR /hdctools/ec3po
+RUN python3 setup.py bdist_wheel
 
 #####################################################################
 FROM clang-builder as uhubctl-builder
@@ -462,9 +467,10 @@ FROM base
 
 WORKDIR /hdctools/chromeos/
 WORKDIR /wheels
-COPY --link --from=hdctools-builder /hdctools/dist/* ./
-COPY --link --from=hdctools-usbkm232-builder /hdctools/dist/* ./
-COPY --link --from=hdctools-ec3po-builder /hdctools/dist/* ./
+COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
+COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
+COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
+COPY --link --from=hdctools-ec3po-builder /hdctools/ec3po/dist/* ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels

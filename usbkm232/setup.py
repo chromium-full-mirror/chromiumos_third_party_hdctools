@@ -6,15 +6,11 @@
 
 from setuptools import setup
 
-import servo.sversion_util as svu
-
-
-__version__ = svu.setuptools_version()
 
 setup(
     name="usbkm232",
-    version=__version__,
-    package_dir={"usbkm232": "../usbkm232", "": "../build"},
+    version="0.1",
+    package_dir={"usbkm232": ".", "": "../build"},
     py_modules=[
         "usbkm232.ctrld",
         "usbkm232.ctrlu",
