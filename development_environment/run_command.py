@@ -5,6 +5,8 @@
 
 import argparse
 import sys
+import threading
+import time
 import types
 
 import docker
@@ -45,6 +47,30 @@ class CustomArgHelpParser(argparse.ArgumentParser):
 
     def print_usage(self, file=None):
         print(self.message, file=file)
+
+
+def output_logs(output):
+    if output:
+        # We need to check for both types due to a change in the API
+        # at version 6.1.0 of the python docker API.
+        # Remove the extra check for GeneratorType when we are sure
+        # that no-one is using older versions and we put a min version
+        # check in.
+        if isinstance(
+            output, (docker.types.daemon.CancellableStream, types.GeneratorType)
+        ):
+            # Setting the tty parameter to True causes the output to
+            # contain CRLF line endings instead of LF. This can cause
+            # problems when using output of this command in shell
+            # scripts or as input to other commands. Stripping lines
+            # caused empty lines to be printed periodically, so the
+            # replace *SHOULD* work correctly. We have no guarantee that
+            # the CR and LF won't be split between different calls.
+            for line in output:
+                print(line.decode("utf-8").replace("\r\n", "\n"), flush=True, end="")
+                time.sleep(0.1)
+        else:
+            print(output.decode("utf-8"), flush=True, end="")
 
 
 class RunCommandBase:
@@ -96,30 +122,48 @@ class RunCommandBase:
                 file=sys.stderr,
             )
         elif len(containers) == 1:
-            exit_code, output = self.execute_command(
-                containers[0], args.passthrough[1:]
-            )
-            if output:
-                # We need to check for both types due to a change in the API
-                # at version 6.1.0 of the python docker API.
-                # Remove the extra check for GeneratorType when we are sure
-                # that no-one is using older versions and we put a min version
-                # check in.
-                if isinstance(
-                    output, (docker.types.daemon.CancellableStream, types.GeneratorType)
-                ):
-                    # Setting the tty parameter to True causes the output to
-                    # contain CRLF line endings instead of LF. This can cause
-                    # problems when using output of this command in shell
-                    # scripts or as input to other commands. Stripping lines
-                    # caused empty lines to be printed periodically, so the
-                    # replace *SHOULD* work correctly. We have no guarantee that
-                    # the CR and LF won't be split between different calls.
-                    for line in output:
-                        print(line.decode("utf-8").replace("\r\n", "\n"), end="")
-                else:
-                    print(output.decode("utf-8"), end="")
-            sys.exit(exit_code)
+            output_thread = None
+            try:
+                unused_exit, output = self.execute_base_command(
+                    containers[0],
+                    args.passthrough[1:],
+                )
+                output_thread = threading.Thread(target=output_logs, args=(output,))
+                output_thread.daemon = True
+                output_thread.start()
+                process_running = 1
+                while process_running > 0:
+                    unused_exit, output = self.execute_command(
+                        containers[0],
+                        [
+                            "bash",
+                            "-c",
+                            f"ps aux | grep -v grep | grep {self.command} | wc -l",
+                        ],
+                    )
+                    time.sleep(0.1)
+                    process_running = int(list(output)[0])
+
+            except (KeyboardInterrupt, SystemExit):
+                print("Interrupt", flush=True)
+
+                unused_exit, output = self.execute_command(
+                    containers[0],
+                    [
+                        "bash",
+                        "-c",
+                        (
+                            f"kill -s SIGINT "
+                            f"$(ps aux | grep {self.command} | grep -v grep | "
+                            f"awk -F ' ' '{{print $2}}')"
+                        ),
+                    ],
+                )
+            finally:
+                time.sleep(0.1)
+                output_thread.join(timeout=1)
+                output_thread = None
+
         else:
             print(
                 (
@@ -130,6 +174,9 @@ class RunCommandBase:
                 file=sys.stderr,
             )
 
-    def execute_command(self, container, passthrough):
+    def execute_base_command(self, container, passthrough, detach=False):
         cmd = [self.command] + passthrough
-        return container.exec_run(cmd, stream=True, tty=True)
+        return self.execute_command(container, cmd, detach)
+
+    def execute_command(self, container, command, detach=False):
+        return container.exec_run(command, stream=True, detach=detach, tty=True)
