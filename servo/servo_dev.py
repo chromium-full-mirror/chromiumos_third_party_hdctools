@@ -555,7 +555,7 @@ class ServoDevice:
         try:
             if self.syscfg.is_control("active_dut_controller"):
                 self.set("active_dut_controller", "default")
-        except servo_drv.active_v4_device.activeV4DeviceError as error:
+        except grpc._channel._InactiveRpcError as error:
             self._logger.debug("Could not set active device: %s", str(error))
 
         return True
