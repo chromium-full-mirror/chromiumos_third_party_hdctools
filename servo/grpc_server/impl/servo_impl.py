@@ -43,7 +43,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
             "Handle request for {}, in context {}".format(request, context)
         )
         if request.HasField("int_value"):
-            value = request.int_value
+            value = str(request.int_value)
         else:
             value = request.string_value
         self.servod.set(request.control_name, value)
