@@ -195,14 +195,16 @@ class ServodStarter:
         self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
 
         prober = servo_dev_prober.DeviceProber()
-        print("Connecting to gRPC: ")
+        self._logger.info("Connecting to gRPC")
         while True:
             try:
                 self._setup_servos(dev_entries, main_dev_entry, prober)
                 break
-            except grpc.RpcError as e:
-                print(".", end="", flush=True)
+            except grpc._channel._InactiveRpcError as e:
+                if e.code() != grpc.StatusCode.UNAVAILABLE:
+                    raise
                 time.sleep(1)
+
         grpc_server_process = multiprocessing.Process(
             target=grpc_server_setup.run_grpc_server, args=(self._servod,)
         )
@@ -603,8 +605,7 @@ class ServodStarter:
                 scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
             return scfg
         except grpc.RpcError as e:
-            # Handle gRPC errors, such as network issues and exit system
-            print(f"Error: {e}")
+            # Let caller decide if error should be printed
             raise
 
     def _setup_servos(self, dev_entries, _main_dev_entry, prober):
