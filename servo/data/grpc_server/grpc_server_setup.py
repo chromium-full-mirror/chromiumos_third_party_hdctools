@@ -4,6 +4,7 @@
 
 
 from concurrent import futures
+import logging
 import sys
 import time
 
@@ -15,6 +16,11 @@ from servo.data.impl import driver_impl
 from servo.data.impl import system_config_impl
 
 
+DEBUG_FMT_STRING = (
+    "%(asctime)s - %(name)s - %(levelname)s - "
+    "%(filename)s:%(lineno)d:%(funcName)s - %(message)s"
+)
+
 def grpc_server_start():
     """
     Start a gRPC server for the data services.
@@ -22,6 +28,8 @@ def grpc_server_start():
     RPCs) for the data service.
     The server listens on port 50051 and uses an insecure channel for communication.
     """
+    logging.basicConfig(level=logging.INFO, format=DEBUG_FMT_STRING)
+
     # Create a gRPC server with a thread pool executor allowing up to 10 concurrent
     # workers
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
