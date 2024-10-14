@@ -405,13 +405,14 @@ Run [`servod`] as normal, [CCD] should be enabled now.
 
 *   Servo Alternate Power Port: Due to EC RAM limitations the maximum voltage used
     is 5V, although hardware will support a nominal 15V input.
-*   Servo + Octopus devices - problems with CCD. We've identified that CCD was not
-    working reliably between most Octopus device models and servo_v4p1.
+*   Servo + Octopus and Nami devices - problems with CCD. We've identified that CCD was not
+    working reliably between most Octopus, Nami models and servo_v4p1.
     This is due to extra capacitors on SBU lines affecting CCD signal integrity.
-    Details are in this [issue](https://buganizer.corp.google.com/issues/303456320#comment39) (google only).
+    Details are in this [octopus issue](https://buganizer.corp.google.com/issues/303456320#comment39) and [nami issue](https://buganizer.corp.google.com/issues/335287785) (google only).
     Unfortunately, there's no quick software fix for this one. Affected boards will need a bit of rework.
-    [Here](https://docs.google.com/spreadsheets/d/12S_PdRk9LwgU2Yy4CdP6w7f1u5aOIJHd__573laATAU/edit#gid=0) (google only)
-    you can find a spreadsheet listing all affected models and rework instructions.
+    You can find a spreadsheet listing all affected models and rework instructions (google only):
+    - [Octopus](https://docs.google.com/spreadsheets/d/12S_PdRk9LwgU2Yy4CdP6w7f1u5aOIJHd__573laATAU/edit#gid=0)
+    - [Nami](https://docs.google.com/spreadsheets/d/1rmPAB5gRwHxND8X4niRpNXshzwa0zC-ZLZMspKhR_Do/edit?gid=0#gid=0)
 
 ## Bugs
 
