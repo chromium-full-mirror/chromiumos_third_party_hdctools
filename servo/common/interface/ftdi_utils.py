@@ -7,8 +7,6 @@ import argparse
 import ctypes
 import ctypes.util
 import logging
-import os
-import subprocess
 import sys
 
 from servo.common.interface import common as c
@@ -36,42 +34,6 @@ def get_interface_and_pid(index, pid):
     return (idx, pid)
 
 
-def ftdi_locate_lib(lib_name):
-    """Locate FTDI related dll path.
-
-    TODO(tbroch) To remove in favor of ctypes.util.find_library(lib_name) once
-    release of libraries in chroot is complete.
-
-    Args:
-      lib_name : string name of library to find
-    """
-    paths = []
-    paths.append(os.getcwd())
-    if "FTDI_LIBRARY_PATH" in os.environ:
-        paths.extend(os.environ["FTDI_LIBRARY_PATH"].split(os.pathsep))
-    if "LD_LIBRARY_PATH" in os.environ:
-        paths.extend(os.environ["LD_LIBRARY_PATH"].split(os.pathsep))
-
-    lib_ext = ".so"
-    if os.name == "posix" and sys.platform == "darwin":
-        lib_ext = ".dylib"
-
-    for path in paths:
-        lib_path = os.path.join(path, "lib" + lib_name + lib_ext)
-        if os.path.exists(lib_path):
-            return os.path.realpath(lib_path)
-    # Try the default OS library path
-    return "lib" + lib_name + lib_ext
-
-
-def find_ftdi_lib_name():
-    """Find the name of the FTDI library."""
-    cmd = "x86_64-pc-linux-gnu-pkg-config --exists libftdi1"
-    if subprocess.run(cmd.split(), check=False).returncode == 0:
-        return "ftdi1"
-    return "ftdi"
-
-
 def load_libs(*args):
     """Load libraries and return dll objects.
 
@@ -81,14 +43,34 @@ def load_libs(*args):
       args : list of strings names of libraries to load
 
     Returns:
-     List of PyDLL objects
+      List of PyDLL objects
+
+    Raises:
+      SystemExit on failure
     """
     dll_list = []
-    for lib_name in args:
-        if lib_name == "ftdi":
-            lib_name = find_ftdi_lib_name()
 
-        lib_path = ftdi_locate_lib(lib_name)
+    # Mapping of library names to known aliases
+    lib_aliases = {
+        "ftdi": ["ftdi", "ftdi1"],
+    }
+
+    for lib_name in args:
+        lib_path = None
+
+        aliases = lib_aliases.get(lib_name)
+        if aliases:
+            for name in aliases:
+                lib_path = ctypes.util.find_library(name)
+                if lib_path:
+                    break
+        else:
+            lib_path = ctypes.util.find_library(lib_name)
+
+        if lib_path is None:
+            print("-E- Unable to find library path %s" % (lib_name))
+            sys.exit(1)
+
         logging.debug("lib_path for %s is %s\n", lib_name, lib_path)
 
         try:

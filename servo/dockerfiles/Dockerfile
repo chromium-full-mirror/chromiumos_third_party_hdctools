@@ -458,18 +458,12 @@ RUN apt-get remove --purge -y \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
 
-
-# Required for the ftdi libraries to be found. ENV does not allow the
-# use of command to populate the results, to be less brittle it would
-# be nice if the path could be discovered with a command like:
-# find / -name libftdii2c.so -exec dirname {} \;
-ENV LD_LIBRARY_PATH=/usr/local/lib/python3.11/dist-packages
-
 ######################################################################
 FROM base
 
 WORKDIR /hdctools/chromeos/
 WORKDIR /wheels
+COPY --link --from=hdctools-builder /usr/lib/libftdi*.so /usr/lib/
 COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
 COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
