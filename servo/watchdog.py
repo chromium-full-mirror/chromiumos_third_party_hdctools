@@ -8,7 +8,6 @@ import logging
 import os
 import signal
 import threading
-import time
 
 
 class DeviceWatchdog(threading.Thread):
@@ -24,23 +23,6 @@ class DeviceWatchdog(threading.Thread):
     # Rate in seconds used to poll when a reinit capable device is attached.
     REINIT_POLL_RATE = 0.1
 
-    class DuplicateFilter(logging.Filter):
-        """Prevent duplicate log messages from being logged more than once per
-        minute.
-        """
-
-        def __init__(self):
-            self.last_log = None
-            self.next_log_time = time.time()
-
-        def filter(self, record):
-            current_log = (record.msg, record.levelno, record.args)
-            if current_log == self.last_log and self.next_log_time > time.time():
-                return False
-            self.last_log = current_log
-            self.next_log_time = time.time() + 60
-            return True
-
     def __init__(self, servod, reconnect_timeout=0.0):
         """Setup watchdog thread.
 
@@ -52,7 +34,6 @@ class DeviceWatchdog(threading.Thread):
         threading.Thread.__init__(self)
         self.daemon = True
         self._logger = logging.getLogger(type(self).__name__)
-        self._logger.addFilter(DeviceWatchdog.DuplicateFilter())
         self._turndown_signal = signal.SIGTERM
         self.done = threading.Event()
         self._servod = servod
