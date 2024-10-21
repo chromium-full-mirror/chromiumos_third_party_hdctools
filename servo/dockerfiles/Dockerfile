@@ -141,9 +141,12 @@ RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 ######################################################################
 FROM libftdi as pigweed-builder
 
-RUN git clone https://chromium.googlesource.com/external/pigweed/pigweed/pigweed
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/pigweed/pigweed
 
 WORKDIR /pigweed
+# TODO(b/371018012): Once pigweed downstreaming is enabled follow
+# upstream pigweed
+RUN git checkout upstream/main
 COPY servo/dockerfiles/setup_pigweed.py .
 RUN python3 setup_pigweed.py bdist_wheel
 
