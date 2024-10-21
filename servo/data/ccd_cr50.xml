@@ -55,6 +55,11 @@
     <params clobber_ok="patch" interface="servo" drv="na"
     init="not_applicable"></params>
   </control>
+  <control>
+    <name>chassis_open</name>
+    <params clobber_ok="full" interface="servo" drv="na"
+    init="not_applicable"></params>
+  </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>gsc_cold_reset</name>
