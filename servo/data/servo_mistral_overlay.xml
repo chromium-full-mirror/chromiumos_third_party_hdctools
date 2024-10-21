@@ -43,7 +43,7 @@
     <name>chassis_open</name>
     <doc>chassis_open</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PP" port="1"
-    offset="4" map="yesno" init="no"></params>
+    offset="4" map="yesno" init="no" clobber_ok="never"></params>
   </control>
   <!-- mistral does not have a CrOS EC (thus also does not support
     communication through it).-->
