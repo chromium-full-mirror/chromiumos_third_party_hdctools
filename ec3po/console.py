@@ -282,7 +282,10 @@ class Console:
                     "Tokenized logging enabled - See https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/zephyr/zephyr_tokenized_logging.md"  # pylint: disable=line-too-long
                 )
                 self.logger.info(f"Loading detokenizer database(s): {token_files}")
-                self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(*token_files)
+                self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(
+                    *token_files,
+                    prefix=TOKEN_PREFIX,
+                )
                 self.z_detokenizer.show_errors = True
                 self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
 
@@ -1248,7 +1251,6 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                     # detokenize and print
                                     message = console.z_detokenizer.detokenize_base64(
                                         chunk,
-                                        prefix=TOKEN_PREFIX,
                                     )
                                     message = message.replace(b"\n", b"\r\n")
                                     console.HandleDebugPipeData(
