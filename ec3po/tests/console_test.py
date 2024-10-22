@@ -12,10 +12,6 @@ import tempfile
 import unittest
 from unittest import mock
 
-
-sys.modules["pw_tokenizer"] = mock.MagicMock()
-sys.modules["pw_tokenizer.detokenize"] = mock.MagicMock()
-
 from ec3po import console  # pylint: disable=wrong-import-position
 from ec3po import interpreter  # pylint: disable=wrong-import-position
 from ec3po import threadproc_shim  # pylint: disable=wrong-import-position
