@@ -115,8 +115,8 @@ for vid, pid in CCD_CR50_DEFAULTS:
         },
     ]
 
-# ti50 CCD
-CCD_TI50_DEFAULTS = [(0x18D1, 0x504A)]
+# ti50 CCD - Both DT (0x504A) and NT (0x5066) are supported.
+CCD_TI50_DEFAULTS = [(0x18D1, 0x504A), (0x18D1, 0x5066)]
 for vid, pid in CCD_TI50_DEFAULTS:
     INTERFACE_DEFAULTS[vid][pid] = [
         "empty",
