@@ -13,4 +13,72 @@
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
       subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
   </control>
+   <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <item>ec_uart_cmd:reboot cancel</item>
+            <!-- Shutdown AP so that it enters G3 state. -->
+            <item>ec_uart_cmd:apshutdown</item>
+            <!-- Sleep to ensure the SoC rails get chance to discharge enough. -->
+            <item>sleep:5</item>
+            <!-- Turn on the S5 rails & initiate partial power up. -->
+            <item>ec_uart_cmd:gpioset en_pp3300_a 1</item>
+            <!-- Sleep to ensure the required delay for device power sequencing.
+            Require 130 ms between EN_PP3300_A assertion and EC_AP_RSMRST_L assertion. -->
+            <item>sleep:0.2</item>
+            <!-- Halt the power sequencing by de-asserting EC_AP_RSMRST_L. -->
+            <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <!-- De-assert again to be on the safe side. -->
+            <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+          </item>
+          <item key="0">
+            <item>power_state:reset</item>
+            <!-- Sleep to ensure EC reset process work normal. -->
+            <item>sleep:5</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over C2D2</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <item>ec_uart_cmd:reboot cancel</item>
+            <!-- Shutdown AP so that it enters G3 state. -->
+            <item>ec_uart_cmd:apshutdown</item>
+            <!-- Sleep to ensure the SoC rails get chance to discharge enough. -->
+            <item>sleep:5</item>
+            <!-- Turn on the S5 rails & initiate partial power up. -->
+            <item>ec_uart_cmd:gpioset en_pp3300_a 1</item>
+            <!-- Sleep to ensure the required delay for device power sequencing.
+            Require 130 ms between EN_PP3300_A assertion and EC_AP_RSMRST_L assertion. -->
+            <item>sleep:0.2</item>
+            <!-- Halt the power sequencing by de-asserting EC_AP_RSMRST_L. -->
+            <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <!-- De-assert again to be on the safe side. -->
+            <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <item>ap_flash_select:off</item>
+            <item>spi2_vref:pp3300</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>ap_flash_select:off</item>
+            <item>power_state:reset</item>
+            <!-- Sleep to ensure EC reset process work normal. -->
+            <item>sleep:5</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
 </root>
