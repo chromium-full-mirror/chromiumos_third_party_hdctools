@@ -260,10 +260,24 @@ class TestSystemConfig(unittest.TestCase):
         self.syscfg.add_cfg_file(servo_type, overlay_file)
         self.syscfg.finalize()
 
+    def compare_dict(self, d1, d2, key_path):
+        """Compare two dicts."""
+        for key in d1.keys():
+            if key in d2:
+                if isinstance(d1[key], dict) and isinstance(d2[key], dict):
+                    self.compare_dict(d1[key], d2[key], f"{key_path}.{key}")
+                else:
+                    assert d1[key] == d2[key], key_path
+            else:
+                assert False, f"Missing key {key_path}.{key}"
+        for key in d2.keys():
+            if not key in d1:
+                assert False, f"Extra key {key_path}.{key}"
+
     def test_LoadValidConfigs(self):
         """Tests that a real-world set of configs load successfully."""
         self._LoadConfigs("servo_micro", "atlas", "atlas")
-        self.assertEqual(syscfg_atlas.syscfg_dict, self.syscfg.syscfg_dict)
+        self.compare_dict(syscfg_atlas.syscfg_dict, self.syscfg.syscfg_dict, "root")
 
     def test_MissingDrvConfigs(self):
         """Tests that a control with missing drv= is an error."""
