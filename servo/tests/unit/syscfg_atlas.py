@@ -2701,7 +2701,7 @@ syscfg_dict = {
                 "group": "1",
                 "interface": 10,
                 "interface_prefix": "servo_micro",
-                "regex": "power state " "\\d+ = (.*), in",
+                "regex": "power state " "\\d+ = ([^,]*), in",
                 "uart_cmd": "powerinfo",
             },
             "set_params": {
@@ -2719,7 +2719,7 @@ syscfg_dict = {
                 "group": "1",
                 "interface": 10,
                 "interface_prefix": "servo_micro",
-                "regex": "power state " "\\d+ = (.*), in",
+                "regex": "power state " "\\d+ = ([^,]*), in",
                 "uart_cmd": "powerinfo",
             },
         },
