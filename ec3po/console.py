@@ -1239,11 +1239,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             # Search look buffer for enhanced EC image string.
                             console.CheckBufferForEnhancedImage(data)
 
-                        if (
-                            console.is_tokenized
-                            and console.z_detokenizer
-                            and controller_connected
-                        ):
+                        if console.is_tokenized and console.z_detokenizer:
                             for is_message, chunk in console.decoder.read_messages(
                                 data
                             ):
