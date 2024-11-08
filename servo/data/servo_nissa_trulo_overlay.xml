@@ -11,7 +11,7 @@
   <include>
     <name>gsc_reset_pch_disable.xml</name>
   </include>
-  
+
   <!-- ******** Controls ******** -->
 
   <control>
@@ -32,7 +32,7 @@
       </content>
     </params>
   </control>
-  
+
   <control>
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing AP firmware over direct SPI connection</doc>
@@ -55,9 +55,9 @@
       </content>
     </params>
   </control>
-  
+
   <!-- misc controls -->
-  
+
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
@@ -65,20 +65,20 @@
     shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
     warm_reset_can_hold_ap="no"/>
   </control>
-  
+
   <map>
     <name>ec_chip_map</name>
     <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
     <params npcx_uut="npcx" it8xxx2="it81302"></params>
   </map>
-  
+
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" interface="10" drv="simple_ec" uart_cmd="version"
       regex="Chip:\s+\S+\s+(npcx|it81302)\S*\s" group="1" map="ec_chip_map"/>
   </control>
-  
+
   <control>
     <name>fw_up</name>
     <params clobber_ok="patch" od="PP" map="onoff" init="off"></params>
@@ -119,4 +119,11 @@
     <params clobber_ok="patch" pdc="yes" port_count="1" />
   </control>
 
+  <control>
+    <!--  Enable Trulo to use tokenizing in the future. Servod will still
+    properly handle non-tokenized output. -->
+    <name>uses_cros_ec_tokens</name>
+    <doc>CrOS EC logging is tokenized</doc>
+    <params drv="echo" value="always" interface="servo"/>
+  </control>
 </root>
