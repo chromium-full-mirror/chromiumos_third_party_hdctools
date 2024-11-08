@@ -179,7 +179,7 @@ class ServodStarter:
                 fcntl.lockf(fd, fcntl.LOCK_EX)
                 self._logger.info("Fetching latest EC token database")
                 urllib.request.urlretrieve(
-                    "https://storage.googleapis.com/chromeos-localmirror/cros_ec/tokens/historical.bin",  # pylint: disable=line-too-long
+                    "https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/tokens/historical.bin",  # pylint: disable=line-too-long
                     token_file,
                 )
                 self._logger.info("Successfully fetched EC token database")
