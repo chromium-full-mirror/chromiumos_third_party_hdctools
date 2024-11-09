@@ -136,6 +136,9 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
+WORKDIR /
+RUN tar cvf libs.tar /usr/lib/libfmap.so* /usr/lib/libftdi*
+
 ######################################################################
 FROM libftdi as pigweed-builder
 
@@ -383,10 +386,9 @@ COPY --link --from=gcstool-builder \
 
 RUN chmod u+x /usr/sbin/* /usr/bin/*
 
-COPY --link --from=ec-builder \
-    /usr/lib/libfmap.so* \
-    /usr/lib/libftdi* \
-    /usr/lib/
+COPY --link --from=ec-builder libs.tar .
+RUN tar xvf libs.tar
+RUN rm libs.tar
 
 COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
@@ -458,7 +460,9 @@ FROM base
 
 WORKDIR /hdctools/chromeos/
 WORKDIR /wheels
-COPY --link --from=hdctools-builder /usr/lib/libftdi*.so /usr/lib/
+COPY --link --from=hdctools-builder /usr/lib/libftdii2c*.so /usr/lib/
+COPY --link --from=hdctools-builder /usr/lib/libftdiuart*.so /usr/lib/
+COPY --link --from=hdctools-builder /usr/lib/libftdigpio*.so /usr/lib/
 COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
 COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
