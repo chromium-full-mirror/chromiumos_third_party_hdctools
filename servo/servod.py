@@ -184,11 +184,11 @@ class ServodStarter:
                     raise
                 time.sleep(1)
 
-        grpc_server_process = multiprocessing.Process(
+        self.grpc_server_process = multiprocessing.Process(
             target=grpc_server_setup.run_grpc_server, args=(self._servod,)
         )
         # Start the process in the background
-        grpc_server_process.start()
+        self.grpc_server_process.start()
         # Small timeout to allow interface threads to initialize.
         time.sleep(0.5)
 
@@ -209,6 +209,7 @@ class ServodStarter:
         if not self._turndown_initiated:
             self._turndown_initiated = True
             self._logger.info("Received signal: %d. Attempting to turn off", signum)
+            self.grpc_server_process.kill()
             self._server.shutdown()
             self._server.server_close()
             self._servod.close()
@@ -702,6 +703,8 @@ class ServodStarter:
             self._logger.error(
                 "Server thread not turned down after %s s.", self.EXIT_TIMEOUT_S
             )
+
+        self.grpc_server_process.kill()
         self._watchdog_thread.join(self.EXIT_TIMEOUT_S)
         if self._watchdog_thread.is_alive():
             self._logger.error(
