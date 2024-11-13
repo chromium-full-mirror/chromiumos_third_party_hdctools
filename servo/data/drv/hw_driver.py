@@ -151,10 +151,7 @@ class HwDriver:
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        if type(value) == int:
-            self._driver_client.SetServo(control_name=control, int_value=value)
-        else:
-            self._driver_client.SetServo(control_name=control, string_value=value)
+        self._driver_client.SetServo(control_name=control, value=str(value))
 
     def __repr__(self):
         """Return same as __str__()"""

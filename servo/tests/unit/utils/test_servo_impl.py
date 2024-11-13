@@ -86,7 +86,7 @@ class TestServoImpl(unittest.TestCase):
         """Test GetServo()."""
         self._servod.set = unittest.mock.MagicMock()
         servo_impl = ServoImpl(servod=self._servod)
-        request = SetServoRequest(control_name="set_test", string_value="test")
+        request = SetServoRequest(control_name="set_test", value="test")
         servo_impl.SetServo(request, None)
         self._servod.set.assert_called_once_with("set_test", "test")
 
