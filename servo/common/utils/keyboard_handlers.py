@@ -42,10 +42,7 @@ class _HandlerTemplate:
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        if type(value) == int:
-            self._driver_client.SetServo(control_name=control, int_value=value)
-        else:
-            self._driver_client.SetServo(control_name=control, string_value=value)
+        self._driver_client.SetServo(control_name=control, value=value)
 
     def is_open(self):
         """Query whether keyboard handler is open for use."""
@@ -1837,10 +1834,7 @@ class ServoUSBkm232Handler(USBkm232Handler):
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        if type(value) == int:
-            self._driver_client.SetServo(control_name=control, int_value=value)
-        else:
-            self._driver_client.SetServo(control_name=control, string_value=value)
+        self._driver_client.SetServo(control_name=control, value=value)
 
     def open(self):
         """Take atmega out of reset, and potentially do legacy setup."""
