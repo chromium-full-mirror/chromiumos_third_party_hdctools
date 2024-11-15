@@ -54,7 +54,7 @@ servo_devices {
   DUT_CONTROLLER: true
 }
 
-# Servo ccd cr50 template class.
+# Servo ccd gsc h1 template class.
 servo_devices {
   TYPE: 'ccd_cr50'
   VID: 0x18d1
@@ -63,11 +63,20 @@ servo_devices {
   DUT_CONTROLLER: true
 }
 
-# Servo ccd ti50 template class.
+# Servo ccd gsc dt template class.
 servo_devices {
   TYPE: 'ccd_gsc'
   VID: 0x18d1
   PID: 0x504a
+  DEFAULT_CONFIG: 'ccd_ti50.xml'
+  DUT_CONTROLLER: true
+}
+
+# Servo ccd gsc nt template class.
+servo_devices {
+  TYPE: 'ccd_gsc_nt'
+  VID: 0x18d1
+  PID: 0x5066
   DEFAULT_CONFIG: 'ccd_ti50.xml'
   DUT_CONTROLLER: true
 }

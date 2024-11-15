@@ -36,6 +36,7 @@ class activeV4Device(hw_driver.HwDriver):
         "ccd_cr50": False,
         "ccd_ti50": False,
         "ccd_gsc": False,
+        "ccd_gsc_nt": False,
         "servo_micro": True,
         "c2d2": True,
     }

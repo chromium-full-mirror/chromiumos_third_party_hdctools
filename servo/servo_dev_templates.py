@@ -1,6 +1,7 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Servo Device Templates."""
 
 import collections
@@ -231,4 +232,4 @@ device_templates = _ReadTextProto(_TEXTPROTO_PATH)
 _InitMaps(device_templates)
 # Servo types used to categorize servo devices
 DEBUG_HEADER_SERVO_TYPES = set(["servo_micro", "servo_v2", "c2d2"])
-CCD_SERVO_TYPES = set(["ccd_cr50", "ccd_gsc"])
+CCD_SERVO_TYPES = set(["ccd_cr50", "ccd_gsc", "ccd_gsc_nt"])

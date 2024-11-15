@@ -38,6 +38,11 @@ SERVO_DEVICE_DATA = {
         (),
         "ccd_ti50.xml",
     ),
+    "ccd_gsc_nt": (
+        (0x18D1, 0x5066),
+        (),
+        "ccd_ti50.xml",
+    ),
     "sweetberry": (
         (0x18D1, 0x5020),
         (),

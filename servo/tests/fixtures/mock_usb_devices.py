@@ -113,6 +113,106 @@ def mock_cr50_configuration(mocker, mock_interface):
 
 
 @pytest.fixture(scope="function")
+def mock_ccd_gsc_configuration(mocker, mock_interface):
+    def generate_mock_ccd_gsc_configuration():
+        mock_cfg = mocker.Mock(name="CCD GSC DT Configuration")
+
+        mock_cfg.interfaces = {
+            0: mock_interface(
+                0,
+                [1, 129],
+                "[GSC DT console, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_CONSOLE_DATA,
+                None,
+            ),  # GSC DT console, stm32_uart
+            1: mock_interface(
+                1,
+                [2, 130],
+                "[AP, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_AP_DATA,
+                b"",
+            ),  # AP, stm32_uart
+            2: mock_interface(
+                2,
+                [3, 131],
+                "[EC/PD, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_EC_PD_CONSOLE_DATA,
+                b"",
+            ),  # EC/PD, stm32_uart
+            5: mock_interface(
+                5,
+                [6, 134],
+                "[cr50 i2c, stm32_i2c]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_I2C_DATA,
+                b"",
+            ),  # I2C, stm32_i2c
+        }
+
+        def find_interface(mock_cfg, find_all, custom_match, args):
+            return mock_cfg.interfaces[args["bInterfaceNumber"]]
+
+        mock_cfg.find_descriptor.side_effect = partial(find_interface, mock_cfg)
+
+        return mock_cfg
+
+    return generate_mock_ccd_gsc_configuration
+
+
+@pytest.fixture(scope="function")
+def mock_ccd_gsc_nt_configuration(mocker, mock_interface):
+    def generate_mock_ccd_gsc_nt_configuration():
+        mock_cfg = mocker.Mock(name="CCD GSC NT Configuration")
+
+        mock_cfg.interfaces = {
+            0: mock_interface(
+                0,
+                [1, 129],
+                "[GSC NT console, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_CONSOLE_DATA,
+                None,
+            ),  # GSC NT console, stm32_uart
+            1: mock_interface(
+                1,
+                [2, 130],
+                "[AP, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_AP_DATA,
+                b"",
+            ),  # AP, stm32_uart
+            2: mock_interface(
+                2,
+                [3, 131],
+                "[EC/PD, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_EC_PD_CONSOLE_DATA,
+                b"",
+            ),  # EC/PD, stm32_uart
+            5: mock_interface(
+                5,
+                [6, 134],
+                "[cr50 i2c, stm32_i2c]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_I2C_DATA,
+                b"",
+            ),  # I2C, stm32_i2c
+        }
+
+        def find_interface(mock_cfg, find_all, custom_match, args):
+            return mock_cfg.interfaces[args["bInterfaceNumber"]]
+
+        mock_cfg.find_descriptor.side_effect = partial(find_interface, mock_cfg)
+
+        return mock_cfg
+
+    return generate_mock_ccd_gsc_nt_configuration
+
+
+@pytest.fixture(scope="function")
 def mock_servo_micro_configuration(mocker, mock_interface):
     def generate_mock_servo_micro_configuration():
         mock_cfg = mocker.Mock(name="Servo Micro Configuration")
@@ -253,6 +353,40 @@ def mock_cr50_usb_device(mock_usb_device, mock_cr50_configuration):
             tmpl.GetVID("ccd_cr50"),
             tmpl.GetPID("ccd_cr50"),
             mock_cr50_configuration,
+        )
+        mock_device.iSerial = iSerial
+        mock_device.bus = bus
+        mock_device.address = address
+        return mock_device
+
+    return partial(create_device, mock_usb_device)
+
+
+@pytest.fixture(scope="function")
+def mock_ccd_gsc_usb_device(mock_usb_device, mock_ccd_gsc_configuration):
+    def create_device(mock_usb_device, iSerial, bus, address):
+        mock_device = mock_usb_device(
+            "DT Device",
+            tmpl.GetVID("ccd_gsc"),
+            tmpl.GetPID("ccd_gsc"),
+            mock_ccd_gsc_configuration,
+        )
+        mock_device.iSerial = iSerial
+        mock_device.bus = bus
+        mock_device.address = address
+        return mock_device
+
+    return partial(create_device, mock_usb_device)
+
+
+@pytest.fixture(scope="function")
+def mock_ccd_gsc_nt_usb_device(mock_usb_device, mock_ccd_gsc_nt_configuration):
+    def create_device(mock_usb_device, iSerial, bus, address):
+        mock_device = mock_usb_device(
+            "NT Device",
+            tmpl.GetVID("ccd_gsc_nt"),
+            tmpl.GetPID("ccd_gsc_nt"),
+            mock_ccd_gsc_nt_configuration,
         )
         mock_device.iSerial = iSerial
         mock_device.bus = bus
