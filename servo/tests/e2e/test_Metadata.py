@@ -344,11 +344,20 @@ class TestMetadata:
             # aleena is the hardcoded board name in mocked_pty_data
             # not_applicable is the board name overridden by some overlays
             if board == "mistral":
+                # The common "ccd_gsc" prefix should also work for the nt
+                # specific servo interface
+                assert (
+                    servo_host.starter._servod.get("ccd_gsc.ec_board")
+                    == "not_applicable"
+                )
                 assert (
                     servo_host.starter._servod.get("ccd_gsc_nt.ec_board")
                     == "not_applicable"
                 )
             else:
+                # The common "ccd_gsc" prefix should also work for the nt
+                # specific servo interface
+                assert servo_host.starter._servod.get("ccd_gsc.ec_board") == "aleena"
                 assert servo_host.starter._servod.get("ccd_gsc_nt.ec_board") == "aleena"
             assert servo_host.starter._servod.get("cold_reset") == "off"
             assert servo_host.starter._servod.get("warm_reset") == "off"

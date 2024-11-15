@@ -90,6 +90,15 @@ class activeV4Device(hw_driver.HwDriver):
             device = self.get_v4_device_info("default")
         devices = self.get_v4_device_info("usable_devices")
         if device not in devices:
+            if device == "ccd_gsc":
+                gsc = [dev for dev in devices if dev.startswith("ccd_gsc")]
+                if len(gsc) == 1:
+                    self._logger.info(
+                        "No direct %s, but assuming %s" % (device, gsc[0])
+                    )
+                    device = gsc[0]
+        # Check again after a potential override for ccd_gsc
+        if device not in devices:
             raise activeV4DeviceError("Invalid device %r. Try %r" % (device, devices))
         use_servo = self.V4_DEVICES[device]
 
