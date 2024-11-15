@@ -194,6 +194,186 @@ class TestMetadata:
 
     scfg = system_config.SystemConfig()
     scfg.add_cfg_file("", "servo_v4p1.xml")
+    scfg.add_cfg_file("", "servo_micro.xml")
+    scfg.add_cfg_file("", "ccd_cr50.xml")
+
+    @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
+    @unittest.mock.patch(
+        "servo.servod.ServodStarter._get_system_config",
+        unittest.mock.MagicMock(return_value=scfg),
+    )
+    def test_servo_type_4p1_servo_micro_ccd_gsc(
+        self, mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd, board, model
+    ):
+        """Ensure the call
+
+        Args:
+            mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd (_type_): _description_
+            board (_type_): _description_
+            model (_type_): _description_
+        """
+        test_servo_type = "servo_v4p1_with_servo_micro_and_ccd_gsc"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
+        (
+            servo_host,
+            servo_v4p1_device,
+            servo_micro_device,
+            ccd_device,
+        ) = mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd(board, model)
+        servo_host.clear_all_interfaces()
+        try:
+            assert servo_host.starter._servod.get("servo_type") == test_servo_type
+            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
+            assert serial_json["root"] == servo_v4p1_device.iSerial
+            assert serial_json["main"] == servo_micro_device.iSerial
+            assert serial_json["ccd_gsc"] == ccd_device.iSerial
+            assert (
+                servo_host.starter._servod.get("serialname")
+                == servo_v4p1_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("ccd_serialname") == ccd_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("servo_v4p1_serialname")
+                == servo_v4p1_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("servo_micro_serialname")
+                == servo_micro_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("servo_v4p1_version")
+                == "servo_v4p1_v2.0.8584+1a7e7e64c"
+            )
+            assert (
+                servo_host.starter._servod.get("servo_micro_version")
+                == "servo_micro_v2.4.57-ce329f64f"
+            )
+            # aleena is the hardcoded board name in mocked_pty_data
+            # not_applicable is the board name overridden by some overlays
+            if board == "mistral":
+                assert (
+                    servo_host.starter._servod.get("ccd_gsc.ec_board")
+                    == "not_applicable"
+                )
+            else:
+                assert servo_host.starter._servod.get("ccd_gsc.ec_board") == "aleena"
+            assert servo_host.starter._servod.get("cold_reset") == "off"
+            assert servo_host.starter._servod.get("warm_reset") == "off"
+            # there is no effective way of checking state change yet
+            assert servo_host.starter._servod.set("cold_reset", "off")
+            assert servo_host.starter._servod.set("warm_reset", "off")
+
+            servo_expected = {0: [], 2: [], 3: [], 4: []}
+            ccd_expected = {0: [], 1: [], 2: [], 5: []}
+            servo_micro_expected = {0: [], 3: [], 4: [], 5: [], 6: []}
+            results = servo_host.dump_all_interfaces()
+            assert common.compare_results(
+                {
+                    servo_v4p1_device.iSerial: servo_expected,
+                    ccd_device.iSerial: ccd_expected,
+                    servo_micro_device.iSerial: servo_micro_expected,
+                },
+                results,
+            )
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
+            servo_host.stop()
+
+    scfg = system_config.SystemConfig()
+    scfg.add_cfg_file("", "servo_v4p1.xml")
+    scfg.add_cfg_file("", "servo_micro.xml")
+    scfg.add_cfg_file("", "ccd_cr50.xml")
+
+    @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
+    @unittest.mock.patch(
+        "servo.servod.ServodStarter._get_system_config",
+        unittest.mock.MagicMock(return_value=scfg),
+    )
+    def test_servo_type_4p1_servo_micro_ccd_gsc_nt(
+        self, mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt, board, model
+    ):
+        """Ensure the call
+
+        Args:
+            mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt (_type_): _description_
+            board (_type_): _description_
+            model (_type_): _description_
+        """
+        test_servo_type = "servo_v4p1_with_servo_micro_and_ccd_gsc_nt"
+        if not common.board_supports_servo_type(board, test_servo_type):
+            return
+        (
+            servo_host,
+            servo_v4p1_device,
+            servo_micro_device,
+            ccd_device,
+        ) = mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt(board, model)
+        servo_host.clear_all_interfaces()
+        try:
+            assert servo_host.starter._servod.get("servo_type") == test_servo_type
+            serial_json = json.loads(servo_host.starter._servod.get("serialnames"))
+            assert serial_json["root"] == servo_v4p1_device.iSerial
+            assert serial_json["main"] == servo_micro_device.iSerial
+            assert serial_json["ccd_gsc_nt"] == ccd_device.iSerial
+            assert (
+                servo_host.starter._servod.get("serialname")
+                == servo_v4p1_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("ccd_serialname") == ccd_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("servo_v4p1_serialname")
+                == servo_v4p1_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("servo_micro_serialname")
+                == servo_micro_device.iSerial
+            )
+            assert (
+                servo_host.starter._servod.get("servo_v4p1_version")
+                == "servo_v4p1_v2.0.8584+1a7e7e64c"
+            )
+            assert (
+                servo_host.starter._servod.get("servo_micro_version")
+                == "servo_micro_v2.4.57-ce329f64f"
+            )
+            # aleena is the hardcoded board name in mocked_pty_data
+            # not_applicable is the board name overridden by some overlays
+            if board == "mistral":
+                assert (
+                    servo_host.starter._servod.get("ccd_gsc_nt.ec_board")
+                    == "not_applicable"
+                )
+            else:
+                assert servo_host.starter._servod.get("ccd_gsc_nt.ec_board") == "aleena"
+            assert servo_host.starter._servod.get("cold_reset") == "off"
+            assert servo_host.starter._servod.get("warm_reset") == "off"
+            # there is no effective way of checking state change yet
+            assert servo_host.starter._servod.set("cold_reset", "off")
+            assert servo_host.starter._servod.set("warm_reset", "off")
+
+            servo_expected = {0: [], 2: [], 3: [], 4: []}
+            ccd_expected = {0: [], 1: [], 2: [], 5: []}
+            servo_micro_expected = {0: [], 3: [], 4: [], 5: [], 6: []}
+            results = servo_host.dump_all_interfaces()
+            assert common.compare_results(
+                {
+                    servo_v4p1_device.iSerial: servo_expected,
+                    ccd_device.iSerial: ccd_expected,
+                    servo_micro_device.iSerial: servo_micro_expected,
+                },
+                results,
+            )
+        # tear down servo_host immediately after the test to release all the tty
+        finally:
+            servo_host.stop()
+
+    scfg = system_config.SystemConfig()
+    scfg.add_cfg_file("", "servo_v4p1.xml")
     scfg.add_cfg_file("", "c2d2.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())

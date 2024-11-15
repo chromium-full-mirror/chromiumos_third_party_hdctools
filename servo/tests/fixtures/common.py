@@ -13,7 +13,14 @@ class TestFixtureError(Exception):
     """Raised when there is an issue with test fixture code."""
 
 
-device_types = ["servo_v4p1", "ccd_cr50", "servo_micro", "c2d2"]
+device_types = [
+    "servo_v4p1",
+    "ccd_cr50",
+    "ccd_gsc",
+    "ccd_gsc_nt",
+    "servo_micro",
+    "c2d2",
+]
 device_details = {}
 for _device_type in device_types:
     device_details[_device_type] = {
@@ -25,6 +32,8 @@ del _device_type
 DEFAULT_SERIALS = {
     "servo_v4p1": "SERVOV4P1-S-%s%d",
     "ccd_cr50": "1002303D-%s%d",
+    "ccd_gsc": "2002303D-%s%d",
+    "ccd_gsc_nt": "3002303D-%s%d",
     "servo_micro": "MICRO-S-%s%d",
     "c2d2": "100860-%s%d",
 }

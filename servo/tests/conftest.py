@@ -25,9 +25,19 @@ from servo.tests.fixtures.mock_servo_host import (
 from servo.tests.fixtures.mock_servo_host import (
     mock_host_with_4p1_servo_and_servo_micro_and_ccd,
 )
+from servo.tests.fixtures.mock_servo_host import (
+    mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd,
+)
+from servo.tests.fixtures.mock_servo_host import (
+    mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt,
+)
 from servo.tests.fixtures.mock_servo_host import mock_servo_host
 from servo.tests.fixtures.mock_usb_devices import mock_c2d2_configuration
 from servo.tests.fixtures.mock_usb_devices import mock_c2d2_usb_device
+from servo.tests.fixtures.mock_usb_devices import mock_ccd_gsc_configuration
+from servo.tests.fixtures.mock_usb_devices import mock_ccd_gsc_nt_configuration
+from servo.tests.fixtures.mock_usb_devices import mock_ccd_gsc_nt_usb_device
+from servo.tests.fixtures.mock_usb_devices import mock_ccd_gsc_usb_device
 from servo.tests.fixtures.mock_usb_devices import mock_cr50_configuration
 from servo.tests.fixtures.mock_usb_devices import mock_cr50_usb_device
 from servo.tests.fixtures.mock_usb_devices import mock_servo_micro_configuration

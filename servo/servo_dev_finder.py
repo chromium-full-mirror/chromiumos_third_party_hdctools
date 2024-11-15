@@ -450,6 +450,17 @@ class ServoDeviceFinder:
                         gsc_prefix,
                     )
 
+                # Add ccd_gsc as a prefix for ccd_gsc_nt to present consistent prefix
+                if prefix.startswith("ccd_gsc_nt"):
+                    gsc_prefix = prefix.replace("ccd_gsc_nt", "ccd_gsc")
+                    dev.devopts.prefix.append(gsc_prefix)
+                    known_prefixes.add(gsc_prefix)
+                    self._logger.debug(
+                        "Device %s is given prefix %s which is automatically generated",
+                        dev,
+                        gsc_prefix,
+                    )
+
     def validate_device_availability(self, devs):
         """Check against ServoScratch that all devices are not served by another
            servod instance.
