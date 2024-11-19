@@ -117,17 +117,16 @@ def needs_update_check():
     if os.path.exists(UPDATE_CHECKER_FILE) is False:
         return True
 
-    with open(UPDATE_CHECKER_FILE, "r") as file:
+    with open(UPDATE_CHECKER_FILE, "r", encoding="utf-8") as file:
         date = file.read().strip()
         current_date = datetime.now().strftime("%Y-%m-%d")
         if date == current_date:
             return False
-        else:
-            return True
+        return True
 
 
 def update_check_timestamp():
-    with open(UPDATE_CHECKER_FILE, "w") as file:
+    with open(UPDATE_CHECKER_FILE, "w", encoding="utf-8") as file:
         current_date = datetime.now().strftime("%Y-%m-%d")
         file.write(current_date)
 
@@ -253,6 +252,7 @@ def start_servod(
             ports = {"9999": port}
 
         logging.info("Container run")
+        nofile_limit = docker.types.Ulimit(name="nofile", soft=1024, hard=65535)
         cont = client.containers.run(
             image,
             remove=True,
@@ -264,6 +264,7 @@ def start_servod(
             volumes=volumes,
             ports=ports,
             command=command,
+            ulimits=[nofile_limit],
         )
         started = False
         log_lines = cont.logs(stream=True, follow=True)
@@ -352,7 +353,8 @@ def start_servod(
                                 "channel.\nIf it is not expected please update your "
                                 "device(s) immediately."
                                 "\nYou can use following command after stopping servod:"
-                                f"\n\nservo_updater --updater_channel {channel} -- -b {servo_type}\n"
+                                f"\n\nservo_updater --updater_channel {channel} -- "
+                                f"-b {servo_type}\n"
                             )
                             if not follow:
                                 print(
