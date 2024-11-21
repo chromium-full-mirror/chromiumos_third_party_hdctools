@@ -33,6 +33,9 @@ start-servod
        release, latest release version, typically 2-4 weeks behind,
                 used by Satlab and most partners has significantly more testing.
 
+    [--docker-label label]
+        Like -c, but allows specifying any valid docker label.
+
     [-b BOARD]
        DUT board the servo is connected to.  Not required but strongly suggested.
 
@@ -437,6 +440,11 @@ def parse_args():
         default="local",
     )
     parser.add_argument(
+        "--docker-label",
+        type=str,
+        dest="channel",
+    )
+    parser.add_argument(
         "-f",
         "--follow",
         type=str,
@@ -456,7 +464,10 @@ def parse_args():
         nargs="*",
     )
     parser.add_argument(
-        "-p", "--port", type=int, help="Host port number to map the servod service to"
+        "-p",
+        "--port",
+        type=int,
+        help="Host port number to map the servod service to",
     )
     parser.add_argument(
         "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
