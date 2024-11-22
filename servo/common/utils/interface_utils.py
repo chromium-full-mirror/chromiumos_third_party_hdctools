@@ -105,7 +105,7 @@ class InterfaceUtils:
                 name = interface_data
             else:
                 raise TypeError("Illegal interface data type %s" % type(interface_data))
-            InterfaceUtils._logger.error("Initializing interface %d to %s", i, name)
+            InterfaceUtils._logger.info("Initializing interface %d to %s", i, name)
             try:
                 result = _interface.Build(
                     name=name,
