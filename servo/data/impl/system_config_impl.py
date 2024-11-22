@@ -64,3 +64,13 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
 
         # Return the populated response message.
         return response
+
+    def IsControl(self, request, context):
+        """
+        Check if there is a control with specified name
+
+        Returns:
+            IsControlResponse: A response message with bool value, true if control exists
+        """
+        scfg = get_system_config(vid=request.vid, pid=request.pid)
+        return system_config_pb2.IsControlResponse(value = scfg.is_control(request.control_name))

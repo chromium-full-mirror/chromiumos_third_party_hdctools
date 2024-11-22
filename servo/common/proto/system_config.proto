@@ -40,8 +40,24 @@ message SystemFileRequest {
     int32 pid = 4;
 }
 
+message IsControlRequest {
+    // The Vendor ID associated with this servo device
+    int32 vid = 1;
+    // The product ID associated with this servo device
+    int32 pid = 2;
+    // Name of control to check existence
+    string control_name = 3;
+}
+
+message IsControlResponse {
+    // Result, true if control with specified name exists
+    bool value = 1;
+}
+
 service SystemConfig {
     rpc GetFileContent (SystemConfigRequest) returns (SystemConfigResponse);
     // Add a file to system config dict
     rpc AddCfgFile (SystemFileRequest) returns (SystemConfigResponse);
+    // Check if control exists
+    rpc IsControl (IsControlRequest) returns (IsControlResponse);
 }
