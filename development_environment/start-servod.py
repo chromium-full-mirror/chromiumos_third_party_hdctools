@@ -92,6 +92,10 @@ start-servod
     [--force_update]
         Force checking if there is an update to docker image. By default, the check
         is done only once a day for release channel, and everytime for other ones.
+
+    [--token-db token_db_path]
+        Path to tokens database on the host machine. Path specified will be mounted
+        to the docker container and used by servod.
 """
 
 
@@ -212,6 +216,7 @@ def start_servod(
     sleep,
     test,
     follow,
+    token_db,
 ):
     try:
         # Just in case someone manages to press ctrl-c before the container object
@@ -235,13 +240,19 @@ def start_servod(
         name = "%s-docker_servod" % container_name
         logs_volume = "%s_log" % container_name
 
+        volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
+
+        if token_db:
+            dir_path = os.path.dirname(token_db)
+            new_file_path = f"/tmp/token_db/{os.path.basename(token_db)}"
+            volumes.append(f"{dir_path}:/tmp/token_db/")
+            servod_params += f"--token-db {new_file_path}"
+
         command = ["bash", "/start_servod_dev.sh", servod_params]
         if sleep:
             command = ["sleep", "infinity"]
         elif test:
             command = ["pytest", "-n", "auto", "/hdctools/"]
-
-        volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
 
         _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
         if os.path.isfile(_servodrc):
@@ -480,6 +491,11 @@ def parse_args():
         "--force_update",
         action=argparse.BooleanOptionalAction,
     )
+    parser.add_argument(
+        "--token-db",
+        type=str,
+        dest="token_db",
+    )
     args = parser.parse_args()
     if args.help:
         parser.print_usage()
@@ -522,6 +538,7 @@ def main():
         sleep=args.sleep,
         test=args.run_tests,
         follow=args.follow,
+        token_db=args.token_db,
     )
 
 
