@@ -12,16 +12,7 @@ class crosChip(hw_driver.HwDriver):
     def _drv_init(self):
         """Driver specific initializer."""
         super(crosChip, self)._drv_init()
-        default_chip = self._params.get("chip", "unknown")
-        devices = self._servod.get_devices()
-        default_device = self._servod.get_main_device()
-        self._chips = {}
-        for device in devices:
-            self._chips[device] = self._params.get(
-                "chip_for_" + device.template.TYPE, default_chip
-            )
-        self._chip = self._chips[default_device]
 
     def _Get_chip(self):
         """Get the EC chip name."""
-        return self._driver_client.GetCrosChip(name=json.dumps(self._params)).resposne
+        return self._driver_client.GetCrosChip(name=json.dumps(self._params)).response
