@@ -186,7 +186,9 @@ class _BaseServodParser(argparse.ArgumentParser):
         # Initialize logging up here first to ensure log messages from parsing
         # can go through.
         loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
-        logging.basicConfig(level=loglevel, format=fmt)
+        default_handler = logging.StreamHandler()
+        default_handler.formatter = servo_logging.UTCFormatter(fmt=fmt)
+        logging.basicConfig(level=loglevel, handlers=[default_handler])
         self._logger = logging.getLogger(type(self).__name__)
         # Generate description.
         description_lines = textwrap.wrap(description)

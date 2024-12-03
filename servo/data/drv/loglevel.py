@@ -62,7 +62,7 @@ class loglevel(hw_driver.HwDriver):
         # Irrespective of basicConfig or handler based logging, the
         # standard handlers need to be reset for this format.
         for handler in out_handlers:
-            handler.setFormatter(logging.Formatter(fmt=fmt_string))
+            handler.setFormatter(servo_logging.UTCFormatter(fmt=fmt_string))
 
     def _get(self):
         """Gets the current loglevel of the root logger."""
