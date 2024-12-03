@@ -185,6 +185,15 @@ def _sortLogs(logfiles, loglevel):
     return chronological_logfiles
 
 
+class UTCFormatter(logging.Formatter):
+    """A formatter that always prints dates in UTC in ISO-8601 format."""
+
+    def formatTime(self, record, datefmt=None):
+        return datetime.datetime.fromtimestamp(
+            record.created, datetime.timezone.utc
+        ).isoformat(timespec="milliseconds")
+
+
 def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
     """Setup servod logging.
 
@@ -211,7 +220,9 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
 
     # Do the default stderr logging regardless. It will be a no-op if it already
     # happened.
-    logging.basicConfig(level=level, format=fmt)
+    default_handler = logging.StreamHandler()
+    default_handler.formatter = UTCFormatter(fmt=fmt)
+    logging.basicConfig(level=level, handlers=[default_handler])
     if logdir:
         # Start file loggers for each output file.
         instance_logdir = _buildLogdirName(logdir, port)
@@ -271,7 +282,7 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
         # Level and format for ServodRotatingFileHandlers are set once at init
         # and then cannot be changed. Therefore, those methods are wrapped in a
         # noop.
-        formatter = logging.Formatter(fmt=fmt)
+        formatter = UTCFormatter(fmt=fmt)
         logging.handlers.RotatingFileHandler.setLevel(self, level)
         logging.handlers.RotatingFileHandler.setFormatter(self, formatter)
 
