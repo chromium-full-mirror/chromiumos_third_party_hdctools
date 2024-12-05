@@ -15,9 +15,8 @@ if [ $found_updatable -eq 1 ]; then
 	/usr/bin/fwupdtool install --plugins genesys --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d ?
 fi
 
-echo "DEV: starting grpc server ...................."
+echo $(date --utc +"%Y-%m-%dT%H:%M:%S.%3N%:z") "Starting servod"
 /usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py &
-echo "DEV: starting servod ...................."
 exec servod --host 0.0.0.0 $1 &
 
 wait -n
