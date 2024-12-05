@@ -5,6 +5,7 @@
 
 import argparse
 from datetime import datetime
+from datetime import timezone
 import logging
 import os
 import re
@@ -496,11 +497,21 @@ def parse_args():
     return args
 
 
+class UTCFormatter(logging.Formatter):
+    """A formatter that always prints dates in UTC in ISO-8601 format."""
+
+    def formatTime(self, record, datefmt=None):
+        return datetime.fromtimestamp(record.created, timezone.utc).isoformat(
+            timespec="milliseconds"
+        )
+
+
 def main():
+    default_handler = logging.StreamHandler(sys.stdout)
+    default_handler.formatter = UTCFormatter(fmt="%(asctime)s %(message)s")
     logging.basicConfig(
-        stream=sys.stdout,
         level=logging.INFO,
-        format="%(asctime)s %(message)s",
+        handlers=[default_handler],
     )
     logging.info("Setup.")
     client = setup()
