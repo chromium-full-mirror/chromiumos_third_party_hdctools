@@ -329,7 +329,6 @@ class Interpreter:
         # writers.  Might need better checking for command retry logic in here.
         if self.ec_cmd_queue.empty():
             # Remove the EC UART from the writers while we wait for a response.
-            self.logger.debug("Removing EC UART from writers.")
             self.outputs.remove(self.ec_uart_pty)
 
     def HandleECData(self):
