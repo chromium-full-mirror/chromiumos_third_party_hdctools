@@ -9,6 +9,7 @@ from datetime import timezone
 import logging
 import os
 import re
+import shlex
 import signal
 import sys
 import tempfile
@@ -270,6 +271,7 @@ def start_servod(
 
         logging.info("Container run")
         nofile_limit = docker.types.Ulimit(name="nofile", soft=1024, hard=65535)
+        logging.debug("Running command %s", shlex.join(command))
         cont = client.containers.run(
             image,
             remove=True,
@@ -534,6 +536,8 @@ def main():
     logging.info("Setup.")
     client = setup()
     args = parse_args()
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
     image = get_image(
         client, args.channel, args.allow_offline, args.force_update, args.verbose
     )
