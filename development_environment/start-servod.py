@@ -254,6 +254,8 @@ def start_servod(
             command = ["sleep", "infinity"]
         elif test:
             command = ["pytest", "-n", "auto", "/hdctools/"]
+            if passthrough_args:
+                command += passthrough_args
 
         _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
         if os.path.isfile(_servodrc):

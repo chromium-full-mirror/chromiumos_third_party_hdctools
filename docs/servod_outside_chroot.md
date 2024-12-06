@@ -261,6 +261,13 @@ code you need to run build-servod then run-servod-tests
 run-servod-tests
 ```
 
+### To run a single test with lots of logging
+```shell
+start-servod -n pytest -d
+docker exec -it pytest-docker_servod pytest -vvvvvv -o cli_log=true --log-level=DEBUG --log-cli-level=DEBUG 'hdctools/servo/tests/e2e/test_Metadata.py::TestMetadata::test_servo_type_4p1_cr50'
+stop-servod -n pytest
+```
+
 ## Forget the wrappers just let me into the container
 
 You can see a list of the running containers by running the command:
