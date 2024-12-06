@@ -241,6 +241,8 @@ def start_servod(
             command = ["sleep", "infinity"]
         elif test:
             command = ["pytest", "-n", "auto", "/hdctools/"]
+            if passthrough_args:
+                command += passthrough_args
 
         volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
 
