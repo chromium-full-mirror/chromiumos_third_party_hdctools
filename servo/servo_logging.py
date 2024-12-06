@@ -32,7 +32,6 @@ import logging
 import logging.handlers
 import os
 import re
-import sys
 import tarfile
 
 
@@ -202,8 +201,6 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
     setup logging using basicConfig()
     """
     root_logger = logging.getLogger()
-    # Remove all handlers that might currently exist.
-    root_logger.handlers = []
     # Let the root logger process every log message, while the different
     # handlers chose which ones to put out.
     root_logger.setLevel(logging.DEBUG)
@@ -211,16 +208,12 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
     level, fmt = LOGLEVEL_MAP[stdout_level]
     # |log_dir| is None iff it's not in the cmdline. Otherwise it contains
     # a directory path to store the servod logs in.
-    # Start file loggers for each output file.
-    if not logdir:
-        # In this case, servod requests that no file logging is done.
-        logging.basicConfig(level=level, format=fmt)
-    else:
-        # File logging requires different handlers.
-        stdout_handler = logging.StreamHandler(sys.stdout)
-        stdout_handler.setLevel(level)
-        stdout_handler.formatter = logging.Formatter(fmt=fmt)
-        root_logger.addHandler(stdout_handler)
+
+    # Do the default stderr logging regardless. It will be a no-op if it already
+    # happened.
+    logging.basicConfig(level=level, format=fmt)
+    if logdir:
+        # Start file loggers for each output file.
         instance_logdir = _buildLogdirName(logdir, port)
         logging_ts = _generateTs()
         if not os.path.isdir(instance_logdir):
