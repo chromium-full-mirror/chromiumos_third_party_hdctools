@@ -39,7 +39,7 @@
           <item key="0">
             <item>power_state:reset</item>
             <!-- Sleep to ensure EC reset process work normal. -->
-            <item>sleep:5</item>
+            <item>sleep:2</item>
           </item>
         </item>
       </content>
@@ -75,7 +75,7 @@
             <item>ap_flash_select:off</item>
             <item>power_state:reset</item>
             <!-- Sleep to ensure EC reset process work normal. -->
-            <item>sleep:5</item>
+            <item>sleep:2</item>
           </item>
         </item>
       </content>
