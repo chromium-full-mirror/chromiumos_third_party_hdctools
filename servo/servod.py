@@ -111,9 +111,11 @@ class ServodStarter:
         """
 
         # Initialize logging up here first to ensure log messages from parsing
-        # can go through.
+        # can go through.  servo_logging:setup() will change the root logger
+        # level, so be sure to set the level in the StreamHandler.
         loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
         default_handler = logging.StreamHandler()
+        default_handler.setLevel(loglevel)
         default_handler.formatter = servo_logging.UTCFormatter(fmt=fmt)
         logging.basicConfig(level=loglevel, handlers=[default_handler])
         self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
@@ -148,7 +150,7 @@ class ServodStarter:
         servo_logging.setup(
             logdir=sopts.log_dir,
             port=servo_port,
-            debug_stdout=sopts.debug,
+            debug_stderr=sopts.debug,
             backup_count=sopts.log_dir_backup_count,
         )
 

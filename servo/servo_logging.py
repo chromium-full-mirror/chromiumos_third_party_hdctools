@@ -194,7 +194,7 @@ class UTCFormatter(logging.Formatter):
         ).isoformat(timespec="milliseconds")
 
 
-def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
+def setup(logdir, port, debug_stderr=False, backup_count=LOG_BACKUP_COUNT):
     """Setup servod logging.
 
     This function handles setting up logging, whether it be normal basicConfig
@@ -203,7 +203,7 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
     Args:
       logdir: str, log directory for all servod logs (*)
       port: port used for current instance
-      debug_stdout: whether the stdout logs should be debug
+      debug_stderr: whether the stderr logs should be debug
       backup_count: max number of compressed and uncompressed files to keep around
 
     (*) if |logdir| is None, the system will not setup log handlers, but rather
@@ -213,16 +213,20 @@ def setup(logdir, port, debug_stdout=False, backup_count=LOG_BACKUP_COUNT):
     # Let the root logger process every log message, while the different
     # handlers chose which ones to put out.
     root_logger.setLevel(logging.DEBUG)
-    stdout_level = "debug" if debug_stdout else DEFAULT_LOGLEVEL
-    level, fmt = LOGLEVEL_MAP[stdout_level]
+    stderr_level = "debug" if debug_stderr else DEFAULT_LOGLEVEL
+    level, fmt = LOGLEVEL_MAP[stderr_level]
     # |log_dir| is None iff it's not in the cmdline. Otherwise it contains
     # a directory path to store the servod logs in.
 
-    # Do the default stderr logging regardless. It will be a no-op if it already
-    # happened.
-    default_handler = logging.StreamHandler()
-    default_handler.formatter = UTCFormatter(fmt=fmt)
-    logging.basicConfig(level=level, handlers=[default_handler])
+    # Fix the log level on the stderr logger that was created in
+    # ServodStarter.__init__
+    for handler in root_logger.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            logging.info(
+                "Updating log level & formatter of %s to %s/%s", handler, level, fmt
+            )
+            handler.setLevel(level)
+            handler.formatter = UTCFormatter(fmt=fmt)
     if logdir:
         # Start file loggers for each output file.
         instance_logdir = _buildLogdirName(logdir, port)

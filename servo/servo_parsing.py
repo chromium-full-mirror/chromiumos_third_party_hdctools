@@ -9,7 +9,6 @@ import os
 import textwrap
 
 from servo import client
-from servo import servo_logging
 from servo import sversion_util
 from servo.utils import scratch
 
@@ -183,12 +182,7 @@ class _BaseServodParser(argparse.ArgumentParser):
                     start with %(prog)s.
           **kwargs: keyword arguments forwarded to ArgumentParser
         """
-        # Initialize logging up here first to ensure log messages from parsing
-        # can go through.
-        loglevel, fmt = servo_logging.LOGLEVEL_MAP[servo_logging.DEFAULT_LOGLEVEL]
-        default_handler = logging.StreamHandler()
-        default_handler.formatter = servo_logging.UTCFormatter(fmt=fmt)
-        logging.basicConfig(level=loglevel, handlers=[default_handler])
+        # Logging is setup in servod.py ServodStarter:__init__
         self._logger = logging.getLogger(type(self).__name__)
         # Generate description.
         description_lines = textwrap.wrap(description)
