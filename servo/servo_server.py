@@ -39,7 +39,6 @@ class Servod:
           ServodError: if unable to locate init method for particular interface
         """
         self._logger = logging.getLogger("Servod")
-        self._logger.debug("")
         self._usbkm232 = usbkm232
         self._keyboard = None
         self._usb_keyboard = None

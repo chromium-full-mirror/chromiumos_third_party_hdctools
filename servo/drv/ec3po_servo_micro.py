@@ -51,7 +51,6 @@ class ec3poServoMicro(ec3po_servo.ec3poServo):
     def _drv_init(self):
         """Driver specific initializer."""
         super(ec3poServoMicro, self)._drv_init()
-        self._logger.debug("")
 
     def _Get_uut_boot_mode(self):
         """Gets the current UUT (UART) boot mode for the EC.

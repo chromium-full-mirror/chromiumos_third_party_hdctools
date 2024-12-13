@@ -106,7 +106,7 @@ class I2cReg:
         Returns:
           integer value read from i2c reg
         """
-        self._logger.debug("")
+
         # Set potential overwrites from default.
         reg_len = reg_len if reg_len is not None else self._reg_len
         rlist = self._wr_rd(reg, [], reg_len, auto_release=auto_release)
@@ -125,7 +125,7 @@ class I2cReg:
         Returns:
           integer value read after the write of reg
         """
-        self._logger.debug("")
+
         wlist = []
         # Set potential overwrites from default.
         no_read = no_read if no_read is not None else self._no_read
@@ -187,7 +187,7 @@ class I2cReg:
         """
         # checked the last register access ... if same can remove from
         # operation if device keeps last index.
-        self._logger.debug("")
+
         if not self._use_reg_cache or reg != self._reg:
             wlist = [reg] + wlist
         else:

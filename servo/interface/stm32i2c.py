@@ -52,7 +52,6 @@ class Si2cBus(i2c_base.BaseI2CBus):
         i2c_base.BaseI2CBus.__init__(self)
 
         self._logger = logging.getLogger("Si2c")
-        self._logger.debug("")
 
         self._port = port
         self._logger.debug("Set port %d", port)

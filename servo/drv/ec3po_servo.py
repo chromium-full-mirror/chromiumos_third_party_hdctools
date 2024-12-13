@@ -75,8 +75,6 @@ class ec3poServo(pty_driver.ptyDriver):
             else:
                 raise ec3poServoError("Enhanced console must be ec3po!")
 
-        self._logger.debug("")
-
     def _limit_channel(self):
         """Suppress background output on the EC console.
 

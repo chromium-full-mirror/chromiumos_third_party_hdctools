@@ -100,7 +100,7 @@ class Fuart(uart.Uart):
         """
         super(Fuart, self).__init__()
         self._logger = logging.getLogger("Fuart")
-        self._logger.debug("")
+
         (self._flib, self._lib) = ftdi_utils.load_libs("ftdi", "ftdiuart")
         self._fargs = ftdi_common.FtdiCommonArgs(
             vendor_id=vendor,
@@ -142,7 +142,7 @@ class Fuart(uart.Uart):
 
     def __del__(self):
         """Fuart destructor."""
-        self._logger.debug("")
+
         if not self._is_closed:
             self.close()
 
@@ -152,7 +152,7 @@ class Fuart(uart.Uart):
         Raises:
           FuartError: If open fails
         """
-        self._logger.debug("")
+
         err = self._lib.fuart_open(
             ctypes.byref(self._fuartc), ctypes.byref(self._fargs)
         )
@@ -166,7 +166,7 @@ class Fuart(uart.Uart):
         Raises:
           FuartError: If close fails
         """
-        self._logger.debug("")
+
         err = self._lib.fuart_close(ctypes.byref(self._fuartc))
         if err:
             raise FuartError("doing fuart_close", err)
@@ -178,7 +178,7 @@ class Fuart(uart.Uart):
         Raises:
           FuartError: If thread creation fails
         """
-        self._logger.debug("")
+
         if self._is_closed:
             self.open()
 
@@ -202,7 +202,7 @@ class Fuart(uart.Uart):
               1: 1.5 stop bits
               2: 2 stop bits
         """
-        self._logger.debug("")
+
         return {
             "baudrate": self._fuartc.cfg.baudrate,
             "bits": self._fuartc.cfg.bits,
@@ -229,7 +229,7 @@ class Fuart(uart.Uart):
         Raises:
           FuartError: If failed to set line properties
         """
-        self._logger.debug("")
+
         self._uart_props_validation(line_props, exception_type=FuartError)
 
         cfg = UartCfg()
@@ -247,7 +247,7 @@ class Fuart(uart.Uart):
         Returns:
           String path to the pty connected to the uart
         """
-        self._logger.debug("")
+
         # In the FTDI world this is a c-string i.e. a bytes array. We want to
         # return an actual string object here, like all other interfaces do.
         return self._fuartc.name.decode(encoding="ascii")

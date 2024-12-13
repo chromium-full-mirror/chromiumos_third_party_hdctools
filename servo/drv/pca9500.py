@@ -94,7 +94,7 @@ class pca9500(hw_driver.HwDriver):
         Returns:
           integer value from gpio
         """
-        self._logger.debug("")
+
         return self._create_logical_value(self._read_control_reg())
 
     def _read_control_reg(self, auto_release=True):

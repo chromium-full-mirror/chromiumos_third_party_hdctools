@@ -44,7 +44,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         # Set can be used by passing 'print' as an argument.
         self._choices = re.compile("^0$")
         self._board = self._params["board"]
-        self._logger.debug("")
+
         self._current_fw_cmd = "%s_version" % (self._board,)
         self._latest_fw_cmd = "%s_latest_version" % (self._board,)
         self._fw_channel_cmd = "%s_firmware_channel" % (self._board,)

@@ -84,7 +84,7 @@ class HwDriver:
           _io_type: String of io type or False if not explicitly assigned.
         """
         self._logger = logging.getLogger(type(self).__name__)
-        self._logger.debug("")
+
         self._complement = None
         self._interface = interface
         self._servod = servod

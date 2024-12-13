@@ -64,7 +64,6 @@ class basePWRADC(hw_driver.HwDriver):
           BasePWRADCError: if needed params are absent
         """
         super(basePWRADC, self)._drv_init()
-        self._logger.debug("")
         self._base_name = self._params["base_name"]
         # Single channel ADCs can be thought of as running on channel 0.
         # Some ADCs might need this information to find pertinent bits on registers.
@@ -206,7 +205,6 @@ class basePWRADC(hw_driver.HwDriver):
         Returns:
           float of potential in millivolts
         """
-        self._logger.debug("")
         busv = self._read_reg("busv") >> self.BUSV_MV_OFFSET
         millivolts = busv * self.millivolts_per_lsb
         if millivolts >= self.BUSV_MAX:
@@ -226,7 +224,6 @@ class basePWRADC(hw_driver.HwDriver):
         Returns:
           float of current in milliamps
         """
-        self._logger.debug("")
         milliamps_per_lsb = self.milliamps_per_lsb
         raw_cur = self._read_reg("cur")
         if raw_cur & self.CUR_SIGN:
@@ -252,7 +249,7 @@ class basePWRADC(hw_driver.HwDriver):
         Raises:
           AssertionError: when power is saturated.
         """
-        self._logger.debug("")
+
         # call first to force compulsory calibration
         milliwatts_per_lsb = self.milliwatts_per_lsb
         if raw_pwr is None:

@@ -22,7 +22,6 @@ class ec3poC2d2(ec3po_servo.ec3poServo):
     def _drv_init(self):
         """Driver specific initializer."""
         super(ec3poC2d2, self)._drv_init()
-        self._logger.debug("")
 
     def _Get_ec_uart_en(self):
         """Returns '1' if the EC UART output is enabled. '0' if it's disabled."""

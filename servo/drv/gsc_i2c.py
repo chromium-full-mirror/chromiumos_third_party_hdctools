@@ -26,7 +26,7 @@ class gscI2c(hw_driver.HwDriver):
             child: integer, 7-bit i2c child address
         """
         super(gscI2c, self)._drv_init()
-        self._logger.debug("")
+
         self._child = int(self._params["child"], 0)
 
     def _set(self, logical_value):

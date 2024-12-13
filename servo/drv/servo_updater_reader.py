@@ -28,7 +28,6 @@ class servoUpdaterReader(hw_driver.HwDriver):
         super(servoUpdaterReader, self)._drv_init()
         self._board = self._params["board"]
         self._channel = self._params["channel"]
-        self._logger.debug("")
 
     def _get(self):
         """Get available firmware version for |self._board| on |self._channel|.

@@ -54,7 +54,7 @@ class ec(pty_driver.ptyDriver):
     def _drv_init(self):
         """Driver specific initializer."""
         super(ec, self)._drv_init()
-        self._logger.debug("")
+
         self._role_swap_delay = float(self._params.get("role_swap_delay", 1.0))
         # Add locals to the values dictionary.
         if "kbd" not in self._interface._uart_state:
@@ -106,7 +106,7 @@ class ec(pty_driver.ptyDriver):
 
     def _Set_kbd_en(self, value):
         """Enable/disable keypress simulation."""
-        self._logger.debug("")
+
         org_value = self._interface._uart_state["kbd"][0]
         if org_value == 0 and value == 1:
             self._set_both_keys(pressed=1)
@@ -131,7 +131,7 @@ class ec(pty_driver.ptyDriver):
           a: Selection of a0 and a1.
           value: The new value to set.
         """
-        self._logger.debug("")
+
         org_value = self._interface._uart_state["kbd"][self._get_mx_ax_index(m, a)]
         if self._Get_kbd_en() == 1 and org_value != value:
             org_value = [

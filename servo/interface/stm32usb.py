@@ -79,7 +79,7 @@ class Susb:
         if not logger:
             raise SusbError("No logger defined")
         self._logger = logger
-        self._logger.debug("")
+
         # Setting up the read and write locks. These are per instance, as each
         # instance represents one interface.
         self._read_ep_lock = threading.Lock()

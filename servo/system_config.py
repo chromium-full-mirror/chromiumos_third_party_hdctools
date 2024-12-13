@@ -172,7 +172,6 @@ class SystemConfig:
     def __init__(self):
         """SystemConfig constructor."""
         self._logger = logging.getLogger("SystemConfig")
-        self._logger.debug("")
         self.control_tags = collections.defaultdict(set)
         self.aliases = {}
         self.syscfg_dict = collections.defaultdict(dict)

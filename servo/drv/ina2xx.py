@@ -73,7 +73,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         Returns:
           float of current per lsb value in milliamps.
         """
-        self._logger.debug("")
+
         self._calibrate()
         lsb = self.CUR_LSB_COEFFICIENT / (self._calib_reg * self._rsense)
         self._logger.debug("lsb = %f" % lsb)
@@ -86,7 +86,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         Returns:
           float of power per lsb value in milliwatts.
         """
-        self._logger.debug("")
+
         lsb = self.PWR_LSB_COEFFICIENT * self.milliamps_per_lsb
         self._logger.debug("lsb = %f" % lsb)
         return lsb
@@ -147,7 +147,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         Raises:
           Ina2xxError: If calibration failed or doesn't have register.
         """
-        self._logger.debug("")
+
         if not self._has_reg("cal"):
             raise Ina2xxError("ADC does NOT have calibration register")
 
@@ -235,7 +235,6 @@ class ina2xx(base_pwr_adc.basePWRADC):
         Returns:
           float of current in milliamps
         """
-        logging.debug("")
 
         vshunt_mv = self._get_shunt_millivolts()
         logging.debug("vshunt_mv = %2.2f", vshunt_mv)
@@ -243,13 +242,13 @@ class ina2xx(base_pwr_adc.basePWRADC):
 
     def _wake(self):
         """Wake up the INA219 adc from sleep."""
-        self._logger.debug("")
+
         if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_CONT):
             self._set_cfg_mode(self.CFG_MODE_CONT)
 
     def _sleep(self):
         """Place device in low-power ( no measurement state )."""
-        self._logger.debug("")
+
         if self._cfg_mode is None or (self._cfg_mode != self.CFG_MODE_SLEEP):
             self._reset()
             self._set_cfg_mode(self.CFG_MODE_SLEEP)
@@ -264,7 +263,7 @@ class ina2xx(base_pwr_adc.basePWRADC):
         Args:
           mode: integer value to write to configuration register to change the mode.
         """
-        self._logger.debug("")
+
         cfg_reg = self._read_reg("cfg")
         self._write_reg("cfg", (cfg_reg & ~self.CFG_MODE_MASK) | mode)
 

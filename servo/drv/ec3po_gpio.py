@@ -64,8 +64,6 @@ class ec3poGpio(ec3po_servo.ec3poServo):
         else:
             raise ec3poGpioError("invalid ioex parameter: {!r}".format(ioex))
 
-        self._logger.debug("")
-
     def set_gpio(self, name, value):
         """Set the requested GPIO to the specified value.
 

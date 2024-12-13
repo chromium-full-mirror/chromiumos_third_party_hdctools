@@ -73,7 +73,7 @@ class tca6416(hw_driver.HwDriver):
         Returns:
           integer in formatted representation
         """
-        self._logger.debug("")
+
         value = self._i2c_obj._read_reg(self.REG_INP + self._port)
         return self._create_logical_value(value)
 
@@ -96,7 +96,7 @@ class tca6416(hw_driver.HwDriver):
           not recognized.
         """
         try:
-            self._logger.debug("")
+
             (_, mask) = self._get_offset_mask()
             if mask is None:
                 raise Tca6416Error("Unable to determine mask.  Is offset declared?")

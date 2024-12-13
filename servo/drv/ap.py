@@ -39,7 +39,6 @@ class ap(pty_driver.ptyDriver):
     def _drv_init(self):
         """Driver specific initializer."""
         super(ap, self)._drv_init()
-        self._logger.debug("")
 
     def _Get_password(self):
         """Returns password currently used for login attempts."""

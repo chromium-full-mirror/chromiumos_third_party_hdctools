@@ -29,7 +29,7 @@ class uart(pty_driver.ptyDriver):
         Returns:
           Path to pty attached to the uart.
         """
-        self._logger.debug("")
+
         return self._interface.get_pty()
 
     def _check_and_get_line_prop(self, valid_props):
@@ -63,7 +63,7 @@ class uart(pty_driver.ptyDriver):
         Raises:
           uartError: unable to locate line property in interface dict
         """
-        self._logger.debug("")
+
         prop_dict = self._interface.get_uart_props()
         line_prop = self._check_and_get_line_prop(prop_dict)
         return prop_dict[line_prop]
@@ -79,7 +79,7 @@ class uart(pty_driver.ptyDriver):
         Raises:
           uartError: unable to locate line property in interface dict
         """
-        self._logger.debug("")
+
         prop_dict = self._interface.get_uart_props()
         line_prop = self._check_and_get_line_prop(prop_dict)
         prop_dict[line_prop] = value

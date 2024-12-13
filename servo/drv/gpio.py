@@ -39,7 +39,7 @@ class gpio(hw_driver.HwDriver):
         Raises:
           gpioError: if no offset in param dict
         """
-        self._logger.debug("")
+
         (offset, width) = self._get_common_params()
 
         if hasattr(self._interface, "gpio_wr_rd"):
@@ -58,7 +58,7 @@ class gpio(hw_driver.HwDriver):
         Raises:
           gpioError: if no offset in param dict
         """
-        self._logger.debug("")
+
         (offset, width) = self._get_common_params()
 
         is_output = 1
@@ -84,7 +84,7 @@ class gpio(hw_driver.HwDriver):
         Raises:
           gpioError: if integer conversion of offset or width fail
         """
-        self._logger.debug("")
+
         if "offset" not in self._params:
             raise gpioError("No offset in params for gpio")
         try:

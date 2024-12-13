@@ -222,7 +222,7 @@ class Uart(interface.Interface):
         Returns:
           Current capture mode expressed as an integer (0 or 1)
         """
-        self._logger.debug("")
+
         return int(self._capture_active)
 
     def set_capture_active(self, activate):
@@ -232,7 +232,7 @@ class Uart(interface.Interface):
           activate: a Boolean, indicating whether capture should be activated or
                     deactivated
         """
-        self._logger.debug("")
+
         if activate and not self._capture_active:
             # Need to start capturing
             self._capture_buffer = []
@@ -251,7 +251,7 @@ class Uart(interface.Interface):
 
     def get_stream(self):
         """Return UART stream accumulated since last time."""
-        self._logger.debug("")
+
         self._capture_lock.acquire()
         rv = repr("".join(self._capture_buffer))
         self._capture_buffer = []

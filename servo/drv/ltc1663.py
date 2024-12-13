@@ -48,7 +48,7 @@ class ltc1663(hw_driver.HwDriver):
           i2c_obj: I2cReg object
         """
         super(ltc1663, self)._drv_init()
-        self._logger.debug("")
+
         self._child = int(self._params["child"], 0)
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

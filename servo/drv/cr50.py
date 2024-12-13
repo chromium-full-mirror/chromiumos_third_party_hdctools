@@ -65,7 +65,7 @@ class cr50(pty_driver.ptyDriver):
     def _drv_init(self):
         """Driver specific initializer."""
         super(cr50, self)._drv_init()
-        self._logger.debug("")
+
         if not hasattr(self._interface, "ccd_uart_bitbang_settings"):
             self._interface.ccd_uart_bitbang_settings = {
                 "enabled": 0,

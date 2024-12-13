@@ -27,7 +27,7 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
         super(servoUpdaterChannelParser, self)._drv_init()
 
         self._board = self._params["board"]
-        self._logger.debug("")
+
         self._current_fw_cmd = "%s_version" % (self._board,)
 
     def _get(self):

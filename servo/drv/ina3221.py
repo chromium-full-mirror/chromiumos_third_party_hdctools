@@ -45,7 +45,6 @@ class ina3221(ina2xx.ina2xx):
           float of current in milliamps
         """
         # overwrite because INA3221 has no current and power registers.
-        self._logger.debug("")
 
         vshunt_mv = self._get_shunt_millivolts()
         self._logger.debug("vshunt_mv = %2.2f", vshunt_mv)

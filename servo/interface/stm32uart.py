@@ -65,7 +65,7 @@ class Suart(uart.Uart):
         """
         super(Suart, self).__init__()
         self._logger = logging.getLogger("Suart")
-        self._logger.debug("")
+
         self._logger.debug(
             "Suart opening %04x:%04x, intf %d, sn: %s",
             vendor,
@@ -194,7 +194,6 @@ class Suart(uart.Uart):
 
     def run(self):
         """Creates pthreads to poll stm32 & PTY for data."""
-        self._logger.debug("")
 
         m, s = os.openpty()
         self._ptyname = os.ttyname(s)
@@ -250,7 +249,7 @@ class Suart(uart.Uart):
               1: 1.5 stop bits
               2: 2 stop bits
         """
-        self._logger.debug("")
+
         if not self._props:
             self._props = {"baudrate": 115200, "bits": 8, "parity": 0, "sbits": 1}
         return self._props.copy()
@@ -275,7 +274,7 @@ class Suart(uart.Uart):
         Raises:
           SuartError: If requested line properties are not possible.
         """
-        self._logger.debug("")
+
         curr_props = self.get_uart_props()
         for prop in line_props:
             if line_props[prop] != curr_props[prop]:
@@ -303,7 +302,7 @@ class Suart(uart.Uart):
         Returns:
           String path to the pty connected to the uart
         """
-        self._logger.debug("")
+
         return self._ptyname
 
 

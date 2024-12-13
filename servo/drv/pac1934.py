@@ -288,7 +288,7 @@ class pac1934(ina2xx.ina2xx):
         Returns:
           float of power per lsb value in milliwatts.
         """
-        self._logger.debug("")
+
         pwr_fsr, signed = self.pwr_fsr()
         # We need to divide the full scale power by the denominator matching the
         # power mode (signed, or unsigned).

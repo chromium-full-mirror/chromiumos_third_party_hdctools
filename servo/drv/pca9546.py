@@ -23,7 +23,7 @@ class pca9546(hw_driver.HwDriver):
           child: integer, 7-bit i2c child address
         """
         super(pca9546, self)._drv_init()
-        self._logger.debug("")
+
         self._child = int(self._params["child"], 0)
 
     def _get(self):

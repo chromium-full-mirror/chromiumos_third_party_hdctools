@@ -50,7 +50,6 @@ class Sgpio(gpio_interface.GpioInterface):
           SgpioError: An error accessing Sgpio object
         """
         gpio_interface.GpioInterface.__init__(self)
-        self._logger.debug("")
 
         self._susb = stm32usb.Susb(
             vendor=vendor,

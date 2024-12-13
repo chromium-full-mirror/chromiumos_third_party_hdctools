@@ -128,7 +128,6 @@ class ServoDevice:
         self._logger = logging.getLogger(
             "ServoDevice %s - %s" % (self.template.TYPE, logger_prefix)
         )
-        self._logger.debug("")
         vendor = self.template.VID
         product = self.template.PID
         self._serial = dev_entry.serial
@@ -479,7 +478,6 @@ class ServoDevice:
         Raises:
           ServoDeviceError: Error occurred while examining params dict
         """
-        self._logger.debug("")
         # if already setup just return tuple from driver dict
         if control_name in self._drv_dict:
             if is_get and ("get" in self._drv_dict[control_name]):

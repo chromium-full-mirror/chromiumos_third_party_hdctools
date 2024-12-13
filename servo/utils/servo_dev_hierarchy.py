@@ -243,7 +243,7 @@ class ServoDeviceHierarchy:
         other device (v4 + micro) etc.
         """
         self._logger = logging.getLogger("ServoDeviceHierarchy")
-        self._logger.debug("")
+
         # Collect all servod devices on the system.
         self._dev_by_id = collections.defaultdict(lambda: None)
         self._dev_by_vid = collections.defaultdict(lambda: set())

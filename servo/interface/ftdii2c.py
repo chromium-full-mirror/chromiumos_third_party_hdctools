@@ -75,7 +75,6 @@ class Fi2c(i2c_base.BaseI2CBus):
         i2c_base.BaseI2CBus.__init__(self)
 
         self._logger = logging.getLogger("Fi2c")
-        self._logger.debug("")
 
         (self._flib, self._lib, self._gpiolib) = ftdi_utils.load_libs(
             "ftdi", "ftdii2c", "ftdigpio"
@@ -187,7 +186,6 @@ class Fi2c(i2c_base.BaseI2CBus):
           list of c_ubyte's read from i2c device.
         """
         del auto_release
-        self._logger.debug("")
 
         if wlist is None:
             wlist = []
