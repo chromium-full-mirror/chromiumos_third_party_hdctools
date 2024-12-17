@@ -173,6 +173,8 @@ For detailed instructions see [roll out guide](servo_release_roll_out_guide.md).
 
 There is special dashboard created for health monitoring of:
 - [servo_v4p1](https://dashboards.corp.google.com/_9bea027d_4408_4edc_b7f6_21c558608e5d)
-- [servo_v4](https://dashboards.corp.google.com/_66bde26e_ee25_4b6c_94f9_b3522aa23663).
+- [servo_v4](https://dashboards.corp.google.com/_66bde26e_ee25_4b6c_94f9_b3522aa23663)
+- [servo_micro](https://dashboards.corp.google.com/edit/_c4c4972e_1427_46a1_b2a2_611481f6a800)
+- [c2d2](https://dashboards.corp.google.com/_346fde6b_8af2_47a6_bee3_63256cfb0cdb)
 
-This dashboard provides head-to-head statistics of STABLE and ALPHA channels also with special view per board/model/fleet pool.
+This dashboard provides head-to-head statistics of STABLE and ALPHA (or DEV) channels also with special view per board/model/fleet pool.

@@ -144,7 +144,7 @@ def get_servo_fw_channel(data):
         return "UNKNOWN"
 
 
-def get_servo_fw_version(data):
+def get_servo_fw_version(data, servo_type):
     """Extract the current firmware version from the servo data.
 
     Args:
@@ -154,7 +154,17 @@ def get_servo_fw_version(data):
         string: the current firmware version of the servo.
     """
     try:
-        return data["servoTopology"]["main"]["fwVersion"]
+        if servo_type == "servo_v4p1" or servo_type == "servo_v4":
+            return data["servoTopology"]["main"]["fwVersion"]
+        elif servo_type == "servo_micro" or servo_type == "c2d2":
+            for i in range(len(data["servoTopology"]["children"])):
+                if (
+                    data["servoTopology"]["children"][i]["type"] == "servo_micro"
+                    or data["servoTopology"]["children"][i]["type"] == "c2d2"
+                ):
+                    return data["servoTopology"]["children"][i]["fwVersion"]
+                else:
+                    i += 1
     except TypeError:
         return "UNKNOWN"
 
@@ -228,7 +238,7 @@ def update_servo_firmware(hostnames, channel):
     request_repair(hostnames)
 
 
-def print_servo_firmware_status(hostname, data):
+def print_servo_firmware_status(hostname, data, servo_type):
     """_summary_
 
     Args:
@@ -241,7 +251,7 @@ def print_servo_firmware_status(hostname, data):
             % (
                 hostname,
                 get_servo_fw_channel(data),
-                get_servo_fw_version(data),
+                get_servo_fw_version(data, servo_type),
             )
         )
     except Exception:
@@ -255,6 +265,12 @@ def parse_args():
         argparse.Namespace: Parsed arguments.
     """
     parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument(
+        "--servo_type",
+        required=True,
+        choices=["servo_v4p1", "servo_v4", "c2d2", "servo_micro"],
+        help="What servo type.",
+    )
     parser.add_argument(
         "--channel",
         required=False,
@@ -280,6 +296,14 @@ def parse_args():
         ),
     )
     parser.add_argument(
+        "--change_channels_only",
+        action=argparse.BooleanOptionalAction,
+        help=(
+            "Only change channels for provided list of DUTs."
+            " Useful when cleaning up after release."
+        ),
+    )
+    parser.add_argument(
         "--select",
         default="from-sheet",
         choices=["from-sheet", "servo_v4", "servo_v4p1", "all", "from-csv"],
@@ -296,7 +320,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def is_run_repair_needed(hostname, fw_version, data):
+def is_run_repair_needed(hostname, fw_version, data, servo_type):
     """Check to see if the firmware version is as expected.
 
     Args:
@@ -307,7 +331,7 @@ def is_run_repair_needed(hostname, fw_version, data):
     Returns:
         _type_: _description_
     """
-    if get_servo_fw_version(data) == fw_version:
+    if get_servo_fw_version(data, servo_type) == fw_version:
         return False
     return True
 
@@ -360,7 +384,10 @@ def main(unused_argv):
             # lifespan and if the DUT is busy it can timeout.  So we need to scan
             # firmware version to decide if to schedule a new repair job.
             if is_run_repair_needed(
-                hostname, args.repair_if_not_updated, data_dict[hostname]
+                hostname,
+                args.repair_if_not_updated,
+                data_dict[hostname],
+                args.servo_type,
             ):
                 print("Repairing", hostname)
                 action_hostnames.append(hostname)
@@ -368,19 +395,21 @@ def main(unused_argv):
                 print("Skipping", hostname)
         elif args.monitor_fw_version:
             if is_run_repair_needed(
-                hostname, args.monitor_fw_version, data_dict[hostname]
+                hostname, args.monitor_fw_version, data_dict[hostname], args.servo_type
             ):
                 print(
                     f"{hostname} needs repair, current FW version is \
-                      {get_servo_fw_version(data_dict[hostname])}"
+                      {get_servo_fw_version(data_dict[hostname], args.servo_type)}"
                 )
                 action_hostnames.append(hostname)
         else:
             # If no action has been supplied just print status.
-            print_servo_firmware_status(hostname, data_dict[hostname])
+            print_servo_firmware_status(hostname, data_dict[hostname], args.servo_type)
     if action_hostnames:
-        if args.channel:
+        if args.channel and not args.change_channels_only:
             update_servo_firmware(action_hostnames, args.channel)
+        elif args.channel and args.change_channels_only:
+            update_channel(action_hostnames, args.channel)
         elif args.repair_if_not_updated:
             request_repair(action_hostnames)
         elif args.monitor_fw_version:

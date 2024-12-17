@@ -15,14 +15,17 @@ In future we plan to improve options for general servo queries, **for now script
    The script uses the following command-line arguments:
 
    * `--servo-type` (required): Specify one or more servo types to filter by.
-     * Supported values: `servo_v4`, `servo_v4p1`.
+     * Supported values: `servo_v4`, `servo_v4p1`, `c2d2`, `servo_micro` .
 
    * `--stage` (required): Choose a predefined stage for DUT selection.
      * `tests`: Selects DUTs from the `servo_verification` pool.
      * `first`: Selects approximately 10% of DUTs from each model in the `DUT_POOL_QUOTA` pool that have `STABLE` firmware and are in the `WORKING` servo stat & `READY` DUT state.
      * `second`: Increases the selection to about 33% of DUTs from `DUT_POOL_QUOTA` and includes 100% DUTs from `faft-test`, `wificell`, and `chameleon_audio` pools with `STABLE` firmware to test more specialized uses of servo.
+     * `first-ocd`: Selects approximately 10% of DUTs from each model with servo_micro across all pools (and ~50% of C2D2) and are in the `WORKING` servo stat & `READY` DUT state.
+     * `second-ocd`: Increases the selection to about 33% of DUTs with servo_micro across all pools
      * `all-stable`: Selects all DUTs with `STABLE` firmware.
      * `all-alpha`: Selects all DUTs with `ALPHA` firmware.
+     * `all-dev`: Selects all DUTs with `DEV` firmware.
      * `manual`: Enables manual filtering using the following optional arguments:
 
    * `--fw-channel` (optional): Filter by firmware channel(s).

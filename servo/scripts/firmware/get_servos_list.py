@@ -10,7 +10,7 @@ import subprocess
 import sys
 
 
-SERVO_TYPES = ["servo_v4", "servo_v4p1"]
+SERVO_TYPES = ["servo_v4", "servo_v4p1", "servo_micro", "c2d2"]
 POOLS = [
     "DUT_POOL_QUOTA",
     "servo_verification",
@@ -20,7 +20,7 @@ POOLS = [
 ]
 SERVO_STATES = ["WORKING"]
 STATES = ["ready"]
-SERVO_FW_CHANNELS = ["STABLE", "ALPHA"]
+SERVO_FW_CHANNELS = ["STABLE", "ALPHA", "DEV"]
 ALL = ["%"]
 
 
@@ -84,6 +84,10 @@ def define_query(
             tmp_servo_type_raws[i] = r"servo\\_v4p1\\_%"
         elif servo_type_raws[i] == "servo_v4":
             tmp_servo_type_raws[i] = r"servo\\_v4\\_%"
+        elif servo_type_raws[i] == "servo_micro":
+            tmp_servo_type_raws[i] = r"%servo\\_micro%"
+        elif servo_type_raws[i] == "c2d2":
+            tmp_servo_type_raws[i] = r"%c2d2%"
 
     # Validate other filter criteria
     for pool in pools:
@@ -257,7 +261,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--stage",
         required=True,
-        choices=["tests", "first", "second", "all-stable", "all-alpha", "manual"],
+        choices=[
+            "tests",
+            "first",
+            "second",
+            "all-stable",
+            "all-alpha",
+            "all-dev",
+            "manual",
+            "first-ocd",
+            "second-ocd",
+        ],
         type=str,
         help="[Required] Choose option. Usage described in readme.",
     )
@@ -312,9 +326,9 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         )
         return get_hostnames(query)
     # 1st stage is ~10% of every available model within DUT_POOL_QUOTA,
-    # chosed only from working devices
+    # chosen only from working devices
     elif args.stage == "first":
-        # We are choosing only from wotking devices, so to get ~10% of all lets use ~13%
+        # We are choosing only from working devices, so to get ~10% of all lets use ~13%
         percent = 13
         query = define_query(
             servo_type_raws=args.servo_type,
@@ -325,10 +339,27 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         )
         all_hostnames_by_model = group_all_hostnames_by_model(get_hostnames(query))
         return get_random_list_of_hostnames(all_hostnames_by_model, percent)
-    # 2nd stage, we increassing DUT_POOL_QUOTA to 33% and take all pools NAMED:
+    # We need to organize roll-out for OCD servos a little different because e.g most of
+    # these setups are in specialized pools, not in DUT_POOL_QUOTA
+    elif args.stage == "first-ocd":
+        # We are choosing only from working devices, so to get ~10% of all lets use ~15%
+        # C2D2 population is super small, so no need for 3 stages
+        if "c2d2" in args.servo_type:
+            percent = 60
+        else:
+            percent = 15
+        query = define_query(
+            servo_type_raws=args.servo_type,
+            servo_fw_channels=["STABLE"],
+            servo_states=["WORKING"],
+            states=["ready"],
+        )
+        all_hostnames_by_model = group_all_hostnames_by_model(get_hostnames(query))
+        return get_random_list_of_hostnames(all_hostnames_by_model, percent)
+    # 2nd stage, we increasing DUT_POOL_QUOTA to 33% and take all pools NAMED:
     elif args.stage == "second":
         # We are choosing only from working devices and assuming ~10% is already in
-        # alpha, so to get ~33% lests use 25 here
+        # alpha, so to get ~33% lets use 25 here
         percent = 25
         query = define_query(
             servo_type_raws=args.servo_type,
@@ -348,6 +379,22 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
 
         other_pools_hostnames = get_hostnames(query_other_pools)
         return other_pools_hostnames + random_hostnames
+    elif args.stage == "second-ocd":
+        # We are choosing only from working devices and assuming ~10% is already in
+        # alpha, so to get ~33% in total (together with 1st stage) lets use 25 here
+        if "c2d2" in args.servo_type:
+            percent = 100
+        else:
+            percent = 25
+        query = define_query(
+            servo_type_raws=args.servo_type,
+            servo_fw_channels=["STABLE"],
+            servo_states=["WORKING"],
+            states=["ready"],
+        )
+        all_hostnames_by_model = group_all_hostnames_by_model(get_hostnames(query))
+        random_hostnames = get_random_list_of_hostnames(all_hostnames_by_model, percent)
+        return random_hostnames
     # Simply get all devices left in STABLE or in ALPHA
     elif args.stage == "all-stable":
         query = define_query(
@@ -359,6 +406,12 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         query = define_query(
             servo_type_raws=args.servo_type,
             servo_fw_channels=["ALPHA"],
+        )
+        return get_hostnames(query)
+    elif args.stage == "all-dev":
+        query = define_query(
+            servo_type_raws=args.servo_type,
+            servo_fw_channels=["DEV"],
         )
         return get_hostnames(query)
 
