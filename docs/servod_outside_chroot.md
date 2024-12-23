@@ -505,3 +505,19 @@ into the gcloud tool to authenticate. Try running `gcloud auth login`
 to refresh the credentials and try again.
 
 If this didn't help, please file an issue.
+
+### How can I get the servod logs?
+
+The logs are in a docker volume named ${container_name}_logs. You can see the
+path by running:
+
+```shell
+# Run servod-ps to see the container name
+container_name=1700772381
+docker volume inspect ${container_name}_log
+# Using the path from the previous command
+sudo less /usr/local/google/docker/volumes/1700772381_log/_data/latest.DEBUG
+```
+
+Alternatively, you can enter the container and look at the logs directly, but
+there is no `less` command there.
