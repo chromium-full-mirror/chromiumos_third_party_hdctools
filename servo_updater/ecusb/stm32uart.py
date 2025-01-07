@@ -63,6 +63,7 @@ class Suart:
         self._rx_thread = None
         self._tx_thread = None
         self._debuglog = debuglog
+        self._susb = None
         self._susb = stm32usb.Susb(
             vendor=vendor,
             product=product,
@@ -84,7 +85,8 @@ class Suart:
         if self._tx_thread:
             self._tx_thread.join(2)
             self._tx_thread = None
-        self._susb.close()
+        if self._susb:
+            self._susb.close()
 
     def run_rx_thread(self):
         """Background loop to pass data from USB to pty."""
