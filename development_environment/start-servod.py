@@ -270,7 +270,7 @@ def start_servod(
             ports = {"9999": port}
 
         logging.info("Container run")
-        nofile_limit = docker.types.Ulimit(name="nofile", soft=1024, hard=65535)
+        nofile_limit = docker.types.Ulimit(name="nofile", soft=65535, hard=65535)
         logging.debug("Running command %s", shlex.join(command))
         cont = client.containers.run(
             image,
