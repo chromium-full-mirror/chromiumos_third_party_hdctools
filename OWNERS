@@ -3,3 +3,4 @@
 # found in the LICENSE file.
 
 include chromiumos/owners:v1:/platform/OWNERS.hwtools
+include chromiumos/owners:v1:/platform/OWNERS.hdctools
