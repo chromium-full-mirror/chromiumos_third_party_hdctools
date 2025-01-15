@@ -250,7 +250,6 @@ usbc dp [on|off] [enable|disable]
 usbc dp pins [C|D|CD]
 usbc dp mf [0|1]
 usbc_action dp plug [0|1]
-usbc up [0|1]			Set "Unconstrained power" flag
 usbc prswap [00|01|10|11]	Allow [10] SRC2SNK or [01] SNK2SRC power role swaps
 usbc fastboot [0|1]		Route Host to DUT wen ServoV4 is DFP [ServoA disabled]
 
