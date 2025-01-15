@@ -390,7 +390,13 @@ COPY --link --from=ec-builder libs.tar .
 RUN tar xvf libs.tar
 RUN rm libs.tar
 
+RUN mkdir -p /usr/share/ec-devutils
+
 COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
+
+# Fetch NPCX monitor from GCS
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.01.16.bin \
+    -O /usr/share/ec-devutils/npcx_monitor.bin
 
 # Fetch EC Token Database from GCS
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/tokens/historical.bin -P /usr/share/cros_ec/tokens/
@@ -425,8 +431,6 @@ RUN chmod 755 /usr/local/bin/ifdtool
 
 # Install shflags
 COPY --link --from=shflags-builder shflags/shflags /usr/share/misc/shflags
-
-RUN mkdir -p /usr/share/ec-devutils
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
