@@ -177,7 +177,7 @@ class ServoDevice:
             self._serial,
         )
 
-    def wait(self, wait_time):
+    def wait(self, wait_time=INTERFACE_AVAILABILITY_TIMEOUT):
         """Wait for the device to reconnect and the interfaces to become available.
 
         Args:

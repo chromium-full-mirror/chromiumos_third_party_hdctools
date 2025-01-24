@@ -1,6 +1,7 @@
 # Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Servo Server."""
 
 import collections
@@ -196,7 +197,16 @@ class Servod:
             )
             raise ServodError(error_msg)
 
-        self._logger.debug("Using servo device %s for control %s.", dev, name)
+        # Wait until the device is connected. CCD is the only device that's ok
+        # to disconnect. This will wait for CCD devices to reconnect before
+        # trying to get/set the control.
+        dev.wait()
+        self._logger.debug(
+            "Using servo device %s for control %s (device %sconnected)",
+            dev,
+            name,
+            "" if dev.is_connected() else "dis",
+        )
         return (dev, processed_name)
 
     def hwinit(self, verbose=True, step_init=False):
