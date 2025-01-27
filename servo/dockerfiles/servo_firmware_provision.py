@@ -26,7 +26,7 @@ SWEETBERRY_NAME_PREV = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011
 # Dev channel firmware
 
 # Alpha channel firmware
-SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.26891-5ae7923f3"  # EC ToT from 11/21/2024
+SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.27354-3eeb06336"  # EC ToT from 27/01/2025
 
 MIRROR_PATH = "gs://chromeos-localmirror/distfiles/"
 
