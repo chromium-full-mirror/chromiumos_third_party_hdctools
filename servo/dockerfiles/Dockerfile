@@ -398,8 +398,9 @@ COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.01.16.bin \
     -O /usr/share/ec-devutils/npcx_monitor.bin
 
+RUN mkdir -p /usr/share/cros_ec/tokens
 # Fetch EC Token Database from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros-ec-token-historical.bin \
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
     -O /usr/share/cros_ec/tokens/historical.bin
 
 # Install uhubctl
