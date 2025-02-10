@@ -395,7 +395,7 @@ RUN mkdir -p /usr/share/ec-devutils
 COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
 # Fetch NPCX monitor from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.01.16.bin \
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.02.11.bin \
     -O /usr/share/ec-devutils/npcx_monitor.bin
 
 RUN mkdir -p /usr/share/cros_ec/tokens
