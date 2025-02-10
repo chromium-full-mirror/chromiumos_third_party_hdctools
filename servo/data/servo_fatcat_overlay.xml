@@ -17,7 +17,7 @@
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="mchp_int_spi"/>
+    drv="cros_chip" chip="mchp_int_uart"/>
   </control>
   <control>
     <name>ccd_cpu_fw_spi</name>
