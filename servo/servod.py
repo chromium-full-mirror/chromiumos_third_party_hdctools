@@ -30,12 +30,12 @@ import usb
 from servo import recovery
 from servo import servo_dev
 from servo import servo_dev_finder
-from servo import servo_logging
 from servo import servo_parsing
 from servo import servo_server
 from servo import watchdog
 from servo.common.config.system_config import SystemConfig
 from servo.common.proto import system_config_grpc
+from servo.common.utils import servo_logging
 from servo.grpc_server import grpc_server_setup
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
@@ -161,6 +161,7 @@ class ServodStarter:
 
         servo_logging.setup(
             logdir=sopts.log_dir,
+            module="servod",
             port=servo_port,
             debug_stderr=sopts.debug,
             backup_count=sopts.log_dir_backup_count,

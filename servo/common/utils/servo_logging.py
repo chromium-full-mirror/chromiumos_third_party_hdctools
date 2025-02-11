@@ -78,14 +78,6 @@ LOG_BACKUP_COUNT = 20
 # Filetype suffix used for compressed logs.
 COMPRESSION_SUFFIX = "tbz2"
 
-# Each servo-port receives its own log directory. This is the prefix for those
-# directory names.
-LOG_DIR_PREFIX = "servod"
-# This ensures when running e2e tests in parallel that each run has its own unique path.
-if "PYTEST_XDIST_TESTRUNUID" in os.environ:
-    LOG_DIR_PREFIX += os.environ["PYTEST_XDIST_TESTRUNUID"]
-
-
 # Each logfile starts with this prefix.
 LOG_FILE_PREFIX = "log"
 
@@ -104,7 +96,7 @@ class ServoLoggingError(Exception):
     """Error to throw on logging issues."""
 
 
-def _buildLogdirName(logdir, port):
+def _buildLogdirName(logdir, module, port):
     """Helper to generate the log directory for an instance at |port|.
 
     Args:
@@ -114,7 +106,10 @@ def _buildLogdirName(logdir, port):
     Returns:
       str, path for directory where servod logs for instance at |port| should go
     """
-    return os.path.join(logdir, "%s_%s" % (LOG_DIR_PREFIX, str(port)))
+    # This ensures when running e2e tests in parallel that each run has its own unique path.
+    if "PYTEST_XDIST_TESTRUNUID" in os.environ:
+        module += os.environ["PYTEST_XDIST_TESTRUNUID"]
+    return os.path.join(logdir, "%s_%s" % (module, str(port)))
 
 
 def _generateTs(time=None):
@@ -194,7 +189,7 @@ class UTCFormatter(logging.Formatter):
         ).isoformat(timespec="milliseconds")
 
 
-def setup(logdir, port, debug_stderr=False, backup_count=LOG_BACKUP_COUNT):
+def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUNT):
     """Setup servod logging.
 
     This function handles setting up logging, whether it be normal basicConfig
@@ -202,6 +197,7 @@ def setup(logdir, port, debug_stderr=False, backup_count=LOG_BACKUP_COUNT):
 
     Args:
       logdir: str, log directory for all servod logs (*)
+      module: str, prefix for log directory, either servod or data.
       port: port used for current instance
       debug_stderr: whether the stderr logs should be debug
       backup_count: max number of compressed and uncompressed files to keep around
@@ -229,7 +225,7 @@ def setup(logdir, port, debug_stderr=False, backup_count=LOG_BACKUP_COUNT):
             handler.formatter = UTCFormatter(fmt=fmt)
     if logdir:
         # Start file loggers for each output file.
-        instance_logdir = _buildLogdirName(logdir, port)
+        instance_logdir = _buildLogdirName(logdir, module, port)
         logging_ts = _generateTs()
         if not os.path.isdir(instance_logdir):
             os.makedirs(instance_logdir)

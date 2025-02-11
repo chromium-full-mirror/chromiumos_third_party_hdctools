@@ -17,12 +17,12 @@ import grpc
 
 from servo import servo_dev_templates
 from servo import servo_interfaces
-from servo import servo_logging
 from servo.common.config.grpc_config import GRPC_DATA_PORT
 from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
+from servo.common.utils import servo_logging
 from servo.data import drv as servo_drv
 import servo.utils.usb_hierarchy as usb_hierarchy
 

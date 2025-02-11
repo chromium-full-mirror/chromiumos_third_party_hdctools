@@ -12,14 +12,22 @@ import grpc
 
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
+from servo.common.utils import servo_logging
 from servo.data.impl import driver_impl
 from servo.data.impl import system_config_impl
 
+
+# If user does not specify a log directory, use this one.
+DEFAULT_LOG_DIR = "/var/log"
+
+# Default port to start gRPC server on
+DEFAULT_DATA_GRPC_PORT = 50051
 
 DEBUG_FMT_STRING = (
     "%(asctime)s - %(name)s - %(levelname)s - "
     "%(filename)s:%(lineno)d:%(funcName)s - %(message)s"
 )
+
 
 def grpc_server_start():
     """
@@ -30,20 +38,28 @@ def grpc_server_start():
     """
     logging.basicConfig(level=logging.INFO, format=DEBUG_FMT_STRING)
 
+    servo_logging.setup(
+        logdir=DEFAULT_LOG_DIR,
+        module="data",
+        port=DEFAULT_DATA_GRPC_PORT,
+        debug_stderr=True,
+        backup_count=1,
+    )
+
     # Create a gRPC server with a thread pool executor allowing up to 10 concurrent
     # workers
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     # Add the SystemConfigServicer implementation to the gRPC server
     system_config_grpc.add_SystemConfigServicer_to_server(
-        system_config_impl.SystemConfigImpl(), server)
+        system_config_impl.SystemConfigImpl(), server
+    )
 
     # Add the DriverServicer implementation to the gRPC server
-    driver_grpc.add_DriverServiceServicer_to_server(
-        driver_impl.DriverImpl(), server)
+    driver_grpc.add_DriverServiceServicer_to_server(driver_impl.DriverImpl(), server)
 
     # Bind the server on port 50051
-    server.add_insecure_port("[::]:50051")
+    server.add_insecure_port("[::]:{}".format(DEFAULT_DATA_GRPC_PORT))
 
     # Start the gRPC server
     server.start()

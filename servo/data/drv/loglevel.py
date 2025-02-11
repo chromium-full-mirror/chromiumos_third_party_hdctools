@@ -10,8 +10,8 @@ from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient
 import servo.common.interface.ec3po_interface
 from servo.common.proto import driver_grpc
+from servo.common.utils import servo_logging
 from servo.data.drv import hw_driver
-import servo.servo_logging
 
 
 class loglevel(hw_driver.HwDriver):
@@ -36,7 +36,7 @@ class loglevel(hw_driver.HwDriver):
         root_logger = logging.getLogger()
 
         try:
-            level, fmt_string = servo.servo_logging.LOGLEVEL_MAP[new_level]
+            level, fmt_string = servo_logging.LOGLEVEL_MAP[new_level]
         except KeyError:
             raise hw_driver.HwDriverError(
                 "Unknown logging level. "
@@ -46,7 +46,7 @@ class loglevel(hw_driver.HwDriver):
         out_handlers = [
             handler
             for handler in root_logger.handlers
-            if not isinstance(handler, servo.servo_logging.ServodRotatingFileHandler)
+            if not isinstance(handler, servo_logging.ServodRotatingFileHandler)
         ]
         # Set servod's stdout logging level.
         if len(root_logger.handlers) == 1:
@@ -75,9 +75,7 @@ class loglevel(hw_driver.HwDriver):
             for handler in root_logger.handlers:
                 # The loglevel is the level of any handler that is not the Servod
                 # handler as that one is always on debug.
-                if not isinstance(
-                    handler, servo.servo_logging.ServodRotatingFileHandler
-                ):
+                if not isinstance(handler, servo_logging.ServodRotatingFileHandler):
                     # The file logger is always DEBUG and cannot be changed.
                     cur_level = handler.level
                     break

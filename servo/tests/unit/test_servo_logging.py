@@ -12,7 +12,7 @@ import shutil
 import tempfile
 import unittest
 
-from servo import servo_logging
+from servo.common.utils import servo_logging
 
 
 # There is 1 file that are exempt from the backup count.

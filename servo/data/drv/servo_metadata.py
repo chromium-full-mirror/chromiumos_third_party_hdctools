@@ -7,8 +7,8 @@ import json
 import logging
 import os
 
+from servo.common.utils import servo_logging
 from servo.data.drv import hw_driver
-import servo.servo_logging
 
 
 class metadataError(hw_driver.HwDriverError):
@@ -71,7 +71,7 @@ class servoMetadata(hw_driver.HwDriver):
         handlers = [
             h
             for h in logging.getLogger().handlers
-            if isinstance(h, servo.servo_logging.ServodRotatingFileHandler)
+            if isinstance(h, servo_logging.ServodRotatingFileHandler)
         ]
         self._logger.info("Rotating out the log file per user request.")
         if not handlers:
@@ -84,7 +84,7 @@ class servoMetadata(hw_driver.HwDriver):
     def _Get_servod_logs_active(self):
         """Return whether servod file logging is turned on."""
         for h in logging.getLogger().handlers:
-            if isinstance(h, servo.servo_logging.ServodRotatingFileHandler):
+            if isinstance(h, servo_logging.ServodRotatingFileHandler):
                 # Automatically converted to the 'yes/no' by servod.
                 return 1
         return 0
