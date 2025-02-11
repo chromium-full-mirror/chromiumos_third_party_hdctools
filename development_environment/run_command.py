@@ -95,6 +95,7 @@ class RunCommandBase:
                 "Can not find a container that matches name %s" % name_search,
                 file=sys.stderr,
             )
+            sys.exit(5)
         elif len(containers) == 1:
             exit_code, output = self.execute_command(
                 containers[0], args.passthrough[1:]

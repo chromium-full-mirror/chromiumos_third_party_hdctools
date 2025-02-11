@@ -24,3 +24,4 @@ fi
 popd > /dev/null
 docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v /tmp:/tmp:rw servod-bootstrap "./${script_name}.py" "$@"
+exit $?
