@@ -162,7 +162,8 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         root_dev = self.servod.get_root_device()
         if root_dev is not None:
             response.get_value = root_dev._serial
-        response.get_value = self.servod.get_main_device()._serial
+        else:
+            response.get_value = self.servod.get_main_device()._serial
         return response
 
     def HasControl(self, request, context):

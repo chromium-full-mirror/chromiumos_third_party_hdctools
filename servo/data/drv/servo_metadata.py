@@ -46,8 +46,9 @@ class servoMetadata(hw_driver.HwDriver):
     def _Get_serials(self):
         """Gets the all servo device's serialnames."""
         try:
-            serials = json.loads(self._driver_client.GetSerial().get_value)
-        except Exception:
+            serials = json.loads(self._driver_client.GetSerials().get_value)
+        except Exception as exc:
+            self._logger.error(exc)
             serials = {}
         return json.dumps(serials, sort_keys=True, indent=4)
 
@@ -58,7 +59,9 @@ class servoMetadata(hw_driver.HwDriver):
     def _Get_tagged_controls(self):
         """Retrieve all controls under a certain tag."""
         try:
-            tagged_controls = self._driver_client.GetTaggedControls(name=json.dumps(self._params))
+            tagged_controls = self._driver_client.GetTaggedControls(
+                name=json.dumps(self._params)
+            )
             return json.loads(tagged_controls.response)
         except metadataError:
             raise metadataError("tag needs to be specified in params.")
