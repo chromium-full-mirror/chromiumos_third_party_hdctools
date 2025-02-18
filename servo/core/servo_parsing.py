@@ -8,8 +8,8 @@ import logging
 import os
 import textwrap
 
-from servo import client
-from servo import sversion_util
+from servo.core import client
+from servo.core import sversion_util
 from servo.utils import scratch
 
 

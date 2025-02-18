@@ -9,8 +9,8 @@ import time
 import unittest
 import unittest.mock
 
-from servo import client
-from servo import measure_power
+from servo.core import client
+from servo.core import measure_power
 from servo.utils import stats_manager
 
 

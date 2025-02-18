@@ -27,16 +27,16 @@ from xmlrpc.server import SimpleXMLRPCServer
 import grpc
 import usb
 
-from servo import recovery
-from servo import servo_dev
-from servo import servo_dev_finder
-from servo import servo_parsing
-from servo import servo_server
-from servo import watchdog
+from servo.core import recovery
+from servo.core import servo_dev
+from servo.core import servo_dev_finder
+from servo.core import servo_parsing
+from servo.core import servo_server
+from servo.core import watchdog
 from servo.common.config.system_config import SystemConfig
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
-from servo.grpc_server import grpc_server_setup
+from servo.core.grpc_server import grpc_server_setup
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 from servo.utils import servo_dev_prober

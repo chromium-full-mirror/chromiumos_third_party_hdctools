@@ -13,11 +13,11 @@ import threading
 import unittest
 import unittest.mock
 
-from servo import dut_power
-from servo import dut_power_data
-from servo import http_server
-from servo import measure_power
-from servo import servo_parsing
+from servo.core import dut_power
+from servo.core import dut_power_data
+from servo.core import http_server
+from servo.core import measure_power
+from servo.core import servo_parsing
 
 
 class TestProgressPrinter(unittest.TestCase):

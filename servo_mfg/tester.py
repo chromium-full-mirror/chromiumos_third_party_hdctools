@@ -6,7 +6,7 @@
 import logging
 import traceback
 
-import servo.client as client
+import servo.core.client as client
 import servo.utils.scratch as scratch
 from servo_mfg import exec_util
 from servo_mfg import user_input

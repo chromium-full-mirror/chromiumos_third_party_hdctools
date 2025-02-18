@@ -5,7 +5,7 @@
 """
 import ctypes
 
-from servo import servo_dev_templates
+from servo.core import servo_dev_templates
 
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4

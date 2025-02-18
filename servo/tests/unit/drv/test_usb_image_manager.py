@@ -8,7 +8,7 @@ import unittest
 
 import mock
 
-from servo import servo_server
+from servo.core import servo_server
 from servo.common.interface import interface
 from servo.data.drv import hw_driver
 from servo.data.drv import usb_image_manager

@@ -6,7 +6,7 @@ import unittest
 import unittest.mock
 import xmlrpc.client
 
-from servo import client
+from servo.core import client
 
 
 class TestServoClient(unittest.TestCase):

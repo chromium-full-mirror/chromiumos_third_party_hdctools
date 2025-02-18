@@ -10,7 +10,7 @@ import re
 
 from packaging import version
 
-from servo import sversion_util
+from servo.core import sversion_util
 from servo.data.drv import hw_driver
 from servo_updater import servo_updater
 

@@ -15,8 +15,8 @@ import tty
 
 import grpc
 
-from servo import servo_dev_templates
-from servo import servo_interfaces
+from servo.core import servo_dev_templates
+from servo.core import servo_interfaces
 from servo.common.config.grpc_config import GRPC_DATA_PORT
 from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient

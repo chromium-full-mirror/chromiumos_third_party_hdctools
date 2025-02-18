@@ -8,10 +8,10 @@ import unittest
 import unittest.mock
 from unittest.mock import patch
 
-from servo import servo_dev
-from servo import servo_dev_templates as tmpl
-from servo import servo_interfaces
-from servo import servo_server
+from servo.core import servo_dev
+from servo.core import servo_dev_templates as tmpl
+from servo.core import servo_interfaces
+from servo.core import servo_server
 from servo.common import interface as _interface
 from servo.common.config import system_config
 from servo.utils import servo_dev_hierarchy

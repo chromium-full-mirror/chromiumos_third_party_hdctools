@@ -9,7 +9,7 @@ import re
 import threading
 import time
 
-from servo import client
+from servo.core import client
 from servo.utils import stats_manager
 from servo.utils import timelined_stats_manager
 

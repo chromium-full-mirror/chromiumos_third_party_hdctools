@@ -16,7 +16,7 @@ from servo.common.proto import servo_dev_pb2 as ServoDeviceProto
 # Protobuf text file path
 _TEXTPROTO_PATH = (
     str(pathlib.Path(__file__).parent.resolve())
-    + "/common/proto/servo_dev_info.textproto"
+    + "/../common/proto/servo_dev_info.textproto"
 )
 
 # Main devices have an empty prefix. This constant here is to make those checks

@@ -4,8 +4,8 @@
 import unittest
 import unittest.mock
 
-from servo import servo_dev_templates as tmpl
-from servo import servo_interfaces
+from servo.core import servo_dev_templates as tmpl
+from servo.core import servo_interfaces
 from servo.common import interface as _interface
 from servo.common.utils.interface_utils import InterfaceUtils
 

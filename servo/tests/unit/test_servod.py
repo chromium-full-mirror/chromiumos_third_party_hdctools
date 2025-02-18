@@ -10,14 +10,14 @@ import unittest
 import unittest.mock
 from xmlrpc.server import SimpleXMLRPCServer
 
-from servo import recovery
-from servo import servo_dev
-from servo import servo_dev_finder
-from servo import servo_dev_templates
-from servo import servo_parsing
-from servo import servo_server
-from servo import servod
-from servo import watchdog
+from servo.core import recovery
+from servo.core import servo_dev
+from servo.core import servo_dev_finder
+from servo.core import servo_dev_templates
+from servo.core import servo_parsing
+from servo.core import servo_server
+from servo.core import servod
+from servo.core import watchdog
 from servo.common.utils import servo_logging
 from servo.utils import scratch
 from servo.utils import servo_dev_prober

@@ -5,7 +5,7 @@ import threading
 import unittest
 from unittest.mock import MagicMock
 
-from servo.grpc_server.grpc_server_setup import run_grpc_server
+from servo.core.grpc_server.grpc_server_setup import run_grpc_server
 
 
 class TestGrpcServer(unittest.TestCase):

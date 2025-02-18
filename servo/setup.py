@@ -56,7 +56,6 @@ class servo_build_py(build_py.build_py):
         # run generate_ina_controls.py over all the files,
         # giving the file an output directory?
         data_dir = self.get_package_dir(self.packages.pop(1))
-        print("YoLo: {}".format(data_dir))
         module_name = "generate_ina_controls"
         spec = importlib.util.spec_from_file_location(
             module_name, "%s/%s.py" % (data_dir, module_name)
@@ -83,7 +82,7 @@ setup(
     name="servo",
     version="0.1",
     package_dir={"": "../build", "servo": "."},
-    py_modules=["servo.servod", "servo.dut_control"],
+    py_modules=["servo.core.servod", "servo.core.dut_control"],
     packages=[
         "servo",
         "servo.data",
@@ -96,13 +95,14 @@ setup(
         "servo.utils",
         "servo.utils.linux",
         "servo.tests",
-        "servo.grpc_server",
-        "servo.grpc_server.impl",
+        "servo.core.grpc_server",
+        "servo.core.grpc_server.impl",
         "servo.tests.e2e",
         "servo.tests.fixtures",
         "servo.tests.unit",
         "servo.tests.data",
         "servo.scripts",
+        "servo.core",
         "servo.common",
         "servo.common.config",
         "servo.common.proto",
@@ -126,11 +126,11 @@ setup(
     long_description="Server to communicate and control servo debug board.",
     entry_points={
         "console_scripts": [
-            "servod = servo.servod:main",
-            "dut-control = servo.dut_control:main",
-            "dut-power = servo.dut_power:main",
-            "servodutil = servo.servodtool:servodutil",
-            "servodtool = servo.servodtool:main",
+            "servod = servo.core.servod:main",
+            "dut-control = servo.core.dut_control:main",
+            "dut-power = servo.core.dut_power:main",
+            "servodutil = servo.core.servodtool:servodutil",
+            "servodtool = servo.core.servodtool:main",
             "servoflex_test_v2 = servo.scripts.servoflex_test_v2:main",
         ],
     },

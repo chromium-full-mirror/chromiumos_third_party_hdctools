@@ -453,7 +453,10 @@ def main(cmdline=sys.argv[1:]):
             msg_prefix = "Success:"
         except Exception as e:
             msg_prefix = "FAILURE: %s" % e.message
+            return 1
         print("%s for candidate file %s" % (msg_prefix, candidate))
+    
+    return 0
 
 
 if __name__ == "__main__":

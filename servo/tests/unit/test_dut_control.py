@@ -7,9 +7,9 @@ import collections
 import unittest
 import unittest.mock
 
-from servo import client
-from servo import dut_control
-from servo import servo_parsing
+from servo.core import client
+from servo.core import dut_control
+from servo.core import servo_parsing
 
 
 class TestDutControl(unittest.TestCase):

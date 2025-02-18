@@ -6,8 +6,8 @@
 import unittest
 import unittest.mock
 
-from servo import dut_power_data
-from servo import measure_power
+from servo.core import dut_power_data
+from servo.core import measure_power
 
 
 class TestDataSampler(unittest.TestCase):

@@ -4,11 +4,11 @@
 import unittest
 from unittest.mock import patch
 
-from servo.grpc_server.grpc_server_setup import run_grpc_server
+from servo.core.grpc_server.grpc_server_setup import run_grpc_server
 
 
 class TestRunGRPCServer(unittest.TestCase):
-    @patch("servo.grpc_server.impl.servo_impl.ServoImpl")
+    @patch("servo.core.grpc_server.impl.servo_impl.ServoImpl")
     @patch("servo.common.proto.servo_dev_grpc.add_ServoServiceServicer_to_server")
     @patch("grpc.server")
     def test_run_grpc_server(

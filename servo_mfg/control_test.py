@@ -5,7 +5,7 @@
 
 import re
 
-import servo.client as client
+import servo.core.client as client
 from servo_mfg import test
 
 

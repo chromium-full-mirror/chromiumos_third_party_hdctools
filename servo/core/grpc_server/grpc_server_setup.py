@@ -6,7 +6,7 @@ from concurrent import futures
 import grpc
 
 from servo.common.proto import servo_dev_grpc
-from servo.grpc_server.impl import servo_impl
+from servo.core.grpc_server.impl import servo_impl
 
 
 def run_grpc_server(servod):

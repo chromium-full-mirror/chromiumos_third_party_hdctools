@@ -13,7 +13,7 @@ import pexpect
 from pexpect import fdpexpect
 
 from servo.data.drv import hw_driver
-import servo.terminal_freezer
+import servo.common.terminal_freezer
 
 
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms

@@ -5,10 +5,10 @@
 import unittest
 import unittest.mock
 
-from servo import recovery
-from servo import servo_dev
-from servo import servo_dev_templates
-from servo import servo_server
+from servo.core import recovery
+from servo.core import servo_dev
+from servo.core import servo_dev_templates
+from servo.core import servo_server
 from servo.utils import diagnose
 
 

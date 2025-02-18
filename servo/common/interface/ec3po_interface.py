@@ -21,7 +21,7 @@ import tty
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-from servo import servo_interfaces
+from servo.core import servo_interfaces
 from servo.common.config.grpc_config import GRPC_DATA_PORT
 from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient

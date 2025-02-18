@@ -95,10 +95,11 @@ fi
 
 log_output "start generate gRPC Files...."
 
-cp /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc.py /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
-chmod +x /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
+cp /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_grpc.py \
+    /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_grpc
+chmod +x /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_grpc
 
-/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/grpc.py
+/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/core/grpc.py
 
 log_output "Finish generate gRPC Files"
 

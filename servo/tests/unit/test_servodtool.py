@@ -7,7 +7,7 @@ import argparse
 import unittest
 import unittest.mock
 
-from servo import servodtool
+from servo.core import servodtool
 from servo.tools import instance
 
 

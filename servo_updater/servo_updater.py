@@ -17,8 +17,8 @@ from typing import Tuple
 
 from packaging import version
 
-from servo import servo_parsing
-from servo import sversion_util
+from servo.core import servo_parsing
+from servo.core import sversion_util
 from servo_updater.ecusb import tiny_servod
 import servo_updater.ecusb.tiny_servo_common as c
 import servo_updater.fw_update as fw_update

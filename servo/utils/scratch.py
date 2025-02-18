@@ -9,7 +9,7 @@ import logging
 import os
 import socket
 
-import servo.client as client
+import servo.core.client as client
 
 
 # This is a well-known path that should be consistent for every servod instance

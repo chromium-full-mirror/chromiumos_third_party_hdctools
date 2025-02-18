@@ -16,11 +16,11 @@ import tempfile
 import threading
 
 # This module is just a wrapper around measure_power functionality
-from servo import client
-from servo import dut_power_data
-from servo import http_server
-from servo import measure_power
-from servo import servo_parsing
+from servo.core import client
+from servo.core import dut_power_data
+from servo.core import http_server
+from servo.core import measure_power
+from servo.core import servo_parsing
 
 
 class ProgressPrinter(threading.Thread):

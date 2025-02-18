@@ -7,7 +7,7 @@
 import collections
 import logging
 
-from servo import servo_dev_templates
+from servo.core import servo_dev_templates
 from servo.utils.usb_hierarchy import Hierarchy as UsbHierarchy
 
 

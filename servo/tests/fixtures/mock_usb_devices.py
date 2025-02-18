@@ -10,7 +10,7 @@ import logging
 
 import pytest
 
-import servo.servo_dev_templates as tmpl
+import servo.core.servo_dev_templates as tmpl
 from servo.tests.data import mocked_pty_data
 
 

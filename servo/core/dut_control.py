@@ -12,8 +12,8 @@ import time
 
 import numpy
 
-from servo import client
-from servo import servo_parsing
+from servo.core import client
+from servo.core import servo_parsing
 
 
 class ControlError(Exception):
