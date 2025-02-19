@@ -7,10 +7,8 @@
 
 # pylint: skip-file
 
-import ast
 import json
 import logging
-import re
 import time
 
 import serial
@@ -509,8 +507,6 @@ class ChromeECHandler(_BaseHandler):
         "<enter>": (4, 11),
         "<left>": (7, 12),
     }
-    SIMULATED_KEYS_RE = re.compile(r"Simulated keys:")
-    SIMULATED_KEY_ITEM_RE = re.compile(r"\t(\d+) (\d+)[\r\s]")
 
     def __init__(self):
         """Sets up the servo communication infrastructure.
@@ -539,21 +535,6 @@ class ChromeECHandler(_BaseHandler):
         self._servod_set(self._ec_uart_regexp, "None")
         self._servod_set(self._ec_uart_cmd, command)
 
-    def _send_command_get_output(self, command, regexp_list):
-        """Send command through UART and return output.
-
-        This function opens UART pty when called, and then command is sent
-        through UART.
-
-        @param command: The command to send.
-        @param regexp_list: A list of regexps to match.
-        """
-        self._servo.set(self._ec_uart_regexp, regexp_list)
-        self._servo.set(self._ec_uart_cmd, command)
-        ret = self._servo.get(self._ec_uart_cmd)
-        self._servo.set(self._ec_uart_regexp, "None")
-        return ret
-
     def _press_and_release_keys(self, keys, press_secs=""):
         """Simulate a key combination press and release.
 
@@ -575,22 +556,6 @@ class ChromeECHandler(_BaseHandler):
             self._send_command(
                 "kbpress %d %d 0" % (self.KEY_MATRIX[key][1], self.KEY_MATRIX[key][0])
             )
-        # Release all keys to be sure
-        self._send_command("kbpress clear")
-        out = self._send_command_get_output(
-            "kbpress", [r"kbpress\r?\n((.|\r?\n)*)(>|~\$)"]
-        )
-        if out:
-            matches = ast.literal_eval(out)
-            if (
-                matches
-                and len(matches) > 0
-                and len(matches[0]) > 1
-                and re.search(self.SIMULATED_KEYS_RE, matches[0][1])
-            ):
-                for keys in re.findall(self.SIMULATED_KEY_ITEM_RE, matches[0][1]):
-                    self._logger.debug("Releasing stuck key %s", keys)
-                    self._send_command(f"kbpress {keys[0]} {keys[1]} 0")
 
     def ctrl_d(self, press_secs=""):
         """Simulate Ctrl-d simultaneous button presses."""
