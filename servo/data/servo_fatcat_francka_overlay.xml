@@ -1,0 +1,12 @@
+<root>
+  <include>
+    <name>servo_fatcat_npcx_overlay.xml</name>
+  </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <control>
+    <name>fw_up</name>
+    <params clobber_ok="patch" od="PP" map="onoff" init="off"></params>
+  </control>
+</root>
