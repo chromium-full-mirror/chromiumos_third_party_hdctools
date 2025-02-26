@@ -61,4 +61,12 @@
       </content>
     </params>
   </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
+    device. Disable the SPI2_VREF output load switch to avoid pushing power
+    into the DUT. -->
+    <params clobber_ok="patch" fw_wp_vref="off" />
+  </control>
 </root>
