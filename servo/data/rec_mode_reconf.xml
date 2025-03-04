@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<root>
+  <!--
+	The rec_mode control uses the HPD pin for triggering recovery mode
+	via on-board circuitry. The on-board circuitry is similar to
+	 * pressing the recovery button for chromeboxes,
+	 * holding the volume up and down buttons for tablets/detachables,
+	 * shorting KSO1 and KSI1 to emulate the refresh key for clamshell/
+	   convertiables.
+  -->
+  <control>
+    <name>hpd</name>
+    <alias>rec_mode</alias>
+    <doc>Google recovery mode</doc>
+    <params clobber_ok="patch" od="PU" map="onoff_i" init="off"></params>
+  </control>
+</root>
