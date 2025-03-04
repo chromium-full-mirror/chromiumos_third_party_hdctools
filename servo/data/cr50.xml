@@ -289,6 +289,14 @@
     regex="properties = (\S+)\s" group="1" interface="9" drv="cr50" ></params>
   </control>
   <control>
+    <name>gsc_chip</name>
+    <alias>cr50_chip</alias>
+    <doc>gsc chip type</doc>
+    <params cmd="get" uart_cmd="sysinfo"
+    regex="Chip:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
     <name>gsc_ccd_state_flags</name>
     <alias>cr50_ccd_state_flags</alias>
     <doc>CCD state flags that are currently enabled.</doc>
