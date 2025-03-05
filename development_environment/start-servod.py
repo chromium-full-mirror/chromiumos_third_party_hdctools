@@ -258,8 +258,10 @@ def start_servod(
             if passthrough_args:
                 command += passthrough_args
 
-        _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
-        if os.path.isfile(_servodrc):
+        # This variable is set by bootstrap script. If bootstrap is no more,
+        # revert commit done for b:400921593
+        _servodrc = os.environ["SERVODRC"] if "SERVODRC" in os.environ else ""
+        if len(_servodrc) > 0:
             volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
         if mounts:
