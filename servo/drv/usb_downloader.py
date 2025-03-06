@@ -109,7 +109,7 @@ class usbDownloader(hw_driver.HwDriver):
         self._logger.debug("Detecting USB stick device...")
         usb_dev = self._servod_get(self._IMAGE_DEV)
         self._logger.debug("USB Device is at %s", usb_dev)
-        # |errormsg| is usd later to indicate the error
+        # |errormsg| is used later to indicate the error
         errormsg = ""
         if not usb_dev:
             # No usb dev attached, skip straight to the end.
