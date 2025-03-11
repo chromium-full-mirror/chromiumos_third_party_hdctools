@@ -310,8 +310,11 @@ def start_servod(
                 if error_code == 0:
                     started = True
                     log_lines = None
-                    if follow:
+                    if output_thread is not None:
+                        pass
+                    elif follow:
                         log_lines = cont.logs()
+                        print(log_lines.decode("utf-8"))
                     else:
                         log_lines = b"\n"
                         i = 0
@@ -325,7 +328,7 @@ def start_servod(
                             log_lines += line
                         log_lines += b"\n...............\n\n"
                         log_lines += cont.logs(tail=3)
-                    print(log_lines.decode("utf-8"))
+                        print(log_lines.decode("utf-8"))
                     if port:
                         print(
                             "container port 9999 is mapped to port %s on your machine"
@@ -402,15 +405,7 @@ def start_servod(
                 % name
             )
         if not (sleep or test) and follow:
-            if output_thread:
-                output_thread.join(timeout=0.1)
-                output_thread = None
-            unused_rc, stream = cont.exec_run(
-                ["tail", "-F", "-n", "0", "/var/log/servod_9999/latest.%s" % (follow,)],
-                stream=True,
-            )
-            for data in stream:
-                print(data.decode(), end="")
+            output_thread.join()
     except KeyboardInterrupt:
         while cont:
             try:
