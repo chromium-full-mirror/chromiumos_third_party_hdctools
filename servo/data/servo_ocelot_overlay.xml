@@ -48,13 +48,11 @@
         <item key="macro_map">
           <item key="1">
             <item>gsc_ec_reset:on</item>
-            <item>spi2_vref:pp1800</item>
             <item>spi2_buf_en:on</item>
             <item>spi_hold:off</item>
           </item>
           <item key="0">
             <item>spi2_buf_en:off</item>
-            <item>spi2_vref:off</item>
             <item>gsc_ec_reset:off</item>
           </item>
         </item>

@@ -9,7 +9,16 @@ import subprocess
 import sys
 
 
-def run_crosfleet(board, dut_name, testname):
+FAFT_TESTS = ["servo_USBMuxVerification", "servo_LogGrab"]
+TAST_TESTS = [
+    "labqual.BootupTimesUSB.usb_recovery",
+    "labqual.ECControlRead",
+    "labqual.ServoGBBFlagsFutility",
+    "labqual.ServoDeviceBatteryCheck",
+]
+
+
+def run_crosfleet(board, dut_name, testname, harness):
     command = [
         "crosfleet",
         "run",
@@ -18,7 +27,7 @@ def run_crosfleet(board, dut_name, testname):
         "-board",
         board,
         "-harness",
-        "tauto",
+        harness,
         "-pool",
         "servo_verification",
         "-priority",
@@ -42,12 +51,13 @@ def main(unused_argv):
     with open(args.csv_file, "r") as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
-            dut_name = row[0]
-            board = row[1]
-            run_crosfleet(board, dut_name, "servo_USBMuxVerification")
-            run_crosfleet(board, dut_name, "platform_ServoPowerStateController.usb")
-            run_crosfleet(board, dut_name, "firmware_FAFTSetup")
-            run_crosfleet(board, dut_name, "servo_LogGrab")
+            dut_name, board = row[0], row[1]
+
+            for test in FAFT_TESTS:
+                run_crosfleet(board, dut_name, test, "tauto")
+
+            for test in TAST_TESTS:
+                run_crosfleet(board, dut_name, test, "tast")
 
 
 if __name__ == "__main__":

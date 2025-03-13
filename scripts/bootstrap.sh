@@ -22,6 +22,13 @@ if [ -z "${image_exists}" ] ||
     echo "${checksum}" > checksum
 fi
 popd > /dev/null
-docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:rw \
+
+# If bootstrap is no more, revert commit done for b:400921593
+if [ -f "${HOME}/.servodrc" ]; then
+  SERVODRC="${HOME}/.servodrc"
+fi
+
+docker run --rm -e SERVODRC="${SERVODRC}" \
+    -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v /tmp:/tmp:rw servod-bootstrap "./${script_name}.py" "$@"
 exit $?

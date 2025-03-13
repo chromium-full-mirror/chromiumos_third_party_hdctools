@@ -30,6 +30,12 @@
     input_type="float" map="keypress_duration"/>
   </control>
   <control>
+    <name>ctrl_f</name>
+    <doc>Send ctrl f either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_f" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
     <name>ctrl_r</name>
     <doc>Send ctrl r either by servoflex or USB KB emulation</doc>
     <params cmd="set" subtype="key" key="ctrl_r" interface="servo" drv="kb"

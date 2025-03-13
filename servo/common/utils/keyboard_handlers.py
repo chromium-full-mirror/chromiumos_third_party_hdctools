@@ -205,6 +205,10 @@ class _BaseHandler(_HandlerTemplate):
         """Simulate Ctrl-d simultaneous button presses."""
         NotImplementedError()
 
+    def ctrl_f(self, press_secs=""):
+        """Simulate Ctrl-f simultaneous button presses."""
+        NotImplementedError()
+
     def ctrl_r(self, press_secs=""):
         """Simulate Ctrl-r simultaneous button presses."""
         NotImplementedError()
@@ -560,6 +564,10 @@ class ChromeECHandler(_BaseHandler):
     def ctrl_d(self, press_secs=""):
         """Simulate Ctrl-d simultaneous button presses."""
         self._press_and_release_keys(["<ctrl_l>", "d"], press_secs)
+
+    def ctrl_f(self, press_secs=""):
+        """Simulate Ctrl-f simultaneous button presses."""
+        self._press_and_release_keys(["<ctrl_l>", "f"], press_secs)
 
     def ctrl_r(self, press_secs=""):
         """Simulate Ctrl-r simultaneous button presses."""
@@ -1638,6 +1646,10 @@ class USBkm232Handler(_BaseHandler):
     def ctrl_d(self, press_secs=""):
         """Press and release ctrl-d sequence."""
         self._write([self._press("<lctrl>"), self._press("d")])
+
+    def ctrl_f(self, press_secs=""):
+        """Press and release ctrl-f sequence."""
+        self._write([self._press("<lctrl>"), self._press("f")])
 
     def ctrl_r(self, press_secs=""):
         """Press and release ctrl-r sequence."""

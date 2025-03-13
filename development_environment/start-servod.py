@@ -98,6 +98,15 @@ start-servod
     [--token_db token_db_path]
         Path to tokens database on the host machine. Path specified will be mounted
         to the docker container and used by servod.
+
+    [--logs logs_dir]
+        ABSOLUTE path to the directory where servod logs should be stored on the host
+        machine. Use this to get easy access to the logs instead of searching for
+        docker volume.
+        You can use "`pwd`/servod_logs" to mount directory in current path. Servod will
+        create subdirectory with the container name to make sure to never overwrite
+        existing log files.
+        Note: files and directories created by docker will be owned by root user.
 """
 
 
@@ -219,6 +228,7 @@ def start_servod(
     test,
     follow,
     token_db,
+    logs_dir,
 ):
     try:
         # Just in case someone manages to press ctrl-c before the container object
@@ -240,9 +250,19 @@ def start_servod(
             container_name = now.strftime("%s")
 
         name = "%s-docker_servod" % container_name
-        logs_volume = "%s_log" % container_name
+        volumes = ["/dev:/dev"]
 
-        volumes = ["/dev:/dev", "%s:/var/log/servod_9999/" % logs_volume]
+        if logs_dir is None:
+            logs_volume = "%s_log" % container_name
+        else:
+            if logs_dir.startswith("/") is False:
+                # We can't use CWD here, because this script is ran by bootstrap that
+                # has its own CWD in the container, not on the host.
+                print("Please provide --logs argument as absolute path")
+                sys.exit(1)
+            logs_volume = os.path.join(logs_dir, container_name)
+
+        volumes += ["%s:/var/log/servod_9999/" % logs_volume]
 
         if token_db:
             dir_path = os.path.dirname(token_db)
@@ -258,8 +278,10 @@ def start_servod(
             if passthrough_args:
                 command += passthrough_args
 
-        _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
-        if os.path.isfile(_servodrc):
+        # This variable is set by bootstrap script. If bootstrap is no more,
+        # revert commit done for b:400921593
+        _servodrc = os.environ["SERVODRC"] if "SERVODRC" in os.environ else ""
+        if len(_servodrc) > 0:
             volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
         if mounts:
@@ -308,8 +330,11 @@ def start_servod(
                 if error_code == 0:
                     started = True
                     log_lines = None
-                    if follow:
+                    if output_thread is not None:
+                        pass
+                    elif follow:
                         log_lines = cont.logs()
+                        print(log_lines.decode("utf-8"))
                     else:
                         log_lines = b"\n"
                         i = 0
@@ -323,7 +348,7 @@ def start_servod(
                             log_lines += line
                         log_lines += b"\n...............\n\n"
                         log_lines += cont.logs(tail=3)
-                    print(log_lines.decode("utf-8"))
+                        print(log_lines.decode("utf-8"))
                     if port:
                         print(
                             "container port 9999 is mapped to port %s on your machine"
@@ -400,15 +425,7 @@ def start_servod(
                 % name
             )
         if not (sleep or test) and follow:
-            if output_thread:
-                output_thread.join(timeout=0.1)
-                output_thread = None
-            unused_rc, stream = cont.exec_run(
-                ["tail", "-F", "-n", "0", "/var/log/servod_9999/latest.%s" % (follow,)],
-                stream=True,
-            )
-            for data in stream:
-                print(data.decode(), end="")
+            output_thread.join()
     except KeyboardInterrupt:
         while cont:
             try:
@@ -501,6 +518,11 @@ def parse_args():
         type=str,
         dest="token_db",
     )
+    parser.add_argument(
+        "--logs",
+        type=str,
+        dest="logs_dir",
+    )
     args = parser.parse_args()
     if args.help:
         parser.print_usage()
@@ -556,6 +578,7 @@ def main():
         test=args.run_tests,
         follow=args.follow,
         token_db=args.token_db,
+        logs_dir=args.logs_dir,
     )
 
 
