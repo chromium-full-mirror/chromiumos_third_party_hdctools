@@ -7,8 +7,8 @@ import unittest
 import mock
 import serial
 
-from servo.core import servo_server
 from servo.common.interface import interface
+from servo.core import servo_server
 from servo.data.drv import hw_driver
 from servo.data.drv import relay_switch
 

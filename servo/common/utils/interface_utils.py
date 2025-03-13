@@ -61,12 +61,13 @@ class InterfaceUtils:
 
     @staticmethod
     def init_servo_interfaces(
-        interfaces, 
-        vid, 
-        pid, 
-        serial, 
-        fault_tolerant=False, 
-        token_db=None
+        interfaces,
+        vid,
+        pid,
+        serial,
+        fault_tolerant=False,
+        token_db=None,
+        grpc_data_addr=None,
     ):
         """Init the servo interfaces with the given interfaces.
 
@@ -116,6 +117,7 @@ class InterfaceUtils:
                     interface_data=interface_data,
                     servo_device=None,
                     token_db=token_db,
+                    grpc_data_addr=grpc_data_addr,
                 )
             except Exception:
                 if fault_tolerant:

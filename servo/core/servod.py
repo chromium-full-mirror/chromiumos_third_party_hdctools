@@ -27,15 +27,15 @@ from xmlrpc.server import SimpleXMLRPCServer
 import grpc
 import usb
 
+from servo.common.config.system_config import SystemConfig
+from servo.common.proto import system_config_grpc
+from servo.common.utils import servo_logging
 from servo.core import recovery
 from servo.core import servo_dev
 from servo.core import servo_dev_finder
 from servo.core import servo_parsing
 from servo.core import servo_server
 from servo.core import watchdog
-from servo.common.config.system_config import SystemConfig
-from servo.common.proto import system_config_grpc
-from servo.common.utils import servo_logging
 from servo.core.grpc_server import grpc_server_setup
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
@@ -44,12 +44,6 @@ from servo.utils import servo_dev_prober
 
 # If user does not specify a log directory, use this one.
 DEFAULT_LOG_DIR = "/var/log"
-
-# grpc server host
-GRPC_SERVER = "localhost"
-
-# grpc server running port
-GRPC_PORT = 50051
 
 # If user does not specify a port to use, try ports in this range. Traverse
 # the range from high to low addresses to maintain backwards compatibility
@@ -199,7 +193,12 @@ class ServodStarter:
         self._logger.info("Connecting to gRPC")
         while True:
             try:
-                self._setup_servos(dev_entries, main_dev_entry, prober)
+                self._setup_servos(
+                    dev_entries,
+                    main_dev_entry,
+                    prober,
+                    (sopts.grpc_data_host, sopts.grpc_data_port),
+                )
                 break
             except grpc._channel._InactiveRpcError as e:
                 if e.code() != grpc.StatusCode.UNAVAILABLE:
@@ -207,7 +206,8 @@ class ServodStarter:
                 time.sleep(1)
 
         self.grpc_server_process = multiprocessing.Process(
-            target=grpc_server_setup.run_grpc_server, args=(self._servod,)
+            target=grpc_server_setup.run_grpc_server,
+            args=(self._servod, sopts.grpc_core_port),
         )
         # Start the process in the background
         self.grpc_server_process.start()
@@ -376,6 +376,24 @@ class ServodStarter:
                 action="store_true",
                 help="Automatically fetch latest EC token database",
             )
+        server_pars.add_argument(
+            "--grpc-core-port",
+            type=int,
+            required=True,
+            help="gRPC port that Core service will listen on",
+        )
+        server_pars.add_argument(
+            "--grpc-data-host",
+            type=str,
+            required=True,
+            help="gRPC Data service host to connect to",
+        )
+        server_pars.add_argument(
+            "--grpc-data-port",
+            type=int,
+            required=True,
+            help="gRPC Data service port to connect to",
+        )
         # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
         dev_pars = servo_parsing.ServodRCParser(add_help=False)
         dev_pars.add_argument(
@@ -580,9 +598,10 @@ class ServodStarter:
             sys.exit(-1)
         return (dev_entries, main_dev_entry)
 
-    def _get_system_config(self, dev_entry):
+    def _get_system_config(self, dev_entry, grpc_data_addr):
         # Create a gRPC channel to the specified host and port
-        channel = grpc.insecure_channel(f"{GRPC_SERVER}:{GRPC_PORT}")
+        data_host, data_port = grpc_data_addr
+        channel = grpc.insecure_channel(f"{data_host}:{data_port}")
 
         # Create a SystemConfig client using the generated stub
         system_config_client = system_config_grpc.SystemConfig(channel)
@@ -610,13 +629,14 @@ class ServodStarter:
             # Let caller decide if error should be printed
             raise
 
-    def _setup_servos(self, dev_entries, _main_dev_entry, prober):
+    def _setup_servos(self, dev_entries, _main_dev_entry, prober, grpc_data_addr):
         """Setup servo devices for this servod instance.
 
         Args:
           dev_entries: all the devices' ServoDeviceEntry
           main_dev_entry: the main device's ServoDeviceEntry
           prober: a ServoDeviceProber to probe the board and model information
+          grpc_data_addr: tuple of host and port of data grpc service
         """
 
         for dev_entry in dev_entries:
@@ -636,11 +656,12 @@ class ServodStarter:
                     "No automatic config found,"
                     " and no config specified with -c <file>"
                 )
-            scfg = self._get_system_config(dev_entry)
+            scfg = self._get_system_config(dev_entry, grpc_data_addr)
 
             servo_device = servo_dev.ServoDevice(
                 dev_entry=dev_entry,
                 config=scfg,
+                grpc_data_addr=grpc_data_addr,
                 interfaces=devopts.interfaces,
                 servod=weakref.proxy(self._servod),
             )

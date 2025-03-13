@@ -20,7 +20,8 @@ class ServoImplError(Exception):
 
 
 class ServoImpl(servo_dev_grpc.ServoServiceServicer):
-    def __init__(self, servod):
+    def __init__(self, grpc_core_addr, servod):
+        self.grpc_core_addr = grpc_core_addr
         self.servod = servod
         self.logger = logging.getLogger("ServoService")
 
@@ -99,7 +100,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         self.logger.debug(context)
         if not self.servod._keyboard:
             # Setup the keyboard handler and turn it off.
-            set_keyboard(self.servod, request.type, "off")
+            set_keyboard(self.grpc_core_addr, self.servod, request.type, "off")
         response = servo_dev_pb2.OpenResponse()
         response.open = int(self.servod._keyboard.is_open())
         return response
@@ -109,7 +110,9 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         self.logger.debug(
             "Handle request for {}, in context {}".format(request, context)
         )
-        set_keyboard(self.servod, request.handler_type, request.value)
+        set_keyboard(
+            self.grpc_core_addr, self.servod, request.handler_type, request.value
+        )
         return empty_pb2.Empty()
 
     def InitV4Device(self, servo_type, devices_keys):
@@ -208,7 +211,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """init usb keyboard"""
         if not self.servod._usb_keyboard:
             # Setup the keyboard always, and then turn on/off as needed.
-            set_usb_keyboard(self.servod, legacy_atmega)
+            set_usb_keyboard(self.grpc_core_addr, self.servod, legacy_atmega)
         if value:
             self.servod._usb_keyboard.open()
         else:

@@ -15,19 +15,14 @@ import tty
 
 import grpc
 
-from servo.core import servo_dev_templates
-from servo.core import servo_interfaces
-from servo.common.config.grpc_config import GRPC_DATA_PORT
-from servo.common.config.grpc_config import GRPC_DATA_SERVER
+from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
-from servo.data import drv as servo_drv
+from servo.core import servo_dev_templates
+from servo.core import servo_interfaces
 import servo.utils.usb_hierarchy as usb_hierarchy
-
-
-HwDriverError = servo_drv.hw_driver.HwDriverError
 
 
 def _YesNoInput(message):
@@ -112,7 +107,7 @@ class ServoDevice:
     # waiting for the device during an intentional disconnect.
     INTERFACE_AVAILABILITY_TIMEOUT = 5
 
-    def __init__(self, dev_entry, config, interfaces=None, servod=None):
+    def __init__(self, dev_entry, config, grpc_data_addr, interfaces=None, servod=None):
         """ServoDevice constructor.
 
         Args:
@@ -120,6 +115,7 @@ class ServoDevice:
                      information for this servo device.
           config: instance of SystemConfig containing all controls for
               particular Servod invocation
+          grpc_data_addr: tuple of host and port of data grpc service
           interfaces: list of strings of interface types the server will instantiate
           servod: a pointer to access servod to invoke controls targeted at the servod
                   daemon and other devices.
@@ -170,7 +166,8 @@ class ServoDevice:
         self._servod = servod
         self._token_db = dev_entry.devopts.token_db
         # Create a gRPC channel to the specified host and port
-        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        grpc_data_host, grpc_data_port = grpc_data_addr
+        channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)
         self._logger.debug("Connect to grpc server of data.....")
         self._driver_client = driver_grpc.DriverService(channel)
         self._system_config_client = system_config_grpc.SystemConfig(channel)

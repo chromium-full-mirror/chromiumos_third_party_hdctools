@@ -13,27 +13,27 @@ import time
 
 import serial
 
-from servo.common.config.grpc_config import GRPC_CORE_PORT
-from servo.common.config.grpc_config import GRPC_CORE_SERVER
+from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import servo_dev_grpc
-from servo.data.drv import hw_driver
 
 
-class InvalidJsonConfigError(hw_driver.HwDriverError):
+class InvalidJsonConfigError(HwDriverError):
     """Exception class for JSON errors."""
 
 
 class _HandlerTemplate:
     """Template for all handlers to support common open/close operations."""
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         # The base subclasses need to handle opening themselves up.
         self._logger = logging.getLogger(type(self).__name__)
         self._open = False
         # Create a gRPC channel to the specified host and port
-        channel = GrpcClient.create_grpc_channel(GRPC_CORE_SERVER, GRPC_CORE_PORT)
-        self._driver_client = servo_dev_grpc.ServoService(channel)
+        if grpc_core_addr is not None:
+            grpc_core_host, grpc_core_port = grpc_core_addr
+            channel = GrpcClient.create_grpc_channel(grpc_core_host, grpc_core_port)
+            self._driver_client = servo_dev_grpc.ServoService(channel)
 
     def _servod_get(self, control):
         """Get the value of the given control with proper prefix."""
@@ -112,9 +112,9 @@ class _BaseHandler(_HandlerTemplate):
 
     KEY_MATRIX = None
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(_BaseHandler, self).__init__()
+        super(_BaseHandler, self).__init__(grpc_core_addr)
         self._arb_keys = []
 
     def power_long_press(self):
@@ -158,7 +158,7 @@ class _BaseHandler(_HandlerTemplate):
                 value = self._servod_get("pwr_button")
                 self._servod_set("pwr_button", value)
                 use_hold_command = False
-            except hw_driver.HwDriverError:
+            except HwDriverError:
                 use_hold_command = True
 
         self._logger.info(
@@ -319,9 +319,9 @@ class MatrixKeyboardHandler(_BaseHandler):
         "none": ["1", "1", "1", "1"],
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(MatrixKeyboardHandler, self).__init__()
+        super(MatrixKeyboardHandler, self).__init__(grpc_core_addr)
         self.open()
 
     def _press_keys(self, key):
@@ -400,9 +400,9 @@ class StoutHandler(MatrixKeyboardHandler):
         "none": ["1", "1", "1", "1"],
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(StoutHandler, self).__init__()
+        super(StoutHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -421,9 +421,9 @@ class ParrotHandler(MatrixKeyboardHandler):
         "none": ["1", "1", "1", "1"],
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ParrotHandler, self).__init__()
+        super(ParrotHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -508,13 +508,13 @@ class ChromeECHandler(_BaseHandler):
         "<left>": (7, 12),
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure.
 
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECHandler, self).__init__()
+        super(ChromeECHandler, self).__init__(grpc_core_addr)
         base_board = self._driver_client.GetBaseBoard().response
         if base_board:
             self._ec_uart_regexp = base_board + "_ec_uart_regexp"
@@ -713,9 +713,9 @@ class ChromeECMithraxHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECMithraxHandler, self).__init__()
+        super(ChromeECMithraxHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -801,9 +801,9 @@ class ChromeECFrostflowHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECFrostflowHandler, self).__init__()
+        super(ChromeECFrostflowHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -889,9 +889,9 @@ class ChromeECOsirisHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECOsirisHandler, self).__init__()
+        super(ChromeECOsirisHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -976,13 +976,13 @@ class ChromeECBansheeHandler(ChromeECHandler):
         "<left>": (6, 11),
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure.
 
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECBansheeHandler, self).__init__()
+        super(ChromeECBansheeHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -1068,9 +1068,9 @@ class ChromeECDelbinHandler(ChromeECHandler):
         "<left>": (0, 12),
     }
 
-    def __init__(self):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECDelbinHandler, self).__init__()
+        super(ChromeECDelbinHandler, self).__init__(grpc_core_addr)
 
         # Try to query SKU_ID or FW_CONFIG from EC Uart
         self._servod_set("ec_uart_regexp", r'["SKU_ID:\\s+(\\d+)\\s+"]')
@@ -1252,13 +1252,13 @@ class ChromeECGreenbayupocHandler(ChromeECHandler):
         "<left>": (7, 15),
     }
 
-    def __init__(self, servo):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure.
 
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECGreenbayupocHandler, self).__init__(servo)
+        super(ChromeECGreenbayupocHandler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -1347,13 +1347,13 @@ class ChromeMatrix30Handler(ChromeECHandler):
         "<enter>": (4, 11),
     }
 
-    def __init__(self, servo):
+    def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure.
 
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeMatrix30Handler, self).__init__(servo)
+        super(ChromeMatrix30Handler, self).__init__(grpc_core_addr)
         self.open()
 
 
@@ -1498,9 +1498,9 @@ class USBkm232Handler(_BaseHandler):
         "<pause/brk>": 126,
     }
 
-    def __init__(self, serial_device):
+    def __init__(self, grpc_core_addr, serial_device):
         """Constructor for usbkm232 class."""
-        super(USBkm232Handler, self).__init__()
+        super(USBkm232Handler, self).__init__(grpc_core_addr)
         if serial_device is None:
             raise Exception(
                 "No device specified when initializing usbkm232 keyboard handler"
@@ -1719,13 +1719,14 @@ class USBkm232Handler(_BaseHandler):
 class ServoUSBkm232Handler(USBkm232Handler):
     """Keyboard handler for devices without internal keyboard."""
 
-    def __init__(self, legacy):
+    def __init__(self, grpc_core_addr, legacy):
         """
         Args:
           legacy: bool, true for servo v2 as they require more setup.
         """
         # Create a gRPC channel to the specified host and port
-        channel = GrpcClient.create_grpc_channel(GRPC_CORE_SERVER, GRPC_CORE_PORT)
+        grpc_core_host, grpc_core_port = grpc_core_addr
+        channel = GrpcClient.create_grpc_channel(grpc_core_host, grpc_core_port)
         self._driver_client = servo_dev_grpc.ServoService(channel)
         time.sleep(0.5)
         self._servod_set("atmega_rst", "on")
@@ -1733,7 +1734,8 @@ class ServoUSBkm232Handler(USBkm232Handler):
         self._servod_set("atmega_rst", "off")
         serial = self._servod_get("atmega_pty")
         self.legacy = legacy
-        super(ServoUSBkm232Handler, self).__init__(serial)
+        # None as grpc address because driver client is already initialized up here
+        super(ServoUSBkm232Handler, self).__init__(None, serial)
 
     def _servod_get(self, control):
         """Get the value of the given control with proper prefix."""

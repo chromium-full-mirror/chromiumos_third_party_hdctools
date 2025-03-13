@@ -6,20 +6,19 @@
 
 See ftdii2c.py for details on controls available.
 """
-from servo.common.config.grpc_config import GRPC_DATA_PORT
-from servo.common.config.grpc_config import GRPC_DATA_SERVER
+from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.interface import ftdii2c
 from servo.common.proto import driver_grpc
-from servo.data.drv import hw_driver
+from servo.data.drv.hw_driver import HwDriver
 
 
 # pylint: disable=C0103
-class ftdii2cCmdError(hw_driver.HwDriverError):
+class ftdii2cCmdError(HwDriverError):
     """Exception class for ftdii2c_cmd."""
 
 
-class ftdii2cCmd(hw_driver.HwDriver):
+class ftdii2cCmd(HwDriver):
     """Object to access drv=ftdii2c_cmd controls.
 
     Attributes:
@@ -32,7 +31,8 @@ class ftdii2cCmd(hw_driver.HwDriver):
         # pylint: disable=protected-access
         super(ftdii2cCmd, self)._drv_init()
         # Create a gRPC channel to the specified host and port
-        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        grpc_data_host, grpc_data_port = self.grpc_data_addr
+        channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)
         self._data_client = driver_grpc.DriverService(channel)
 
     def _set(self, cmd):

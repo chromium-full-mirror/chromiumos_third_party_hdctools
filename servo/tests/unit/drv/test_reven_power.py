@@ -8,8 +8,8 @@ import unittest
 
 import mock
 
-from servo.core import servo_server
 from servo.common.interface import interface
+from servo.core import servo_server
 from servo.data.drv import hw_driver
 from servo.data.drv import reven_power
 

@@ -7,17 +7,12 @@ import logging
 import re
 import weakref
 
-from servo.common.config.grpc_config import GRPC_CORE_PORT
-from servo.common.config.grpc_config import GRPC_CORE_SERVER
+from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import servo_dev_grpc
 
 
 VALID_IO_TYPES = ["PU", "PP"]
-
-
-class HwDriverError(Exception):
-    """Exception class for HwDriver."""
 
 
 def _get_io_type(params):
@@ -60,7 +55,7 @@ class HwDriver:
     REQUIRED_GET_PARAMS = []
     REQUIRED_SET_PARAMS = []
 
-    def __init__(self, interface, params):
+    def __init__(self, grpc_core_addr, grpc_data_addr, interface, params):
         """Driver constructor.
 
         Args:
@@ -120,7 +115,10 @@ class HwDriver:
         self._io_type = _get_io_type(params)
         self._prefix = self._params.get("interface_prefix")
         # Create a gRPC channel to the specified host and port
-        channel = GrpcClient.create_grpc_channel(GRPC_CORE_SERVER, GRPC_CORE_PORT)
+        self.grpc_core_addr = grpc_core_addr
+        self.grpc_data_addr = grpc_data_addr
+        grpc_core_host, grpc_core_port = grpc_core_addr
+        channel = GrpcClient.create_grpc_channel(grpc_core_host, grpc_core_port)
         self._logger.debug("Connect to grpc server of core.....")
         self._driver_client = servo_dev_grpc.ServoService(channel)
 

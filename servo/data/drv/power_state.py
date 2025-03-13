@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 import time
 
-from servo.common.config.grpc_config import GRPC_DATA_PORT
-from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
 from servo.data.drv import hw_driver
@@ -54,9 +52,10 @@ class PowerStateDriver(hw_driver.HwDriver):
     def _drv_init(self):
         """Driver specific initializer."""
         super(PowerStateDriver, self)._drv_init()
-        
+
         # Create a gRPC channel to the specified host and port
-        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        grpc_data_host, grpc_data_port = self.grpc_data_addr
+        channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)
         self._logger.debug("Connect to grpc server of data.....")
         self._data_client = driver_grpc.DriverService(channel)
         self._reset_hold_time = float(self._params.get("reset_hold", 0.5))

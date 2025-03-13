@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 import pytest
 
-from servo.core import servo_dev_templates as templates
 from servo.common.config import system_config
+from servo.core import servo_dev_templates as templates
 
 
 class SystemConfigTestError(Exception):

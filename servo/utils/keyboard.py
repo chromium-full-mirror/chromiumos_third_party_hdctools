@@ -24,14 +24,14 @@ def get_keyboard(servod, handler):
     return keyboard
 
 
-def set_usb_keyboard(servod, legacy_atmega):
+def set_usb_keyboard(grpc_core_addr, servod, legacy_atmega):
     """
     set keyboard values
     """
     logger = logging.getLogger("keyboardUtil")
     # Avoid reinitializing the same usb keyboard handler.
     if servod._usbkm232:
-        usb_kb = keyboard_handlers.USBkm232Handler(servod._usbkm232)
+        usb_kb = keyboard_handlers.USBkm232Handler(grpc_core_addr, servod._usbkm232)
     else:
         logger.debug(
             "No device path specified for usbkm232 handler. Use "
@@ -43,11 +43,11 @@ def set_usb_keyboard(servod, legacy_atmega):
             logger.warning(msg)
             raise KeyboardUtilError(msg)
         # This flag is used in servo v2 to setup the atmega chip properly.
-        usb_kb = keyboard_handlers.ServoUSBkm232Handler(legacy_atmega)
+        usb_kb = keyboard_handlers.ServoUSBkm232Handler(grpc_core_addr, legacy_atmega)
     servod._usb_keyboard = usb_kb
 
 
-def set_keyboard(servod, handler_type, value):
+def set_keyboard(grpc_core_addr, servod, handler_type, value):
     """
     set keyboard values
     """
@@ -68,12 +68,12 @@ def set_keyboard(servod, handler_type, value):
                     "that the keyboard controls will fail, as only "
                     "noop keyboard could be setup."
                 )
-                servod._keyboard = keyboard_handlers.NoopHandler()
+                servod._keyboard = keyboard_handlers.NoopHandler(grpc_core_addr)
         else:
             # The main keyboard is a normal keyboard handler.
             handler_class_name = "%sHandler" % handler_type
             handler_class = getattr(keyboard_handlers, handler_class_name)
-            servod._keyboard = handler_class()
+            servod._keyboard = handler_class(grpc_core_addr)
     if value:
         servod._keyboard.open()
     else:

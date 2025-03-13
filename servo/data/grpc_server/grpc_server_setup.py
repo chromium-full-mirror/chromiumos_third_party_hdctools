@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 
+import argparse
 from concurrent import futures
 import logging
 import sys
@@ -20,9 +21,6 @@ from servo.data.impl import system_config_impl
 # If user does not specify a log directory, use this one.
 DEFAULT_LOG_DIR = "/var/log"
 
-# Default port to start gRPC server on
-DEFAULT_DATA_GRPC_PORT = 50051
-
 DEBUG_FMT_STRING = (
     "%(asctime)s - %(name)s - %(levelname)s - "
     "%(filename)s:%(lineno)d:%(funcName)s - %(message)s"
@@ -38,10 +36,32 @@ def grpc_server_start():
     """
     logging.basicConfig(level=logging.INFO, format=DEBUG_FMT_STRING)
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--grpc-core-host",
+        type=str,
+        required=True,
+        help="gRPC Core service host to connect to",
+    )
+    parser.add_argument(
+        "--grpc-core-port",
+        type=int,
+        required=True,
+        help="gRPC Core service port to connect to",
+    )
+    parser.add_argument(
+        "--grpc-data-port",
+        type=int,
+        required=True,
+        help="gRPC port that Data service will listen on",
+    )
+
+    args = parser.parse_args()
+
     servo_logging.setup(
         logdir=DEFAULT_LOG_DIR,
         module="data",
-        port=DEFAULT_DATA_GRPC_PORT,
+        port=args.grpc_data_port,
         debug_stderr=True,
         backup_count=1,
     )
@@ -56,10 +76,13 @@ def grpc_server_start():
     )
 
     # Add the DriverServicer implementation to the gRPC server
-    driver_grpc.add_DriverServiceServicer_to_server(driver_impl.DriverImpl(), server)
+    grpc_core = (args.grpc_core_host, args.grpc_core_port)
+    grpc_data = ("localhost", args.grpc_data_port)
+    service = driver_impl.DriverImpl(grpc_core, grpc_data)
+    driver_grpc.add_DriverServiceServicer_to_server(service, server)
 
     # Bind the server on port 50051
-    server.add_insecure_port("[::]:{}".format(DEFAULT_DATA_GRPC_PORT))
+    server.add_insecure_port("[::]:{}".format(args.grpc_data_port))
 
     # Start the gRPC server
     server.start()

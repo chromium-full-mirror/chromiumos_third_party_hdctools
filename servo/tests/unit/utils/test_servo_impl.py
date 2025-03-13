@@ -9,9 +9,6 @@ from unittest.mock import patch
 
 from google.protobuf import empty_pb2
 
-from servo.core import servo_dev
-from servo.core import servo_dev_templates as tmpl
-from servo.core import servo_server
 from servo.common.config import system_config
 from servo.common.proto.servo_dev_pb2 import BoolRequest
 from servo.common.proto.servo_dev_pb2 import GetRequest
@@ -26,6 +23,9 @@ from servo.common.proto.servo_dev_pb2 import SetServoRequest
 from servo.common.proto.servo_dev_pb2 import SetUsbRequest
 from servo.common.proto.servo_dev_pb2 import V4DeviceRequest
 from servo.common.proto.servo_dev_pb2 import WatchdogRequest
+from servo.core import servo_dev
+from servo.core import servo_dev_templates as tmpl
+from servo.core import servo_server
 from servo.core.grpc_server.impl.servo_impl import ServoImpl
 from servo.utils import servo_dev_hierarchy
 

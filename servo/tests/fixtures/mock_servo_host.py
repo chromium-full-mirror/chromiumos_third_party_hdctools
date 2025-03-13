@@ -13,11 +13,11 @@ from unittest.mock import patch
 from mock.mock import Mock
 import pytest
 
+from servo.common.config import system_config
 from servo.core import servo_dev
 from servo.core import servo_dev_templates as tmpl
 from servo.core import servo_server
 from servo.core import servod as sd
-from servo.common.config import system_config
 from servo.tests.fixtures import common
 from servo.tests.fixtures.mock_pyusb import clear_interfaces
 from servo.tests.fixtures.mock_pyusb import dump_interfaces

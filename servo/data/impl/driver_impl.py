@@ -30,6 +30,11 @@ class InterfaceImplError(Exception):
 
 
 class DriverImpl(driver_grpc.DriverServiceServicer):
+    def __init__(self, grpc_core_addr, grpc_data_addr):
+        super().__init__()
+        self.grpc_core_addr = grpc_core_addr
+        self.grpc_data_addr = grpc_data_addr
+
     def CallDriver(self, driver_request, context):
         """
             Get/Set driver value, this service inited related drivers
@@ -50,16 +55,24 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         response = driver_pb2.DriverResponse()
         try:
             # interface ky for related vid, pid and serial
-            interface_key = InterfaceUtils.get_interface_key(vid=driver_request.vid, pid=driver_request.pid,
-                                                             serial=driver_request.serial)
+            interface_key = InterfaceUtils.get_interface_key(
+                vid=driver_request.vid,
+                pid=driver_request.pid,
+                serial=driver_request.serial,
+            )
             # Get system config
             syscfg = get_system_config(vid=driver_request.vid, pid=driver_request.pid)
 
-            (params, drv, device) = self._get_param_drv(driver_request.control_name, driver_request.device_type, syscfg,
-                                                        interface_key, is_get)
+            (params, drv, device) = self._get_param_drv(
+                driver_request.control_name,
+                driver_request.device_type,
+                syscfg,
+                interface_key,
+                is_get,
+            )
             if is_get:
                 get_value = drv.get()
-                params['response'] = get_value
+                params["response"] = get_value
                 response.value = json.dumps(params)
             else:
                 wr_val = syscfg.resolve_val(params, driver_request.value)
@@ -68,7 +81,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         except DriverImplError as e:
             raise DriverImplError("Error occurred: {}".format(str(e)))
 
-    def _get_param_drv(self, control_name, device_type, syscfg, interface_key, is_get=True):
+    def _get_param_drv(
+        self, control_name, device_type, syscfg, interface_key, is_get=True
+    ):
         """Get access to driver for a given control.
 
         Args:
@@ -142,7 +157,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 device_info = interface.get_device_info()
             drv_module = getattr(servo_drv, drv_prefix)
             drv_class = getattr(drv_module, string_utils.snake_to_camel(drv_prefix))
-            drv = drv_class(interface, params)
+            drv = drv_class(self.grpc_core_addr, self.grpc_data_addr, interface, params)
 
             if control_name not in _drv_dict:
                 _drv_dict[control_name] = {}
@@ -156,7 +171,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         _, get_drv, _ = _drv_dict[control_name]["get"]
         set_drv.set_complement(get_drv)
         # Run the method again, as it will find the entries now in the cache.
-        return self._get_param_drv(control_name, device_type, interface_key, syscfg, is_get)
+        return self._get_param_drv(
+            control_name, device_type, interface_key, syscfg, is_get
+        )
 
     def InitInterface(self, request, context):
         """
@@ -168,10 +185,21 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         """
         try:
             interfaces = ast.literal_eval(request.interface_template)
-            InterfaceUtils.sync_interface_lists(interfaces=interfaces, vid=request.vid, pid=request.pid,
-                                                serial=request.serial)
-            InterfaceUtils.init_servo_interfaces(interfaces, request.vid, request.pid, request.serial,
-                                                 request.fault_tolerant, request.token_db)
+            InterfaceUtils.sync_interface_lists(
+                interfaces=interfaces,
+                vid=request.vid,
+                pid=request.pid,
+                serial=request.serial,
+            )
+            InterfaceUtils.init_servo_interfaces(
+                interfaces,
+                request.vid,
+                request.pid,
+                request.serial,
+                request.fault_tolerant,
+                request.token_db,
+                self.grpc_data_addr,
+            )
             return driver_pb2.InterfaceResponse(success=True)
         except Exception as e:
             raise InterfaceImplError("Error occurred in init interfaces: {}".format(e))
@@ -217,8 +245,12 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             request InterfaceRequest
             context
         """
-        InterfaceUtils.sync_interface_lists(interfaces=request.interface_template, serial=request.serial,
-                                            pid=request.pid, vid=request.vid)
+        InterfaceUtils.sync_interface_lists(
+            interfaces=request.interface_template,
+            serial=request.serial,
+            pid=request.pid,
+            vid=request.vid,
+        )
         return empty_pb2.Empty()
 
     def SetFtdii2cCmd(self, request, context):
@@ -240,6 +272,8 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             request InterfaceRequest
             context
         """
-        interface_key = InterfaceUtils.get_interface_key(vid=request.vid, pid=request.pid, serial=request.serial)
+        interface_key = InterfaceUtils.get_interface_key(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
         InterfaceUtils.reset_interface_init(interface_key, request.interface_index)
         return empty_pb2.Empty()

@@ -21,15 +21,13 @@ import tty
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
-from servo.core import servo_interfaces
-from servo.common.config.grpc_config import GRPC_DATA_PORT
-from servo.common.config.grpc_config import GRPC_DATA_SERVER
 from servo.common.grpc_client import GrpcClient
 from servo.common.interface import common as c
 from servo.common.interface import empty
 from servo.common.interface import uart
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
+from servo.core import servo_interfaces
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
@@ -275,13 +273,15 @@ class EC3PO(uart.Uart):
         interface_data,
         servo_device,
         token_db,
+        grpc_data_addr,
     ):
         """Factory method to implement the interface."""
         c.build_logger.debug("Servo: {}".format(servo_device))
         device_info = DeviceInfo(vid, pid, sid)
         raw_uart_name = interface_data["raw_pty"]
         raw_uart_source = interface_data["source"]
-        channel = GrpcClient.create_grpc_channel(GRPC_DATA_SERVER, GRPC_DATA_PORT)
+        grpc_data_host, grpc_data_port = grpc_data_addr
+        channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)
         driver_client = driver_grpc.DriverService(channel)
         scfg_client = system_config_grpc.SystemConfig(channel)
         try:
@@ -296,14 +296,16 @@ class EC3PO(uart.Uart):
             raw_ec_uart = json.loads(drv.value)
             ec_tokenized = False
             has_token_ctrl = scfg_client.IsControl(
-                vid=vid, pid=pid, control_name = EC_TOKENS_CONTROL
+                vid=vid, pid=pid, control_name=EC_TOKENS_CONTROL
             ).value
             if raw_uart_source == "EC" and has_token_ctrl:
                 ec_tokens_json = driver_client.CallDriver(
                     vid=vid,
                     pid=pid,
                     serial=sid,
-                    interface_template=str(servo_interfaces.INTERFACE_DEFAULTS[vid][pid]),
+                    interface_template=str(
+                        servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
+                    ),
                     control_name=EC_TOKENS_CONTROL,
                     device_type="",
                 ).value
