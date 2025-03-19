@@ -302,6 +302,20 @@
     ></params>
   </control>
   <control>
+    <name>gsc_device_state</name>
+    <doc>List the GSC device state using the ccdstate output</doc>
+    <params cmd="get" uart_cmd="ccdstate"
+    regex="(.*)>" group="1" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_device_state_pcr0</name>
+    <doc>Get the current pcr0 value from gsc</doc>
+    <params cmd="get" uart_cmd="ccdstate"
+    regex="pcr0:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
     <name>gsc_ccd_state_flags</name>
     <alias>cr50_ccd_state_flags</alias>
     <doc>CCD state flags that are currently enabled.</doc>
