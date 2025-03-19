@@ -1,6 +1,7 @@
 # Copyright 2021 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Base class to provide access to Texas Instruments INA-based ADCs."""
 
 from servo.data.drv import hw_driver
@@ -96,8 +97,8 @@ class basePWRADC(hw_driver.HwDriver):
         """
         reg_control_name = "%s_%s_reg" % (self._base_name, reg)
         # TODO(b/275723447): remove this prefix string manipulation from driver
-        if "." not in reg_control_name:
-            return self._params["device_type"] + "." + reg_control_name
+        if "." not in reg_control_name and self._params["interface_prefix"]:
+            return self._params["interface_prefix"] + "." + reg_control_name
         return reg_control_name
 
     def _has_reg(self, reg):
@@ -127,11 +128,12 @@ class basePWRADC(hw_driver.HwDriver):
         Raises:
           BasePWRADCError: if |reg| for this ADC control is unknown to servod
         """
+        ctrl_name = self._reg_control_name(reg)
         if not self._has_reg(reg):
             raise BasePWRADCError(
-                "Register %s for control %s unknown" % (reg, self._base_name)
+                "Register %s for control %s unknown: %s"
+                % (reg, self._base_name, ctrl_name)
             )
-        ctrl_name = self._reg_control_name(reg)
         return int(self._servod_get(ctrl_name), 16)
 
     def _write_reg(self, reg, value):
