@@ -116,6 +116,11 @@
     ></params>
   </control>
   <control>
+    <name>gsc_apro_latch_state</name>
+    <doc>gsc ap ro verification latch state</doc>
+    <params interface="9" drv="na" cmd="get" ></params>
+  </control>
+  <control>
     <name>gsc_uart_multicmd</name>
     <alias>cr50_uart_multicmd</alias>
     <doc>Set to send multiple commands to the GSC console.</doc>

@@ -18,4 +18,11 @@
     <doc>Used to turn fw wp off and on. Keep ti50 wp in sync with servo.</doc>
     <params clobber_ok="patch" sync_gsc_wp="yes" />
   </control>
+  <control>
+    <name>gsc_apro_latch_state</name>
+    <doc>gsc ap ro verification latch state</doc>
+    <params cmd="get" uart_cmd="ap_ro_verify" regex="Latched: (No|Yes)" group="1" fmt="lowercase"
+    interface="9" drv="cr50" clobber_ok="patch"
+    ></params>
+  </control>
 </root>
