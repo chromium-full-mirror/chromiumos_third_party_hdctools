@@ -480,3 +480,52 @@ class ec(pty_driver.ptyDriver):
                 )
         finally:
             self._restore_channel()
+
+    def _Set_pdc_ccd_keepalive_en(self, value: int) -> None:
+        """Setter for pdc_ccd_keepalive_en
+
+        Input value:
+         0 for normal mux operation
+         1 to force the SBU mux into debug (CCD forced on). Needed in conjunction with
+           GSC's rddkeepalive for DUTs using PDC-driven CCD."""
+
+        if value == 0:
+            cmd = "pdc sbumux normal"
+        elif value == 1:
+            cmd = "pdc sbumux debug"
+        else:
+            raise ValueError("Value must be 0 or 1")
+
+        try:
+            self._issue_cmd(cmd)
+        except pty_driver.ptyError as e:
+            raise ecError(
+                f"Cannot run `{cmd}`. Is this a DUT with PDC-driven CCD? "
+                "(CONFIG_USBC_PDC_DRIVEN_CCD)"
+            ) from e
+
+    def _Get_pdc_ccd_keepalive_en(self) -> int:
+        """Getter for pdc_ccd_keepalive_en
+
+        Returns:
+         0 for normal operation
+         1 when SBU mux is forced into debug (CCD forced on)"""
+
+        cmd = "pdc sbumux"
+
+        try:
+            results = self._issue_cmd_get_results(
+                cmd, [r"CCD Port: C\d+, Mode: (\w+) \(\d+\)"]
+            )
+        except pty_driver.ptyError as e:
+            raise ecError(
+                f"Cannot run `{cmd}`. Is this a DUT with PDC-driven CCD? "
+                "(CONFIG_USBC_PDC_DRIVEN_CCD)"
+            ) from e
+
+        if results[0][1] == "NORMAL":
+            return 0
+        elif results[0][1] == "DEBUG":
+            return 1
+        else:
+            raise ecError(f"Unexpected `{cmd}` output: '{results[0][0]}'")
