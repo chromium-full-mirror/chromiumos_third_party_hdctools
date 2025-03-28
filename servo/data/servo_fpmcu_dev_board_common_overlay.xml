@@ -91,4 +91,8 @@
     <name>fw_wp</name>
     <params clobber_ok="patch" map="onoff"></params>
   </control>
+  <control>
+    <name>fw_wp_state</name>
+    <params clobber_ok="patch" init="force_off"></params>
+  </control>
 </root>
