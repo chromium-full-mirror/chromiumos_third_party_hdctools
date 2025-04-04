@@ -5,6 +5,9 @@
   <include>
     <name>gsc_reset_pch_disable.xml</name>
   </include>
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
