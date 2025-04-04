@@ -18,6 +18,9 @@
   <include>
     <name>dev_mode_to_ap_download_reconf.xml</name>
   </include>
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
   <!-- ******** Maps ******** -->
 
   <!-- ******** Controls ******** -->
@@ -57,6 +60,10 @@
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" interface="10" drv="simple_ec" uart_cmd="version"
       regex="Chip:\s+\S+\s+(npcx|it82002)\S*\s" group="1" map="ec_chip_map"/>
+  </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="patch" pdc="yes" />
   </control>
 </root>
 
