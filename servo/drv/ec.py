@@ -525,7 +525,7 @@ class ec(pty_driver.ptyDriver):
 
         if results[0][1] == "NORMAL":
             return 0
-        elif results[0][1] == "DEBUG":
+        elif results[0][1] == "FORCE_DEBUG":
             return 1
         else:
             raise ecError(f"Unexpected `{cmd}` output: '{results[0][0]}'")
