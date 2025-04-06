@@ -1,0 +1,18 @@
+<root>
+  <include>
+    <name>servo_fatcat_overlay.xml</name>
+  </include>
+  <!-- The ITE EC add-in card (UART for flashing). -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="ite_uart" />
+  </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
+  </control>
+</root>
