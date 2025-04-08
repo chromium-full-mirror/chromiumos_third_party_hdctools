@@ -31,8 +31,10 @@ class RunInsteadBase:
         self.name = "{}-docker_{}".format(now, os.path.basename(command))
 
         self.volumes = ["/dev:/dev"]
-        _servodrc = os.path.join(os.path.expanduser("~"), ".servodrc")
-        if os.path.isfile(_servodrc):
+        # This variable is set by bootstrap script. If bootstrap is no more,
+        # revert commit done for b:400921593
+        _servodrc = os.environ["SERVODRC"] if "SERVODRC" in os.environ else ""
+        if len(_servodrc) > 0:
             self.volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
     def get_image(self, channel):
