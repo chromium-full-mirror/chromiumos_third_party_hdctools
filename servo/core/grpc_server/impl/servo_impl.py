@@ -128,6 +128,12 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         self.servod._can_control_servo = ("servo_micro" in devices) or (
             "c2d2" in devices
         )
+        # setup a ccd alias, so tests don't have to distinguish between
+        # ccd_gsc and ccd_cr50
+        for device in usable_devices:
+            if "ccd" in device:
+                self._servod.v4_device_info["ccd"] = device
+                break
         return empty_pb2.Empty()
 
     def GetInitV4Device(self, request, context):
