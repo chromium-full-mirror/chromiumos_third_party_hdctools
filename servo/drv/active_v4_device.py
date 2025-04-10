@@ -44,6 +44,8 @@ class activeV4Device(hw_driver.HwDriver):
     # This is a flag in CR50 board property, which shows EC-CR50 communication
     # support.
     BOARD_EC_CR50_COMM_SUPPORT = 1 << 21
+    # Device aliases that can be used instead of the specific servo name
+    DEVICE_ALIASES = ["default", "ccd"]
 
     def init_v4_device_info(self):
         """Initialize the v4 device information.
@@ -74,6 +76,12 @@ class activeV4Device(hw_driver.HwDriver):
         self._servod._can_control_servo = ("servo_micro" in devices) or (
             "c2d2" in devices
         )
+        # setup a ccd alias, so tests don't have to distinguish between
+        # ccd_gsc and ccd_cr50
+        for device in usable_devices:
+            if "ccd" in device:
+                self._servod.v4_device_info["ccd"] = device
+                break
 
     def get_v4_device_info(self, info_type):
         """Get the requested v4 device information.
@@ -90,8 +98,8 @@ class activeV4Device(hw_driver.HwDriver):
 
     def _Set_device(self, device):
         """Configure cr50 to enable using servo micro or ccd."""
-        if device == "default":
-            device = self.get_v4_device_info("default")
+        if device in self.DEVICE_ALIASES:
+            device = self.get_v4_device_info(device)
 
         devices = self.get_v4_device_info("usable_devices")
         if device not in devices:
