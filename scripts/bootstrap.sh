@@ -19,7 +19,7 @@ if [ -f "/usr/bin/glinux-updater" ]; then
     exit 1
   fi
   groups ${USER} | grep -qw docker
-  if [ $? -ne 1 ]; then
+  if [ $? -ne 0 ]; then
     echo "${USER} is not in the group docker see go/installdocker#sudoless-docker."
     echo "remember to reboot after following the instructions."
     exit 1
