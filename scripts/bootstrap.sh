@@ -13,13 +13,11 @@ fi
 
 # Check to see glinux machines have correct environment.
 if [ -f "/usr/bin/glinux-updater" ]; then
-  systemctl is-active docker --quiet
-  if [ $? -ne 0 ]; then
+  if ! systemctl is-active docker --quiet; then
     echo "Docker is not running see go/servod for install instructions."
     exit 1
   fi
-  groups ${USER} | grep -qw docker
-  if [ $? -ne 0 ]; then
+  if ! groups ${USER} | grep -qw docker; then
     echo "${USER} is not in the group docker see go/installdocker#sudoless-docker."
     echo "remember to reboot after following the instructions."
     exit 1
