@@ -9,6 +9,21 @@ if [ -n "${SERVOD_BOOTSTRAP_DEBUG}" ]; then
   set -x
 fi
 
+# Check that Googlers installed docker and setup sudoless.
+
+# Check to see glinux machines have correct environment.
+if [ -f "/usr/bin/glinux-updater" ]; then
+  if ! systemctl is-active docker --quiet; then
+    echo "Docker is not running see go/servod for install instructions."
+    exit 1
+  fi
+  if ! groups ${USER} | grep -qw docker; then
+    echo "${USER} is not in the group docker see go/installdocker#sudoless-docker."
+    echo "remember to reboot after following the instructions."
+    exit 1
+  fi
+fi
+
 pushd "$(dirname "$(readlink -f "$0")")" > /dev/null
 checksum=$(tar cfP - ../development_environment/ | md5sum)
 script_name=$(basename "$0")

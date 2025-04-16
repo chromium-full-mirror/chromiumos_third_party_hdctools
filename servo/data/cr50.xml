@@ -116,6 +116,11 @@
     ></params>
   </control>
   <control>
+    <name>gsc_apro_latch_state</name>
+    <doc>gsc ap ro verification latch state</doc>
+    <params interface="9" drv="na" cmd="get" ></params>
+  </control>
+  <control>
     <name>gsc_uart_multicmd</name>
     <alias>cr50_uart_multicmd</alias>
     <doc>Set to send multiple commands to the GSC console.</doc>
@@ -294,6 +299,20 @@
     <doc>gsc chip type</doc>
     <params cmd="get" uart_cmd="sysinfo"
     regex="Chip:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_device_state</name>
+    <doc>List the GSC device state using the ccdstate output</doc>
+    <params cmd="get" uart_cmd="ccdstate"
+    regex="(.*)>" group="1" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_device_state_pcr0</name>
+    <doc>Get the current pcr0 value from gsc</doc>
+    <params cmd="get" uart_cmd="ccdstate"
+    regex="pcr0:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="9" drv="cr50"
     ></params>
   </control>
   <control>

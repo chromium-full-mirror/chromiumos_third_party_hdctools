@@ -23,16 +23,16 @@ inas = [
     ("pac1934", "0x12:3", "PP5000_Z1", 5.000, 0.01, "rem", True),  # R94753
     ("pac1934", "0x14:0", "PP0500_MEM_S3", 0.520, 0.01, "rem", True),  # R94751
     ("pac1934", "0x14:1", "PP3300_EDP_X_OUT", 3.300, 0.02, "rem", True),  # R12003
-    ("pac1934", "0x14:2", "PPVAR_BL_PWR", 13.20, 0.005, "rem", True),  # R4450
-    ("pac1934", "0x14:3", "CS_PPAVR_VBUS_IN", 20.00, 0.02, "rem", True),  # R3409
+    ("pac1934", "0x14:2", "PPVAR_BL_PWR", 11.30, 0.005, "rem", True),  # R4450
+    ("pac1934", "0x14:3", "CS_PPAVR_VBUS_IN", 20.00, 0.01, "rem", True),  # R3409
     ("pac1934", "0x13:0", "PP3300_Z5", 3.300, 0.01, "rem", True),  # R80
     ("pac1934", "0x13:1", "PP3300_Z1", 3.300, 0.01, "rem", True),  # R94756
     ("pac1934", "0x13:2", "PP3300_S5", 3.300, 0.01, "rem", True),  # R882
-    ("pac1934", "0x13:3", "CS_PPVAR_BAT", 13.20, 0.01, "rem", True),  # R32
-    ("pac1934", "0x17:0", "PRVAR_VCCCORE1_VIN", 13.20, 0.002, "rem", True),  # R872
-    ("pac1934", "0x17:1", "PRVAR_VCCCORE2_VIN", 13.20, 0.002, "rem", True),  # R874
-    ("pac1934", "0x17:2", "PRVAR_VCCGT_VIN", 13.20, 0.002, "rem", True),  # R873
-    ("pac1934", "0x17:3", "PRVAR_SYS_VCCIN_AUX", 13.20, 0.005, "rem", True),  # R92087
+    ("pac1934", "0x13:3", "CS_PPVAR_BAT", 11.30, 0.01, "rem", True),  # R32
+    ("pac1934", "0x17:0", "PRVAR_VCCCORE1_VIN", 11.30, 0.002, "rem", True),  # R872
+    ("pac1934", "0x17:1", "PRVAR_VCCCORE2_VIN", 11.30, 0.002, "rem", True),  # R874
+    ("pac1934", "0x17:2", "PRVAR_VCCGT_VIN", 11.30, 0.002, "rem", True),  # R873
+    ("pac1934", "0x17:3", "PRVAR_SYS_VCCIN_AUX", 11.30, 0.005, "rem", True),  # R92087
     ("pac1934", "0x16:0", "PP3300_EC_Z1", 3.300, 0.02, "rem", True),  # R645
     ("pac1934", "0x16:1", "PP3300_SOC_S5", 3.300, 0.01, "rem", True),  # R885
     ("pac1934", "0x16:2", "PP5000_FAN", 5.000, 0.01, "rem", True),  # R8529

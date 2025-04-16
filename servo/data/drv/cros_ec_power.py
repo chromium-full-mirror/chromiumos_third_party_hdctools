@@ -8,7 +8,7 @@ from servo.data.drv import power_state
 
 
 CONTROL_COMMAND = "ec_system_powerstate"
-CONTROL_OUTPUT_EXPECTED = ["S5", "G3"]
+CONTROL_OUTPUT_EXPECTED = ["S5", "AP_POWER_STATE_S5", "G3", "AP_POWER_STATE_G3"]
 POWER_OFF_POLLING_INTERVAL_S = 0.5
 
 

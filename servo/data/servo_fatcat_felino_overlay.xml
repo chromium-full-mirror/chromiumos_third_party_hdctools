@@ -3,6 +3,9 @@
     <name>servo_fatcat_overlay.xml</name>
   </include>
   <!-- The ITE EC add-in card (UART for flashing). -->
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>

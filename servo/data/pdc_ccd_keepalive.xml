@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+Used in conjunction with ccd_ti50.xml/ccd_cr50.xml on DUTs using PDC-driven CCD.
+
+Include this file in the XML overlays for boards that use PDC-driven CCD (after the
+existing ccd_*.xml include statements)
+
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
+
+This augments the `ccd_keepalive_en` control to perform these two functions:
+  (1) Set `rddkeepalive [0|1]` on the GSC console (like before)
+  (2) Set `pdc sbumux [normal|debug]` on the EC console (specific to PDC-driven CCD)
+      This causes the EC to tell the PDC to force its SBU mux into the debug path.
+      Requires CONFIG_USBC_PDC_DRIVEN_CCD to be enabled on the EC image, and PDC FW
+      support.
+-->
+<root>
+    <control>
+        <name>ccd_keepalive_en</name>
+        <doc>Enable/disable keepalive (for PDC-driven CCD)</doc>
+        <params interface="servo" drv="macro" clobber_ok="full" map="onoff">
+            <content>
+                <item key="get_controls">
+                    <item>gsc_ccd_keepalive_en</item>
+                    <item>pdc_ccd_keepalive_en</item>
+                </item>
+                <item key="macro_map">
+                    <item key="1">
+                        <item>gsc_ccd_keepalive_en:on</item>
+                        <item>pdc_ccd_keepalive_en:on</item>
+                    </item>
+                    <item key="0">
+                        <item>gsc_ccd_keepalive_en:off</item>
+                        <item>pdc_ccd_keepalive_en:off</item>
+                    </item>
+                </item>
+            </content>
+        </params>
+    </control>
+    <control>
+        <name>gsc_ccd_keepalive_en</name>
+        <doc>Internal-only command to set rddkeepalive on the GSC</doc>
+        <params cmd="get" subtype="ccd_keepalive_en" interface="9" drv="cr50" map="onoff" />
+        <params cmd="set" subtype="ccd_keepalive_en" interface="9" drv="cr50" map="onoff" />
+    </control>
+    <control>
+        <name>pdc_ccd_keepalive_en</name>
+        <doc>
+            Internal-only command to set PDC SBU mux mode for CCD.
+            Use `ccd_keepalive_en` instead.
+        </doc>
+        <params cmd="get" subtype="pdc_ccd_keepalive_en" interface="10" drv="ec" map="onoff" />
+        <params cmd="set" subtype="pdc_ccd_keepalive_en" interface="10" drv="ec" map="onoff" />
+    </control>
+</root>
