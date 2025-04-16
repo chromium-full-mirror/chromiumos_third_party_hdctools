@@ -19,6 +19,7 @@ boards. The tools in this repository are only supported in the
 
 *   [`servod`: Daemon for Servo](./docs/servod.md)
 *   [`servod` FAQ](./docs/servod_faq.md)
+*   [Writing XML data files](./docs/servod_data.md)
 
 ## Closed Case Debugging (CCD)
 
