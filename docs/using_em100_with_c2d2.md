@@ -63,9 +63,9 @@ This method applies only to Intel platforms.
 
 * Connect [em100] to the C2D2 header on the DUT.
 * Start servod (optional - use only if access to AP console is required).
-    ```bash
-    (Inside chroot) sudo servod -b <variant_board>
-    ```
+```bash
+(HOST) $ start-servod -- -b <variant_board>
+```
 * Flash and Emulate.
     ```bash
     cd ~/em100

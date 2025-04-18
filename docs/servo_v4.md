@@ -156,7 +156,7 @@ It's intended to be mostly transparent, but there are some differences.
 Most functionality is exported through `dut-control`.
 
 ```bash
-$  start-servod -b <board> -s <serial>
+(HOST) $ start-servod -b <board> -s <serial>
 ```
 
 To use with a specific board, you can connect a servo_micro to the "uServo"
@@ -165,62 +165,60 @@ which will load the board config and control both Servo v4 and Servo Micro (or
 GSC).
 
 ```bash
-$ start-servod -b [board] -s [serialno printed on servo v4 sticker]
+(HOST) $ start-servod -b [board] -s [serialno printed on servo v4 sticker]
 ```
 
 ### Recipes
 
-#### Connect to Servo console without servod
-
-Connect to Servo v4 Console:
+#### Connect to Servo_v4 console with Servod
 
 ```bash
-(chroot) $ usb_console -d 18d1:501b
+(HOST) $ minicom -D "$(dut-control -- -o servo_v4_uart_pty)"
 ```
 
-Connect to Servo Micro Console:
+#### Connect to Servo consoles without servod
+
+When Servos are plugged in, it creates several console endpoints starting at
+`/dev/ttyUSB0` and incrementing based on the hardware present. If you connect
+to these you can directly interact with the Servo firmware STM32 or DUT shells.
+Not all shells will be active depending on device setup.
 
 ```bash
-(chroot) $ usb_console -d 18d1:501a -i 3
-```
-
-Connect to GSC Console:
-
-```bash
-#H1/Cr50
-(chroot) $ usb_console -d 18d1:5014
-# D2/Ti50
-(chroot) $ watch -n 1 "lsusb | grep 18d1:504A"
+(HOST) $ minicom -D /dev/ttyUSB0
+> version
+Chip:   stm stm32f07x
+Board:  3
+RO:     servo_v4p1_v2.0.24151-03b2123fb
 ```
 
 #### Switch SD to Host
 
 ```bash
-$ dut-control -- sd_en:on sd_pwr_en:on sd_mux_sel:servo_sees_usbkey host_sd_usb_mux_en:on host_sd_usb_mux_sel:sd
+(HOST) $ dut-control -- sd_en:on sd_pwr_en:on sd_mux_sel:servo_sees_usbkey host_sd_usb_mux_en:on host_sd_usb_mux_sel:sd
 ```
 
 #### Switch SD to DUT
 
 ```bash
-$ dut-control -- sd_en:on sd_pwr_en:on sd_mux_sel:dut_sees_usbkey
+(HOST) $ dut-control -- sd_en:on sd_pwr_en:on sd_mux_sel:dut_sees_usbkey
 ```
 
 #### Disable SD
 
 ```bash
-$ dut-control -- sd_en:off sd_pwr_en:off
+(HOST) $ dut-control -- sd_en:off sd_pwr_en:off
 ```
 
 #### Switch USB3 to Host
 
 ```bash
-$ dut-control -- usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
+(HOST) $ dut-control -- usb3_mux_en:on usb3_mux_sel:servo_sees_usbkey usb3_pwr_en:on host_sd_usb_mux_en:on host_sd_usb_mux_sel:usb
 ```
 
 #### Switch USB3 to DUT
 
 ```bash
-$ dut-control -- usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
+(HOST) $ dut-control -- usb3_mux_en:on usb3_mux_sel:dut_sees_usbkey usb3_pwr_en:on
 ```
 
 ### Disable/Enable [SuzyQ] wiring (debug accessory mode)
@@ -232,13 +230,13 @@ Type-C Servo v4 only
 <!-- mdformat on -->
 
 ```bash
-$ dut-control -- servo_v4_dts_mode:off [on]
+(HOST) $ dut-control -- servo_v4_dts_mode:off [on]
 ```
 
 #### Connect remotely
 
 ```bash
-$ dut-control -- --host XXX --port YYY
+(HOST) $ dut-control -- --host XXX --port YYY
 ```
 
 ### Disable/Enable Chargethrough
@@ -250,7 +248,7 @@ Type-C Servo v4 only
 <!-- mdformat on -->
 
 ```bash
-$ dut-control -- servo_v4_role:snk [src]
+(HOST) $ dut-control -- servo_v4_role:snk [src]
 ```
 
 ## Firmware flashing and reading
@@ -285,12 +283,12 @@ start-servod and servo_updater scripts that are in hdctools repo (repo sync)
 **Update to latest stable firmware:**
 
 ```bash
-$ servo_updater -- -b servo_v4
+(HOST) $ servo_updater -- -b servo_v4
 ```
 
 **Rollback to previous stable version if needed:**
 ```bash
-$ servo_updater -- -b servo_v4 -c prev --allow-rollback
+(HOST) $ servo_updater -- -b servo_v4 -c prev --allow-rollback
 ```
 ---
 Advanced usage below:
@@ -298,20 +296,20 @@ Advanced usage below:
 - Update to specific binary file
 
 ```bash
-$ servo_updater -f <file_path> -- -b servo_v4
+(HOST) $ servo_updater -f <file_path> -- -b servo_v4
 ```
 
 - Update to specific FW channel
 
 ```bash
-$ servo_updater -- -b servo_v4 -c [alpha|dev|prev|stable]
+(HOST) $ servo_updater -- -b servo_v4 -c [alpha|dev|prev|stable]
 ```
 
 - If you need to update FW, before it reaches monthly released servod image specify
 channel for servod docker distribution ("release" is default)
 
 ```bash
-$ servo_updater --updater_channel [local|latest|beta|release] -- -b servo_v4 [...]
+(HOST) $ servo_updater --updater_channel [local|latest|beta|release] -- -c [alpha|dev|prev|stable] -b servo_v4 [...]
 ```
 
 ## Enabling Case Closed Debug (CCD)
@@ -329,7 +327,7 @@ side of the device. If the command doesn't work, try the other ports.
 Connect to GSC console:
 
 ```bash
-(chroot) $ usb_console -d 18d1:5014
+(HOST) $ minicom -D "$(dut-control -- -o gsc_uart_pty)"
 ```
 
 Check the GSC FW version in the GSC console:

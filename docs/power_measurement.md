@@ -46,47 +46,43 @@ for Sweetberry. See [this example][2] for configuration for Servo.
 There are two ways to write Sweetberry configuration files. See
 [`servo_sweetberry_rails_addr.py`][3] and [`servo_sweetberry_rails_pins.py`][4].
 
-### Generate configuration file for software tool
+## Generate configuration files for software tool
 
-The `.py` files created in the previous part need to be compiled into formats
-required by the software tool.
-
-If you created or edited the `.py` configuration file, first you need to run:
+To test changes servod docker need to be build locally. To do that run:
 
 ```bash
-(chroot) $ cros_workon --host start dev-util/hdctools
+(HOST) build-servod
 ```
 
-This only needs to be run ONCE.
-
-Then, every time after you edit the `.py` configuration file, run:
+Then you need run local docker image using -c flag:
 
 ```bash
-(chroot) $ sudo emerge dev-util/hdctools
+(HOST) start-servod -c local [...]
 ```
 
-To verify that you have generated configuration files successfully, look into
-this directory:
+To verify that you have generated configuration files successfully run servo container
+in sleep mode and open its bash:
 
 ```bash
-(chroot) $ cd $(python -c 'import site; print(site.getsitepackages()[-1])')/servo/data/
+(HOST) start-servod -c local --sleep -n check
+(HOST) docker exec -it check-docker_servod bash
+(INSIDE DOCKER) ls ./usr/local/lib/python3.11/dist-packages/servo/data/
 ```
 
-File format: `.xml` for servod, `.board` and `.scenario` for powerlog.
+Note: adjust python version when necessary.
 
 ## Software tool to measure power
 
-With servod moved to outside of chroot, build servod after generating
-configuration and start servod with the local build:
+If introduced custom changes build servod and start-servod with the local build:
 
 ```bash
-(outside) $ build-servod
+(HOST) $ build-servod
 
 # For setup with on-board INA chip
-(outside) $ start-servod -c local -p $PORT_NUMBER --board $BOARD -- --config $CONFIG_FILE.xml
+(HOST) $ start-servod -c local -p $PORT_NUMBER --board $BOARD -- --config $CONFIG_FILE.xml
 
 # For setup with sweetberry only
-(outside) $ start-servod -c local -p $PORT_NUMBER -- --config $CONFIG_FILE.xml
+(HOST) $ start-servod -c local -p $PORT_NUMBER -- --config $CONFIG_FILE.xml
 ```
 
 Note that `$CONFIG_FILE.xml` is generated in the previous step. Both `dut-power`
@@ -146,10 +142,10 @@ factory).
 Recommended, for users who only want measurements in power.
 
 ```bash
-(outside) $ dut-power -- [arguments]
+(HOST) $ dut-power -- [arguments]
 
 # Example arguments for setup with sweetberry only
-(outside) $ dut-power -- --vbat-rate 0 -t 5
+(HOST) $ dut-power -- --vbat-rate 0 -t 5
 ```
 
 `dut-power` queries the selected servod to read power measurements from the
@@ -233,54 +229,54 @@ Config                    | Context
 
 1.  Create helper variable, without `ppvar_vbat`.
 
-    ```bash
-    (outside) $ mv=$(dut-control -- bus_voltage_rails | cut -f 2 -d: | tr -d ',')
-    (outside) $ ma=$(dut-control -- current_rails | cut -f 2 -d: | tr -d ',')
-    (outside) $ mw=$(dut-control -- power_rails | cut -f 2 -d: | tr -d ',')
-    (outside) $ cfg_reg=$(echo $mv | sed 's/_mv/_cfg_reg/g')
-    ```
+```bash
+(HOST) $ mv=$(dut-control -- bus_voltage_rails | cut -f 2 -d: | tr -d ',')
+(HOST) $ ma=$(dut-control -- current_rails | cut -f 2 -d: | tr -d ',')
+(HOST) $ mw=$(dut-control -- power_rails | cut -f 2 -d: | tr -d ',')
+(HOST) $ cfg_reg=$(echo $mv | sed 's/_mv/_cfg_reg/g')
+```
 
 2.  Configure on-board ADCs (everytime after running `servod`).
 
-    ```bash
-    (outside) $ for cfg in $cfg_reg ; do dut-control -- $cfg:regular_power $cfg; done
-    ```
+```bash
+(HOST) $ for cfg in $cfg_reg ; do dut-control -- $cfg:regular_power $cfg; done
+```
 
     Or
 
-    ```bash
-    (outside) $ for cfg in $cfg_reg ; do dut-control -- $cfg:low_power $cfg; done
-    ```
+```bash
+(HOST) $ for cfg in $cfg_reg ; do dut-control -- $cfg:low_power $cfg; done
+```
 
 3.  Measure each power rail once.
 
-    ```bash
-    (outside) $ dut-control -- $mv
-    (outside) $ dut-control -- $ma
-    (outside) $ dut-control -- $mw
-    ```
+```bash
+(HOST) $ dut-control -- $mv
+(HOST) $ dut-control -- $ma
+(HOST) $ dut-control -- $mw
+```
 
     And
 
-    ```bash
-    (outside) $ dut-control -- avg_ppvar_vbat_mw
-    (outside) $ dut-control -- avg_ppvar_vbat_ma
-    (outside) $ dut-control -- avg_ppvar_vbat_mw
-    ```
+```bash
+(HOST) $ dut-control -- avg_ppvar_vbat_mw
+(HOST) $ dut-control -- avg_ppvar_vbat_ma
+(HOST) $ dut-control -- avg_ppvar_vbat_mw
+```
 
     Or
 
-    ```bash
-    (outside) $ dut-control -- ppvar_vbat_mv
-    (outside) $ dut-control -- ppvar_vbat_ma
-    (outside) $ dut-control -- ppvar_vbat_mw
-    ```
+```bash
+(HOST) $ dut-control -- ppvar_vbat_mv
+(HOST) $ dut-control -- ppvar_vbat_ma
+(HOST) $ dut-control -- ppvar_vbat_mw
+```
 
 4.  Measure power for 1 second 30 times.
 
-    ```bash
-    (outside) $ dut-control -- -t 30 -z 1000 $mw | grep @@ | cut -b 6-
-    ```
+```bash
+(HOST) $ dut-control -- -t 30 -z 1000 $mw | grep @@ | cut -b 6-
+```
 
 ### powerlog
 

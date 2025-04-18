@@ -323,8 +323,8 @@ Name                      Image      Board   Model     Servo Serial             
 
 Then you can stop one a container by running
 
-```text
-stop-servod  -n 1700778745
+```bash
+stop-servod -n 1700778745
 ```
 
 Until you have only one servod container running. If you wish to have multiple
@@ -335,14 +335,14 @@ containers it is best to explicitly name them with the -n parameter.
 Start your servod container with the directory with the firmware to flash
 mounted so something like:
 
-```text
-start-servod --channel=release --mount=$HOME/firmware_build_output:/tmp/firmware_to_flash -n flashing_servod
+```bash
+start-servod --mount=$HOME/firmware_build_output:/tmp/firmware_to_flash -n flashing_servod
 ```
 
 You then have to enter the docker container ( since you named it we do not need
 to do a docker ps )
 
-```text
+```bash
 docker exec -it flashing_servod-docker_servod bash
 ```
 
@@ -351,7 +351,7 @@ should be able to use flash\_ec or any any other normal firmware flashing
 commands.
 
 Alternatively, you can execute the flashing command directly, e.g.
-```shell
+```bash
 start-servod --channel=release --mount=chromiumos/src/platform/ec:/tmp/ec -n flashing_servod
 docker exec -it flashing_servod-docker_servod /tmp/ec/util/flash_ec --board atlas
 ```
@@ -362,13 +362,13 @@ Start your servod container with -p [PORT] parameter, which would map internal X
 port to specific port number on the host. Then you should be able to run TAST or FAFT
 tests as usual.
 
-```text
+```bash
 tast run -var=servo=localhost:<PORT> <DUT_IP> example.ServoEcho
 ```
 
 or
 
-```text
+```bash
 test_that --autotest_dir <TESTS_PATH> --board=<BOARD> <DUT_IP> --args "servo_host=localhost servo_port=<PORT>" f:.*firmware_ConsecutiveBoot/control
 ```
 
@@ -376,14 +376,14 @@ test_that --autotest_dir <TESTS_PATH> --board=<BOARD> <DUT_IP> --args "servo_hos
 
 You need to change the device limit on number of pty’s
 
-```text
+```bash
 sudo bash -c 'echo "kernel.pty.max = 8096" >> /etc/sysctl.conf'
 sudo sysctl -p
 ```
 
 You should be able to check the setting has been applied by running
 
-```text
+```bash
 cat /proc/sys/kernel/pty/max 5120
 ```
 
@@ -396,13 +396,13 @@ often required.
 
 To validate your docker is setup correctly you should be able to run the command:
 
-```text
+```bash
 docker run -it hello-world
 ```
 
 With no errors and see an output similar to this:
 
-```text
+```bash
 Hello from Docker!
 This message shows that your installation appears to be working correctly.
 
@@ -471,7 +471,7 @@ connected to populate the cache.
 
 Then when disconnected you can add the --allow-offline option to the command line
 
-```text
+```bash
 start-servod --allow-offline  [ other start-servod options ]
 ```
 
@@ -488,7 +488,7 @@ choosing on the host.
 
 As an example:
 
-```text
+```bash
 start-servod -p 9999
 ```
 ### start-servod sent me here after authenticating with the registry failed
@@ -511,7 +511,7 @@ If this didn't help, please file an issue.
 The logs are in a docker volume named ${container_name}_logs. You can see the
 path by running:
 
-```shell
+```bash
 # Run servod-ps to see the container name
 container_name=1700772381
 docker volume inspect ${container_name}_log

@@ -31,10 +31,10 @@ Fun fact! You don't actually need a Flex DUT to run servo with the reven
 overlay. This is because there is no way for servod to detect if a Flex DUT is
 connected to the board.
 
-To run servo on flex, use one of the following commands within a chroot:
-```
-sudo servod --b reven
-sudo servod --b reven --c reven_config.xml
+To run servo on flex, use one of the following commands:
+```bash
+(HOST) $ start-servod -b reven
+(HOST) $ start-servod -b reven --mount /path/to/reven_config:/tmp -- -c /tmp/reven_config.xml
 ```
 
 The purpose of `reven_config.xml` is to provide servo with any additional
@@ -63,16 +63,16 @@ are not available for Flex.
 Here are some commands that are available for Flex:
 
 ### Controlling the power switch
-```
-dut-control -- power_state:on
-dut-control -- power_state:off
-dut-control -- power_state:reset
+```bash
+(HOST) $ dut-control -- power_state:on
+(HOST) $ dut-control -- power_state:off
+(HOST) $ dut-control -- power_state:reset
 ```
 
 ### Controlling the usb mux direction
-```
-dut-control -- image_usbkey_direction:dut_sees_usbkey
-dut-control -- image_usbkey_direction:servo_sees_usbkey
-dut-control -- second_usbkey_direction:dut_sees_usbkey
-dut-control -- second_usbkey_direction:servo_sees_usbkey
+```bash
+(HOST) $ dut-control -- image_usbkey_direction:dut_sees_usbkey
+(HOST) $ dut-control -- image_usbkey_direction:servo_sees_usbkey
+(HOST) $ dut-control -- second_usbkey_direction:dut_sees_usbkey
+(HOST) $ dut-control -- second_usbkey_direction:servo_sees_usbkey
 ```

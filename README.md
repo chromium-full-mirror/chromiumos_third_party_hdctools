@@ -2,7 +2,8 @@
 
 This repository contains source code and documentation for the Servo debug
 boards. The tools in this repository are only supported in the
-[CrOS SDK chroot][Developer guide] or the [hdctools Docker container].
+[CrOS SDK chroot][Developer guide] or the HDCTools Docker container. See:
+[Servod outside Chroot](./docs/servod_outside_chroot.md).
 
 [TOC]
 
