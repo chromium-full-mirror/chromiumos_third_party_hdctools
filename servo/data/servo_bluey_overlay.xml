@@ -78,4 +78,8 @@
                    ap_flash_select:off cold_reset:off spi_hold:off"
       />
   </control>
+  <control>
+    <name>ec_boot_mode</name>
+    <params clobber_ok="patch" od="PP" map="onoff"></params>
+  </control>
 </root>
