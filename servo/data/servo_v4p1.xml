@@ -592,7 +592,7 @@
     <name>servo_pd_comm</name>
     <doc>PD communication for DUT port on servo_v4</doc>
     <params subtype="servo_v4_pd_comm" interface="26" drv="ec3po_servo_v4"
-    input_type="str"></params>
+    input_type="str" choices="^(on|off)$"></params>
   </control>
   <map>
     <name>pdrole</name>
@@ -675,5 +675,11 @@
     <name>ppdut5_mw</name>
     <alias>vbus_power</alias>
     <params clobber_ok="patch"></params>
+  </control>
+  <control>
+    <name>usbc_charging</name>
+    <doc>USB-C charging without PD</doc>
+    <params interface="26" drv="ec3po_servo_v4" subtype="usbc_charging"
+    input_type="str" choices="^(1A5|3A0|usb)$"></params>
   </control>
 </root>
