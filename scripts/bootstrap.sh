@@ -17,7 +17,7 @@ if [ -f "/usr/bin/glinux-updater" ]; then
     echo "Docker is not running see go/servod for install instructions."
     exit 1
   fi
-  if ! groups ${USER} | grep -qw docker; then
+  if ! groups "${USER}" | grep -qw docker; then
     echo "${USER} is not in the group docker see go/installdocker#sudoless-docker."
     echo "remember to reboot after following the instructions."
     exit 1

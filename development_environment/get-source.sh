@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+set -e
+
 git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
 
 function setup_git() {
@@ -10,16 +12,16 @@ function setup_git() {
     git config --global user.email "${2}"
     git config --global user.name "${3}"
     git config --local remote.origin.review https://chromium-review.googlesource.com
-    f=`git rev-parse --git-dir`/hooks/commit-msg ; mkdir -p $(dirname $f)
-    curl -Lo $f https://gerrit-review.googlesource.com/tools/hooks/commit-msg
-    chmod +x $f
+    f=$(git rev-parse --git-dir)/hooks/commit-msg ; mkdir -p "$(dirname "${f}")"
+    curl -Lo "${f}" https://gerrit-review.googlesource.com/tools/hooks/commit-msg
+    chmod +x "${f}"
 }
 
-read -p "Enter Your Email (chromium.org if you have otherwise google.com): "  email
-read -p "Enter your first and last name for Git to use in reviews "  name
+read -rp "Enter Your Email (chromium.org if you have otherwise google.com): "  email
+read -rp "Enter your first and last name for Git to use in reviews "  name
 
 for repo in [ "hdctools" ]; do
-    setup_git ${repo} "${email}" "${name}"
+    setup_git "${repo}" "${email}" "${name}"
 done
 
 # Setup pre-commit
