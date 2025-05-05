@@ -77,5 +77,3 @@ After all stages or potential rollback always remember about monitoring/reschedu
 
 
 Note: this change should not lead to any actual action, as devices would already have proper FW installed, just logical clean-up in UFS.
-
-
