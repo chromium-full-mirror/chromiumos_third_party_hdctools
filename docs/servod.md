@@ -11,25 +11,22 @@ To build your changes to `servod` (board overlays, python code, etc), run the
 following command:
 
 ```bash
-(chroot) $ update_chroot
+(HOST) $ build-servod
 ```
 
-If you don't run `update_chroot` after every `repo sync`, then manually emerging
-hdctools will put your chroot into an unsupported state inconsistent with any
-tested or supported sync point. With this caveat in mind, manually emerging is
-faster than running `update_chroot`:
+You can run it by adding the local tag with your normal launch arguments
+following it. For instance:
 
 ```bash
-(chroot) $ cros_workon --host start dev-util/hdctools
-(chroot) $ sudo emerge dev-util/hdctools
+(HOST) $ start-servod -c local [...]
 ```
 
 ## Testing Your Changes
 ### Unit Tests
-To run unit tests on the hdctools currently installed in chroot:
+
+To run unit tests on the hdctools on the local changes you can do the following:
 ```bash
-(chroot) $ cd /usr/lib64/python3.6/site-packages # TODO(b/268735246): remove
-(chroot) $ sudo python3 -m pytest servo/tests/unit
+(HOST) $ run-servod-tests -c local
 ```
 
 ### Running Servod Manually
@@ -49,15 +46,15 @@ and power works for the DUT)
 
 Then start servod via this command:
 ```bash
-(chroot) $ sudo servod -b lulu
+(HOST) $ start-servod -b lulu
 ```
 Adding a `-s` flag allows you to specify the serial number of your servo.
 
 Servod is typically controlled via various `dut-control` commands.
-In a separate chroot, while servod is running, try running the following:
+In a separate terminal, while servod is running, try running the following:
 ```bash
-(chroot) $ dut-control power_state:off
-(chroot) $ dut-control power_state:on
+(HOST) $ dut-control -- power_state:off
+(HOST) $ dut-control -- power_state:on
 ```
 
 Most features of servod are accessed this way by the user.
@@ -70,7 +67,7 @@ Servo code is located in `src/third_party/hdctools` in the cros repo.
 
 After making your changes, to create a CL, run the following command:
 ```bash
-(local) $ repo upload --cbr .
+(HOST) $ repo upload --cbr .
 ```
 
 ## Terminology
@@ -124,7 +121,7 @@ requests) running and executing controls with the help of physical servo devices
 
 The `servod` instance is invoked with a couple of implicit configuration files
 (like `common.xml`) and some explicit configuration files (like when invoking
-`sudo servod -b lulu -c lulu_r2.xml`). These configuration files define the
+(HOST) $ start-servod -b lulu -- -c lulu_r2.xml`). These configuration files define the
 controls this servod instance can handle, and configure how to execute them.
 
 ### What happens when we type dut-control ec_board (birds-eye view):

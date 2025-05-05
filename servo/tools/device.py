@@ -5,8 +5,6 @@
 """Device tool to manage the (usb) servo device."""
 
 import collections
-import os
-import subprocess
 import time
 
 import usb
@@ -19,10 +17,6 @@ import servo.utils.usb_hierarchy as uh
 # VID to find all servo devices.
 SERVO_VID = 0x18D1
 
-# List of PID supported for power-cycle. For now, it's only v4 and v4p1.
-# 0x520d: v4p1, 0x501b: v4
-PWR_CYCLE_PIDS = [0x520D, 0x501B]
-
 
 class DeviceError(Exception):
     """Device tool error class."""
@@ -30,12 +24,6 @@ class DeviceError(Exception):
 
 class Device(tool.Tool):
     """Class to implement various subtools to manage a servo devices."""
-
-    # Lookup table for action on uhubctl.
-    ACTION_DICT = {"on": 1, "off": 0, "reset": 2}
-
-    # Repetitions to perform on the uhubctl command to get it to trigger.
-    REPS = 100
 
     # Time to sleep after reset to let kernel handle sysfs files
     RESET_DEBOUNCE_S = 2
@@ -49,9 +37,6 @@ class Device(tool.Tool):
     # Time to sleep and attempts to interact with servo console after reboot.
     REBOOT_SLEEP_S = 1
     REBOOT_TIMEOUT_ATTEMPTS = 4
-
-    # Time to sleep after power off
-    PWR_OFF_SLEEP_S = 1
 
     # Dictionary to look up the device's servo console USB interface number.
     # TODO(coconutruben): remove this once we have servo device templates that
@@ -171,118 +156,6 @@ class Device(tool.Tool):
         except (ValueError, usb.core.USBError) as e:
             self.error("Device with serial %r has USB comms issues. %s", args.serial, e)
 
-    def _run_uhubctl_command(self, hub, port, action):
-        """Build |uhubctl| command performing |action| on |hub|'s |port|.
-
-        Args:
-          hub: hub-port path i.e. /sys/bus/usb/devices/ dirname of the hub
-          port: str, port number on the hub
-          action: one of 'on', 'off', 'reset'
-        """
-        cmd = self._build_and_assert_uhubctl(hub=hub, port=port)
-        if action not in self.ACTION_DICT:
-            self.error("Action %s unknown", action)
-        action_number = self.ACTION_DICT[action]
-        # expand command to perform the uhubctl action.
-        cmd = cmd + ["-a", str(action_number), "-r", str(self.REPS)]
-        try:
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            self.error(
-                'Error performing the uhubctl command. ran: "%s". %s.',
-                " ".join(cmd),
-                str(e),
-            )
-
-    def _build_and_assert_uhubctl(self, hub=None, port=None):
-        """Assert uhubctl exists and hub/port are known to it (if provided).
-
-        Args:
-          hub: hub-port path i.e. /sys/bus/usb/devices/ dirname of the hub
-          port: str, port number on the hub
-
-        Returns:
-          cmd: a list of args to call the uhubctl command (at hub/port if provided)
-        """
-        cmd = ["sudo", "uhubctl"]
-        try:
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except subprocess.CalledProcessError as e:
-            self.error("uhubctl not available. Be sure to run as sudo. %s", str(e))
-        if hub is not None and port is not None:
-            # expand the command to check for hub and port existing.
-            # casting port to str to ensure we don't accidentally pass an int.
-            cmd = cmd + ["-l", hub, "-p", str(port)]
-            try:
-                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError as e:
-                self.error(
-                    "hub %s with port %s unknown to uhubctl. "
-                    "Be sure the hub is a supported smart hub. %s",
-                    hub,
-                    port,
-                    str(e),
-                )
-        return cmd
-
-    def _get_hub_and_port(self, dev_path, pid):
-        """Get the external hub and port paths for a given |pid|.
-
-        This is its own function, as different devices might have a different
-        internal topology. This method has to guarantee to implement all pids
-        in PWR_CYCLE_PIDS.
-
-        Args:
-          dev_path: /sys/bus/usb/devices/ path for servo
-          pid: servo pid
-
-        Returns:
-          (hub, port, hub3,) tuple, where hub is the external hub that the
-                             servo is on port is the port on that hub that the
-                             servo is on. hub3 is the usb3 virtual hub of the same
-                             physical hub. It will be None if it does not exist
-                             (hub only enumerated in usb2)
-        """
-        # NOTE: if a servo device or configuration should be supported, this is the
-        # spot to implement it. If more devices get implemented here, make sure to
-        # document the setup under which the user can expect it to work and for the
-        # code to guard against other setups.
-        # For example: if a servo micro is attached to a servo v4, the code to reset
-        # the micro should not just reset the hub that the v4 is hanging on, as that
-        # would reset both.
-        # TODO(coconutruben): make pid permission more robust once we have device
-        # templates.
-        if pid in PWR_CYCLE_PIDS:
-            # For servo v4(p1), the dev_path points to the stm that's hanging on
-            # an internal usb hub.
-            internal_hub = uh.Hierarchy.GetSysfsParentHubStub(dev_path)
-            smart_hub_path = uh.Hierarchy.GetSysfsParentHubStub(internal_hub)
-            if smart_hub_path:
-                # The internal hub is hanging on the smart hub's port. So the last
-                # index is the port number.
-                port = internal_hub.rsplit(".", 1)[-1]
-                smart_hub = os.path.basename(smart_hub_path)
-                # |internal_hub| is always on usb2. Let's see if this hub also
-                # enumerated on usb3.
-                smart_hub_bus, smart_hub_port_path = smart_hub.split("-")
-                busnum = int(smart_hub_bus)
-                busnum3 = uh.Hierarchy.ComplementBusNum(busnum)
-                smart_hub3 = None
-                if busnum3:
-                    smart_hub3 = "%d-%s" % (busnum3, smart_hub_port_path)
-                    smart_hub3_path = os.path.join(
-                        os.path.dirname(smart_hub_path), smart_hub3
-                    )
-                    if not os.path.exists(smart_hub3_path):
-                        # set back to None
-                        smart_hub3 = None
-                return (smart_hub, port, smart_hub3)
-            self.error(
-                "Device does not seem to be hanging on a (smart) hub. %r", dev_path
-            )
-
-        self.error("Unimplemented pid: %04x", pid)
-
     def _check_devnum_reset(self, dev_path, devnum, action):
         """Check that the |devnum| has changed after a reset/reboot/power-cycle
 
@@ -321,63 +194,6 @@ class Device(tool.Tool):
                 self.MAX_REINIT_SLEEP_S,
             )
 
-    def power_cycle_force(self, args):
-        """Perform a full power-cycle with off/on rather than just reset."""
-        self.power_cycle(args, force=True)
-
-    def power_cycle(self, args, force=False):
-        """Perform a power-cycle on the device using uhubctl.
-
-        uhubctl exposes multiple knobs to control the power-cycling of a port.
-        This method uses the 'reset' knob by default. However, if the user
-        specifies |force|=True, it will issue an 'off' request, wait for
-        |PWR_OFF_SLEEP_S| seconds, before issuing an 'on' request. For some hubs
-        this has proven itself more reliably than a reset request.
-
-        Args:
-          force: bool, whether to perform a full power-cycle or just a reset
-        """
-        self._build_and_assert_uhubctl()
-        dev_path = self._usb_path(args.serial)
-        if not dev_path:
-            self.error("Device with serial %r not found.", args.serial)
-        pid = uh.Hierarchy.ProductIDFromSysfs(dev_path)
-        if pid not in PWR_CYCLE_PIDS:
-            self.error(
-                "pid: 0x%04x currently not supported for usb power cycling. "
-                "Please use one of: %s",
-                pid,
-                ", ".join("0x%04x" % p for p in PWR_CYCLE_PIDS),
-            )
-        # get devnum, and store it
-        devnum = uh.Hierarchy.DevNumFromSysfs(dev_path)
-        # extract the hub and check whether it's on uhubctl
-        hub, port, hub3 = self._get_hub_and_port(dev_path, pid)
-        if force:
-            # The sandwich (if usb2 and usb3 are available) is to first turn
-            # off usb2 and then usb3, before unrolling that operation.
-            self._run_uhubctl_command(hub=hub, port=port, action="off")
-            if hub3 is not None:
-                self._run_uhubctl_command(hub=hub3, port=port, action="off")
-            time.sleep(self.PWR_OFF_SLEEP_S)
-            if hub3 is not None:
-                self._run_uhubctl_command(hub=hub3, port=port, action="on")
-            self._run_uhubctl_command(hub=hub, port=port, action="on")
-        else:
-            # Just perform a reset. Do not perform a reset on hub3 and hub, as
-            # this will lead to a double reset. For reset, rely on the uhubctl
-            # internal duality management.
-            self._run_uhubctl_command(hub=hub, port=port, action="reset")
-
-        self._check_devnum_reset(dev_path, devnum, "power-cycle")
-        # At the end, no error was encountered, so indicate belief that reset was
-        # successful.
-        self._logger.info(
-            "Successfully power-cycled device with serial %r. "
-            "(At least reasonably confident).",
-            args.serial,
-        )
-
     def add_args(self, tool_parser):
         """Add the arguments needed for this tool."""
         subcommands = tool_parser.add_subparsers(dest="command")
@@ -386,12 +202,6 @@ class Device(tool.Tool):
             "--serial",
             required=True,
             help="serial of servo device on the system.",
-        )
-        subcommands.add_parser(
-            "power-cycle-force", help="Issue full off/on sequence rather than reset."
-        )
-        subcommands.add_parser(
-            "power-cycle", help="Power cycle device using uhubctl if on smart hub"
         )
         subcommands.add_parser("reboot", help="Reboot the device MCU")
         subcommands.add_parser(

@@ -211,7 +211,7 @@ functions (the `Servod` class' methods) through that proxy.
 
 Servod is a daemon process that supports servo devices. Not every hardware tool should be supported through servod. If you are not sure, it is ideal to consult ChromeOS Hardware Tools team before implementing.
 
-Since servod is baked into the chroot environment, any commits checked into the main branch of /third-party/hdctools are visible to all servod users. Therefore, any major changes, including adding a new device, should be done in a development branch, in order to minimize the risk of introducing breaking changes. Please contact ChromeOS Hardware Tools team if you need to open a new development branch.
+Any commits checked into the main branch of /third-party/hdctools are visible to all servod users. Therefore, any major changes, including adding a new device, should be done in a development branch, in order to minimize the risk of introducing breaking changes. Please contact ChromeOS Hardware Tools team if you need to open a new development branch.
 
 If the new device is similar to any device supported by servod right now, above, you can read servod code to understand how it is supported. Servod currently supports the following devices
 *   Open case debuggers (Servo Micro, C2D2(deprecated), Servo V2(deprecated))

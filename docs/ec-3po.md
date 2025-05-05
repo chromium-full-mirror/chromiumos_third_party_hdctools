@@ -19,10 +19,10 @@ it. EC-3PO was grafted into `servod` on Feb 7th 2016. If you're not running
 `util/ec3po` directory from the EC checkout. You will need to provide the PTY
 that you get from elsewhere though.
 
-To obtain the EC console PTY, inside the chroot run:
+To obtain the EC console PTY, run:
 
-```shell
-$ dut-control -- ec_uart_pty
+```bash
+(HOST) $ dut-control -- ec_uart_pty
 ```
 
 **NOTE: It's important to use `dut-control` to query the PTY instead of just

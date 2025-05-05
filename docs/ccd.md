@@ -82,9 +82,9 @@ monitor `lsusb` for GSC device enumeration:
 
 ```bash
 # H1/Cr50
-(chroot) $ watch -n 1 "lsusb | grep 18d1:5014"
+(HOST) $ watch -n 1 "lsusb | grep 18d1:5014"
 # D2/Ti50
-(chroot) $ watch -n 1 "lsusb | grep 18d1:504a"
+(HOST) $ watch -n 1 "lsusb | grep 18d1:504a"
 ```
 ***
 <!-- mdformat on -->
@@ -127,28 +127,26 @@ has a keyboard emulator.
 ## Using CCD
 
 To use most of the features of CCD, on your Linux workstation you need to
-[build ChromiumOS][Developer Guide] and create a chroot environment. It’s
-possible to use a subset of CCD without that; see the
-[Raw Access section](#raw-access).
+configure [Servod outside Chroot](./servod_outside_chroot.md).
 
 The [hdctools] \(Chrome OS Hardware Debug & Control Tools) package contains
-several tools needed to work with `servod`. Make sure the latest version is
-installed in your chroot:
+several tools needed to work with `servod`. Chroot and Docker both will
+automatically check for updates periodically but you can force an update:
 
 ```bash
-(chroot) $ update_chroot
+(HOST) $ start-servod --force_update
 ```
 
 On your workstation, `servod` must also be running to communicate with GSC:
 
 ```bash
-(chroot) $ sudo servod -b "$BOARD"
+(HOST) $ start-servod -b "$BOARD"
 ```
 
 CPU/AP UART can be accessed by running:
 
 ```bash
-(sdk root) $ minicom -D "$(cros_sdk -- dut-control -o cpu_uart_pty)"
+(HOST) $ minicom -D "$(dut-control -- -o cpu_uart_pty)"
 ```
 
 Note that on a normal install of Chrome OS the UART is not normally used. The
@@ -160,7 +158,7 @@ reasons, but they can be added back in with a custom AP firmware.
 EC UART:
 
 ```bash
-(sdk root) $ minicom -D "$(cros_sdk -- dut-control -o ec_uart_pty)"
+(HOST) minicom -D "$(dut-control -- -o ec_uart_pty)"
 ```
 
 The console is read only, unless you have [opened CCD][GSC CCD]. The console
@@ -170,7 +168,7 @@ GSC itself has a console available, but most commands are locked by default for
 security:
 
 ```bash
-(sdk root) $ minicom -D "$(cros_sdk -- dut-control -o gsc_uart_pty)"
+(HOST) minicom -D "$(dut-control -- -o gsc_uart_pty)"
 ```
 
 #### Features
@@ -187,8 +185,8 @@ before you can use them. For information on setting up GSC CCD see the
 
 ### Raw Access {#raw-access}
 
-A subset of these features (e.g., UART lines) can be accessed without a
-`cros_sdk` chroot.
+A subset of these features (e.g., UART lines) can be accessed with consoles
+like minicom without servod running.
 
 Once the SuzyQ is plugged in, three `/dev/ttyUSB` devices will enumerate:
 

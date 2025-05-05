@@ -41,13 +41,13 @@ Workaround: Limit power to host cable supply or supply dumb high voltage and man
 * Use “servo_updater” to get baseline version
 * May also use FW from “[Known-good EC Firmware](#known-good-ec-firmware)” section.
 
-```
 Update to default firmware:
 Update your CHROOT (!!!)
 (chroot) $ update_chroot
 
-Run Servo_Updater to "default" fw
-(chroot) $ sudo servo_updater -b servo_v4p1
+Run servo to "default" fw
+```bash
+(HOST) $ servo_updater -- -b servo_v4p1
 ```
 
 ### Do I need to flash my EC?
@@ -85,9 +85,10 @@ Prebuilt images for the EC images are collected [here](https://drive.google.com/
         * 4. DUT
         * 5. (Optional) DisplayPort
 
-```
 Update to specific version:
-(chroot) $ sudo servo_updater -b servo_v4p1 -v --force -f <STM filename>
+
+```bash
+(HOST) $ servo_updater -f <STM filename> -- -b servo_v4p1 -v --force
 ```
 
 ## Building the EC (chroot)
@@ -97,17 +98,18 @@ You don‘t need to do this unless you’re developing Servo v4.1 firmware.
 Servo v4 code lives in the [EC](https://chromium.googlesource.com/chromiumos/platform/ec) and [hdctools](https://chromium.googlesource.com/chromiumos/third_party/hdctools) codebase(s). It can be built as follows:
 
 1. Build the firmware
-```
-chroot> $ cd ~/chromiumos/src/platform/ec/
-chroot> ~/chromiumos/src/platform/ec $ make BOARD=servo_v4p1 -j8
+
+```bash
+(chroot) $ cd ~/chromiumos/src/platform/ec/
+(chroot) $ ~/chromiumos/src/platform/ec $ make BOARD=servo_v4p1 -j8
 ```
 
 ec.bin appears in ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin
 
 2. Flash the firmware to the ServoV4.1
 
-```
-chroot> $ sudo servo_updater --board=servo_v4p1 -v -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin
+```bash
+(HOST) $ servo_updater -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin -- -b servo_v4p1 -v
 ```
 
 3. **Profit!**
@@ -116,15 +118,15 @@ chroot> $ sudo servo_updater --board=servo_v4p1 -v -f ~/chromiumos/src/platform/
 If you instead build in (~/chromiumos/src/third_party/hdctools) some (?) files will be here:
 
 
-```
+```bash
 (chroot) $ cd ~/chromiumos/src/third_party/hdctools/servo_mfg/binfiles
 ```
 
 ### Flash custom-built firmware to ServoV4p1
 
 
-```
-$ sudo servo_updater -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin -- --board=servo_v4p1 -v --force
+```bash
+(HOST) $ servo_updater -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin -- -board servo_v4p1 -v --force
 ```
 
 ### CCD not working out-of-box
@@ -132,7 +134,7 @@ $ sudo servo_updater -f ~/chromiumos/src/platform/ec/build/servo_v4p1/ec.bin -- 
 SnkDTS mode (CCD) is not enabled on ServoV4.1 in out-of-box firmware, unlike ServoV4.
 You need to run `cc <snkdts|srcdts> <cc1|cc2>` in ServoV4.1 EC console to get it working.
 
-```
+```bash
 (gLinux) $ sudo apt-get install minicom
 (gLinux) $ sudo minicom -D /dev/ttyUSB<tab> (to see 0… 1..2)
 (minicom) $ v<enter> (to see MCU name)
@@ -160,14 +162,20 @@ Note: [servod](servod.md) must not be running to update the firmware.
 
 The latest firmware is available in the chroot at:
 
-    /usr/share/servo_updater/firmware/servo_v4p1.bin
-    (@52961286)
+    ~/chromiumos/chroot/usr/share/servo_updater/firmware/servo_v4p1.stable.bin
 
-As of 09-15-20: servo_v4p1.bin -> servo_v4p1_v2.0.5159-529612865.bin
+As of 25-04-02: servo_v4p1.bin -> servo_v4p1_v2.0.24152-0b36eb51a.bin
 
+And within docker image release:
 
+```bash
+(HOST) $ servo_updater --updater_channel [local|latest|beta|release] -- -b servo_v4p1 -p
 ```
-(chroot) $ sudo servo_updater -f <STM filename> -b servo_v4p1 -v --force
+
+To update run:
+
+```bash
+(HOST) $ servo_updater -f <STM filename> -- -b servo_v4p1 -v --force
 ```
 
 ### [EXPERTS ONLY] Updating from Raw (flash_ec)
@@ -176,7 +184,7 @@ As of 09-15-20: servo_v4p1.bin -> servo_v4p1_v2.0.5159-529612865.bin
 * The Boot0/DFU switch near the host connector needs to switched <span style="text-decoration:underline;">before power up</span> into the position where the Blue LED will be lit in order to put the system in DFU mode.
 
 
-```
+```bash
 (chroot) $ ./util/flash_ec --board=servo_v4p1 --image <filename>
 ```
 

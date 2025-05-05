@@ -28,7 +28,7 @@ signal.signal(signal.SIGINT, signal.default_int_handler)
 HELP_MESSAGE = """
 start-servod
 
-    [-c {local,latest,beta,release}]
+    [-c {local,latest,fission-latest,beta,release}]
        local, image built on this machine.
        latest, a close to ToT build, may have bugs
        beta, used for short period of time to test next release
@@ -385,7 +385,7 @@ def start_servod(
                             continue
                         if regex_fw_uptodate.group(1) == "no":
                             regex_servod_channel = re.match(
-                                r".*:(dev|beta|release|latest)", image
+                                r".*:(dev|beta|release|latest|fission-latest)", image
                             )
                             channel = regex_servod_channel.group(1)
                             if channel == "dev":
@@ -469,7 +469,7 @@ def parse_args():
         "-c",
         "--channel",
         type=str,
-        choices=["local", "latest", "beta", "release"],
+        choices=["local", "latest", "beta", "release", "fission-latest"],
         default="local",
     )
     parser.add_argument(

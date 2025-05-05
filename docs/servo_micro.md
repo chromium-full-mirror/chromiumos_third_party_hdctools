@@ -22,7 +22,7 @@ dut hub, and muxed usb storage.
 Like other Servo boards, the Servo Micro requires [`servod`] to be running:
 
 ```bash
-$ start-servod -b [board]
+(HOST) $ start-servod -b [board]
 ```
 
 The Servo Micro connects to the servo header of the DUT in the orientation where
@@ -122,12 +122,12 @@ start-servod and servo_updater scripts that are in hdctools repo (repo sync)
 **Update to latest stable firmware:**
 
 ```bash
-$ servo_updater -- -b servo_micro
+(HOST) $ servo_updater -- -b servo_micro
 ```
 
 **Rollback to previous stable version if needed:**
 ```bash
-$ servo_updater -- -b servo_micro -c prev --allow-rollback
+(HOST) $ servo_updater -- -b servo_micro -c prev --allow-rollback
 ```
 ---
 Advanced usage below:
@@ -135,20 +135,20 @@ Advanced usage below:
 - Update to specific binary file
 
 ```bash
-$ servo_updater -f <file_path> -- -b servo_micro
+(HOST) $ servo_updater -f <file_path> -- -b servo_micro
 ```
 
 - Update to specific FW channel
 
 ```bash
-$ servo_updater -- -b servo_micro -c [alpha|dev|prev|stable]
+(HOST) $ servo_updater -- -b servo_micro -c [alpha|dev|prev|stable]
 ```
 
 - If you need to update FW, before it reaches monthly released servod image specify
 channel for servod docker distribution ("release" is default)
 
 ```bash
-$ servo_updater --updater_channel [local|latest|beta|release] -- -b servo_micro [...]
+(HOST) $ servo_updater --updater_channel [local|latest|beta|release] -- -c [alpha|dev|prev|stable] -b servo_micro [...]
 ```
 
 
@@ -168,7 +168,7 @@ servo micro code lives in the ec codebase. It can be built as follows:
 To flash a working Servo Micro:
 
 ```bash
-(chroot) $ sudo servo_updater -b servo_micro -f build/servo_micro/ec.bin
+(HOST) $ servo_updater -f build/servo_micro/ec.bin -- -b servo_micro
 ```
 
 If the flash is empty or the image is broken, you can flash the Servo Micro

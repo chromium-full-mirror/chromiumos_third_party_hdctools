@@ -1,0 +1,85 @@
+<root>
+  <include>
+    <name>servoflex_v2_r0_p50.xml</name>
+  </include>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>ti50.xml</name>
+  </include>
+  <include>
+    <name>ec_efs2.xml</name>
+  </include>
+  <include>
+    <name>gsc_lid_open.xml</name>
+  </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+    <!-- ******** Controls ******** -->
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
+    init="force_off"/>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"
+    apreset_ec_commands="apreset"/>
+  </control>
+  <!--
+    Simple property indicating what model of EC we have.  We use a Nuvoton EC
+    and the UART programmer, hence "npcx_uut".
+  -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut"/>
+  </control>
+  <!--
+    Use the power sequence to emulate the legacy servo warm_reset pin.
+    Send the power sequence command to the EC UART.
+  -->
+  <control>
+    <name>warm_reset</name>
+    <doc>warm_reset</doc>
+    <params subtype="warm_reset" interface="10" drv="ec"
+    map="onoff_i" clobber_ok=""></params>
+  </control>
+  <!--
+     TODO: check if this is still valid for bluey
+  -->
+  <control>
+    <name>ap_flash_select</name>
+    <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
+    <params subtype="ap_flash_select" interface="9" drv="cr50"
+      map="onoff" init="off" clobber_ok=""/>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <!--
+      TODO: b/288374042: Clean up might be required for bluey
+    -->
+    <alias>ccd_cpu_fw_spi</alias>
+    <!--
+      The order does matter. The device has to be put in reset with cr50 idle
+      set to active before any other configuration, so cr50 settings won't get
+      cleared by a deep sleep reset.
+    -->
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
+      set_value_1="cold_reset:on sleep:2 gsc_idle_level:active spi2_buf_en:on
+                   spi2_buf_on_flex_en:on spi2_vref:off ap_flash_select:on
+                   spi_hold:off"
+      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
+                   ap_flash_select:off cold_reset:off spi_hold:off"
+      />
+  </control>
+  <control>
+    <name>ec_boot_mode</name>
+    <params clobber_ok="patch" od="PP" map="onoff"></params>
+  </control>
+</root>
