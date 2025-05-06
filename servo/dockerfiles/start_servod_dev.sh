@@ -15,4 +15,5 @@ if [ $found_updatable -eq 1 ]; then
 	/usr/bin/fwupdtool install --plugins genesys --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d "?"
 fi
 echo "$(date --utc +\"%Y-%m-%dT%H:%M:%S.%3N%:z\")" "Starting servod"
-exec servod --host 0.0.0.0 "${1}"
+IFS=" " read -r -a args <<< "${1}"
+exec servod --host 0.0.0.0 "${args[@]}"
