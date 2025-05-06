@@ -332,7 +332,7 @@ class DetokenizeTest(unittest.TestCase):
                 )
 
                 # Open CSV by file object
-                with open(csv_file.name) as fd:
+                with open(csv_file.name, encoding="utf-8") as fd:
                     detok = detokenize.Detokenizer(fd)
 
                 self.assertEqual(

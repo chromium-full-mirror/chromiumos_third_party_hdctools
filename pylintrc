@@ -86,6 +86,7 @@ ignored-modules=
     sweetberry_preprocessor,
     usb,
     usbkm232,
+    docker,
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
@@ -490,6 +491,8 @@ disable=
     too-many-statements,
     unnecessary-lambda,
     unnecessary-lambda-assignment,
+    too-many-positional-arguments,
+    too-many-boolean-expressions,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

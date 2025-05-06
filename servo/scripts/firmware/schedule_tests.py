@@ -36,7 +36,7 @@ def run_crosfleet(board, dut_name, testname, harness):
         "dut_name:" + dut_name,
         testname,
     ]
-    subprocess.run(command)
+    subprocess.run(command, check=True)
 
 
 def main(unused_argv):
@@ -48,7 +48,7 @@ def main(unused_argv):
     )
     args = parser.parse_args()
 
-    with open(args.csv_file, "r") as csvfile:
+    with open(args.csv_file, "r", encoding="utf-8") as csvfile:
         reader = csv.reader(csvfile)
         for row in reader:
             dut_name, board = row[0], row[1]

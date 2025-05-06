@@ -298,7 +298,8 @@ class TestMetadata:
         """Ensure the call
 
         Args:
-            mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt (_type_): _description_
+            mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt (_type_): _
+                description_
             board (_type_): _description_
             model (_type_): _description_
         """

@@ -353,7 +353,7 @@ class V4Flasher:
             c.wait_for_usb(self.DUT_VIDPID)
             # Give the device enough time to come up before initializing tiny_servod.
             time.sleep(0.2)
-
+            pty = None
             if args.serial or args.atmega:
                 pty = c.setup_tinyservod(self.STM_VIDPID, 0)
 
