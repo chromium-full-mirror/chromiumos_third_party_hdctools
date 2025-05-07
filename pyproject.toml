@@ -10,3 +10,8 @@ extend-exclude = '''
   .*/servo/data/.*
 )
 '''
+
+[tool.pytest.ini_options]
+pythonpath = [
+      ".",
+]
