@@ -6,12 +6,12 @@
 export DOCKER_BUILDKIT=1
 IMAGE="servod:dev"
 set -x
-SOURCE=${BASH_SOURCE[0]}
-while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
-  SOURCE=$(readlink "$SOURCE")
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "${SOURCE}" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR=$( cd -P "$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
+  SOURCE=$(readlink "${SOURCE}")
 done
-DIR=$( cd -P "$DIR/$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+DIR=$( cd -P "${DIR}/$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
 
 if [ "$1" == "multi" ]
 then
@@ -21,9 +21,9 @@ then
 	    --buildkitd-flags '--allow-insecure-entitlement network.host --allow-insecure-entitlement security.insecure' | true
     docker buildx build \
 	    --platform=linux/arm64,linux/amd64 \
-	    -t ${IMAGE} \
+	    -t "${IMAGE}" \
 	    -o type=image \
-	    -f ${DIR}/../servo/dockerfiles/Dockerfile ${DIR}/..
+	    -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
 else
-     docker build -t ${IMAGE} -f ${DIR}/../servo/dockerfiles/Dockerfile ${DIR}/..
+     docker build -t "${IMAGE}" -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
 fi

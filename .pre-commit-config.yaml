@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 default_install_hook_types: [pre-commit, commit-msg]
-default_stages: [commit]
+default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
@@ -26,9 +26,13 @@ repos:
     rev: 24.2.0
     hooks:
       - id: black
-        language_version: python3.11
         exclude: servo/data/.*
         types: [python]
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+    -   id: shellcheck
 
   - repo: local
     hooks:
@@ -46,7 +50,7 @@ repos:
   - repo: local
     hooks:
     - id: banned-words
-      stages: [commit, commit-msg]
+      stages: [pre-commit, commit-msg]
       name: banned-words
       entry: development_environment/hooks/banned-words.py
       language: python
@@ -71,5 +75,5 @@ repos:
                 LICENSE|
                 DIR_METADATA|
                 PRESUBMIT.cfg|
-                servo_updater/.*\.json|
+                .*json|
             )$

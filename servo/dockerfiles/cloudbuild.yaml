@@ -68,6 +68,14 @@ steps:
     - /workspace
   waitFor: ['src-prep']
 
+- name: 'koalaman/shellcheck-alpine'
+  id: 'shellcheck'
+  waitFor: ['src-prep']
+  entrypoint: 'sh'
+  args:
+  - '-c'
+  - find /workspace -type f  -name *.sh -print | xargs shellcheck
+
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: bash
   args:
