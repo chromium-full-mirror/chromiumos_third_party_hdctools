@@ -53,7 +53,8 @@ class RunInsteadBase:
                         "\ngcloud auth login\n\n"
                         "Refresh the credentials and try again.\n"
                         "More reading: https://chromium.googlesource.com/chromiumos/"
-                        "third_party/hdctools/+/main/docs/servod_outside_chroot.md#start_servod"
+                        "third_party/hdctools/+/main/docs/servod_outside_chroot.md#"
+                        "start_servod"
                         "-sent-me-here-after-authenticating-with-the-registry-failed"
                     )
                     sys.exit(1)
@@ -91,6 +92,7 @@ class RunInsteadBase:
 
     def execute(self, image, passthrough_args, container_name):
         entrypoint = [self.command] + passthrough_args
+        exit_code = 0
 
         if container_name is not None:
             containers = self.client.containers.list(filters={"name": container_name})
@@ -131,8 +133,7 @@ class RunInsteadBase:
             ec = result["StatusCode"]
             cont.remove()
             return ec
-        else:
-            return exit_code
+        return exit_code
 
     def run(self):
         args, passthrough_args = self.parse_args()

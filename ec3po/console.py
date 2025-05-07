@@ -837,8 +837,7 @@ class Console:
         seq = b"\033[" + str(count).encode("ascii")
         if direction == "left":
             # Bind the movement.
-            if count > self.input_buffer_pos:
-                count = self.input_buffer_pos
+            count = min(count, self.input_buffer_pos)
             seq += b"D"
             self.logger.debug("move cursor left %d", count)
             self.input_buffer_pos -= count
@@ -1338,6 +1337,7 @@ def main(argv):
     elif opts.log_level == "critical":
         log_level = logging.CRITICAL
     else:
+        log_level = logging.INFO
         parser.error("Invalid log level. (info, debug, warning, error, critical)")
 
     # Start logging with a timestamp, module, and log level shown in each log

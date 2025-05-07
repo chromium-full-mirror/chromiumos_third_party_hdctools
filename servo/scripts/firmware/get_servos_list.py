@@ -48,14 +48,16 @@ def define_query(
     servo_fw_channels: list = ["%"],
 ) -> str:
     """
-    Constructs a SQL query to fetch DUT information from the UFS based on provided filter criteria.
+    Constructs a SQL query to fetch DUT information from the UFS based on provided
+    filter criteria.
 
     Args:
         servo_type_raws (list): List of servo types to filter by (default is all '%').
         pools (list): List of pools to filter by (default is all '%').
         states (list): List of DUT states to filter by (default is all '%').
         servo_states (list): List of servo states to filter by (default is all '%').
-        servo_fw_channels (list): List of servo firmware channels to filter by (default is all '%').
+        servo_fw_channels (list): List of servo firmware channels to filter by (default
+                                  is all '%').
 
     Returns:
         str: The constructed SQL query string.
@@ -64,15 +66,15 @@ def define_query(
         ValueError: If any of the provided filter values are invalid or unsupported.
     """
 
-    if servo_type_raws == None:
+    if servo_type_raws is None:
         servo_type_raws = ["%"]
-    if pools == None:
+    if pools is None:
         pools = ["%"]
-    if states == None:
+    if states is None:
         states = ["%"]
-    if servo_states == None:
+    if servo_states is None:
         servo_states = ["%"]
-    if servo_fw_channels == None:
+    if servo_fw_channels is None:
         servo_fw_channels = ["%"]
 
     # Validate and preprocess servo_type_raws
@@ -80,7 +82,7 @@ def define_query(
     for i in range(len(servo_type_raws)):
         if servo_type_raws[i] not in SERVO_TYPES + ALL:
             raise ValueError(f"{servo_type_raws[i]} is not a supported servo type.")
-        elif servo_type_raws[i] == "servo_v4p1":
+        if servo_type_raws[i] == "servo_v4p1":
             tmp_servo_type_raws[i] = r"servo\\_v4p1\\_%"
         elif servo_type_raws[i] == "servo_v4":
             tmp_servo_type_raws[i] = r"servo\\_v4\\_%"
@@ -214,7 +216,8 @@ def get_random_list_of_hostnames(
     Randomly selects a specified percentage of DUTs from each model group.
 
     Args:
-        hostnames_by_model (dict[str, list[list[str]]]): A dictionary of DUTs grouped by model.
+        hostnames_by_model (dict[str, list[list[str]]]): A dictionary of DUTs grouped
+                                                         by model.
         percent (int): The percentage of DUTs to select from each model.
 
     Returns:
@@ -310,14 +313,15 @@ def parse_args() -> argparse.Namespace:
 
 def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
     """
-    Defines the DUT selection logic and returns ready to use list based on the specified stage.
+    Defines the DUT selection logic and returns ready to use list based on the specified
+    stage.
 
     Args:
         args (argparse.Namespace): Parsed command-line arguments.
 
     Returns:
-        list[list[str]]: A list of lists containing DUT information (hostname, board, model, state, servo_state)
-                          based on the selected stage.
+        list[list[str]]: A list of lists containing DUT information (hostname, board,
+                         model, state, servo_state) based on the selected stage.
     """
     if args.stage == "tests":
         query = define_query(
@@ -327,7 +331,7 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         return get_hostnames(query)
     # 1st stage is ~10% of every available model within DUT_POOL_QUOTA,
     # chosen only from working devices
-    elif args.stage == "first":
+    if args.stage == "first":
         # We are choosing only from working devices, so to get ~10% of all lets use ~13%
         percent = 13
         query = define_query(
@@ -341,7 +345,7 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         return get_random_list_of_hostnames(all_hostnames_by_model, percent)
     # We need to organize roll-out for OCD servos a little different because e.g most of
     # these setups are in specialized pools, not in DUT_POOL_QUOTA
-    elif args.stage == "first-ocd":
+    if args.stage == "first-ocd":
         # We are choosing only from working devices, so to get ~10% of all lets use ~15%
         # C2D2 population is super small, so no need for 3 stages
         if "c2d2" in args.servo_type:
@@ -357,7 +361,7 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         all_hostnames_by_model = group_all_hostnames_by_model(get_hostnames(query))
         return get_random_list_of_hostnames(all_hostnames_by_model, percent)
     # 2nd stage, we increasing DUT_POOL_QUOTA to 33% and take all pools NAMED:
-    elif args.stage == "second":
+    if args.stage == "second":
         # We are choosing only from working devices and assuming ~10% is already in
         # alpha, so to get ~33% lets use 25 here
         percent = 25
@@ -379,7 +383,7 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
 
         other_pools_hostnames = get_hostnames(query_other_pools)
         return other_pools_hostnames + random_hostnames
-    elif args.stage == "second-ocd":
+    if args.stage == "second-ocd":
         # We are choosing only from working devices and assuming ~10% is already in
         # alpha, so to get ~33% in total (together with 1st stage) lets use 25 here
         if "c2d2" in args.servo_type:
@@ -396,19 +400,19 @@ def define_stage_rollout(args: argparse.Namespace) -> list[list[str]]:
         random_hostnames = get_random_list_of_hostnames(all_hostnames_by_model, percent)
         return random_hostnames
     # Simply get all devices left in STABLE or in ALPHA
-    elif args.stage == "all-stable":
+    if args.stage == "all-stable":
         query = define_query(
             servo_type_raws=args.servo_type,
             servo_fw_channels=["STABLE"],
         )
         return get_hostnames(query)
-    elif args.stage == "all-alpha":
+    if args.stage == "all-alpha":
         query = define_query(
             servo_type_raws=args.servo_type,
             servo_fw_channels=["ALPHA"],
         )
         return get_hostnames(query)
-    elif args.stage == "all-dev":
+    if args.stage == "all-dev":
         query = define_query(
             servo_type_raws=args.servo_type,
             servo_fw_channels=["DEV"],
@@ -424,8 +428,8 @@ def define_manual_list(args):
         args (argparse.Namespace): Parsed command-line arguments.
 
     Returns:
-        list[list[str]]: A list of lists containing DUT information (hostname, board, model, state, servo_state)
-                          based on the selected filter.
+        list[list[str]]: A list of lists containing DUT information (hostname, board,
+                         model, state, servo_state) based on the selected filter.
     """
     query = define_query(
         servo_type_raws=args.servo_type,
@@ -446,11 +450,11 @@ def write_csv(
     Args:
         hostnames (list[list[str]]): A list of lists containing DUT information.
         csv_file (str): The name of the CSV file to write to.
-        debug_mode (bool, optional): If True, writes all elements of each inner list as a row
-                                     (debug mode). Defaults to False.
+        debug_mode (bool, optional): If True, writes all elements of each inner list
+                                     as a row (debug mode). Defaults to False.
     """
 
-    with open(csv_file, "w") as f:
+    with open(csv_file, "w", encoding="utf-8") as f:
         writer = csv.writer(f)
 
         if debug_mode:
@@ -474,22 +478,29 @@ def main(unused_argv):
         args.fw_channel or args.pool or args.pool or args.servo_state or args.dut_state
     ):
         raise ValueError(
-            f"You can provide additional filters only in '--stage manual' mode"
+            "You can provide additional filters only in '--stage manual' mode"
         )
-    elif args.stage != "manual":
+    if args.stage != "manual":
         hostnames = define_stage_rollout(args)
     else:
         hostnames = define_manual_list(args)
 
     print(
-        f"Writing {len(hostnames)} DUT hostnames to {args.stage}_{args.servo_type[0]}_list.csv and additional information to {args.stage}_{args.servo_type[0]}_list_debug.csv"
+        (
+            f"Writing {len(hostnames)} DUT hostnames to "
+            "f{args.stage}_{args.servo_type[0]}_list.csv and additional information to "
+            "f{args.stage}_{args.servo_type[0]}_list_debug.csv"
+        )
     )
     write_csv(hostnames, f"{args.stage}_{args.servo_type[0]}_list.csv")
     write_csv(hostnames, f"{args.stage}_{args.servo_type[0]}_list_debug.csv", True)
     print("Please review these lists before going forward.")
     print("To proceed with release run below command:")
     print(
-        f"\t./fleet_rollout.py --channel ALPHA --select from-csv --csv-file {args.stage}_{args.servo_type[0]}_list.csv"
+        (
+            f"\t./fleet_rollout.py --channel ALPHA --select from-csv --csv-file "
+            f"{args.stage}_{args.servo_type[0]}_list.csv"
+        )
     )
 
 

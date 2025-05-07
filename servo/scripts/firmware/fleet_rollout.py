@@ -58,7 +58,7 @@ def get_hostnames(servo_select: str = "from-sheet", csv_file: str = ""):
         ValueError: if |servo_select| is not supported.
     """
     if servo_select == "from-csv" and csv_file:
-        with open(csv_file) as f:
+        with open(csv_file, encoding="utf-8") as f:
             reader = csv.reader(f)
             return [row[0] for row in reader]
     elif servo_select == "from-sheet":
@@ -156,15 +156,14 @@ def get_servo_fw_version(data, servo_type):
     try:
         if servo_type == "servo_v4p1" or servo_type == "servo_v4":
             return data["servoTopology"]["main"]["fwVersion"]
-        elif servo_type == "servo_micro" or servo_type == "c2d2":
+        if servo_type == "servo_micro" or servo_type == "c2d2":
             for i in range(len(data["servoTopology"]["children"])):
                 if (
                     data["servoTopology"]["children"][i]["type"] == "servo_micro"
                     or data["servoTopology"]["children"][i]["type"] == "c2d2"
                 ):
                     return data["servoTopology"]["children"][i]["fwVersion"]
-                else:
-                    i += 1
+                i += 1
     except TypeError:
         return "UNKNOWN"
 
@@ -320,7 +319,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def is_run_repair_needed(hostname, fw_version, data, servo_type):
+def is_run_repair_needed(fw_version, data, servo_type):
     """Check to see if the firmware version is as expected.
 
     Args:
@@ -384,7 +383,6 @@ def main(unused_argv):
             # lifespan and if the DUT is busy it can timeout.  So we need to scan
             # firmware version to decide if to schedule a new repair job.
             if is_run_repair_needed(
-                hostname,
                 args.repair_if_not_updated,
                 data_dict[hostname],
                 args.servo_type,
@@ -395,7 +393,7 @@ def main(unused_argv):
                 print("Skipping", hostname)
         elif args.monitor_fw_version:
             if is_run_repair_needed(
-                hostname, args.monitor_fw_version, data_dict[hostname], args.servo_type
+                args.monitor_fw_version, data_dict[hostname], args.servo_type
             ):
                 print(
                     f"{hostname} needs repair, current FW version is \

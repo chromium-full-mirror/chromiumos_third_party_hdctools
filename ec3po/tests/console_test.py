@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from unittest import mock
 
+
 sys.modules["pw_tokenizer"] = mock.MagicMock()
 sys.modules["pw_tokenizer.detokenize"] = mock.MagicMock()
 
