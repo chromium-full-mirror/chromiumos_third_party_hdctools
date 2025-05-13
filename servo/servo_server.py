@@ -197,10 +197,12 @@ class Servod:
             )
             raise ServodError(error_msg)
 
-        # Wait until the device is connected. CCD is the only device that's ok
-        # to disconnect. This will wait for CCD devices to reconnect before
-        # trying to get/set the control.
-        dev.wait()
+        # Watchdog controls query the device states. Don't wait for the device.
+        if "watchdog" not in name:
+            # Wait until the device is connected. CCD is the only device that's ok
+            # to disconnect. This will wait for CCD devices to reconnect before
+            # trying to get/set the control.
+            dev.wait()
         self._logger.debug(
             "Using servo device %s for control %s (device %sconnected)",
             dev,

@@ -73,6 +73,12 @@
     map="onoff"></params>
   </control>
   <control>
+    <name>watchdog_ccd_connected</name>
+    <doc>Returns yes if ccd is connected</doc>
+    <params cmd="get" subtype="ccd_state" interface="servo" drv="servo_watchdog"
+    map="yesno"></params>
+  </control>
+  <control>
     <name>warm_reset</name>
     <doc>warm_reset (active low)</doc>
     <params cmd="get" uart_cmd="sysrst"
