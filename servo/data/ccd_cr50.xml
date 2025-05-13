@@ -67,12 +67,6 @@
     <params clobber_ok="patch"></params>
   </control>
   <control>
-    <name>ccd_state</name>
-    <doc>ccd_state</doc>
-    <params cmd="get" subtype="ccd_state" interface="servo" drv="servo_watchdog"
-    map="onoff"></params>
-  </control>
-  <control>
     <name>watchdog_ccd_connected</name>
     <doc>Returns yes if ccd is connected</doc>
     <params cmd="get" subtype="ccd_state" interface="servo" drv="servo_watchdog"
