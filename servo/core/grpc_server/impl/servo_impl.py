@@ -132,7 +132,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         # ccd_gsc and ccd_cr50
         for device in usable_devices:
             if "ccd" in device:
-                self._servod.v4_device_info["ccd"] = device
+                self.servod.v4_device_info["ccd"] = device
                 break
         return empty_pb2.Empty()
 
