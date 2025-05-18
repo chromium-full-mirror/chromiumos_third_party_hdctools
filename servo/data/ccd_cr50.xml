@@ -179,4 +179,11 @@
     <params interface="9" drv="ec3po_gpio" name="EN_PP3300_INA_L"
     subtype="single" map="onoff_i" clobber_ok="full"></params>
   </control>
+  <!-- TODO(b/418796156): remove futility_gbb_flags when we have a replacement. -->
+  <control>
+    <name>futility_gbb_flags</name>
+    <doc>get GBB flags using futilty over CCD</doc>
+    <params subtype="ccd_flags" drv="futility_gbb" interface="servo"
+    input_type="str"></params>
+  </control>
 </root>

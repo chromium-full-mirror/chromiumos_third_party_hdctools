@@ -30,6 +30,7 @@ from servo.drv import echo
 from servo.drv import fast_ec
 from servo.drv import fluffy
 from servo.drv import ftdii2c_cmd
+from servo.drv import futility_gbb
 from servo.drv import fw_wp_ccd
 from servo.drv import fw_wp_servoflex
 from servo.drv import fw_wp_state
