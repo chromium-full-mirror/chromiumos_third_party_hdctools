@@ -150,6 +150,14 @@ def mock_ccd_gsc_configuration(mocker, mock_interface):
                 mocked_pty_data.MOCKED_CR50_I2C_DATA,
                 b"",
             ),  # I2C, stm32_i2c
+            6: mock_interface(
+                6,
+                [7, 135],
+                "[FPMCU, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_FPMCU_DATA,
+                b"",
+            ),  # FPMCU, stm32_uart
         }
 
         def find_interface(mock_cfg, find_all, custom_match, args):
@@ -200,6 +208,14 @@ def mock_ccd_gsc_nt_configuration(mocker, mock_interface):
                 mocked_pty_data.MOCKED_CR50_I2C_DATA,
                 b"",
             ),  # I2C, stm32_i2c
+            6: mock_interface(
+                6,
+                [7, 135],
+                "[FPMCU, stm32_uart]",
+                mock_cfg,
+                mocked_pty_data.MOCKED_CR50_FPMCU_DATA,
+                b"",
+            ),  # FPMCU, stm32_uart
         }
 
         def find_interface(mock_cfg, find_all, custom_match, args):
