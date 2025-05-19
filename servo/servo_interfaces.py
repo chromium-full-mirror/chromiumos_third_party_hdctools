@@ -143,6 +143,11 @@ for vid, pid in CCD_TI50_DEFAULTS:
             "raw_pty": "raw_cpu_uart_pty",
             "source": "CPU",
         },
+        {
+            "name": "ec3po_uart",  # 12: EC3PO(FPMCU)
+            "raw_pty": "raw_fpmcu_uart_pty",
+            "source": "FPMCU",
+        },
     ]
 
 CCD_DEFAULTS = CCD_CR50_DEFAULTS + CCD_TI50_DEFAULTS
