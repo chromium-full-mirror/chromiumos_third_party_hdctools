@@ -82,4 +82,8 @@
     <name>ec_boot_mode</name>
     <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>
+  <control>
+    <name>usbc_charging</name>
+    <params clobber_ok="patch" init="1A5"></params>
+  </control>
 </root>
