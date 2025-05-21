@@ -517,7 +517,7 @@ class AutoUpdatingDetokenizerTest(unittest.TestCase):
                 self.assertTrue(detok.detokenize(JELLO_WORLD_TOKEN).ok())
                 JELLO = PREFIX + base64.b64encode(JELLO_WORLD_TOKEN)
                 self.assertEqual(
-                    detok.detokenize_base64(JELLO),
+                    detok.detokenize_text(JELLO),
                     b"Jello, world!",
                 )
             finally:
@@ -876,28 +876,28 @@ class DetokenizeBase64(unittest.TestCase):
         )
         self.detok = detokenize.Detokenizer(db, prefix=self.PREFIX)
 
-    def test_detokenize_base64_live(self) -> None:
+    def test_detokenize_text_live(self) -> None:
         for data, expected in self.TEST_CASES:
             output = io.BytesIO()
-            self.detok.detokenize_base64_live(io.BytesIO(data), output)
+            self.detok.detokenize_text_live(io.BytesIO(data), output)
 
             self.assertEqual(expected, output.getvalue(), f"Input: {data!r}")
 
-    def test_detokenize_base64_to_file(self) -> None:
+    def test_detokenize_text_to_file(self) -> None:
         for data, expected in self.TEST_CASES:
             output = io.BytesIO()
-            self.detok.detokenize_base64_to_file(data, output)
+            self.detok.detokenize_text_to_file(data, output)
 
             self.assertEqual(expected, output.getvalue())
 
-    def test_detokenize_base64(self) -> None:
+    def test_detokenize_text(self) -> None:
         for data, expected in self.TEST_CASES:
-            self.assertEqual(expected, self.detok.detokenize_base64(data))
+            self.assertEqual(expected, self.detok.detokenize_text(data))
 
-    def test_detokenize_base64_str(self) -> None:
+    def test_detokenize_text_str(self) -> None:
         for data, expected in self.TEST_CASES:
             self.assertEqual(
-                expected.decode(), self.detok.detokenize_base64(data.decode())
+                expected.decode(), self.detok.detokenize_text(data.decode())
             )
 
 
@@ -966,7 +966,7 @@ class DetokenizeBase64InfiniteRecursion(unittest.TestCase):
     def test_detokenize_self_recursion(self) -> None:
         for depth in range(5):
             self.assertEqual(
-                self.detok.detokenize_base64(
+                self.detok.detokenize_text(
                     b"This one is deep: $AAAAAA==", recursion=depth
                 ),
                 b"This one is deep: $AAAAAA==",
@@ -974,19 +974,19 @@ class DetokenizeBase64InfiniteRecursion(unittest.TestCase):
 
     def test_detokenize_self_recursion_default(self) -> None:
         self.assertEqual(
-            self.detok.detokenize_base64(b"This one is deep: $64#AAAAAA=="),
+            self.detok.detokenize_text(b"This one is deep: $64#AAAAAA=="),
             b"This one is deep: $AAAAAA==",
         )
 
     def test_detokenize_cyclic_recursion_even(self) -> None:
         self.assertEqual(
-            self.detok.detokenize_base64(b'I said "$AQAAAA=="', recursion=2),
+            self.detok.detokenize_text(b'I said "$AQAAAA=="', recursion=2),
             b'I said "$AgAAAA=="',
         )
 
     def test_detokenize_cyclic_recursion_odd(self) -> None:
         self.assertEqual(
-            self.detok.detokenize_base64(b'I said "$AQAAAA=="', recursion=3),
+            self.detok.detokenize_text(b'I said "$AQAAAA=="', recursion=3),
             b'I said "$AwAAAA=="',
         )
 

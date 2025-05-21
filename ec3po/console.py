@@ -1244,7 +1244,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             ):
                                 if is_message:
                                     # detokenize and print
-                                    message = console.z_detokenizer.detokenize_base64(
+                                    message = console.z_detokenizer.detokenize_text(
                                         chunk,
                                         prefix=TOKEN_PREFIX,
                                     )
