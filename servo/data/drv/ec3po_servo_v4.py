@@ -234,17 +234,14 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         cc_dict = self.servo_cc_modes()
         role = "src" if cc_dict["chg"] == "on" else "snk"
 
-        if role == "snk" and (value == "on" or value == "off"):
-            newcc = self.lookup_cc_setting(cc_dict["mode"], cc_dict["dts"], value)
-            self._issue_cmd("cc %s" % newcc)
-        elif role == "src" and value == "on":
-            # Intentionally passthrough, PD comm is enabled at SRC role.
-            pass
-        else:
+        if role == "src" and value == "off":
             raise ValueError(
-                "Invalid PD comm setting: %s. PD comm can only "
-                "be config at SNK role" % value
+                "Invalid PD comm setting: %s. Use usbc_charging "
+                "command instead to specify USBC charge mode" % value
             )
+
+        newcc = self.lookup_cc_setting(cc_dict["mode"], cc_dict["dts"], value)
+        self._issue_cmd("cc %s" % newcc)
 
     def _Get_servo_v4_power_role(self):
         """Getter of servo_v4_role.
@@ -358,3 +355,26 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         """
         pol = self.servo_cc_modes()["pol"]
         return self.CC_POLARITY.index(pol)
+
+    def _Set_usbc_charging(self, value):
+        """Setter of no pd charge mode
+
+        Args:
+            value: 1A5 for 1.5 amps, 3A0 for 3.0 amps, usb for usb mode
+        """
+
+        cc_dict = self.servo_cc_modes()
+        cc = self.lookup_cc_setting("on", cc_dict["dts"], "off")
+        cmd = "nopd" + cc + value
+        self._issue_cmd("cc %s" % cmd)
+
+    def _Get_usbc_charging(self):
+        """Getter of no pd charge mode.
+
+        Returns:
+          Value: "Getter not supported"
+        """
+
+        # TODO(b:415069400): Add this function when servo firmware has been updated
+        # to show no pd charge mode.
+        raise NotImplementedError("Getter not supported")
