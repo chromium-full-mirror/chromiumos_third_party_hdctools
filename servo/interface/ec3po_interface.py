@@ -275,10 +275,8 @@ class EC3PO(uart.Uart):
         raw_uart_source = interface_data["source"]
         if servo_device.syscfg.is_control(raw_uart_name):
             raw_ec_uart = servo_device.get(raw_uart_name)
-            ec_tokenized = False
-            if raw_uart_source == "EC" and servo_device.syscfg.is_control(
-                EC_TOKENS_CONTROL
-            ):
+            ec_tokenized = True if raw_uart_source == "EC" else False
+            if servo_device.syscfg.is_control(EC_TOKENS_CONTROL):
                 ec_tokens_val = servo_device.get(EC_TOKENS_CONTROL)
                 ec_tokenized = EC_TOKENS_VALUES.get(ec_tokens_val)
                 if ec_tokenized is None:
