@@ -8,4 +8,29 @@
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
       subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
   </control>
+  <!-- Modify trulo's cpu_fw_spi to add spi2_vref:pp3300 for servo_micro (b/420706078). -->
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over direct SPI connection</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>cold_reset:on</item>
+            <item>servo_spi_programming:on</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi2_buf_on_flex_en:on</item>
+            <item>spi2_vref:pp3300</item>
+          </item>
+          <item key="0">
+            <item>spi2_vref:off</item>
+            <item>spi2_buf_on_flex_en:off</item>
+            <item>spi2_buf_en:off</item>
+            <item>servo_spi_programming:off</item>
+            <item>cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
 </root>
