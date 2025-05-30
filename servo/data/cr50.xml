@@ -309,6 +309,13 @@
     ></params>
   </control>
   <control>
+    <name>gsc_fw_wp_atboot_state</name>
+    <alias>fw_wp_atboot_state</alias>
+    <doc>Used to update GSC's the write protection state at GSC boot</doc>
+    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    atboot="yes" />
+  </control>
+  <control>
     <name>gsc_device_state_pcr0</name>
     <doc>Get the current pcr0 value from gsc</doc>
     <params cmd="get" uart_cmd="ccdstate"
