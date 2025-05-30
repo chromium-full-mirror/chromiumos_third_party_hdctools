@@ -44,7 +44,7 @@ SERIAL_MSG=""
 if [ -z "${SERIAL}" ]; then
     log_output "No serial specified"
 else
-    SERIAL_FLAG="--serialname ${SERIAL}c;}"
+    SERIAL_FLAG="--serialname ${SERIAL}"
     SERIAL_MSG="using servo serial ${SERIAL}"
 fi
 
@@ -92,16 +92,17 @@ if [ -n "${SERVO_FW_CHANNEL}" ] && [ -n "${SERIAL}" ] && [ -n "${SERVO_TYPE}" ];
 fi
 
 log_output "Launching servod for ${BOARD} ${MODEL_MSG} on port ${PORT} ${SERIAL_MSG}"
+servod_args=" --host 0.0.0.0 "
+servod_args+=" --log-dir-backup-count ${LOG_BACKUP_COUNT}"
+servod_args+=" ${BOARD_FLAG}"
+servod_args+=" ${MODEL_FLAG}"
+servod_args+=" ${SERIAL_FLAG}"
+servod_args+=" ${PORT_FLAG}"
+servod_args+=" ${DEBUG_FLAG}"
+servod_args+=" ${REC_MODE_FLAG}"
+servod_args+=" ${CONFIG_FLAG}"
+servod_args+=" ${NAME_FLAG}"
+servod_args+=" ${DEVICE_DISCOVERY_FLAG}"
 
-exec servod \
-    --host 0.0.0.0 \
-    --log-dir-backup-count "${LOG_BACKUP_COUNT}" \
-    "${BOARD_FLAG}" \
-    "${MODEL_FLAG}" \
-    "${SERIAL_FLAG}" \
-    "${PORT_FLAG}" \
-    "${DEBUG_FLAG}" \
-    "${REC_MODE_FLAG}" \
-    "${CONFIG_FLAG}" \
-    "${NAME_FLAG}" \
-    "${DEVICE_DISCOVERY_FLAG}"
+IFS=" " read -r -a args <<< "${servod_args}"
+exec servod "${args[@]}"
