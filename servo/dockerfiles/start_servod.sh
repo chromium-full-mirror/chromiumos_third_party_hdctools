@@ -102,7 +102,13 @@ chmod +x /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_gr
 log_output "Finish generate gRPC Files"
 
 log_output "starting grpc server ...................."
-/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py &
+data_args=" /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py "
+data_args+=" --grpc-core-host localhost"
+data_args+=" --grpc-core-port 50052"
+data_args+=" --grpc-data-port 50051"
+
+IFS=" " read -r -a dargs <<< "${data_args}"
+/usr/bin/python3 ${dargs} &
 
 log_output "Launching servod for ${BOARD} ${MODEL_MSG} on port ${PORT} ${SERIAL_MSG}"
 servod_args=" --host 0.0.0.0 "
@@ -116,6 +122,12 @@ servod_args+=" ${REC_MODE_FLAG}"
 servod_args+=" ${CONFIG_FLAG}"
 servod_args+=" ${NAME_FLAG}"
 servod_args+=" ${DEVICE_DISCOVERY_FLAG}"
+servod_args+=" --grpc-core-port 50052"
+servod_args+=" --grpc-data-host localhost"
+servod_args+=" --grpc-data-port 50051"
 
 IFS=" " read -r -a args <<< "${servod_args}"
-exec servod "${args[@]}"
+servod "${args[@]}" &
+
+wait -n
+exit $?
