@@ -2,9 +2,6 @@
   <include>
     <name>servo_rauru_overlay.xml</name>
   </include>
-  <include>
-    <name>pdc_ccd_keepalive.xml</name>
-  </include>
   <!-- hylia has matrix v30 -->
   <control>
     <name>init_keyboard</name>
