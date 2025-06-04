@@ -19,10 +19,24 @@
     <params clobber_ok="patch" sync_gsc_wp="yes" />
   </control>
   <control>
-    <name>gsc_apro_latch_state</name>
-    <doc>gsc ap ro verification latch state</doc>
+    <name>ti50_aprv_latch_state</name>
+    <doc>ti50 ap ro verification latch state</doc>
     <params cmd="get" uart_cmd="ap_ro_verify" regex="Latched: (No|Yes)" group="1" fmt="lowercase"
-    interface="9" drv="cr50" clobber_ok="patch"
+    interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
+    <name>ti50_aprv_status</name>
+    <doc>ti50 ap ro verification status</doc>
+    <params cmd="get" uart_cmd="ap_ro_verify" regex="APRV status: ([^\(]+) *\("
+    group="1" fmt="lowercase" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
+    <name>ti50_aprv_status_detailed</name>
+    <doc>ti50 detailed ap ro verification status</doc>
+    <params cmd="get" uart_cmd="ap_ro_verify" regex="APRV status: .*\((0x\S+)\)"
+    group="1" fmt="lowercase" interface="9" drv="cr50"
     ></params>
   </control>
 </root>
