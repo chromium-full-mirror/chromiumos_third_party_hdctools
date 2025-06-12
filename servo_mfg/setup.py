@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 """Build the Servo firmware manufacturing code python code
-   into an distribution package.
+into an distribution package.
 """
 
 from setuptools import setup
@@ -31,8 +31,6 @@ setup(
     description="Tools to program and validate servo devices.",
     entry_points={
         "console_scripts": [
-            "mfg_servo_v4 = servo_mfg.mfg_servo_v4:flash_v4",
-            "mfg_servo_v4_1 = servo_mfg.mfg_servo_v4:flash_v4point1",
             "mfg_servo_micro = servo_mfg.mfg_servo_micro:main",
             "servo_mfg = servo_mfg.main:main",
         ],

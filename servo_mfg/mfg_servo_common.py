@@ -2,7 +2,7 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Script to test and flash servo v4 boards.
+"""Script to test and flash servo boards.
 
 This script holds functionality shared between
 various servo manufacturing scripts.
@@ -179,7 +179,7 @@ def do_serialno(serialno, pty, check_only=False):
 
 
 def setup_tinyservod(vidpid, interface):
-    """Set up a pty to the servo v4's ec console in order
+    """Set up a pty to the servo ec console in order
     to send commands. Returns a pty_driver object.
     """
     vidstr, pidstr = vidpid.split(":")
