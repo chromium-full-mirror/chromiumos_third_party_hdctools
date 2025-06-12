@@ -31,23 +31,8 @@ steps:
   waitFor: ['src-prep']
 
 - name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
-  id: 'test-prep'
-  entrypoint: 'bash'
-  args:
-  - '-c'
-  - |
-    set -x
-    cp /usr/local/lib/python3.11/dist-packages/servo/proto/servo_dev_info.textproto /workspace/servo/proto/
-    cp /usr/local/lib/python3.11/dist-packages/servo/proto/servo_dev_pb2.py /workspace/servo/proto/
-    cp /usr/local/lib/python3.11/dist-packages/servo/data/*_inas.xml  /workspace/servo/data/
-
-  waitFor: ['build']
-
-- name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
   id: 'test-python'
   entrypoint: pytest
-  env:
-    - PYTHONPATH=/workspace/
   args:
     - -n=auto
     - --forked
@@ -55,9 +40,8 @@ steps:
     - --cov=/usr/local/lib/python3.11/dist-packages/servo
     - --cov=/usr/local/lib/python3.11/dist-packages/usbkm232
     - --cov=/usr/local/lib/python3.11/dist-packages/ec3po
-    - /workspace/
-  waitFor: ['test-prep']
-
+    - /hdctools/
+  waitFor: ['build']
 
 - name: 'pyfound/black:24.2.0'
   id: 'test-black-formatting'
