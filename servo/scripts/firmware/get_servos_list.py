@@ -232,16 +232,16 @@ def get_random_list_of_hostnames(
         )
 
         print(
-            f"There is {len(hostnames_by_model[model])} of {model} available, \
-            would randomly select {number_of_devices_to_update} devices for update."
+            f"There is {len(hostnames_by_model[model])} of {model} available, "
+            f"would randomly select {number_of_devices_to_update} devices for update."
         )
 
         random_hostnames.extend(random.sample(hostnames, number_of_devices_to_update))
         all_len += len(hostnames)
 
     print(
-        f"Selected {len(random_hostnames)} devices of \
-        {all_len}, what is \ {len(random_hostnames) / all_len * 100} percent"
+        f"Selected {len(random_hostnames)} devices of "
+        f"{all_len}, what is {len(random_hostnames) / all_len * 100} percent"
     )
 
     return random_hostnames
@@ -488,8 +488,8 @@ def main(unused_argv):
     print(
         (
             f"Writing {len(hostnames)} DUT hostnames to "
-            "f{args.stage}_{args.servo_type[0]}_list.csv and additional information to "
-            "f{args.stage}_{args.servo_type[0]}_list_debug.csv"
+            f"{args.stage}_{args.servo_type[0]}_list.csv and additional information to "
+            f"{args.stage}_{args.servo_type[0]}_list_debug.csv"
         )
     )
     write_csv(hostnames, f"{args.stage}_{args.servo_type[0]}_list.csv")
@@ -499,7 +499,7 @@ def main(unused_argv):
     print(
         (
             f"\t./fleet_rollout.py --channel ALPHA --select from-csv --csv-file "
-            f"{args.stage}_{args.servo_type[0]}_list.csv"
+            f"{args.stage}_{args.servo_type[0]}_list.csv --servo_type {args.servo_type[0]}"
         )
     )
 
