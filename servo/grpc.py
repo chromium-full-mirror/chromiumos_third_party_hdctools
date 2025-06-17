@@ -11,8 +11,8 @@ from grpc_tools import protoc
 import pkg_resources
 
 
-build_directory = os.path.dirname(os.path.realpath(__file__)) + "/../"
-output_directory = os.path.dirname(os.path.realpath(__file__)) + "/../proto"
+build_directory = os.path.dirname(os.path.realpath(__file__))
+output_directory = os.path.dirname(os.path.realpath(__file__)) + "/proto"
 package_directory = f"{build_directory}"
 bt_test_interfaces_directory = f"{package_directory}"
 proto_directory = f"{build_directory}/common/proto"

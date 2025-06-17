@@ -93,11 +93,11 @@ fi
 
 log_output "start generate gRPC Files...."
 
-cp /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_grpc.py \
-    /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_grpc
-chmod +x /usr/local/lib/python3.11/dist-packages/servo/core/protoc-gen-custom_grpc
+cp /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc.py \
+    /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
+chmod +x /usr/local/lib/python3.11/dist-packages/servo/protoc-gen-custom_grpc
 
-/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/core/grpc.py
+/usr/bin/python3 /usr/local/lib/python3.11/dist-packages/servo/grpc.py
 
 log_output "Finish generate gRPC Files"
 
@@ -108,7 +108,7 @@ data_args+=" --grpc-core-port 50052"
 data_args+=" --grpc-data-port 50051"
 
 IFS=" " read -r -a dargs <<< "${data_args}"
-/usr/bin/python3 ${dargs} &
+/usr/bin/python3 ${dargs[@]} &
 
 log_output "Launching servod for ${BOARD} ${MODEL_MSG} on port ${PORT} ${SERIAL_MSG}"
 servod_args=" --host 0.0.0.0 "
