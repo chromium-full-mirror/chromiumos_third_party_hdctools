@@ -1,6 +1,7 @@
 # Copyright 2017 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Driver for servo v4 specific controls through ec3po.
 
 Provides the following console controlled function subtypes:
@@ -29,6 +30,11 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
     USBC_ACTION_ROLE = ["dev", "5v", "12v", "20v"]
 
     CC_POLARITY = ["cc1", "cc2"]
+
+    CHARGE_MODE_OFF = "off"
+    CHARGE_MODE_USB = "usb"
+    CHARGE_MODE_1A5 = "1A5"
+    CHARGE_MODE_3A0 = "3A0"
 
     def _drv_init(self):
         """Driver specific initializer."""
@@ -372,9 +378,69 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
         """Getter of no pd charge mode.
 
         Returns:
-          Value: "Getter not supported"
+          Charge mode: "off", "usb", "1A5", or "3A0"
         """
 
-        # TODO(b:415069400): Add this function when servo firmware has been updated
-        # to show no pd charge mode.
-        raise NotImplementedError("Getter not supported")
+        def _is_gpio_output(gpio_name):
+            """Check if the given GPIO is configured as an output high.
+
+            Args:
+              gpio_name: The name of the GPIO to check.
+
+            Returns:
+              True if the GPIO is an output set to high, False otherwise.
+            """
+            cmd = f"gpioget {gpio_name}"
+            regex = rf"(I|O H) {gpio_name}"
+            res = self._issue_safe_cmd_get_results(cmd, [regex])
+            if res[0][1] == "O H":
+                return True
+            elif res[0][1] == "I":
+                return False
+            else:
+                raise ec3poServoV4Error(f"Unexpected output for {gpio_name}")
+
+        cc_dict = self.servo_cc_modes()
+        if cc_dict["chg"] != "on" or cc_dict["pd"] != "off":
+            return self.CHARGE_MODE_OFF
+
+        pol = cc_dict["pol"]
+        # Convert polarity's 0-based list index to a 1-based value (1 or 2).
+        cc = self.CC_POLARITY.index(pol) + 1
+        # Convert cc (1, 2) to its alternative cc (2, 1).
+        altcc = 3 - cc
+
+        # GPIO name templates
+        rp_usb_cc = f"USB_DUT_CC{cc}_RPUSB"
+        rp_1a5_cc = f"USB_DUT_CC{cc}_RP1A5"
+        rp_3a0_cc = f"USB_DUT_CC{cc}_RP3A0"
+
+        if cc_dict["dts"] == "off":
+            # Non-DTS mode: Check Rp resistor on the active CC pin.
+            if _is_gpio_output(rp_usb_cc):
+                return self.CHARGE_MODE_USB
+            if _is_gpio_output(rp_1a5_cc):
+                return self.CHARGE_MODE_1A5
+            if _is_gpio_output(rp_3a0_cc):
+                return self.CHARGE_MODE_3A0
+        else:
+            # DTS mode: Checking both CC pins to determine the mode.
+            rp_usb_altcc = f"USB_DUT_CC{altcc}_RPUSB"
+            rp_1a5_altcc = f"USB_DUT_CC{altcc}_RP1A5"
+
+            is_3a0_cc_active = _is_gpio_output(rp_3a0_cc)
+            is_1a5_cc_active = _is_gpio_output(rp_1a5_cc)
+            is_usb_altcc_active = _is_gpio_output(rp_usb_altcc)
+            is_1a5_altcc_active = _is_gpio_output(rp_1a5_altcc)
+
+            # DTS @ 3A: Rp3A0 on cc AND RpUSB on altcc
+            if is_3a0_cc_active and is_usb_altcc_active:
+                return self.CHARGE_MODE_3A0
+            # DTS @ 1.5A: Rp1A5 on cc AND RpUSB on altcc
+            if is_1a5_cc_active and is_usb_altcc_active:
+                return self.CHARGE_MODE_1A5
+            # DTS @ Default USB: Rp3A0 on cc AND Rp1A5 on altcc
+            if is_3a0_cc_active and is_1a5_altcc_active:
+                return self.CHARGE_MODE_USB
+
+        raise ec3poServoV4Error("Unable to determine USB-C charging mode")

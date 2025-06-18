@@ -125,7 +125,7 @@ for vid, pid in CCD_TI50_DEFAULTS:
         "empty",  # 3
         "empty",  # 4
         "empty",  # 5
-        "empty",  # 6
+        {"name": "stm32_uart", "interface": 6},  # 6: FPMCU
         {"name": "stm32_uart", "interface": 2},  # 7: EC/PD
         {"name": "stm32_uart", "interface": 1},  # 8: AP
         {
@@ -142,6 +142,11 @@ for vid, pid in CCD_TI50_DEFAULTS:
             "name": "ec3po_uart",  # 11: EC3PO(AP)
             "raw_pty": "raw_cpu_uart_pty",
             "source": "CPU",
+        },
+        {
+            "name": "ec3po_uart",  # 12: EC3PO(FPMCU)
+            "raw_pty": "raw_fpmcu_uart_pty",
+            "source": "FPMCU",
         },
     ]
 

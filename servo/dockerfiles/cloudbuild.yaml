@@ -31,7 +31,7 @@ steps:
   waitFor: ['src-prep']
 
 - name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
-  id: 'test'
+  id: 'test-python'
   entrypoint: pytest
   args:
     - -n=auto
@@ -69,7 +69,7 @@ steps:
   waitFor: ['src-prep']
 
 - name: 'koalaman/shellcheck-alpine'
-  id: 'shellcheck'
+  id: 'test-shellcheck'
   waitFor: ['src-prep']
   entrypoint: 'sh'
   args:
@@ -78,6 +78,20 @@ steps:
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: bash
+  id: 'test-scripts'
+  args:
+    - -c
+    - |
+      set -e
+      for script in $(ls /workspace/servo/tests/shell/*); do
+         bash ${script}
+      done
+  waitFor: ['src-prep']
+
+
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: bash
+  id: 'coverage-upload-python'
   args:
     - -c
     - |
@@ -104,7 +118,7 @@ steps:
       }
       EOF
       gsutil cp metadata.json gs://ng3-metrics/ng3-hw-tools-coverage/absolute/hdctools/$COMMIT_SHA/metadata.json
-  waitFor: ['test']
+  waitFor: ['test-python']
 
 options:
   machineType: 'N1_HIGHCPU_32'

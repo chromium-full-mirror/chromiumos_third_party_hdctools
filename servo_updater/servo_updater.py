@@ -571,21 +571,12 @@ def main(cmdline=sys.argv[1:]):
         help="Update even if version match",
         default=False,
     )
-    # TODO: Once we can expect py3.9, replace with one
-    # action=argparse.BooleanOptionalAction
     parser.add_argument(
         "--allow-rollback",
         dest="allow_rollback",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
         default=False,
         help="Allow firmware downgrades",
-    )
-    parser.add_argument(
-        "--no-allow-rollback",
-        dest="allow_rollback",
-        action="store_false",
-        default=True,
-        help="Don't allow firmware downgrades",
     )
     parser.add_argument(
         "-a",

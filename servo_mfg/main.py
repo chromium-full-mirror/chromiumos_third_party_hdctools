@@ -15,9 +15,7 @@ import sys
 from servo_mfg import color_mode as cm
 from servo_mfg import reporter
 from servo_mfg import user_input
-from servo_mfg.c2d2_manager import C2D2Manager
 from servo_mfg.micro_manager import MicroManager
-from servo_mfg.v4_manager import V4Manager
 from servo_mfg.v4p1_manager import V4P1Manager
 
 
@@ -70,14 +68,8 @@ class Coordinator:
         if self.args.device == V4P1Manager.TITLE:
             self.manager = V4P1Manager(args=self.args, outdir=self.outdir)
 
-        elif self.args.device == V4Manager.TITLE:
-            self.manager = V4Manager(args=self.args, outdir=self.outdir)
-
         elif self.args.device == MicroManager.TITLE:
             self.manager = MicroManager(args=self.args, outdir=self.outdir)
-
-        elif self.args.device == C2D2Manager.TITLE:
-            self.manager = C2D2Manager(args=self.args, outdir=self.outdir)
 
         if self.manager is None:
             self._logger.error(
@@ -244,19 +236,11 @@ class Coordinator:
         )
         V4P1Manager.add_manager_args(v4p1_parser)
 
-        # servo v4 done here.
-        v4_parser = device_parsers.add_parser(V4Manager.TITLE, help="servo_v4 mfg")
-        V4Manager.add_manager_args(v4_parser)
-
         # servo micro done here.
         micro_parser = device_parsers.add_parser(
             MicroManager.TITLE, help="servo micro mfg"
         )
         MicroManager.add_manager_args(micro_parser)
-
-        # c2d2 done here.
-        c2d2_parser = device_parsers.add_parser(C2D2Manager.TITLE, help="c2d2 mfg")
-        C2D2Manager.add_manager_args(c2d2_parser)
 
         args = parser.parse_args(cmdline)
         # If factory mode i.e. not developer mode, overwrite any wrong flags.

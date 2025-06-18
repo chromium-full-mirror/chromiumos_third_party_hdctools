@@ -231,7 +231,7 @@ To enable the mux:
 To toggle the top and bottom ports:
 
 ```bash
-(HOST) $ dut-control -- top_usbkey_power:on # top port -> on
+(HOST) $ dut-control -- top_usbkey_pwr:on # top port -> on
 (HOST) $ dut-control -- bottom_usbkey_pwr:off # bottom port -> off
 ```
 

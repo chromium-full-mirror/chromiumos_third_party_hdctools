@@ -12,6 +12,10 @@ MOCKED_CR50_AP_DATA = {
     b"": b"\r\n>",
 }
 
+MOCKED_CR50_FPMCU_DATA = {
+    b"": b"\r\n>",
+}
+
 # pylint: disable=line-too-long
 MOCKED_CR50_CONSOLE_DATA = {
     b"": b"\r\n>",
