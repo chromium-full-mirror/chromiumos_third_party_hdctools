@@ -33,4 +33,10 @@
       </content>
     </params>
   </control>
+  <!-- Increase short_press duration from 0.2 to 1.2 (b/423955603). -->
+  <map>
+    <name>keypress_duration</name>
+    <doc>short hand configs for keypress durations</doc>
+    <params tab="0.1" short_press="1.2" press="1.2" long_press="8.5"/>
+  </map>
 </root>
