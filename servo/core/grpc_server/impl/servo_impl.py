@@ -429,3 +429,11 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
             )
         _chip = _chips[default_device]
         return servo_dev_pb2.ServiceResponse(response=_chip)
+
+    def GetUSBHubAddress(self, request, context):
+        hub_device = self.servod.get_root_device()
+        if not hub_device.template.HUB_SERVO:
+            raise ServoImplError("There is no USB hub device connected.")
+
+        hub_on_servo = hub_device.dev_entry.hub_stub
+        return servo_dev_pb2.ServiceResponse(response=hub_on_servo)

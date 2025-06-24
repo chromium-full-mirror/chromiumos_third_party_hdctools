@@ -96,6 +96,7 @@ service ServoService {
     rpc UpdateDeviceDisconnectOk(WatchdogRequest) returns (google.protobuf.Empty);
     rpc GetCcdState(google.protobuf.Empty) returns (CcdStateResponse);
     rpc GetCrosChip(ServiceRequest) returns (ServiceResponse);
+    rpc GetUSBHubAddress(google.protobuf.Empty) returns (ServiceResponse);
 }
 
 message GetRequest {

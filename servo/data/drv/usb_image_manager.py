@@ -193,7 +193,6 @@ class usbImageManager(hw_driver.HwDriver):
         """
         if self._image_usbkey_hub_ports is None:
             raise UsbImageManagerError("hub_ports need to be defined in params.")
-        servod = self._servod
         # When the user is requesting the usb_dev they most likely intend for the
         # usb to the facing the servo, and be powered. Enforce that.
         self._SafelySwitchMux(self._IMAGE_MUX_TO_SERVO, self._IMAGE_USB_MUX)
@@ -203,11 +202,9 @@ class usbImageManager(hw_driver.HwDriver):
         # Need servod information to find own servod instance.
         # hub device can be the cluster root device, or the main device if there
         # is only 1 device on this servod instance
-        hub_device = servod.get_root_device()
-        if not hub_device.template.HUB_SERVO:
+        hub_on_servo = self._driver_client.GetUSBHubAddress().response
+        if len(hub_on_servo) == 0:
             raise UsbImageManagerError("There is no USB hub device connected.")
-
-        hub_on_servo = hub_device.dev_entry.hub_stub
         # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
         image_location_candidates = [
             "%s.%s" % (hub_on_servo, p) for p in self._image_usbkey_hub_ports
