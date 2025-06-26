@@ -8,6 +8,8 @@ import collections
 import logging
 import sys
 
+import grpc
+
 from servo.core import recovery
 from servo.core import servo_dev_templates
 from servo.core import sversion_util
@@ -26,6 +28,8 @@ class Servod:
     PREFIX_DELIMITER = "."
     # Constant for flex Control
     _IS_FLEX_CTRL = "is_flex_board"
+    # Message header from gRPC
+    GRPC_EXC_MSG = "Exception calling application: "
 
     def __init__(self, usbkm232=None):
         """Servod constructor.
@@ -250,7 +254,16 @@ class Servod:
             return self.get_legacy_serial_number(name)
 
         dev, name = self._get_dev_and_name(name)
-        return dev.get(name)
+        try:
+            return dev.get(name)
+        except grpc._channel._InactiveRpcError as e:
+            msg = e.details()
+            if msg.startswith(self.GRPC_EXC_MSG):
+                raise Exception(msg[len(self.GRPC_EXC_MSG) :])
+            else:
+                raise Exception(msg)
+        except:
+            raise
 
     def get_legacy_serial_number(self, control_name):
         """Returns the desired serial number of a device.
@@ -317,7 +330,16 @@ class Servod:
           ServodError: if interfaces are not available within timeout period
         """
         dev, name = self._get_dev_and_name(name)
-        return dev.set(name, wr_val_str)
+        try:
+            return dev.set(name, wr_val_str)
+        except grpc._channel._InactiveRpcError as e:
+            msg = e.details()
+            if msg.startswith(self.GRPC_EXC_MSG):
+                raise Exception(msg[len(self.GRPC_EXC_MSG) :])
+            else:
+                raise Exception(msg)
+        except:
+            raise
 
     def update_known_ctrls(self):
         """Helper to generate a list of all accessible controls in servod."""
