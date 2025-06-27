@@ -11,4 +11,10 @@
     <doc>Configure the servod device to read ADCs.</doc>
     <params name="EN_I2C_DBG_PWR_L" clobber_ok="patch"></params>
   </control>
+  <control>
+    <name>raw_fpmcu_uart_pty</name>
+    <doc>CCD FPMCU console.</doc>
+    <params cmd="get" subtype="pty" interface="6" drv="uart">
+    </params>
+  </control>
 </root>
