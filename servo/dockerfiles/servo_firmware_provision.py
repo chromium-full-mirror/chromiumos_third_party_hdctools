@@ -11,7 +11,7 @@ import subprocess
 C2D2_NAME = "c2d2_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
 SERVO_MICRO_NAME = "servo_micro_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
 SERVO_V4_NAME = "servo_v4_v2.4.83-5e9611ca0c"  # servo branch builder 08/28/24
-SERVO_V4P1_NAME = "servo_v4p1_v2.0.24152-0b36eb51a"  # fasttrack fix on top of stable
+SERVO_V4P1_NAME = "servo_v4p1_v2.0.27354-3eeb06336"  # EC ToT from 27/01/2025
 SWEETBERRY_NAME = "sweetberry_v2.4.76-01f828e3a6"  # servo-firmware-R81-12768.204.0
 
 # Prev channel firmware
@@ -20,7 +20,9 @@ SERVO_MICRO_NAME_PREV = (
     "servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.71.0
 )
 SERVO_V4_NAME_PREV = "servo_v4_v2.4.58-c37246f9c"  # servo-firmware-R81-12768.74.0
-SERVO_V4P1_NAME_PREV = "servo_v4p1_v2.0.24151-03b2123fb"  # EC ToT from 03/06/2024
+SERVO_V4P1_NAME_PREV = (
+    "servo_v4p1_v2.0.24152-0b36eb51a"  # fast track fix on top of stable
+)
 SWEETBERRY_NAME_PREV = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011.14.0
 
 # Dev channel firmware
