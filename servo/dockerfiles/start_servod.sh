@@ -106,6 +106,7 @@ data_args=" /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_
 data_args+=" --grpc-core-host localhost"
 data_args+=" --grpc-core-port 50052"
 data_args+=" --grpc-data-port 50051"
+data_args+=" --logs /var/log/servo_${PORT}"
 
 IFS=" " read -r -a dargs <<< "${data_args}"
 /usr/bin/python3 ${dargs[@]} &

@@ -55,11 +55,17 @@ def grpc_server_start():
         required=True,
         help="gRPC port that Data service will listen on",
     )
+    parser.add_argument(
+        "--logs",
+        type=str,
+        help="Directory where logs will be stored",
+        dest="logs_dir",
+    )
 
     args = parser.parse_args()
 
     servo_logging.setup(
-        logdir=DEFAULT_LOG_DIR,
+        logdir=(args.logs_dir if args.logs_dir is not None else DEFAULT_LOG_DIR),
         module="data",
         port=args.grpc_data_port,
         debug_stderr=True,

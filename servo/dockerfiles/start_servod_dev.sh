@@ -19,7 +19,8 @@ fi
 echo "DEV: starting grpc server ...................."
 /usr/bin/python3 \
   /usr/local/lib/python3.11/dist-packages/servo/data/grpc_server/grpc_server_setup.py \
-  --grpc-core-host localhost --grpc-core-port 50052 --grpc-data-port 50051 &
+  --grpc-core-host localhost --grpc-core-port 50052 --grpc-data-port 50051 \
+  --logs /var/log/servod_9999 &
 
 echo "$(date --utc +\"%Y-%m-%dT%H:%M:%S.%3N%:z\")" "DEV: Starting servod"
 IFS=" " read -r -a args <<< "${1}"
