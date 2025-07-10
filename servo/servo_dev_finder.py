@@ -279,7 +279,7 @@ class ServoDeviceFinder:
           old_dev: a ServoDeviceEntry which already has device options
         """
         new_dev.devopts = self._devopts_generator()
-        for arg in "board", "model", "config", "noautoconfig":
+        for arg in "board", "model", "config", "noautoconfig", "token_db":
             setattr(new_dev.devopts, arg, getattr(old_dev.devopts, arg))
 
     def choose_main_device(self, devs):
