@@ -13,4 +13,10 @@
     shutdown_delay="15.0" boot_to_rec_screen_delay="10.0" pd_reset_delay="8.0"
     warm_reset_can_hold_ap="no" pb_init_idle="yes"/>
   </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="ite_i2c_usbc_charging"/>
+ </control>
 </root>
