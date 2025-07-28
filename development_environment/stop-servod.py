@@ -8,9 +8,9 @@ import run_command
 
 class StopCommand(run_command.RunCommandBase):
     def __init__(self):
-        super().__init__("stop-servod")
+        super().__init__(None)
 
-    def execute_command(self, container, passthrough):
+    def execute_command(self, container, passthrough, detach=False):
         container.kill()
         return (0, None)
 
