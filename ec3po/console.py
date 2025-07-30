@@ -81,6 +81,7 @@ TOKEN_SUFFIX = b"~"
 # List of valid token modes
 TOKEN_MODES = {b"off": False, b"on": True}
 
+TOKEN_LABSTATION_DB = "/usr/share/cros_ec/tokens.bin"
 TOKEN_PREINST_DB = "/usr/share/cros_ec/tokens/historical.bin"
 TOKEN_FETCHED_DB = "/var/cache/cros_ec/tokens/historical.bin"
 
@@ -267,6 +268,9 @@ class Console:
                 self.token_db = token_path
 
             token_files = []
+
+            if pathlib.Path(TOKEN_LABSTATION_DB).is_file():
+                token_files.append(TOKEN_LABSTATION_DB)
 
             if (
                 self.token_db == TOKEN_PREINST_DB

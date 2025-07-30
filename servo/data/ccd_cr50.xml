@@ -29,12 +29,6 @@
     </params>
   </control>
   <control>
-    <name>raw_fpmcu_uart_pty</name>
-    <doc>CCD FPMCU console.</doc>
-    <params cmd="get" subtype="pty" interface="6" drv="uart">
-    </params>
-  </control>
-  <control>
     <name>ec_uart_bitbang_en</name>
     <doc>Enable bit banging for the EC UART.</doc>
     <params subtype="ec_uart_bitbang_en" interface="9" drv="cr50"

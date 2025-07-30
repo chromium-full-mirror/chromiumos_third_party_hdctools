@@ -809,7 +809,14 @@ def empty_devopts():
     new_opts = argparse.Namespace()
     for opt in ["board", "model"]:
         setattr(new_opts, opt, "")
-    for opt in ["vendor", "product", "serialname", "usbkm232", "noautoconfig"]:
+    for opt in [
+        "vendor",
+        "product",
+        "serialname",
+        "usbkm232",
+        "noautoconfig",
+        "token_db",
+    ]:
         setattr(new_opts, opt, None)
     for opt in ["config", "interfaces", "prefix"]:
         setattr(new_opts, opt, [])

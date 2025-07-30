@@ -4,6 +4,7 @@
 
 """Driver for common sequences for image management on switchable usb port."""
 
+import errno
 import glob
 import os
 import subprocess
@@ -270,7 +271,7 @@ class usbImageManager(hw_driver.HwDriver):
                                     "open() or read() of {!r} failed with errno {:d} {} ({}), skipping it as a USB mux drive candidate.".format(
                                         devpath,
                                         error.errno,
-                                        error.errorcode.get(error.errno, "UNKNOWN"),
+                                        errno.errorcode.get(error.errno, "UNKNOWN"),
                                         os.strerror(error.errno),
                                     )
                                 )
