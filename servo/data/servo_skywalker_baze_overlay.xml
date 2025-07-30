@@ -1,0 +1,13 @@
+<root>
+  <include>
+    <name>servo_skywalker_overlay.xml</name>
+  </include>
+  <!-- baze has matrix v30 -->
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok=''>
+    </params>
+  </control>
+</root>
