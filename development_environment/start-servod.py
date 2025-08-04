@@ -354,6 +354,11 @@ def start_servod(
                             "container port 9999 is mapped to port %s on your machine"
                             % port
                         )
+                    else:
+                        print(
+                            "Port is NOT mapped to host machine - remote access will "
+                            "not work - including commands within chroot"
+                        )
                     print(
                         "\nTo stop this container: $ stop-servod --container_name %s"
                         % container_name,
