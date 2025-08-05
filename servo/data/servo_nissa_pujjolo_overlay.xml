@@ -2,4 +2,7 @@
   <include>
     <name>servo_nissa_trulo_overlay.xml</name>
   </include>
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
 </root>
