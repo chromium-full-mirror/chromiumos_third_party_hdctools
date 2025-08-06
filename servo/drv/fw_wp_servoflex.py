@@ -59,13 +59,17 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
             self._servod_set("fw_wp_en", "on")
             self._servod_set("fw_wp", "off")
 
-    def _reset(self):
-        """Reset the firmware write-protection state to the system value."""
-        self._set_gsc_wp(self._STATE_RESET)
+    def _main_reset(self):
+        """Reset the main servo WP signal."""
         if self._is_open_drain:
             self._servod_set("fw_wp_od", "off")
         else:
             self._servod_set("fw_wp_en", "off")
+
+    def _reset(self):
+        """Reset the firmware write-protection state to the system value."""
+        self._set_gsc_wp(self._STATE_RESET)
+        self._main_reset()
 
     def _get_state(self):
         """Get the firmware write-protection state."""
