@@ -29,6 +29,26 @@ service DriverService {
     rpc SetFtdii2cCmd(Ftdii2cCmdRequest) returns (google.protobuf.Empty);
     // reset init interface
     rpc ResetInterface(ResetInterfaceRequest) returns (google.protobuf.Empty);
+    // Limit EC channels to console commands only
+    rpc LimitEcDriverChannel(EcChannelRequest) returns (google.protobuf.Empty);
+    // Restore EC channels
+    rpc RestoreEcDriverChannel(EcChannelRequest) returns (google.protobuf.Empty);
+    // Issue command in EC console.
+    rpc IssueCmdGetResults(IssueCmdRequest) returns (google.protobuf.Empty);
+}
+
+message EcChannelRequest
+{
+    // PID
+    int32 pid = 1;
+    // VID
+    int32 vid = 2;
+    // Serial
+    string serial = 3;
+    // Device type
+    string device_type = 4;
+    // Control that uses requested driver
+    string control_name = 5;
 }
 
 message DriverRequest {
@@ -68,7 +88,7 @@ message InterfaceRequest {
     int32 pid = 2;
     // serial
     string serial = 3;
-    // interface default tempalte
+    // interface default template
     string interface_template = 4;
 
     bool fault_tolerant = 5;
@@ -98,4 +118,23 @@ message ResetInterfaceRequest {
     string serial = 3;
     // interface index
     int32 interface_index = 4;
+}
+
+message IssueCmdRequest {
+    // PID
+    int32 pid = 1;
+    // VID
+    int32 vid = 2;
+    // Serial
+    string serial = 3;
+    // Device type
+    string device_type = 4;
+    // Commands
+    string cmds = 5;
+    // Regexes
+    repeated string regex_list = 6;
+    // Do flush
+    bool flush = 7;
+    // Command timeout
+    int32 time_out = 8;
 }

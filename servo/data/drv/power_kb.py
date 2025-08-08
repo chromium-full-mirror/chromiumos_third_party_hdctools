@@ -21,7 +21,7 @@ class powerKb(hw_driver.HwDriver):
         """Driver specific initializer."""
         super(powerKb, self)._drv_init()
         # pylint: disable=protected-access
-        self._handler = keyboard_handlers._BaseHandler()
+        self._handler = keyboard_handlers._BaseHandler(self.grpc_core_addr)
 
     def _set(self, duration):
         """Press power button for |duration| seconds.

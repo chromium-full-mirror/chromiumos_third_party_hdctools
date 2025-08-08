@@ -322,27 +322,8 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         self.logger.debug(
             "Handle request for {}, in context {}".format(request, context)
         )
-        # ec_gpio is known to use the ec drv
-        _unused, ec_driver, _unused = self.servod.get_main_device()._get_param_drv(
-            "ec_gpio"
-        )
-        ec_driver._limit_channel()
-        return empty_pb2.Empty()
 
-    def IssueCmdGetResult(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
-        # ec_gpio is known to use the ec drv
-        _unused, ec_driver, _unused = self.servod.get_main_device()._get_param_drv(
-            "ec_gpio"
-        )
-        ec_driver._issue_cmd_get_results(
-            request.cmds,
-            request.regex_list,
-            flush=request.flush,
-            timeout=request.time_out,
-        )
+        self.servod.get_main_device().LimitEcDriverChannel("ec_gpio")
         return empty_pb2.Empty()
 
     def RestoreEcDriverChannel(self, request, context):
@@ -350,11 +331,21 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         self.logger.debug(
             "Handle request for {}, in context {}".format(request, context)
         )
-        # ec_gpio is known to use the ec drv
-        _unused, ec_driver, _unused = self.servod.get_main_device()._get_param_drv(
-            "ec_gpio"
+
+        self.servod.get_main_device().RestoreEcDriverChannel("ec_gpio")
+        return empty_pb2.Empty()
+
+    def IssueCmdGetResult(self, request, context):
+        self.logger.debug(
+            "Handle request for {}, in context {}".format(request, context)
         )
-        ec_driver._restore_channel()
+
+        self.servod.get_main_device().IssueCmdGetResults(
+            request.cmds,
+            request.regex_list,
+            flush=request.flush,
+            timeout=request.time_out,
+        )
         return empty_pb2.Empty()
 
     def GetWatchdog(self, request, context):

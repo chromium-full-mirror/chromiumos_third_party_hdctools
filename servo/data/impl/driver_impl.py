@@ -277,3 +277,78 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         )
         InterfaceUtils.reset_interface_init(interface_key, request.interface_index)
         return empty_pb2.Empty()
+
+    def LimitEcDriverChannel(self, request, context):
+        # interface key for related vid, pid and serial
+        interface_key = InterfaceUtils.get_interface_key(
+            vid=request.vid,
+            pid=request.pid,
+            serial=request.serial,
+        )
+
+        # Get system config
+        syscfg = get_system_config(vid=request.vid, pid=request.pid)
+        is_get = True
+
+        (_, drv, _) = self._get_param_drv(
+            request.control_name,
+            request.device_type,
+            syscfg,
+            interface_key,
+            is_get,
+        )
+
+        drv._limit_channel()
+        return empty_pb2.Empty()
+
+    def RestoreEcDriverChannel(self, request, context):
+        # interface key for related vid, pid and serial
+        interface_key = InterfaceUtils.get_interface_key(
+            vid=request.vid,
+            pid=request.pid,
+            serial=request.serial,
+        )
+
+        # Get system config
+        syscfg = get_system_config(vid=request.vid, pid=request.pid)
+        is_get = True
+
+        (_, drv, _) = self._get_param_drv(
+            request.control_name,
+            request.device_type,
+            syscfg,
+            interface_key,
+            is_get,
+        )
+
+        drv._restore_channel()
+        return empty_pb2.Empty()
+
+    def IssueCmdGetResults(self, request, context):
+        # interface key for related vid, pid and serial
+        interface_key = InterfaceUtils.get_interface_key(
+            vid=request.vid,
+            pid=request.pid,
+            serial=request.serial,
+        )
+
+        # Get system config
+        syscfg = get_system_config(vid=request.vid, pid=request.pid)
+        is_get = True
+
+        (_, drv, _) = self._get_param_drv(
+            "ec_gpio",
+            request.device_type,
+            syscfg,
+            interface_key,
+            is_get,
+        )
+
+        drv._issue_cmd_get_results(
+            request.cmds,
+            request.regex_list,
+            request.flush,
+            request.time_out,
+        )
+
+        return empty_pb2.Empty()

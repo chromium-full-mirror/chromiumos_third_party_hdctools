@@ -607,3 +607,33 @@ class ServoDevice:
             "child_devices": [str(dev) for dev in self.get_child_devices()],
         }
         return json.dumps(data, indent=4)
+
+    def LimitEcDriverChannel(self, control_name):
+        return self._driver_client.LimitEcDriverChannel(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            device_type=self.template.TYPE,
+            control_name=control_name,
+        )
+
+    def RestoreEcDriverChannel(self, control_name):
+        return self._driver_client.RestoreEcDriverChannel(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            device_type=self.template.TYPE,
+            control_name=control_name,
+        )
+
+    def IssueCmdGetResults(self, cmds, regex_list, flush, timeout):
+        return self._driver_client.IssueCmdGetResults(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            device_type=self.template.TYPE,
+            cmds=cmds,
+            regex_list=regex_list,
+            flush=flush,
+            time_out=timeout,
+        )

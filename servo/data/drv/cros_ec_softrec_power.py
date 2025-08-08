@@ -116,7 +116,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
     def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
         # ec_gpio is known to use the ec drv
-        self._driver_client.LimitEcDriverChannel();
+        self._driver_client.LimitEcDriverChannel()
         try:
             if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
                 # Need to retrieve ec_feat before warm_reset to avoid doing that while
@@ -173,8 +173,10 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # internally by the EC watchdog, and there is no external reset
                     # signal.
                     self._driver_client.IssueCmdGetResult(
-                        cmds="reboot %s" % ap_off_option, regex_list=["Rebooting!"], flush=False,
-                        time_out=DEFAULT_UART_TIMEOUT
+                        cmds="reboot %s" % ap_off_option,
+                        regex_list=["Rebooting!"],
+                        flush=False,
+                        time_out=DEFAULT_UART_TIMEOUT,
                     )
 
                 self._logger.debug("Reset recovery wait: %s", self._reset_recovery_time)
@@ -197,8 +199,12 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
             self._logger.debug("Hostevent delay: %s", self._hostevent_delay)
             time.sleep(self._hostevent_delay)
             cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-            self._driver_client.IssueCmdGetResult(cmds=cmd, regex_list=["Events:"], flush=False,
-                                                  time_out=DEFAULT_UART_TIMEOUT)
+            self._driver_client.IssueCmdGetResult(
+                cmds=cmd,
+                regex_list=["Events:"],
+                flush=False,
+                time_out=DEFAULT_UART_TIMEOUT,
+            )
             self._logger.debug(
                 "Recovery detection delay: %s", self._RECOVERY_DETECTION_DELAY
             )
@@ -226,9 +232,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
                 # this will be a no-op.
                 if (
-                        self._driver_client.HasControl("root.dut_connection_type").value
-                        and self._servod_get("root.dut_connection_type") == "type-c"
-                        and self._driver_client.HasControl("dut_pd_data_role").value
+                    self._driver_client.HasControl("root.dut_connection_type").value
+                    and self._servod_get("root.dut_connection_type") == "type-c"
+                    and self._driver_client.HasControl("dut_pd_data_role").value
                 ):
                     try:
                         self._servod_set("dut_pd_data_role", "DFP")
