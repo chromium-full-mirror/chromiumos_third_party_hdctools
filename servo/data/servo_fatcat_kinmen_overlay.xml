@@ -15,4 +15,24 @@
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
       subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
   </control>
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>cold_reset:on</item>
+            <item>ap_flash_select:on</item>
+          </item>
+          <item key="0">
+            <item>ap_flash_select:off</item>
+            <item>cold_reset:off</item>
+            <!-- Wait for EC to boot ready to avoid unexpected behavior. -->
+            <item>sleep:5</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
 </root>
