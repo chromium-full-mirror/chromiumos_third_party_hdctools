@@ -289,7 +289,7 @@
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params interface="9" drv="fw_wp_ccd" input_type="str"
-    init="force_off" />
+    init="force_off" gsc_only="yes" />
   </control>
   <control>
     <name>ap_pin_mode</name>
