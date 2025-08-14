@@ -16,9 +16,7 @@ from servo.data import drv as servo_drv
 from servo.data.impl.system_config_service import get_system_config
 
 
-interface_list = []
-interface_init = []
-_drv_dict = {}
+_drv_dict_all = {}
 
 
 class DriverImplError(Exception):
@@ -61,7 +59,11 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 serial=driver_request.serial,
             )
             # Get system config
-            syscfg = get_system_config(vid=driver_request.vid, pid=driver_request.pid)
+            syscfg = get_system_config(
+                vid=driver_request.vid,
+                pid=driver_request.pid,
+                serial=driver_request.serial,
+            )
 
             (params, drv, device) = self._get_param_drv(
                 driver_request.control_name,
@@ -103,12 +105,16 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
           DriverImplError: Error occurred while examining params dict
         """
 
+        if not interface_key in _drv_dict_all:
+            _drv_dict_all[interface_key] = {}
+        drv_dict = _drv_dict_all[interface_key]
+
         # if already setup just return tuple from driver dict
-        if control_name in _drv_dict:
-            if is_get and ("get" in _drv_dict[control_name]):
-                return _drv_dict[control_name]["get"]
-            if not is_get and ("set" in _drv_dict[control_name]):
-                return _drv_dict[control_name]["set"]
+        if control_name in drv_dict:
+            if is_get and ("get" in drv_dict[control_name]):
+                return drv_dict[control_name]["get"]
+            if not is_get and ("set" in drv_dict[control_name]):
+                return drv_dict[control_name]["set"]
 
         set_params, get_params = syscfg.lookup_control_params(control_name)
         for params in [get_params, set_params]:
@@ -159,20 +165,20 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             drv_class = getattr(drv_module, string_utils.snake_to_camel(drv_prefix))
             drv = drv_class(self.grpc_core_addr, self.grpc_data_addr, interface, params)
 
-            if control_name not in _drv_dict:
-                _drv_dict[control_name] = {}
+            if control_name not in drv_dict:
+                drv_dict[control_name] = {}
             # Store the information in the right mode.
-            _drv_dict[control_name][mode] = (params, drv, device_info)
+            drv_dict[control_name][mode] = (params, drv, device_info)
         # At this point, both 'set' and 'get' have been generated. The last thing
         # left to do is to pass each one of them a weak reference to the other.
         # This ensures that if a control needs to do read/modify/write for
         # instance it can do so without much overhead.
-        _, set_drv, _ = _drv_dict[control_name]["set"]
-        _, get_drv, _ = _drv_dict[control_name]["get"]
+        _, set_drv, _ = drv_dict[control_name]["set"]
+        _, get_drv, _ = drv_dict[control_name]["get"]
         set_drv.set_complement(get_drv)
         # Run the method again, as it will find the entries now in the cache.
         return self._get_param_drv(
-            control_name, device_type, interface_key, syscfg, is_get
+            control_name, device_type, syscfg, interface_key, is_get
         )
 
     def InitInterface(self, request, context):
@@ -287,7 +293,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         )
 
         # Get system config
-        syscfg = get_system_config(vid=request.vid, pid=request.pid)
+        syscfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
         is_get = True
 
         (_, drv, _) = self._get_param_drv(
@@ -310,7 +318,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         )
 
         # Get system config
-        syscfg = get_system_config(vid=request.vid, pid=request.pid)
+        syscfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
         is_get = True
 
         (_, drv, _) = self._get_param_drv(
@@ -333,7 +343,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         )
 
         # Get system config
-        syscfg = get_system_config(vid=request.vid, pid=request.pid)
+        syscfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
         is_get = True
 
         (_, drv, _) = self._get_param_drv(

@@ -612,7 +612,9 @@ class ServodStarter:
             # Load systemConfig using the gRPC server
             # using the 'GetFileContent' system_config_stub
             response = system_config_client.GetFileContent(
-                VID=dev_entry.vid, PID=dev_entry.pid
+                VID=dev_entry.vid,
+                PID=dev_entry.pid,
+                serial=dev_entry.serial,
             )
 
             # Extract and process the received system configuration data(

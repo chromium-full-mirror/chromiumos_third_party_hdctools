@@ -11,7 +11,7 @@ from servo.data.config.servo_file_discover import get_default_config_by_vid_pid
 _scfg_dict = {}
 
 
-def get_system_config(pid, vid):
+def get_system_config(pid, vid, serial):
     """
     init system config controls from data xml files
 
@@ -22,8 +22,7 @@ def get_system_config(pid, vid):
     return:
         SystemConfig object
     """
-    global _scfg_dict
-    sys_key = "{}_{}".format(vid, pid)
+    sys_key = "{}_{}_{}".format(vid, pid, serial)
     if sys_key in _scfg_dict:
         return _scfg_dict[sys_key]
     else:
@@ -34,7 +33,9 @@ def get_system_config(pid, vid):
         _scfg = SystemConfig()
 
         # Add the configuration file to the SystemConfig object.
-        _scfg.add_cfg_file("", os.path.join(pathlib.Path(__file__).parent.parent.resolve(), file_path))
+        _scfg.add_cfg_file(
+            "", os.path.join(pathlib.Path(__file__).parent.parent.resolve(), file_path)
+        )
 
         # Return the SystemConfig object with the configuration file added.
         _scfg_dict[sys_key] = _scfg

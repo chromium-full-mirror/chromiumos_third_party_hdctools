@@ -331,6 +331,7 @@ class ServoDevice:
                     filename=cfg,
                     vid=self.template.VID,
                     pid=self.template.PID,
+                    serial=self._serial,
                 )
                 self.set_system_config(response.systemConfig)
             except grpc.RpcError as e:

@@ -4,7 +4,6 @@
 # found in the LICENSE file.
 
 import json
-import logging
 
 from servo.common.proto import system_config_grpc
 from servo.common.proto import system_config_pb2
@@ -12,7 +11,6 @@ from servo.data.impl.system_config_service import get_system_config
 
 
 class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
-
     def GetFileContent(self, systemConfigRequest, context):
         """
         Retrieve and format system configuration data as a response message.
@@ -25,7 +23,11 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             SystemConfigResponse: A response message containing formatted system configuration data.
         """
         # Retrieve the system configuration based on the provided message.
-        scfg = get_system_config(vid=systemConfigRequest.VID, pid=systemConfigRequest.PID)
+        scfg = get_system_config(
+            vid=systemConfigRequest.VID,
+            pid=systemConfigRequest.PID,
+            serial=systemConfigRequest.serial,
+        )
 
         # Create a response message of type SystemConfigResponse.
         response = system_config_pb2.SystemConfigResponse()
@@ -35,11 +37,12 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             control_tags=json.dumps(scfg.control_tags),
             aliases=json.dumps(scfg.aliases),
             syscfg_dict=json.dumps(scfg.syscfg_dict),
-            hwinit=json.dumps(scfg.hwinit)
+            hwinit=json.dumps(scfg.hwinit),
         )
 
         # Return the populated response message.
         return response
+
     def AddCfgFile(self, request, context):
         """
         Add a file to system config dict.
@@ -48,7 +51,9 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             SystemConfigResponse: A response message containing formatted system configuration data.
         """
         # Retrieve the system configuration based on the provided message.
-        scfg = get_system_config(vid=request.vid, pid=request.pid)
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
         scfg.add_cfg_file(name_prefix=request.prefix, filename=request.filename)
 
         # Create a response message of type SystemConfigResponse.
@@ -59,7 +64,7 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             control_tags=json.dumps(scfg.control_tags),
             aliases=json.dumps(scfg.aliases),
             syscfg_dict=json.dumps(scfg.syscfg_dict),
-            hwinit=json.dumps(scfg.hwinit)
+            hwinit=json.dumps(scfg.hwinit),
         )
 
         # Return the populated response message.
@@ -72,5 +77,9 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         Returns:
             IsControlResponse: A response message with bool value, true if control exists
         """
-        scfg = get_system_config(vid=request.vid, pid=request.pid)
-        return system_config_pb2.IsControlResponse(value = scfg.is_control(request.control_name))
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        return system_config_pb2.IsControlResponse(
+            value=scfg.is_control(request.control_name)
+        )

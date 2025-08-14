@@ -16,10 +16,12 @@ message SystemConfigRequest {
     string DEFAULT_CONFIG = 4;
     // The type string of a servo device
     string TYPE = 5;
-    // Whether a ServoDevice has a built-in USB hub for connectting other ServoDevices and DUT. Default to False.
+    // Whether a ServoDevice has a built-in USB hub for connecting other ServoDevices and DUT. Default to False.
     bool HUB_SERVO = 6;
     // Whether a ServoDevice can access DUTs consoles (EC, AP, etc). Default to False.
     bool DUT_CONTROLLER = 7;
+    // Servo serial number
+    string serial = 8;
 }
 
 message SystemConfigResponse {
@@ -38,6 +40,8 @@ message SystemFileRequest {
     string filename = 2;
     int32 vid = 3;
     int32 pid = 4;
+    // Servo serial number
+    string serial = 5;
 }
 
 message IsControlRequest {
@@ -47,6 +51,8 @@ message IsControlRequest {
     int32 pid = 2;
     // Name of control to check existence
     string control_name = 3;
+    // Servo serial number
+    string serial = 4;
 }
 
 message IsControlResponse {
