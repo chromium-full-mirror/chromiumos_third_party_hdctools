@@ -54,9 +54,9 @@ class PowerStateDriver(hw_driver.HwDriver):
         self._reset_recovery_time = float(self._params.get("reset_recovery", 5.0))
         # Use ecrst pulse for ccd devices if running `ecrst off` is unreliable
         # with the EC in reset
-        self._ccd_pulse_cold_reset = (
-            self._params.get("ccd_pulse_cold_reset", "") == "yes"
-        )
+        self._ccd_pulse_cold_reset = self._params.get(
+            "ccd_pulse_cold_reset", ""
+        ) == "yes" and "ccd" in self._servod_get("servo_class")
 
     def _cold_reset(self):
         """Apply cold reset to the DUT.
@@ -65,9 +65,17 @@ class PowerStateDriver(hw_driver.HwDriver):
         exact affect on the hardware varies depending on the board type.
 
         """
-        # Handle ccd cold_reset differently if the board specified a ccd
-        # cold_reset signal
-        if self._ccd_pulse_cold_reset and "ccd" in self._servod_get("servo_class"):
+        # Use gsc_ecrst_pulse for cold reset instead of gsc_reset if the
+        # board requested it or if the setup uses c2d2.
+        # c2d2 setups only have access to the h1 reset signal. Use
+        # gsc_ecrst_pulse to reset the EC for power_state:rec and reset.
+        # If someone has changed the cold reset signal, use the selected
+        # cold_reset signal.
+        if self._ccd_pulse_cold_reset or (
+            "c2d2" in self._servod.get("servo_type")
+            and self._servod.has_control("cold_reset_select")
+            and self._servod.get("cold_reset_select") == "default_cold_reset"
+        ):
             return self._ccd_cold_reset()
         self._servod_set("cold_reset", "on")
         time.sleep(self._reset_hold_time)
