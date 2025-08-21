@@ -43,8 +43,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         self.logger.debug(
             "Handle request for {}, in context {}".format(request, context)
         )
-        value = str(request.value)
-        self.servod.set(request.control_name, value)
+        self.servod.set(request.control_name, request.value)
         return empty_pb2.Empty()
 
     def GetVersion(self, request, context):

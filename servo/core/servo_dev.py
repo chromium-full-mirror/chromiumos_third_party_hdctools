@@ -441,6 +441,9 @@ class ServoDevice:
             drv: instance object of driver for particular control
             device_info: servo device information
         """
+        if set_value is not None:
+            set_value = str(set_value)
+
         return self._driver_client.CallDriver(
             vid=self.template.VID,
             pid=self.template.PID,
