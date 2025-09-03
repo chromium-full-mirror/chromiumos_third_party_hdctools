@@ -221,7 +221,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         InterfaceUtils.reinitialize()
         return empty_pb2.Empty()
 
-    def CloseInterfaces(self, request, context):
+    def CloseInterface(self, request, context):
         """
         Service to reinitialize interfaces list for servo device
 
@@ -229,7 +229,10 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             request InterfaceRequest
             context
         """
-        InterfaceUtils.close_interfaces()
+        interface_key = InterfaceUtils.get_interface_key(
+            request.vid, request.pid, request.serial
+        )
+        InterfaceUtils.close_interface(interface_key)
         return empty_pb2.Empty()
 
     def SetInterfacesLoglevel(self, request, context):

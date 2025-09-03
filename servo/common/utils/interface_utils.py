@@ -194,28 +194,34 @@ class InterfaceUtils:
                 interface.reinitialize()
 
     @staticmethod
-    def close_interfaces():
+    def close_interface(interface_key):
         """InterfaceUtilsError
         Close interfaces based on the provided VID, PID, and serial.
         """
         interface_dict = InterfaceUtils._interface_dict
-        for device in interface_dict:
-            interface_list = interface_dict[device]["interface_list"]
-            # Close ec3po interfaces first to remove
-            # all wrappers/pointers on the raw pty
-            for i, interface in enumerate(interface_list):
-                if isinstance(interface, _interface.ec3po_interface.EC3PO):
-                    InterfaceUtils._logger.info("Turning down interface %d", i)
-                    interface.close()
 
-            # Close all the other non-placeholder interfaces
-            for i, interface in enumerate(interface_list):
-                if not isinstance(interface, _interface.empty.Empty) and not isinstance(
-                    interface, _interface.ec3po_interface.EC3PO
-                ):
-                    # Only print this on real interfaces and not place holders.
-                    InterfaceUtils._logger.info("Turning down interface %d", i)
-                    interface.close()
+        if interface_key not in interface_dict:
+            raise Exception("Missing interface: {}".format(interface_key))
+
+        device = interface_dict[interface_key]
+        interface_list = device["interface_list"]
+        # Close ec3po interfaces first to remove
+        # all wrappers/pointers on the raw pty
+        for i, interface in enumerate(interface_list):
+            if isinstance(interface, _interface.ec3po_interface.EC3PO):
+                InterfaceUtils._logger.info("Turning down interface %d", i)
+                interface.close()
+
+        # Close all the other non-placeholder interfaces
+        for i, interface in enumerate(interface_list):
+            if not isinstance(interface, _interface.empty.Empty) and not isinstance(
+                interface, _interface.ec3po_interface.EC3PO
+            ):
+                # Only print this on real interfaces and not place holders.
+                InterfaceUtils._logger.info("Turning down interface %d", i)
+                interface.close()
+
+        del interface_dict[interface_key]
 
     @staticmethod
     def set_interface_loglevel(new_level):

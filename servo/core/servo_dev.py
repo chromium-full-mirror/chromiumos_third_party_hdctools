@@ -377,7 +377,9 @@ class ServoDevice:
 
     def close(self):
         """Servo device turn down logic."""
-        self._driver_client.CloseInterfaces()
+        self._driver_client.CloseInterface(
+            vid=self.template.VID, pid=self.template.PID, serial=self._serial
+        )
 
     def get(self, name):
         """Get control value.
