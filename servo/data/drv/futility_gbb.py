@@ -7,7 +7,7 @@
 import re
 import subprocess
 
-from servo.drv import hw_driver
+from servo.data.drv import hw_driver
 
 
 class futilityGbbError(hw_driver.HwDriverError):
@@ -42,19 +42,19 @@ class futilityGbb(hw_driver.HwDriver):
     _OUTPUT_FLAG_RE = r"flags: (0x\S*)"
 
     def _device_info(self, arg):
-        if not hasattr(self._servod, "futility_device_info"):
-            self._servod.futility_device_info = {}
-        if self._prefix not in self._servod.futility_device_info:
+        if not hasattr(self, "futility_device_info"):
+            self.futility_device_info = {}
+        if self._prefix not in self.futility_device_info:
             self._init_ccd_futility_info()
-        return self._servod.futility_device_info[self._prefix][arg]
+        return self.futility_device_info[self._prefix][arg]
 
     def _init_ccd_futility_info(self):
         """Initialize the ccd programmer args."""
-        info = self._servod.futility_device_info
+        info = self.futility_device_info
         info[self._prefix] = {}
         prefix = self._prefix + "." if self._prefix else ""
         ccd_cpu_fw_spi = prefix + self._CCD_CPU_FW_SPI
-        if not self._servod.has_control(ccd_cpu_fw_spi):
+        if not self._driver_client.HasControl(control_name=ccd_cpu_fw_spi).value:
             ccd_cpu_fw_spi = None
         info[self._prefix][self._KEY_CPU_FW_SPI] = ccd_cpu_fw_spi
 
@@ -70,7 +70,10 @@ class futilityGbb(hw_driver.HwDriver):
 
     def _get_ccd_programmer(self):
         """Return the futility programmer arg with the correct serial."""
-        return self._CCD_PROGRAMMER % self._servod_get(self._CCD_SERIAL)
+        return (
+            self._CCD_PROGRAMMER
+            % self._driver_client.GetServo(control_name=self._CCD_SERIAL).response
+        )
 
     def _run_command(self, command):
         """Run a command on the servo host"""
@@ -86,14 +89,14 @@ class futilityGbb(hw_driver.HwDriver):
         try:
             # Enable access to AP SPI flash over CCD
             if cpu_fw_spi:
-                self._servod.set(cpu_fw_spi, "on")
+                self._driver_client.SetServo(control_name=cpu_fw_spi, value="on")
 
             # Run the futility gbb command
             return self._run_command(command)
         finally:
             # Undo the AP SPI flash setup
             if cpu_fw_spi:
-                self._servod.set(cpu_fw_spi, "off")
+                self._driver_client.SetServo(control_name=cpu_fw_spi, value="off")
 
     def _Set_ccd_flags(self, value):
         """Set the GBB flags with CCD."""
