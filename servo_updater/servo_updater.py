@@ -20,6 +20,7 @@ from packaging import version
 from servo.core import servo_parsing
 from servo.core import sversion_util
 from servo_updater.ecusb import tiny_servod
+from servo_updater.ecusb.pty_driver import ptyError
 import servo_updater.ecusb.tiny_servo_common as c
 import servo_updater.fw_update as fw_update
 
@@ -70,6 +71,12 @@ CONFIGS_DIR = "configs/"
 
 RETRIES_COUNT = 10
 RETRIES_DELAY = 1
+
+
+def print_servod_warning():
+    print("Couldn't connect to servo")
+    print("Make sure to stop servod before doing the servo update:")
+    print("$ stop-servod\n")
 
 
 def do_with_retries(func, *args):
@@ -210,7 +217,11 @@ def do_version(tinys):
     cmd = "version"
     regex = r"Build:\s+(\S+)[\r\n]+"
 
-    results = tinys.pty._issue_cmd_get_results(cmd, [regex])[0]
+    try:
+        results = tinys.pty._issue_cmd_get_results(cmd, [regex])[0]
+    except ptyError:
+        print_servod_warning()
+        sys.exit(1)
 
     return results[1].strip(" \t\r\n\0")
 
@@ -403,7 +414,11 @@ def update(dev, serialno, args, devmap):
 
     # Make sure the servo MCU is in RO
     print("===== Jumping to RO =====")
-    do_with_retries(select, tinys, "ro")
+    try:
+        do_with_retries(select, tinys, "ro")
+    except:
+        print_servod_warning()
+        sys.exit(1)
 
     print("===== Flashing RW =====")
     vers = do_with_retries(do_updater_version, tinys)

@@ -5,7 +5,7 @@
   <include>
     <name>pdc_ccd_keepalive.xml</name>
   </include>
-    <!-- Pujjolo has a unique keyboard matrix -->
+    <!-- Pujjoquince has a unique keyboard matrix -->
   <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>

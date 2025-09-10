@@ -32,6 +32,7 @@ from servo.data.drv import fluffy
 from servo.data.drv import ftdii2c_cmd
 from servo.data.drv import futility_gbb
 from servo.data.drv import fw_wp_ccd
+from servo.data.drv import fw_wp_gsc_flex
 from servo.data.drv import fw_wp_servoflex
 from servo.data.drv import fw_wp_state
 from servo.data.drv import gpio

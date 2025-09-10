@@ -23,6 +23,17 @@ DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
 UPDATE_CHECKER_FILE = os.path.join(tempfile.gettempdir(), "start-servod-timestamp")
 
+
+FW_WARNING_STRING_FMT = (
+    "Servo device(s) connected to your setup uses "
+    "older/newer FW than stable version for this servod "
+    "channel.\nIf it is not expected please update your "
+    "device(s) immediately."
+    "\nYou can use following command after stopping servod:"
+    "\n\nservo_updater --updater_channel %s -- "
+    "-b %s\n"
+)
+
 signal.signal(signal.SIGINT, signal.default_int_handler)
 
 HELP_MESSAGE = """
@@ -354,6 +365,11 @@ def start_servod(
                             "container port 9999 is mapped to port %s on your machine"
                             % port
                         )
+                    else:
+                        print(
+                            "Port is NOT mapped to host machine - remote access will "
+                            "not work - including commands within chroot"
+                        )
                     print(
                         "\nTo stop this container: $ stop-servod --container_name %s"
                         % container_name,
@@ -387,27 +403,21 @@ def start_servod(
                             regex_servod_channel = re.match(
                                 r".*:(dev|beta|release|latest|fission-latest)", image
                             )
-                            channel = regex_servod_channel.group(1)
-                            if channel == "dev":
-                                channel = "local"
-                            print("================Warning================")
-                            print(
-                                "Servo device(s) connected to your setup uses "
-                                "older/newer FW than stable version for this servod "
-                                "channel.\nIf it is not expected please update your "
-                                "device(s) immediately."
-                                "\nYou can use following command after stopping servod:"
-                                f"\n\nservo_updater --updater_channel {channel} -- "
-                                f"-b {servo_type}\n"
-                            )
-                            if not follow:
-                                print(
-                                    "You can find more details in servod log"
-                                    "(e.g use start-servod with -f flag)"
-                                )
-                            print("================Warning================")
-                            # It is enough to print this warning only once in all cases
-                            break
+                            if regex_servod_channel:
+                                channel = regex_servod_channel.group(1)
+                                if channel == "dev":
+                                    channel = "local"
+                                print("================Warning================")
+                                print(FW_WARNING_STRING_FMT % (channel, servo_type))
+                                if not follow:
+                                    print(
+                                        "You can find more details in servod log"
+                                        "(e.g use start-servod with -f flag)"
+                                    )
+                                print("================Warning================")
+                                # It is enough to print this warning only once in
+                                # all cases
+                                break
 
         elif test:
             cont.reload()

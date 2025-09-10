@@ -994,6 +994,97 @@ class ChromeECBansheeHandler(ChromeECHandler):
         self.open()
 
 
+class ChromeECPujjoloHandler(ChromeECHandler):
+    """Pujjolo is a nissa family device that is re-using its OEM's custom
+    keyboard matrix, thus it requires a custom key matrix here.
+    """
+
+    KEY_MATRIX = {
+        "`": (3, 1),
+        "1": (5, 1),
+        "2": (6, 4),
+        "3": (6, 2),
+        "4": (6, 3),
+        "5": (3, 3),
+        "6": (3, 8),
+        "7": (6, 8),
+        "8": (6, 5),
+        "9": (6, 9),
+        "0": (6, 6),
+        "-": (3, 6),
+        "=": (0, 8),
+        "q": (7, 5),
+        "w": (7, 6),
+        "e": (7, 8),
+        "r": (7, 9),
+        "t": (2, 3),
+        "y": (2, 6),
+        "u": (7, 1),
+        "i": (7, 2),
+        "o": (7, 3),
+        "p": (7, 4),
+        "[": (2, 8),
+        "]": (2, 5),
+        "\\": (3, 11),
+        "a": (4, 1),
+        "s": (3, 4),
+        "d": (4, 2),
+        "f": (4, 3),
+        "g": (1, 3),
+        "h": (1, 6),
+        "j": (4, 6),
+        "k": (4, 5),
+        "l": (4, 9),
+        ";": (4, 8),
+        "'": (1, 8),
+        "z": (6, 1),
+        "x": (5, 8),
+        "c": (5, 5),
+        "v": (5, 9),
+        "b": (0, 3),
+        "n": (0, 5),
+        "m": (5, 11),
+        ",": (5, 2),
+        ".": (5, 3),
+        "/": (5, 4),
+        " ": (5, 6),
+        "<right>": (6, 12),
+        "<alt_r>": (0, 10),
+        "<down>": (6, 11),
+        "<tab>": (2, 1),
+        "<f10>": (0, 4),
+        "<shift_r>": (7, 7),
+        "<ctrl_r>": (3, 14),
+        "<esc>": (1, 1),
+        "<backspace>": (1, 11),
+        "<f2>": (3, 2),
+        "<alt_l>": (6, 13),
+        "<ctrl_l>": (1, 14),
+        "<f1>": (0, 2),
+        "<search>": (3, 0),
+        "<f3>": (2, 2),
+        "<f4>": (1, 2),
+        "<f5>": (4, 4),
+        "<f6>": (2, 4),
+        "<f7>": (1, 4),
+        "<f8>": (2, 11),
+        "<f9>": (1, 9),
+        "<up>": (7, 11),
+        "<shift_l>": (5, 7),
+        "<enter>": (4, 11),
+        "<left>": (7, 12),
+    }
+
+    def __init__(self, servo):
+        """Sets up the servo communication infrastructure.
+
+        @param servo: A Servo object representing
+                           the host running servod.
+        """
+        super(ChromeECPujjoloHandler, self).__init__(servo)
+        self.open()
+
+
 class ChromeECDelbinHandler(ChromeECHandler):
     """Delbin is a volteer family device that is re-using its OEM's custom
     keyboard matrix, thus it requires a custom key matrix here.

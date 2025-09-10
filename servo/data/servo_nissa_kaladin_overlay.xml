@@ -5,12 +5,16 @@
   <include>
     <name>pdc_ccd_keepalive.xml</name>
   </include>
-    <!-- Pujjolo has a unique keyboard matrix -->
+
   <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
-      subtype="init_default_keyboard" handler_type="ChromeECPujjolo" clobber_ok="full"></params>
+      subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
   </control>
-
+  <map>
+    <name>ec_chip_map</name>
+    <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
+    <params npcx_uut="npcx" ite_uart="it82102"></params>
+  </map>
 </root>

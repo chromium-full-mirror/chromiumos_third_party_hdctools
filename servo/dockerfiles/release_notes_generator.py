@@ -12,19 +12,18 @@
 
 You can then just copy-paste it into the email..
 
-To run the command - in a checked out hdctools repo:
-
-git pull
-git switch hdctools-release-$(date +"%m%y").1
+To run the command - inside a checked out hdctools repo:
 
 python3 servo/dockerfiles/release_notes_generator.py
 
 """
 
 from collections import namedtuple
+import datetime
 import html
 import re
 import subprocess
+import sys
 import tempfile
 
 
@@ -41,7 +40,7 @@ def find_branches():
     """
     args = ["git", "branch", "-r"]
     git_branch_lines = subprocess.check_output(args).decode().splitlines()
-    reg = r"origin/hdctools-release-(?P<month>\d\d)(?P<year>\d\d)\S*"
+    reg = r"(cros|origin)/hdctools-release-(?P<month>\d\d)(?P<year>\d\d)\S*"
     values = [re.search(reg, x) for x in git_branch_lines]
     values = [x for x in values if x]
     values.sort(reverse=True, key=lambda x: x.group("year") + x.group("month"))
@@ -249,7 +248,7 @@ def create_temp_file(report_lines):
     on close (delete=False), allowing an external program ('open') to access it.
 
     Args:
-        lines (list): A list of strings, where each string is a line of HTML
+        report_lines (list): A list of strings, where each string is a line of HTML
                       content.
     """
     tmp = tempfile.NamedTemporaryFile(suffix=".html", delete=False)
@@ -259,6 +258,7 @@ def create_temp_file(report_lines):
 
 
 def main():
+    """Main function to generate release notes."""
     headers = [
         "CL List",
         "Features",
@@ -268,19 +268,44 @@ def main():
         "CI / Infrastructure",
     ]
 
+    print("Fetching the latest remote branches...")
+    subprocess.run(["git", "fetch"], check=True)
+
     new_branch, last_branch = find_branches()
+
+    today = datetime.date.today()
+    branch_date_match = re.search(
+        r"hdctools-release-(?P<month>\d\d)(?P<year>\d\d)", new_branch
+    )
+    if branch_date_match:
+        branch_month = int(branch_date_match.group("month"))
+        branch_year = int(branch_date_match.group("year"))
+        current_month = today.month
+        current_year = int(today.strftime("%y"))
+
+        if branch_month != current_month or branch_year != current_year:
+            print(
+                f"\nError: The newest branch '{new_branch}' does not match the "
+                f"current month and year ({current_month:02d}{current_year:02d})."
+            )
+            print(
+                "Please ensure a new release branch has been created and 'git fetch' was successful."
+            )
+            sys.exit(1)
 
     commits = load_commits(new_branch, last_branch)
     organized = organize_commits(commits, headers)
 
     lines = []
 
-    for header, commits in organized.items():
-        lines.append(format_header(header))
-        for c in commits:
-            lines.append(format_commit(c))
+    for header, commits_list in organized.items():
+        if commits_list:  # Only add header if there are commits in the category
+            lines.append(format_header(header))
+            for c in commits_list:
+                lines.append(format_commit(c))
 
     create_temp_file(lines)
+    print("\nRelease notes HTML file has been generated and opened in your browser.")
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ import json
 import logging
 import os
 import pty
+from queue import Empty
 import stat
 import sys
 import termios
@@ -130,6 +131,9 @@ class EC3PO(uart.Uart):
         # The debug pipe is unidirectional from interpreter to console only.
         dbg_pipe_interactive, dbg_pipe_interp = threadproc_shim.Pipe(duplex=False)
 
+        # Shared state for stream capture, passed to the console process.
+        self._capture = console.CaptureState(uart.MAX_BUFFER_SIZE)
+
         # Use a separate shutdown notification pipe for each subprocess or thread
         # because there is no guarantee that multiple select()/poll()/epoll()
         # pollers would be woken upon blocked->unblocked transition.
@@ -225,6 +229,7 @@ class EC3PO(uart.Uart):
             dbg_pipe_interactive,
             self._source,
             token_db=self._token_db,
+            capture=self._capture,
         )
         self._console = new_console
         new_console._logger = logging.getLogger("Console")
@@ -413,6 +418,54 @@ class EC3PO(uart.Uart):
         """Returns 1 if timestamps are enabled. 0 if they're disabled."""
         # Use an int, so the onoff map can handle it.
         return int(self._console.timestamp_enabled)
+
+    def set_capture_active(self, activate):
+        """Enable or disable UART stream capture.
+
+        This method overrides the base class implementation to provide a race-free
+        way to capture the UART stream. HandleDebugPipeData() on the existing console
+        rx process is used to receive the data allowing programmatic capture to occur
+        simultaneously without conflicting with an interactive console (e.g., minicom).
+        """
+        self._logger.debug("ec3po set capture to %s", activate)
+        with self._capture.lock:
+            if activate and not self._capture.active:
+                # On new activation, clear any stale data from the queue.
+                while not self._capture.queue.empty():
+                    try:
+                        self._capture.queue.get_nowait()
+                    except Empty:
+                        break
+                self._capture.size = 0
+                self._capture.overflowed = False
+            self._capture.active = activate
+
+    def get_stream(self):
+        """Get captured stream from ec3po."""
+
+        strings = []
+        size_read = 0
+        with self._capture.lock:
+            if not self._capture.active:
+                self._logger.warning("get_stream called while capture is not active.")
+                return b""
+
+            while True:
+                try:
+                    s = self._capture.queue.get_nowait()
+                    strings.append(s)
+                    size_read += len(s)
+                except Empty:
+                    break
+
+            if size_read > 0:
+                self._capture.size -= size_read
+                if self._capture.overflowed:
+                    # Identical buffer overflow message to keep compatible with uart.py
+                    strings.append(uart.BUFFER_OVERFLOW_STR)
+                    self._capture.overflowed = False
+        # Return identical format that uart.get_stream() returns.
+        return repr("".join(strings))
 
     def close(self):
         """Turn down the ec3po interface by terminating interpreter & console."""
