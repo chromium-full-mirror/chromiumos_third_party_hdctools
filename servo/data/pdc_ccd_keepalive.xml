@@ -45,6 +45,12 @@ This augments the `ccd_keepalive_en` control to perform these two functions:
         <params cmd="get" subtype="ccd_keepalive_en" interface="9" drv="cr50" map="onoff" />
         <params cmd="set" subtype="ccd_keepalive_en" interface="9" drv="cr50" map="onoff" />
     </control>
+    <!--
+    For devices with PDC CCD the GSC chip ( particularly the Ti50 NT chip ) disconnects from
+    the host and we need to wait for the host device kernel to re-enumerate the device so
+    servod can access it.   This adds in a 2 second delay for role swaps to allow for that
+    host kernel enumeration to complete.  See b/444027791 b/427669689
+    -->
     <control>
         <name>pdc_ccd_keepalive_en</name>
         <doc>
@@ -53,5 +59,10 @@ This augments the `ccd_keepalive_en` control to perform these two functions:
         </doc>
         <params cmd="get" subtype="pdc_ccd_keepalive_en" interface="10" drv="ec" map="onoff" />
         <params cmd="set" subtype="pdc_ccd_keepalive_en" interface="10" drv="ec" map="onoff" />
+    </control>
+    <control>
+        <name>servo_pd_role</name>
+        <doc>Power role for DUT port on servo_v4</doc>
+        <params pd_role_swap_delay="2.0" clobber_ok="patch"></params>
     </control>
 </root>
