@@ -383,7 +383,7 @@ class ec(pty_driver.ptyDriver):
         result = self._issue_cmd_get_results(
             pd_state_cmd % p,
             [
-                r"Parameter 2 invalid|Role: ([A-Z]+)-([A-Z]+)(-\S*)? (.*)\n",
+                r"Invalid port|Parameter 2 invalid|Role: ([A-Z]+)-([A-Z]+)(-\S*)? (.*)\n",
             ],
             flush=True,
         )
@@ -403,7 +403,7 @@ class ec(pty_driver.ptyDriver):
             m = re.match(r".*Flags: (0x\S+)", result[0][4])
             if m:
                 v1_flags = int(m.group(1), 16)
-        if result[0] == "Parameter 2 invalid":
+        if result[0] == "Parameter 2 invalid" or result[0] == "Invalid port":
             logging.warning(
                 "Model doesn't have %d USB-C ports, please edit dut_pd_data_role "
                 "port_count in the board overlay.xml file",
