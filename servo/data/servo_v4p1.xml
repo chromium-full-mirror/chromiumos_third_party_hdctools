@@ -576,6 +576,51 @@
     <params cmd="set" uart_cmd="poweron_conf cc dts" interface="26"
     drv="ec3po_servo" input_type="str" choices="^(on|off)$"/>
   </control>
+
+  <control>
+    <name>servo_suzyq_mode_at_poweron</name>
+    <doc>Enable/disable suzyq_mode on servo_v4p1 poweron. Use "on", "off".</doc>
+    <params cmd="get" uart_cmd="poweron_conf cc" group="1" interface="26"
+    drv="ec3po_servo" regex="suzyq:(on|off)"/>
+    <params cmd="set" uart_cmd="poweron_conf cc suzyq" interface="26"
+    drv="ec3po_servo" input_type="str" choices="^(on|off)$" ></params>
+  </control>
+
+  <control>
+    <name>servo_pre_boot_settings_default</name>
+    <doc>Bring settings to default. Do not overwrite this control.</doc>
+    <params drv="macro" interface="servo" input_type="str" choices="^(execute_expect_reboot|read)$">
+      <content>
+        <item key="macro_map">
+          <item key="execute_expect_reboot">
+            <item>servo_dts_mode_at_poweron:on</item>
+            <item>servo_suzyq_mode_at_poweron:off</item>
+            <!-- Below should be always last command in the sequence -->
+            <item>servo_uart_cmd:reboot</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+
+   <!-- Below should be overwritten per board. In this servo config it should bring
+   the default values as this is going to be executed in fleet deployment code -->
+  <control>
+    <name>servo_pre_boot_settings</name>
+    <doc>Enable any special settings for servo device that need to happen before
+    full servod start. </doc>
+    <params drv="macro" interface="servo" input_type="str"
+    choices="^(execute_expect_reboot)$">
+      <content>
+        <item key="macro_map">
+          <item key="execute_expect_reboot">
+            <item>servo_pre_boot_settings_default:execute_expect_reboot</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+
   <control>
     <name>ada_srccaps</name>
     <doc>SrcCap of the adapter connected to servo_v4</doc>
