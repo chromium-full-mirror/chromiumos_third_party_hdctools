@@ -151,6 +151,10 @@ class HwDriver:
         """Set the value of the given control with proper prefix."""
         self._driver_client.SetServo(control_name=control, value=str(value))
 
+    def _servod_has_control(self, control):
+        """Check if servod has a control with specified name"""
+        return self._driver_client.HasControl(control_name=control).value
+
     def __repr__(self):
         """Return same as __str__()"""
         return str(self)

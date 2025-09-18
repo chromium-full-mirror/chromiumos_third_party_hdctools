@@ -68,15 +68,15 @@ class PowerStateDriver(hw_driver.HwDriver):
 
     def _cold_reset_set_to_gsc_reset(self):
         """Returns True if cold_reset will reset the GSC."""
-        if not self._servod.has_control("cold_reset_select"):
+        if not self._servod_has_control("cold_reset_select"):
             return False
-        cold_reset = self._servod.get("cold_reset_select")
+        cold_reset = self._servod_get("cold_reset_select")
         if cold_reset == "gsc_reset":
             return True
         # c2d2 setups only have access to the GSC reset signal. The default
         # reset will reset the GSC.
         return (
-            "c2d2" in self._servod.get("servo_type")
+            "c2d2" in self._servod_get("servo_type")
             and cold_reset == "default_cold_reset"
         )
 
