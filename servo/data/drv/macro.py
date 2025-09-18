@@ -145,7 +145,7 @@ class macro(hw_driver.HwDriver):
             )
 
         for control, state in self._states[state_name]:
-            if not self._driver_client.HasControl(control_name=control).value:
+            if not self._servod_has_control(control):
                 logging.info(
                     "Ignore setting non-exist control '%s' to '%s'.", control, state
                 )
@@ -173,7 +173,7 @@ class macro(hw_driver.HwDriver):
             for control, state in rules:
                 if self._get_controls is not None and control not in self._get_controls:
                     continue
-                if not self._driver_client.HasControl(control_name=control).value:
+                if not self._servod_has_control(control):
                     continue
                 if get_value(control) == "not_applicable":
                     continue

@@ -54,7 +54,7 @@ class futilityGbb(hw_driver.HwDriver):
         info[self._prefix] = {}
         prefix = self._prefix + "." if self._prefix else ""
         ccd_cpu_fw_spi = prefix + self._CCD_CPU_FW_SPI
-        if not self._driver_client.HasControl(control_name=ccd_cpu_fw_spi).value:
+        if not self._servod_has_control(ccd_cpu_fw_spi):
             ccd_cpu_fw_spi = None
         info[self._prefix][self._KEY_CPU_FW_SPI] = ccd_cpu_fw_spi
 

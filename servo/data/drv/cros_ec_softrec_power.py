@@ -69,7 +69,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._power_key = self._params.get("power_key", "short_press")
         self._usb_power_restore = (
             "yes" == self._params.get("usb_power_restore", "no")
-        ) and self._driver_client.HasControl(self._USB3_PWR_EN).value
+        ) and self._servod_has_control(self._USB3_PWR_EN)
         self._warm_reset_ec_jump_to_rw_delay = float(
             self._params.get("warm_reset_ec_jump_to_rw_delay", 1.2)
         )
@@ -232,9 +232,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
                 # this will be a no-op.
                 if (
-                    self._driver_client.HasControl("root.dut_connection_type").value
+                    self._servod_has_control("root.dut_connection_type")
                     and self._servod_get("root.dut_connection_type") == "type-c"
-                    and self._driver_client.HasControl("dut_pd_data_role").value
+                    and self._servod_has_control("dut_pd_data_role")
                 ):
                     try:
                         self._servod_set("dut_pd_data_role", "DFP")

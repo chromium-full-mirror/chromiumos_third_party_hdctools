@@ -111,7 +111,7 @@ class basePWRADC(hw_driver.HwDriver):
           True, if this ADC control (identified by |self._base_name| has
           a register control for |reg|, False otherwise
         """
-        return self._driver_client.HasControl(control_name=self._reg_control_name(reg)).value
+        return self._servod_has_control(self._reg_control_name(reg))
 
     def _read_reg(self, reg):
         """Retrieve output for |reg|.
@@ -164,7 +164,7 @@ class basePWRADC(hw_driver.HwDriver):
           BasePWRADCError: if |self._base_name|_|suffix| is no servod control
         """
         ctrl_name = "%s_%s" % (self._base_name, suffix)
-        if not self._driver_client.HasControl(control_name=ctrl_name).value:
+        if not self._servod_has_control(ctrl_name):
             raise BasePWRADCError("Control %r unknown." % ctrl_name)
         self._servod_set(ctrl_name, value)
 
