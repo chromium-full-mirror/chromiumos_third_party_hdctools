@@ -418,7 +418,7 @@ class EC3PO(uart.Uart):
         with self._capture.lock:
             if not self._capture.active:
                 self._logger.warning("get_stream called while capture is not active.")
-                return ""
+                return repr("")
 
             while True:
                 try:
