@@ -16,11 +16,16 @@
     shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
     warm_reset_can_hold_ap="no"/>
   </control>
+  <map>
+    <name>ec_chip_map</name>
+    <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
+    <params npcx_uut="npcx9m7f" ite_uart="it82102" mchp_int_uart="MEC172X"></params>
+  </map>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="npcx_uut"/>
+    <params clobber_ok="" cmd="get" interface="10" drv="simple_ec" uart_cmd="version"
+      regex="Chip:\s+\S+\s+(npcx9m7f|it82102|MEC172X)\S*\s" group="1" map="ec_chip_map"/>
   </control>
   <control>
     <name>ccd_cpu_fw_spi</name>
