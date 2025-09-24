@@ -82,8 +82,22 @@
     <name>ec_boot_mode</name>
     <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>
+
   <control>
-    <name>usbc_charging</name>
-    <params clobber_ok="patch" init="1A5"></params>
+    <name>servo_pre_boot_settings</name>
+    <doc>Enable any special settings for servo device that need to happen before
+    full servod start.</doc>
+    <params clobber_ok="full" drv="macro" interface="servo" input_type="str"
+    choices="^(execute_expect_reboot)$">
+      <content>
+        <item key="macro_map">
+          <item key="execute_expect_reboot">
+            <item>servo_suzyq_mode_at_poweron:on</item>
+            <!-- Below should be always last command in the sequence -->
+            <item>servo_uart_cmd:reboot</item>
+          </item>
+        </item>
+      </content>
+    </params>
   </control>
 </root>

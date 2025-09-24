@@ -4,14 +4,18 @@
 
 
 """USB hierarchy class and helpers."""
-
 import collections
 import fcntl
 import logging
 import os
 import re
 
+import backoff
 import usb
+
+
+backoff_logger = logging.getLogger("backoff")
+backoff_logger.removeHandler(backoff_logger.handlers[0])
 
 
 class HierarchyError(Exception):
@@ -198,6 +202,21 @@ class Hierarchy:
         return dev_paths[0] if dev_paths else None
 
     @staticmethod
+    @backoff.on_predicate(backoff.expo, lambda x: x == [], max_tries=5)
+    @backoff.on_exception(
+        backoff.expo, (HierarchyError, ValueError, usb.core.USBError), max_tries=5
+    )
+    def GetAllUsbDevicesWithRetry(vid, pid):
+        return Hierarchy.GetAllUsbDevices([(vid, pid)])
+
+    @staticmethod
+    @backoff.on_exception(
+        backoff.expo,
+        (ValueError, usb.core.USBError),
+        max_tries=3,
+        raise_on_giveup=False,
+        giveup=lambda x: None,
+    )
     def GetUsbDevice(vid, pid, serial):
         """Given vendor id, product id, and serial return usb device object.
 
@@ -213,16 +232,22 @@ class Hierarchy:
           HierarchyError: if more than one device are found with those
                              attributes.
         """
-        devices = Hierarchy.GetAllUsbDevices([(vid, pid)])
+        devices = Hierarchy.GetAllUsbDevicesWithRetry(vid, pid)
         devs = []
+        bad_serial_read = False
         for device in devices:
             try:
                 d_serial = usb.util.get_string(device, device.iSerialNumber)
-            except (ValueError, usb.core.USBError) as e:
-                logging.debug("Device %s has USB comms issues. %s", device, e)
-                d_serial = None
+            except (ValueError, usb.core.USBError):
+                bad_serial_read = True
+                continue
             if d_serial == serial:
                 devs.append(device)
+        if bad_serial_read and not devs:
+            # Check all the devices and did not find the correct serial
+            # number and at least one serial number failed to read so
+            # force a retry from the start.
+            raise ValueError("Unable to read device serial number.")
         if len(devs) > 1:
             raise HierarchyError(
                 "Found %d devices with |vid:%s|, |pid:%s|, "

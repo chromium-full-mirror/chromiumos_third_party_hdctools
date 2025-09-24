@@ -88,6 +88,7 @@ ignored-modules=
     usbkm232,
     grpc,
     docker,
+    backoff,
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().

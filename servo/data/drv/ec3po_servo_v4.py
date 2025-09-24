@@ -7,6 +7,7 @@
 Provides the following console controlled function subtypes:
   servo_v4_ccd_mode
 """
+import time
 
 from servo.data.drv import ec3po_servo
 from servo.data.drv import pty_driver
@@ -271,6 +272,10 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
             # SNK role defaults to disable PD comm, and SRC role defaults to enable
             newpd = "on" if role == "src" else "off"
             newcc = self.lookup_cc_setting(newrole, dts, newpd)
+
+            delay = float(self._params.get("pd_role_swap_delay", 0.0))
+            if delay:
+                time.sleep(delay)
 
             self._issue_cmd("cc %s" % newcc)
         else:

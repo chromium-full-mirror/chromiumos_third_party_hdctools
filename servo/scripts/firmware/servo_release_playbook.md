@@ -42,7 +42,7 @@ For details see separate document [here](servo_release_manual_testing.md)
 
 ## Preparing and deploying binary to cloud
 
-After we manually verified binary we need to pack FW into archive, send it to [cloud bucket](https://pantheon.corp.google.com/storage/browser/_details/chromeos-localmirror/distfiles) and make it available to public. You can use you below script to do it for you.
+After we manually verified binary we need to pack FW into archive, send it to [cloud bucket](https://pantheon.corp.google.com/storage/browser/chromeos-localmirror/distfiles) and make it available to public. You can use you below script to do it for you.
 
 Requirements:
  - gsutil + gcloud auth login

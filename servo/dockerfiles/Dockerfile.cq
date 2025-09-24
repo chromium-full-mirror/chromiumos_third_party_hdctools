@@ -175,6 +175,7 @@ RUN apt-get update --no-install-recommends \
     make \
     gcc \
     python3 \
+    python3-backoff \
     python3-mock \
     python3-numpy \
     python3-packaging \

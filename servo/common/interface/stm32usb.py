@@ -7,6 +7,7 @@ import contextlib
 import threading
 import time
 
+import backoff
 import usb
 
 from servo.common.interface import common as c
@@ -287,6 +288,7 @@ class Susb:
             ep = self._get_ep(write=False)
             return ep.read(*args, **kwargs)
 
+    @backoff.on_exception(backoff.expo, (usb.core.USBTimeoutError), max_tries=3)
     def write_ep(self, *args, **kwargs):
         """Thread safe wrapper around writing to the |write_ep|"""
         self.wait_on_reset()

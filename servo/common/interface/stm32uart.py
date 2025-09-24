@@ -171,7 +171,7 @@ class Suart(uart.Uart):
                             if r:
                                 try:
                                     self._susb.write_ep(r, self._susb.TIMEOUT_MS)
-                                except IOError as e:
+                                except (IOError, usb.core.USBTimeoutError) as e:
                                     self._logger.exception(
                                         "uarttx %s: %s", self.get_pty(), e
                                     )
