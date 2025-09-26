@@ -29,11 +29,11 @@
       <content>
         <item key="macro_map">
           <item key="1">
-            <!-- Power off AP and make the EC passive but not in reset; see b/375444551 comment #50 -->
-            <item>ec_uart_cmd:reboot ap-off</item>
+            <!-- Reset the EC; see b/375444551 comment #50 -->
+            <item>gsc_ec_reset:on</item>
             <item>gsc_uart_cmd:gpioset AP_FLASH_SELECT 1</item>
             <!-- Sleep to ensure the SoC rails get chance to discharge enough. -->
-            <item>sleep:5</item>
+            <item>sleep:1</item>
           </item>
           <item key="0">
             <item>gsc_ec_reset:off</item>
