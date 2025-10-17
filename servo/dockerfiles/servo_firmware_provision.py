@@ -20,9 +20,7 @@ SERVO_MICRO_NAME_PREV = (
     "servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.71.0
 )
 SERVO_V4_NAME_PREV = "servo_v4_v2.4.58-c37246f9c"  # servo-firmware-R81-12768.74.0
-SERVO_V4P1_NAME_PREV = (
-    "servo_v4p1_v2.0.24152-0b36eb51a"  # fast track fix on top of stable
-)
+SERVO_V4P1_NAME_PREV = "servo_v4p1_v2.0.27354-3eeb06336"  # EC ToT from 01/27/2025
 SWEETBERRY_NAME_PREV = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011.14.0
 
 # Dev channel firmware
