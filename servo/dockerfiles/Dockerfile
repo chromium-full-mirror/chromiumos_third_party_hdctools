@@ -15,7 +15,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:bookworm as clang-builder
+FROM debian:trixie as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -29,7 +29,6 @@ RUN apt-get update \
     libtool \
     pkg-config \
     python3 \
-    python3-distutils \
     python3-setuptools \
     python3-wheel \
     uuid-dev \
@@ -229,7 +228,7 @@ WORKDIR /shflags
 RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
 
 ######################################################################
-FROM debian:bookworm-slim as firmware-installer
+FROM debian:trixie-slim as firmware-installer
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
@@ -300,48 +299,48 @@ RUN cd /coreboot/util/ifdtool && make
 RUN strip /coreboot/util/ifdtool/ifdtool
 
 ######################################################################
-FROM debian:bookworm-slim as base
+FROM debian:trixie-slim as base
 
 COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
+    build-essential \
     dnsutils \
     fwupd \
+    gcc \
     iptables \
     iputils-ping \
     kmod \
     libatomic1 \
     libpci-dev \
     lsof \
-    procps \
-    sudo \
-    usbutils \
-    udev \
-    xz-utils \
-    build-essential \
     make \
-    gcc \
+    procps \
     python3 \
     python3-backoff \
     python3-mock \
     python3-numpy \
     python3-packaging \
     python3-pexpect \
+    python3-pip \
     python3-protobuf \
-    python3-serial \
     python3-pytest \
     python3-pytest-cov \
     python3-pytest-forked \
     python3-pytest-mock \
     python3-pytest-xdist \
-    python3-usb \
     python3-requests \
-    python3-pip \
+    python3-serial \
+    python3-six \
+    python3-usb \
+    sudo \
+    udev \
+    usbutils \
+    xz-utils \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
-    && apt-mark hold fwupd \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
     && rm -f /hdctools-docker-fake_9999-1_all.deb
 

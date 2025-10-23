@@ -25,5 +25,5 @@ then
 	    -o type=image \
 	    -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
 else
-     docker build -t "${IMAGE}" -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
+     docker build -t "${IMAGE}" -f servo/dockerfiles/Dockerfile .
 fi
