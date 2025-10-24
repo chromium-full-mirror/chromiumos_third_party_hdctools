@@ -206,18 +206,6 @@ WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
 
 #####################################################################
-FROM clang-builder as uhubctl-builder
-
-RUN git clone https://github.com/mvp/uhubctl
-WORKDIR /uhubctl
-RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
-
-COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-RUN make
-RUN strip  /uhubctl/uhubctl
 
 ######################################################################
 FROM alpine/git as shflags-builder
@@ -402,9 +390,7 @@ RUN mkdir -p /usr/share/cros_ec/tokens
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
     -O /usr/share/cros_ec/tokens/historical.bin
 
-# Install uhubctl
-COPY --link --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
-RUN chmod 755 /usr/local/bin/uhubctl
+
 
 # Install flashrom
 COPY --link --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/
