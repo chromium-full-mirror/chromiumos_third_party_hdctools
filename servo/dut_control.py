@@ -7,10 +7,9 @@
 import collections
 import logging
 from socket import error as SocketError
+import statistics
 import sys
 import time
-
-import numpy
 
 from servo import client
 from servo import servo_parsing
@@ -224,13 +223,13 @@ def display_stats(stats, prefix=STATS_PREFIX):
     table = [["NAME", "COUNT", "AVERAGE", "STDDEV", "MAX", "MIN"]]
     for key in sorted(stats.keys()):
         if stats[key]:
-            stats_np = numpy.array(stats[key])
+            stats_list = stats[key]
             disp_key = key.lstrip(KEY_PREFIX)
-            row = [disp_key, str(len(stats_np))]
-            row.append("%.4f" % stats_np.mean())
-            row.append("%.4f" % stats_np.std())
-            row.append("%.4f" % stats_np.max())
-            row.append("%.4f" % stats_np.min())
+            row = [disp_key, str(len(stats_list))]
+            row.append("%.4f" % statistics.mean(stats_list))
+            row.append("%.4f" % statistics.pstdev(stats_list))
+            row.append("%.4f" % max(stats_list))
+            row.append("%.4f" % min(stats_list))
             table.append(row)
     display_table(table, prefix)
 
