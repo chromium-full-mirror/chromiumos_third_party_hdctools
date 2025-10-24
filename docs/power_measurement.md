@@ -66,7 +66,7 @@ in sleep mode and open its bash:
 ```bash
 (HOST) start-servod -c local --sleep -n check
 (HOST) docker exec -it check-docker_servod bash
-(INSIDE DOCKER) ls ./usr/local/lib/python3.11/dist-packages/servo/data/
+(INSIDE DOCKER) ls ./usr/local/lib/python3.13/dist-packages/servo/data/
 ```
 
 Note: adjust python version when necessary.

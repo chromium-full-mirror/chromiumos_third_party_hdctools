@@ -8,7 +8,7 @@
 import argparse
 import copy
 import glob
-import imp
+import importlib.util
 import json
 import os
 import re

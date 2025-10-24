@@ -12,8 +12,9 @@ import tty
 from servo.common.interface import interface
 
 
-MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes when capturing.
-BUFFER_OVERFLOW_STR = "\n\n........capture buffer overflow........\n\n"
+MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes
+
+# when capturing.
 
 
 class UartDefaultException(Exception):
@@ -117,7 +118,9 @@ class Uart(interface.Interface):
                     data.decode(encoding="utf-8", errors="ignore")
                 )
             elif buffer_overflow:
-                self._capture_buffer.append(BUFFER_OVERFLOW_STR)
+                self._capture_buffer.append(
+                    "\n\n........capture buffer overflow........\n\n"
+                )
                 buffer_overflow = True
             self._capture_lock.release()
         termios.tcsetattr(uart_fd, termios.TCSANOW, saved_conf)
@@ -224,10 +227,6 @@ class Uart(interface.Interface):
 
     def set_capture_active(self, activate):
         """Enable/disable the capture mode on this interface.
-
-        Note that this capture mechanism will conflict with other programs
-        accessing the same PTY. For example, running `minicom` on the port
-        concurrently will result in a race condition where data is lost.
 
         Args:
           activate: a Boolean, indicating whether capture should be activated or

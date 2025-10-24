@@ -37,9 +37,9 @@ steps:
   - '-c'
   - |
     set -x
-    cp /usr/local/lib/python3.11/dist-packages/servo/proto/servo_dev_info.textproto /workspace/servo/proto/
-    cp /usr/local/lib/python3.11/dist-packages/servo/proto/servo_dev_pb2.py /workspace/servo/proto/
-    cp /usr/local/lib/python3.11/dist-packages/servo/data/*_inas.xml  /workspace/servo/data/
+    cp /usr/local/lib/python3.13/dist-packages/servo/proto/servo_dev_info.textproto /workspace/servo/proto/
+    cp /usr/local/lib/python3.13/dist-packages/servo/proto/servo_dev_pb2.py /workspace/servo/proto/
+    cp /usr/local/lib/python3.13/dist-packages/servo/data/*_inas.xml  /workspace/servo/data/
 
   waitFor: ['build']
 
@@ -52,9 +52,9 @@ steps:
     - -n=auto
     - --forked
     - --cov-report=lcov
-    - --cov=/usr/local/lib/python3.11/dist-packages/servo
-    - --cov=/usr/local/lib/python3.11/dist-packages/usbkm232
-    - --cov=/usr/local/lib/python3.11/dist-packages/ec3po
+    - --cov=/usr/local/lib/python3.13/dist-packages/servo
+    - --cov=/usr/local/lib/python3.13/dist-packages/usbkm232
+    - --cov=/usr/local/lib/python3.13/dist-packages/ec3po
     - /workspace/
   waitFor: ['test-prep']
 
@@ -124,7 +124,7 @@ steps:
         "host": "chromium",
         "project": "chromiumos/codesearch",
         "trace_type": "LCOV",
-        "trim_prefix": "/usr/local/lib/python3.11/dist-packages/",
+        "trim_prefix": "/usr/local/lib/python3.13/dist-packages/",
         "add_prefix": "src/third_party/hdctools/",
         "commit_id": "${COMMIT_SHA}",
         "ref": "refs/heads/main",

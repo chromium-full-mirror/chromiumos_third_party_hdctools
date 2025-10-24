@@ -7,7 +7,7 @@
 import argparse
 import copy
 import glob
-import imp
+import importlib.util
 import json
 import os
 import re
@@ -378,9 +378,9 @@ def GenerateINAControls(
     for candidate in candidates:
         if candidate.endswith(".py"):
             module_name = candidate[:-3]
-            ina_pkg = imp.load_module(
-                module_name, *imp.find_module(module_name, [servo_data_dir])
-            )
+            spec = importlib.util.spec_from_file_location(module_name, os.path.join(servo_data_dir, candidate))
+            ina_pkg = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(ina_pkg)
             if not hasattr(ina_pkg, "inas"):
                 continue
             if hasattr(ina_pkg, "config_type"):

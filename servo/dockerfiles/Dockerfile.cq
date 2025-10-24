@@ -13,7 +13,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:bookworm as clang-builder
+FROM debian:trixie as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -26,7 +26,6 @@ RUN apt-get update \
     libtool \
     pkg-config \
     python3 \
-    python3-distutils \
     python3-setuptools \
     python3-wheel \
     python3-grpc-tools \
@@ -148,7 +147,7 @@ WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
 
 ######################################################################
-FROM debian:bookworm-slim
+FROM debian:trixie-slim
 
 # Install libusb.
 COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/

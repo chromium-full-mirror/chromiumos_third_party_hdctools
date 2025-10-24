@@ -15,7 +15,7 @@ RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/fil
 RUN git checkout
 
 ######################################################################
-FROM debian:bookworm as clang-builder
+FROM debian:trixie as clang-builder
 
 RUN apt-get update \
     && apt-get install -y \
@@ -31,7 +31,6 @@ RUN apt-get update \
     python3 \
     python3-grpc-tools \
     python3-grpcio \
-    python3-distutils \
     python3-setuptools \
     python3-wheel \
     python3-grpc-tools\
@@ -52,6 +51,7 @@ ENV BUILDCC_PREFIX=
 COPY servo/dockerfiles/equivs-control .
 RUN equivs-build equivs-control
 RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
+
 ######################################################################
 FROM clang-builder as libusb-builder
 
@@ -209,18 +209,6 @@ WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
 
 #####################################################################
-FROM clang-builder as uhubctl-builder
-
-RUN git clone https://github.com/mvp/uhubctl
-WORKDIR /uhubctl
-RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
-
-COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-RUN make
-RUN strip  /uhubctl/uhubctl
 
 ######################################################################
 FROM alpine/git as shflags-builder
@@ -231,7 +219,7 @@ WORKDIR /shflags
 RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
 
 ######################################################################
-FROM debian:bookworm-slim as firmware-installer
+FROM debian:trixie-slim as firmware-installer
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
@@ -302,50 +290,50 @@ RUN cd /coreboot/util/ifdtool && make
 RUN strip /coreboot/util/ifdtool/ifdtool
 
 ######################################################################
-FROM debian:bookworm-slim as base
+FROM debian:trixie-slim as base
 
 COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
+    build-essential \
     dnsutils \
     fwupd \
+    gcc \
     iptables \
     iputils-ping \
     kmod \
     libatomic1 \
     libpci-dev \
     lsof \
-    procps \
-    sudo \
-    usbutils \
-    udev \
-    xz-utils \
-    build-essential \
     make \
-    gcc \
+    procps \
     python3 \
     python3-backoff \
     python3-mock \
     python3-numpy \
     python3-packaging \
     python3-pexpect \
+    python3-pip \
     python3-protobuf \
-    python3-serial \
     python3-pytest \
     python3-pytest-cov \
     python3-pytest-forked \
     python3-pytest-mock \
     python3-pytest-xdist \
-    python3-usb \
     python3-requests \
     python3-pip \
     python3-grpcio \
     python3-grpc-tools \
+    python3-serial \
+    python3-usb \
+    sudo \
+    udev \
+    usbutils \
+    xz-utils \
     wget \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
-    && apt-mark hold fwupd \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
     && rm -f /hdctools-docker-fake_9999-1_all.deb
 
@@ -409,9 +397,7 @@ RUN mkdir -p /usr/share/cros_ec/tokens
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
     -O /usr/share/cros_ec/tokens/historical.bin
 
-# Install uhubctl
-COPY --link --from=uhubctl-builder /uhubctl/uhubctl /usr/local/bin/
-RUN chmod 755 /usr/local/bin/uhubctl
+
 
 # Install flashrom
 COPY --link --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/

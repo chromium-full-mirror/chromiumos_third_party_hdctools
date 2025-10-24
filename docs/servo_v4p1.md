@@ -17,7 +17,7 @@ chromebook DUT.
 Feature                              | v4.1            | v4
 ------------------------------------ | --------------- | ---------------------
 Host USB connector type              | C               | Micro
-Host max speed to switched USB ports | USB3 5 Gbps     | USB2 480 Mbps
+Host max speed to switched USB ports | USB2 480 Mbps default, USB3 5 Gbps [when enabled](#enabling-host-USB3) | USB2 480 Mbps
 Servo Power Options                  | Host BC1.2,     | Host only
 ''                                   | Host USBC @ 5V, |
 ''                                   | Alternate Power Port @ 5V |
@@ -282,6 +282,16 @@ Ethernet remotely. The Wi-Fi connection should persist through reboots.
 (DUT) $ /usr/local/autotest/cros/scripts/wifi connect <ssid> <password>
 (HOST) $ dut-control -- dut_eth_pwr_en:off [on]
 ```
+
+## Enabling host USB3 {#enabling-host-USB3}
+
+Due to a hardware bug in servo v4.1, on a host with more than one servo there
+is no reliable way to find USB3 devices connected to the servos. To work around
+this issue, servod disables USB3 on all servo v4.1 devices by default. This
+workaround can be disabled by passing the `--no-disable-host-usb3` flag when
+starting servod. When USB3 is enabled, controls which mux the USB to the host
+and present the device - such as `image_usbkey_dev` or
+`download_image_to_usb_dev` - may be unreliable.
 
 ## Firmware flashing and reading
 

@@ -19,13 +19,11 @@ import multiprocessing.connection
 import os
 import pathlib
 import pty
-from queue import Queue
 import re
 import select
 import socket
 import stat
 import sys
-from threading import Lock
 from typing import Union
 
 
@@ -114,18 +112,6 @@ class ControlKey:
     ESC = 0x1B
 
 
-class CaptureState:
-    """Shared object for UART stream capture."""
-
-    def __init__(self, limit):
-        self.lock = Lock()  # to synchronize class variables
-        self.queue = Queue()  # queue of captured utf8 strings
-        self.active = False  # to enable/disable capture
-        self.size = 0  # total number of bytes from all strings in queue
-        self.limit = limit  # won't store more bytes than this
-        self.overflowed = False  # if received more data than the limit
-
-
 class Console:
     """Class which provides the console interface between the EC and the user.
 
@@ -184,7 +170,6 @@ class Console:
         dbg_pipe: multiprocessing.connection.Connection,
         name: Union[str, None] = None,
         token_db: Union[str, None] = None,
-        capture: CaptureState = None,
     ):
         """Initializes a Console object with the provided arguments.
 
@@ -202,7 +187,6 @@ class Console:
           this pipe.
         name: The console source name.
         token_db: Path to token database, None if tokenization is disabled.
-        capture: Optional shared object for UART stream capture.
         """
         # Create a unique logger based on the console name
         console_prefix = ("%s - " % (name,)) if name else ""
@@ -236,7 +220,6 @@ class Console:
         self.decoder = None
         self.is_tokenized = False
         self.token_db = None
-        self._capture = capture
 
         if token_db:
             self.LoadTokenDatabase(token_db)
@@ -1076,18 +1059,6 @@ class Console:
         controller_connected: boolean indicating the controller is connected.
         command_active:  boolean indicating command is currently active.
         """
-
-        with self._capture.lock:
-            if self._capture.active:
-                data_utf8 = data.decode(encoding="utf-8", errors="ignore")
-                data_utf8_len = len(data_utf8)
-                if self._capture.size + data_utf8_len <= self._capture.limit:
-                    self._capture.queue.put(data_utf8)
-                    self._capture.size += data_utf8_len
-                elif not self._capture.overflowed:
-                    self._capture.overflowed = True
-                    self.logger.warning("Dropping data")
-
         if len(data) > 1 and self.raw_debug:
             self.logger.debug(
                 "|DBG|-%s->%r",
