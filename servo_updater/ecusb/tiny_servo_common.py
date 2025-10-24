@@ -11,7 +11,6 @@ import sys
 import time
 from typing import Iterable, Optional, Set, Tuple
 
-import six
 import usb  # pylint:disable=import-error
 
 from . import pty_driver
@@ -22,9 +21,7 @@ _USB_SCAN_WAIT = 0.1  # seconds between scans for devices on USB
 
 
 def get_subprocess_args():
-    if six.PY3:
-        return {"encoding": "utf-8"}
-    return {}
+    return {"encoding": "utf-8"}
 
 
 class TinyServoError(Exception):

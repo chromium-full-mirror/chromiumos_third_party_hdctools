@@ -332,7 +332,6 @@ RUN apt-get update --no-install-recommends \
     python3-pytest-xdist \
     python3-requests \
     python3-serial \
-    python3-six \
     python3-usb \
     sudo \
     udev \
