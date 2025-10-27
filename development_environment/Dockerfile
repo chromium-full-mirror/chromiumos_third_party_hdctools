@@ -28,8 +28,8 @@ RUN rm -f packages.microsoft.gpg
 RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] \
     https://packages.cloud.google.com/apt cloud-sdk main" | \
     tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg |\
-    apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | \
+    gpg --dearmor | sudo tee /usr/share/keyrings/cloud.google.gpg > /dev/null
 
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 RUN chmod a+r /etc/apt/keyrings/docker.gpg
@@ -60,7 +60,6 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     python3 \
     python3-docker \
     python3-flake8-docstrings \
-    python3-numpy \
     python3-pip \
     python3-pytest \
     python3-setuptools \
@@ -71,8 +70,8 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     vim
 
 # Install chrome
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub |\
-    apt-key add -
+RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub | \
+    gpg --dearmor | sudo tee /usr/share/keyrings/linux_signing_key.pub > /dev/null
 RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ \
     stable main" >> /etc/apt/sources.list.d/google.list'
 RUN apt-get -yq update && apt-get install -yq google-chrome-stable

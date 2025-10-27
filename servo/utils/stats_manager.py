@@ -12,8 +12,7 @@ import json
 import logging
 import math
 import os
-
-import numpy
+import statistics
 
 
 STATS_PREFIX = "@@"
@@ -28,6 +27,26 @@ LONG_UNIT = {
     "uA": "microamp",
     "uV": "microvolt",
 }
+
+
+def _nanmean(data):
+    filtered_data = [x for x in data if not math.isnan(x)]
+    return statistics.mean(filtered_data) if filtered_data else float("nan")
+
+
+def _nanmin(data):
+    filtered_data = [x for x in data if not math.isnan(x)]
+    return min(filtered_data) if filtered_data else float("nan")
+
+
+def _nanmax(data):
+    filtered_data = [x for x in data if not math.isnan(x)]
+    return max(filtered_data) if filtered_data else float("nan")
+
+
+def _nanstd(data):
+    filtered_data = [x for x in data if not math.isnan(x)]
+    return statistics.pstdev(filtered_data) if len(filtered_data) > 1 else 0.0
 
 
 class StatsManagerError(Exception):
@@ -149,13 +168,12 @@ class StatsManager:
         """
         self._summary = {}
         for domain, data in self._data.items():
-            data_np = numpy.array(data)
             self._summary[domain] = {
-                "mean": numpy.nanmean(data_np),
-                "min": numpy.nanmin(data_np),
-                "max": numpy.nanmax(data_np),
-                "stddev": numpy.nanstd(data_np),
-                "count": data_np.size,
+                "mean": _nanmean(data),
+                "min": _nanmin(data),
+                "max": _nanmax(data),
+                "stddev": _nanstd(data),
+                "count": len(data),
             }
 
     @property

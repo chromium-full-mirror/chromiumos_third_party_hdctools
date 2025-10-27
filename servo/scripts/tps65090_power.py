@@ -34,12 +34,13 @@ For example:
 TODO(tbroch) Work with vendor to resolve discrepancies in measurements
 """
 
+import collections
 import logging
+import statistics
 import sys
 import time
 
 import commands
-import numpy
 
 
 # TODO(tbroch) maybe this should be optarg
@@ -349,15 +350,13 @@ def main():
 
     stats = {}
     for name in rails:
-        stats[name] = numpy.array([])
+        stats[name] = collections.deque(maxlen=MAX_STATS)
 
     while True:
         for name in rails:
             mw_val = pwr.read_mw(name)
-            if len(stats[name]) == MAX_STATS:
-                stats[name] = numpy.delete(stats[name], 0)
-            stats[name] = numpy.append(stats[name], mw_val)
-            print("%s:%.f" % (name, stats[name].mean()))
+            stats[name].append(mw_val)
+            print("%s:%.f" % (name, statistics.mean(stats[name])))
         # delay in order to not raise power via the script
         # TODO(tbroch) sleep should be configurable
         time.sleep(2)

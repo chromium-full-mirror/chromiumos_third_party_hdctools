@@ -9,8 +9,6 @@ import copy
 import logging
 import time
 
-import numpy
-
 from servo.utils import stats_manager
 
 
@@ -199,20 +197,20 @@ class TimelinedStatsManager(stats_manager.StatsManager):
             # Avoid doing any work if there will be no trimming.
             return
 
-        timeline = numpy.array(self._data[self._tkey])
+        timeline = self._data[self._tkey]
         if tstart is None:
             tstart = timeline[0]
         tstart += offset
         if tend is None:
             tend = timeline[-1]
         tend += offset
+
+        indices_to_keep = [i for i, t in enumerate(timeline) if tstart <= t <= tend]
+
         # pylint: disable=W0212
         domains_to_remove = set()
         for domain, samples in self._data.items():
-            sample_arr = numpy.array(samples)
-            trimmed_samples = sample_arr[
-                numpy.bitwise_and(tstart <= timeline, timeline <= tend)
-            ].tolist()
+            trimmed_samples = [samples[i] for i in indices_to_keep]
             if trimmed_samples:
                 self._data[domain] = trimmed_samples
             else:
