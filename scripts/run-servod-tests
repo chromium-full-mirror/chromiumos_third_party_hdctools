@@ -2,4 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-start-servod -t "$@"
+build-servod cq
+
+TEST_IMAGE="servod:devtest"
+docker build \
+    --build-arg=BASE_IMG=servod:devcq \
+    -t "${TEST_IMAGE}" -f servo/dockerfiles/Dockerfile.test .
+
+docker run -it -e SERVOD_LIMIT_TEST_DUT=1 \
+    --ulimit=nofile=65535:65535 \
+    "${TEST_IMAGE}" \
+    pytest -n 15 --forked /hdctools
