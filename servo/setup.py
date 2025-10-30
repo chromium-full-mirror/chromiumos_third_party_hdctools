@@ -98,6 +98,7 @@ setup(
         "servo.tests.data",
         "servo.scripts",
         "servo.common",
+        "servo.dockerfiles",
     ],
     package_data={
         "servo": [
