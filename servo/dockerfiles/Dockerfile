@@ -3,8 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-ARG BUILD_ENV=production
-
 ######################################################################
 FROM alpine/git as chromiumos_overlays
 WORKDIR /
@@ -207,7 +205,6 @@ RUN python3 setup.py bdist_wheel
 
 #####################################################################
 
-######################################################################
 FROM alpine/git as shflags-builder
 
 WORKDIR /
@@ -307,16 +304,10 @@ RUN apt-get update --no-install-recommends \
     procps \
     python3 \
     python3-backoff \
-    python3-mock \
     python3-packaging \
     python3-pexpect \
     python3-pip \
     python3-protobuf \
-    python3-pytest \
-    python3-pytest-cov \
-    python3-pytest-forked \
-    python3-pytest-mock \
-    python3-pytest-xdist \
     python3-requests \
     python3-serial \
     python3-usb \
@@ -389,8 +380,6 @@ RUN mkdir -p /usr/share/cros_ec/tokens
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
     -O /usr/share/cros_ec/tokens/historical.bin
 
-
-
 # Install flashrom
 COPY --link --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/
 RUN chmod 755 /usr/local/sbin/flashrom
@@ -444,6 +433,9 @@ RUN apt-get remove --purge -y \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
 
+RUN rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/locale/*
+RUN find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name "en" -exec rm -rf {} +
+
 ######################################################################
 FROM base
 
@@ -462,6 +454,8 @@ RUN rm -rf wheels
 # ensure that /usr/local/lib is properly known and set up, especially libusb
 RUN ldconfig
 
-COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
-COPY --link --from=hdctools-builder /hdctools/ec3po/tests/ /hdctools/ec3po/tests/
 RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
+
+RUN apt-get remove --purge -y \
+    python3-pip \
+    && apt-get autoclean
