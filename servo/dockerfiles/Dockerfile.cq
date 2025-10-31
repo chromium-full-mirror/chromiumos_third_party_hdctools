@@ -107,30 +107,6 @@ RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
 WORKDIR /flashmap
 RUN make && make install
 
-# Install libusb.
-COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --from=libusb-builder /libusb/libusb-1.0.pc /usr/local/pkg/
-ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
-
-WORKDIR /ec
-#RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
-RUN make build/host/util/iteflash BOARD=host && \
-    make build/host/util/uartupdatetool BOARD=host&& \
-    make build/host/util/stm32mon BOARD=host && \
-    make -C extra/usb_updater usb_updater2
-
-COPY servo/dockerfiles/setup_ec.py .
-RUN PACKAGE="powerlog" python3 setup_ec.py bdist_wheel
-RUN PACKAGE="console" python3 setup_ec.py bdist_wheel
-RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
-
-RUN strip /ec/extra/usb_updater/usb_updater2 \
-    /ec/build/host/util/stm32mon \
-    /ec/build/host/util/uartupdatetool \
-    /ec/build/host/util/iteflash
-
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 WORKDIR /
@@ -192,96 +168,10 @@ WORKDIR /hdctools/servo_updater
 RUN python3 setup.py bdist_wheel
 
 #####################################################################
-FROM hdctools-builder as hdctools-usbkm232-builder
-
-WORKDIR /hdctools/usbkm232
-RUN python3 setup.py bdist_wheel
-
-#####################################################################
 FROM hdctools-builder as hdctools-ec3po-builder
 
 WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
-
-#####################################################################
-
-FROM alpine/git as shflags-builder
-
-WORKDIR /
-RUN git clone https://github.com/kward/shflags.git
-WORKDIR /shflags
-RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
-
-######################################################################
-FROM debian:trixie-slim as firmware-installer
-
-RUN apt-get update --no-install-recommends  \
-    && apt-get install -y --no-install-recommends  \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg \
-    python3 \
-    sudo \
-    xz-utils \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --link --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
-RUN apt-get install -y /hdctools-docker-fake_9999-1_all.deb
-
-RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
-RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/cloud.google.gpg
-RUN sudo apt-get update && sudo apt-get install -y google-cloud-cli
-
-RUN mkdir -p /usr/share/servo_updater/firmware/
-WORKDIR /usr/share/servo_updater/firmware/
-COPY /servo/dockerfiles/servo_firmware_provision.py servo_firmware_provision.py
-RUN python3 servo_firmware_provision.py && rm servo_firmware_provision.py
-
-######################################################################
-FROM libftdi as flashrom-builder
-
-WORKDIR /
-
-RUN apt-get update \
-    && apt-get install -y \
-    meson \
-    ninja-build \
-    cmake \
-    libcmocka-dev \
-    libpci-dev
-
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
-
-WORKDIR /flashrom
-RUN meson builddir && cd builddir && meson install
-RUN strip /usr/local/sbin/flashrom
-
-######################################################################
-FROM flashrom-builder as futility-builder
-
-RUN apt-get update \
-    && apt-get install -y \
-    libnss3-dev
-
-# Install vboot.
-WORKDIR /
-RUN git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference
-WORKDIR /vboot_reference
-RUN sed -i 's/%" PRIi64 "/%ld/g' futility/cmd_gbb_utility.c
-RUN make && make install
-
-RUN strip /usr/bin/futility
-
-######################################################################
-FROM futility-builder as coreboot
-
-WORKDIR /
-RUN git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/coreboot
-RUN cd /coreboot/util/cbfstool && make VBOOT_SOURCE=/vboot_reference
-RUN strip /coreboot/util/cbfstool/cbfstool
-RUN cd /coreboot/util/ifdtool && make
-RUN strip /coreboot/util/ifdtool/ifdtool
 
 ######################################################################
 FROM debian:trixie-slim as base
@@ -328,7 +218,6 @@ COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/
 COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 WORKDIR /wheels
-COPY --link --from=ec-builder /ec/dist/*.whl ./
 COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
@@ -336,76 +225,14 @@ RUN rm -rf wheels
 
 # Install servo_firmware.
 RUN mkdir -p /usr/share/servo_updater/firmware/
-COPY --link --from=firmware-installer /usr/share/servo_updater/firmware/ /usr/share/servo_updater/firmware/
 
 COPY --link --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
 
-# Install genesys hub firmware
-RUN mkdir -p /usr/local/genesys
-RUN wget https://storage.googleapis.com/fwupd-cache/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab \
-    -O /usr/local/genesys/GenesysLogic_GL3590_64.17.cab
-
-# Install ec tools
-COPY --link --from=ec-builder \
-    /ec/extra/usb_updater/usb_updater2 \
-    /ec/build/host/util/stm32mon \
-    /ec/build/host/util/uartupdatetool \
-    /ec/build/host/util/iteflash \
-    /ec/util/flash_ec \
-    /ec/util/uart_stress_tester.py \
-    /usr/sbin/
-
-COPY --link --from=gcstool-builder \
-    /ec/extra/usb_updater/gsctool \
-    /usr/sbin/
-
-RUN chmod u+x /usr/sbin/* /usr/bin/*
-
 COPY --link --from=ec-builder libs.tar .
 RUN tar xvf libs.tar
 RUN rm libs.tar
-
-RUN mkdir -p /usr/share/ec-devutils
-
-COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
-
-# Fetch NPCX monitor from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.02.11.bin \
-    -O /usr/share/ec-devutils/npcx_monitor.bin
-
-RUN mkdir -p /usr/share/cros_ec/tokens
-# Fetch EC Token Database from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
-    -O /usr/share/cros_ec/tokens/historical.bin
-
-# Install flashrom
-COPY --link --from=flashrom-builder /usr/local/sbin/flashrom /usr/local/sbin/
-RUN chmod 755 /usr/local/sbin/flashrom
-
-#Install futility
-COPY --link --from=futility-builder /usr/bin/futility /usr/bin/
-RUN chmod 755 /usr/bin/futility
-COPY --from=futility-builder /usr/local/lib/*/libflashrom.so.1.0.0 /usr/lib
-RUN ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so.1 && \
-    ln -s /usr/lib/libflashrom.so.1.0.0 /usr/lib/libflashrom.so
-
-RUN ln -s /usr/bin/futility /usr/bin/dump_fmap; \
-    ln -s /usr/bin/futility /usr/bin/dump_kernel_config; \
-    ln -s /usr/bin/futility /usr/bin/gbb_utility; \
-    ln -s /usr/bin/futility /usr/bin/vbutil_kernel; \
-    ln -s /usr/bin/futility /usr/bin/vbutil_key; \
-    ln -s /usr/bin/futility /usr/bin/vbutil_keyblock
-
-# Install cbfstool for flashrom and ec.
-COPY --link --from=coreboot /coreboot/util/cbfstool/cbfstool /usr/local/bin/
-RUN chmod 755 /usr/local/bin/cbfstool
-COPY --link --from=coreboot /coreboot/util/ifdtool/ifdtool /usr/local/bin/
-RUN chmod 755 /usr/local/bin/ifdtool
-
-# Install shflags
-COPY --link --from=shflags-builder shflags/shflags /usr/share/misc/shflags
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
@@ -446,7 +273,6 @@ COPY --link --from=hdctools-builder /usr/lib/libftdiuart*.so /usr/lib/
 COPY --link --from=hdctools-builder /usr/lib/libftdigpio*.so /usr/lib/
 COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
 COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
-COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
 COPY --link --from=hdctools-ec3po-builder /hdctools/ec3po/dist/* ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
