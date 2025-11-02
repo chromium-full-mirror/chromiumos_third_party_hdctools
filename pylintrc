@@ -466,7 +466,6 @@ disable=
     inconsistent-return-statements,
     invalid-name,
     invalid-unary-operand-type,
-    logging-format-interpolation,
     missing-class-docstring,
     missing-function-docstring,
     missing-module-docstring,
