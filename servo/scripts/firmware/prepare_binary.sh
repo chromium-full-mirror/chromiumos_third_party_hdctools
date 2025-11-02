@@ -35,10 +35,8 @@ tar cfJ "${ARCHIVE_FILENAME}" "${NEW_FILENAME}"
 # Copy archive to cloud bucket and edit access
 # NOTE: please run "gcloud auth login" earlier
 CLOUD_ARCHIVE_PATH="gs://chromeos-localmirror/distfiles/${ARCHIVE_FILENAME}"
-gsutil cp "${ARCHIVE_FILENAME}" "${CLOUD_ARCHIVE_PATH}" &&
-gsutil acl ch -u allUsers:R "${CLOUD_ARCHIVE_PATH}"
-
-if [ $? -eq 0 ]; then
+if gsutil cp "${ARCHIVE_FILENAME}" "${CLOUD_ARCHIVE_PATH}" &&
+   gsutil acl ch -u allUsers:R "${CLOUD_ARCHIVE_PATH}"; then
     echo "Done! Created ${VERSION}.tar.xz and uploaded to https://pantheon.corp.google.com/storage/browser/chromeos-localmirror/distfiles/${ARCHIVE_FILENAME}"
     echo "Removing local copies!"
     rm "${ARCHIVE_FILENAME}" "${NEW_FILENAME}"

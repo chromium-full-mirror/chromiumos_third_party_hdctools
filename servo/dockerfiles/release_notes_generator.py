@@ -289,7 +289,8 @@ def main():
                 f"current month and year ({current_month:02d}{current_year:02d})."
             )
             print(
-                "Please ensure a new release branch has been created and 'git fetch' was successful."
+                "Please ensure a new release branch has been created and 'git fetch' "
+                "was successful."
             )
             sys.exit(1)
 

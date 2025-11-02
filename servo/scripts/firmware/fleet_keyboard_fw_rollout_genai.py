@@ -73,7 +73,8 @@ def execute_ssh_command(
     hostname, command_str, logger, ssh_port=SSH_PORT, cmd_timeout=COMMAND_TIMEOUT
 ):
     """
-    Executes a command on a remote server via system SSH using key-based authentication.
+    Executes a command on a remote server via system SSH using key-based
+    authentication.
     Uses the provided logger instance.
     """
     ssh_command_list = [
@@ -86,7 +87,8 @@ def execute_ssh_command(
     ]
 
     logger.info(
-        f"    [*] Executing via SSH: {' '.join(shlex.quote(arg) for arg in ssh_command_list)}"
+        "    [*] Executing via SSH: %s",
+        " ".join(shlex.quote(arg) for arg in ssh_command_list),
     )
 
     try:
@@ -101,22 +103,27 @@ def execute_ssh_command(
         stderr_str = process.stderr.strip()
         exit_status = process.returncode
 
-        logger.info(f"    [+] SSH command executed. Exit status: {exit_status}")
+        logger.info("    [+] SSH command executed. Exit status: %d", exit_status)
         if stdout_str:
             logger.info(
-                f"    [+] Stdout: {stdout_str[:200]}{'...' if len(stdout_str) > 200 else ''}"
+                "    [+] Stdout: %s%s",
+                stdout_str[:200],
+                "..." if len(stdout_str) > 200 else "",
             )
         if stderr_str:
-            logger.warning(f"    [-] Stderr: {stderr_str}")
+            logger.warning("    [-] Stderr: %s", stderr_str)
 
         return stdout_str, stderr_str, exit_status
     except subprocess.TimeoutExpired:
         logger.error(
-            f"    [-] SSH command timed out for {SSH_USERNAME}@{hostname} after {cmd_timeout + CONNECT_TIMEOUT}s."
+            "    [-] SSH command timed out for %s@%s after %ds.",
+            SSH_USERNAME,
+            hostname,
+            cmd_timeout + CONNECT_TIMEOUT,
         )
         return None, "Command timed out", -1
     except Exception as e:
-        logger.error(f"    [-] Error executing SSH command on {hostname}: {e}")
+        logger.error("    [-] Error executing SSH command on %s: %s", hostname, e)
         return None, str(e), -1
 
 
@@ -135,7 +142,8 @@ def transfer_file_scp(hostname, local_path, remote_path, logger, ssh_port=SSH_PO
     ]
 
     logger.info(
-        f"    [*] Attempting to transfer via SCP: {' '.join(shlex.quote(arg) for arg in scp_command_list)}"
+        "    [*] Attempting to transfer via SCP: %s",
+        " ".join(shlex.quote(arg) for arg in scp_command_list),
     )
 
     try:
@@ -149,23 +157,27 @@ def transfer_file_scp(hostname, local_path, remote_path, logger, ssh_port=SSH_PO
 
         if process.returncode == 0:
             logger.info(
-                f"    [+] File '{local_path}' transferred successfully to '{remote_path}'."
+                "    [+] File '%s' transferred successfully to '%s'.",
+                local_path,
+                remote_path,
             )
             return True
-        else:
-            logger.error(
-                f"    [-] SCP failed for {SSH_USERNAME}@{hostname}. Exit status: {process.returncode}"
-            )
-            if process.stdout.strip():
-                logger.error(f"    [-] SCP Stdout: {process.stdout.strip()}")
-            if process.stderr.strip():
-                logger.error(f"    [-] SCP Stderr: {process.stderr.strip()}")
-            return False
+        logger.error(
+            "    [-] SCP failed for %s@%s. Exit status: %d",
+            SSH_USERNAME,
+            hostname,
+            process.returncode,
+        )
+        if process.stdout.strip():
+            logger.error("    [-] SCP Stdout: %s", process.stdout.strip())
+        if process.stderr.strip():
+            logger.error("    [-] SCP Stderr: %s", process.stderr.strip())
+        return False
     except subprocess.TimeoutExpired:
-        logger.error(f"    [-] SCP command timed out for {SSH_USERNAME}@{hostname}.")
+        logger.error("    [-] SCP command timed out for %s@%s.", SSH_USERNAME, hostname)
         return False
     except Exception as e:
-        logger.error(f"    [-] Error transferring file to {hostname} via SCP: {e}")
+        logger.error("    [-] Error transferring file to %s via SCP: %s", hostname, e)
         return False
 
 
@@ -175,26 +187,35 @@ def check_servod_status(labstation_hostname, servod_port, target_servo_serial, l
     Uses the provided logger instance.
     """
     logger.info(
-        f"    [*] Checking servod status for serial '{target_servo_serial}' on port {servod_port}..."
+        "    [*] Checking servod status for serial '%s' on port %d...",
+        target_servo_serial,
+        servod_port,
     )
     cmd = f"dut-control -p {servod_port} serialname"
     stdout, stderr, retcode = execute_ssh_command(labstation_hostname, cmd, logger)
 
     if retcode == 0 and stdout and target_servo_serial in stdout.strip():
         logger.info(
-            f"    [+] Servod OK: Port {servod_port} is associated with serial '{target_servo_serial}'."
+            "    [+] Servod OK: Port %d is associated with serial '%s'.",
+            servod_port,
+            target_servo_serial,
         )
         return True
-    elif retcode == 0 and stdout:
+    if retcode == 0 and stdout:
         logger.warning(
-            f"    [-] Servod Warning: Port {servod_port} returned serial '{stdout.strip()}', expected '{target_servo_serial}'."
+            "    [-] Servod Warning: Port %d returned serial '%s', expected '%s'.",
+            servod_port,
+            stdout.strip(),
+            target_servo_serial,
         )
         return False
-    else:
-        logger.warning(
-            f"    [-] Failed to get serialname from port {servod_port}. Retcode: {retcode}, Stderr: {stderr}"
-        )
-        return False
+    logger.warning(
+        "    [-] Failed to get serialname from port %d. Retcode: %d, Stderr: %s",
+        servod_port,
+        retcode,
+        stderr,
+    )
+    return False
 
 
 def start_servod(labstation_hostname, servod_port, logger):
@@ -202,19 +223,23 @@ def start_servod(labstation_hostname, servod_port, logger):
     Attempts to start servod.
     Uses the provided logger instance.
     """
-    logger.info(f"    [*] Attempting to start servod on port {servod_port}...")
+    logger.info("    [*] Attempting to start servod on port %d...", servod_port)
     cmd = f"start servod PORT={servod_port}"
-    stdout, stderr, retcode = execute_ssh_command(labstation_hostname, cmd, logger)
+    _stdout, stderr, retcode = execute_ssh_command(labstation_hostname, cmd, logger)
     if retcode == 0:
         logger.info(
-            f"    [+] 'start servod PORT={servod_port}' command executed. Exit status: {retcode}."
+            "    [+] 'start servod PORT=%d' command executed. Exit status: %d.",
+            servod_port,
+            retcode,
         )
         return True
-    else:
-        logger.error(
-            f"    [-] Failed to execute 'start servod PORT={servod_port}'. Retcode: {retcode}, Stderr: {stderr}"
-        )
-        return False
+    logger.error(
+        "    [-] Failed to execute 'start servod PORT=%d'. Retcode: %d, Stderr: %s",
+        servod_port,
+        retcode,
+        stderr,
+    )
+    return False
 
 
 def process_device(row_data, keyboard_hex_path):
@@ -228,7 +253,10 @@ def process_device(row_data, keyboard_hex_path):
     labstation_hostname = row_data.get("labstation")
     servod_port_str = row_data.get("servo_port")
 
-    dut_logger_name = f"DUT.{dut_hostname or 'UnknownDUT'}_{target_servo_serial or 'UnknownSerial'}_{threading.get_ident()}"
+    dut_logger_name = (
+        f"DUT.{dut_hostname or 'UnknownDUT'}_"
+        f"{target_servo_serial or 'UnknownSerial'}_{threading.get_ident()}"
+    )
     dut_logger = logging.getLogger(dut_logger_name)
     dut_logger.setLevel(logging.INFO)
 
@@ -246,11 +274,21 @@ def process_device(row_data, keyboard_hex_path):
 
     try:
         dut_logger.info(
-            f"--- Processing DUT: {dut_hostname} (Lab: {labstation_hostname}, Servo Serial: {target_servo_serial}, Servod Port: {servod_port_str}) ---"
+            "--- Processing DUT: %s (Lab: %s, Servo Serial: %s, "
+            "Servod Port: %s) ---",
+            dut_hostname,
+            labstation_hostname,
+            target_servo_serial,
+            servod_port_str,
         )
 
         if not all(
-            [dut_hostname, target_servo_serial, labstation_hostname, servod_port_str]
+            [
+                dut_hostname,
+                target_servo_serial,
+                labstation_hostname,
+                servod_port_str,
+            ]
         ):
             missing_fields = [
                 field
@@ -262,8 +300,8 @@ def process_device(row_data, keyboard_hex_path):
                 }.items()
                 if not value
             ]
-            reason = f"Missing critical CSV data: {', '.join(missing_fields)}."
-            dut_logger.error(f"    [!] Skipping row due to {reason} Row: {row_data}")
+            reason = "Missing critical CSV data: " f"{', '.join(missing_fields)}."
+            dut_logger.error("    [!] Skipping row due to %s Row: %s", reason, row_data)
             return {
                 "dut": dut_hostname or "N/A",
                 "labstation": labstation_hostname or "N/A",
@@ -276,9 +314,10 @@ def process_device(row_data, keyboard_hex_path):
             servod_port = int(servod_port_str)
         else:
             reason = (
-                f"Invalid 'servod_port' value '{servod_port_str}' for {dut_hostname}."
+                f"Invalid 'servod_port' value '{servod_port_str}' for "
+                f"{dut_hostname}."
             )
-            dut_logger.warning(f"    [!] {reason}")
+            dut_logger.warning("    [!] %s", reason)
             return {
                 "dut": dut_hostname or "N/A",
                 "labstation": labstation_hostname or "N/A",
@@ -287,30 +326,43 @@ def process_device(row_data, keyboard_hex_path):
                 "reason": reason,
             }
 
-        dut_logger.info(f"[LABSTATION {labstation_hostname}] Initial servod check...")
+        dut_logger.info("[LABSTATION %s] Initial servod check...", labstation_hostname)
         servod_ok = check_servod_status(
-            labstation_hostname, servod_port, target_servo_serial, dut_logger
+            labstation_hostname,
+            servod_port,
+            target_servo_serial,
+            dut_logger,
         )
 
         if not servod_ok:
             dut_logger.info(
-                f"[LABSTATION {labstation_hostname}] Attempting to start servod as it was not found or incorrect."
+                "[LABSTATION %s] Attempting to start servod as it was not "
+                "found or incorrect.",
+                labstation_hostname,
             )
             if start_servod(labstation_hostname, servod_port, dut_logger):
                 dut_logger.info(
-                    f"[LABSTATION {labstation_hostname}] Waiting 8s then re-checking servod status..."
+                    "[LABSTATION %s] Waiting 8s then re-checking servod status...",
+                    labstation_hostname,
                 )
                 time.sleep(8)
                 servod_ok = check_servod_status(
-                    labstation_hostname, servod_port, target_servo_serial, dut_logger
+                    labstation_hostname,
+                    servod_port,
+                    target_servo_serial,
+                    dut_logger,
                 )
             else:
                 servod_ok = False
 
         if not servod_ok:
-            reason = f"Failed to verify/start servod for serial '{target_servo_serial}' on port {servod_port}."
+            reason = (
+                f"Failed to verify/start servod for serial "
+                f"'{target_servo_serial}' on port {servod_port}."
+            )
             dut_logger.error(
-                f"    [-] {reason} Skipping further processing for this device."
+                "    [-] %s Skipping further processing for this device.",
+                reason,
             )
             return {
                 "dut": dut_hostname,
@@ -321,17 +373,21 @@ def process_device(row_data, keyboard_hex_path):
             }
 
         dut_logger.info(
-            f"[LABSTATION {labstation_hostname}] Running pre-DUT-flash dut-control commands..."
+            "[LABSTATION %s] Running pre-DUT-flash dut-control commands...",
+            labstation_hostname,
         )
         dut_control_command_pre = (
             f"dut-control -p {servod_port} at_hwb:on atmega_rst:on atmega_rst:off"
         )
-        _, _, retcode = execute_ssh_command(
+        _stdout, _stderr, retcode = execute_ssh_command(
             labstation_hostname, dut_control_command_pre, dut_logger
         )
         if retcode != 0:
-            reason = f"Command '{dut_control_command_pre}' failed on labstation. Retcode: {retcode}."
-            dut_logger.error(f"    [-] {reason} Skipping further processing.")
+            reason = (
+                f"Command '{dut_control_command_pre}' failed on labstation. "
+                f"Retcode: {retcode}."
+            )
+            dut_logger.error("    [-] %s Skipping further processing.", reason)
             return {
                 "dut": dut_hostname,
                 "labstation": labstation_hostname,
@@ -339,15 +395,22 @@ def process_device(row_data, keyboard_hex_path):
                 "stage": "Labstation Pre-Flash Commands",
                 "reason": reason,
             }
-        dut_logger.info(f"    [+] Labstation pre-DUT-flash commands successful.")
+        dut_logger.info("    [+] Labstation pre-DUT-flash commands successful.")
 
-        dut_logger.info(f"[DUT {dut_hostname}] Transferring '{keyboard_hex_path}'...")
+        dut_logger.info(
+            "[DUT %s] Transferring '%s'...",
+            dut_hostname,
+            keyboard_hex_path,
+        )
         remote_hex_path = f"/tmp/{os.path.basename(keyboard_hex_path)}"
         if not transfer_file_scp(
             dut_hostname, keyboard_hex_path, remote_hex_path, dut_logger
         ):
-            reason = f"Failed to SCP '{keyboard_hex_path}' to DUT {dut_hostname}:{remote_hex_path}."
-            dut_logger.error(f"    [-] {reason} Skipping further DUT operations.")
+            reason = (
+                f"Failed to SCP '{keyboard_hex_path}' to DUT "
+                f"{dut_hostname}:{remote_hex_path}."
+            )
+            dut_logger.error("    [-] %s Skipping further DUT operations.", reason)
             return {
                 "dut": dut_hostname,
                 "labstation": labstation_hostname,
@@ -356,13 +419,20 @@ def process_device(row_data, keyboard_hex_path):
                 "reason": reason,
             }
 
-        dut_logger.info(f"[DUT {dut_hostname}] Verifying '{remote_hex_path}' on DUT...")
-        stdout_ls, _, retcode_ls = execute_ssh_command(
+        dut_logger.info(
+            "[DUT %s] Verifying '%s' on DUT...",
+            dut_hostname,
+            remote_hex_path,
+        )
+        stdout_ls, _stderr, retcode_ls = execute_ssh_command(
             dut_hostname, f"ls {shlex.quote(remote_hex_path)}", dut_logger
         )
         if retcode_ls != 0 or not remote_hex_path in stdout_ls.splitlines():
-            reason = f"File '{remote_hex_path}' not found on DUT after SCP. Retcode: {retcode_ls}."
-            dut_logger.error(f"    [-] {reason} Skipping further DUT operations.")
+            reason = (
+                f"File '{remote_hex_path}' not found on DUT after SCP. "
+                f"Retcode: {retcode_ls}."
+            )
+            dut_logger.error("    [-] %s Skipping further DUT operations.", reason)
             return {
                 "dut": dut_hostname,
                 "labstation": labstation_hostname,
@@ -370,19 +440,25 @@ def process_device(row_data, keyboard_hex_path):
                 "stage": "DUT SCP Verification",
                 "reason": reason,
             }
-        dut_logger.info(f"    [+] File '{remote_hex_path}' confirmed on DUT.")
+        dut_logger.info("    [+] File '%s' confirmed on DUT.", remote_hex_path)
 
         dut_logger.info(
-            f"[DUT {dut_hostname}] Checking for DFU bootloader (03eb:2ff4)..."
+            "[DUT %s] Checking for DFU bootloader (03eb:2ff4)...",
+            dut_hostname,
         )
         dfu_bootloader_id = "03eb:2ff4"
-        stdout_lsusb_dfu, _, retcode_lsusb_dfu = execute_ssh_command(
+        stdout_lsusb_dfu, _stderr, retcode_lsusb_dfu = execute_ssh_command(
             dut_hostname, "lsusb -v", dut_logger
         )
         if retcode_lsusb_dfu != 0 or dfu_bootloader_id not in stdout_lsusb_dfu:
-            reason = f"DFU bootloader '{dfu_bootloader_id}' not found on DUT {dut_hostname}. Retcode: {retcode_lsusb_dfu}."
+            reason = (
+                f"DFU bootloader '{dfu_bootloader_id}' not found on DUT "
+                f"{dut_hostname}. Retcode: {retcode_lsusb_dfu}."
+            )
             dut_logger.error(
-                f"    [-] {reason} lsusb output (first 500 chars): {stdout_lsusb_dfu[:500] if stdout_lsusb_dfu else 'N/A'}"
+                "    [-] %s lsusb output (first 500 chars): %s",
+                reason,
+                stdout_lsusb_dfu[:500] if stdout_lsusb_dfu else "N/A",
             )
             return {
                 "dut": dut_hostname,
@@ -391,15 +467,18 @@ def process_device(row_data, keyboard_hex_path):
                 "stage": "DUT DFU Check",
                 "reason": reason,
             }
-        dut_logger.info(f"    [+] DFU bootloader '{dfu_bootloader_id}' found on DUT.")
+        dut_logger.info("    [+] DFU bootloader '%s' found on DUT.", dfu_bootloader_id)
 
-        dut_logger.info(f"[DUT {dut_hostname}] Running dfu-programmer erase...")
-        _, _, retcode_erase = execute_ssh_command(
+        dut_logger.info("[DUT %s] Running dfu-programmer erase...", dut_hostname)
+        unused_, unused_, retcode_erase = execute_ssh_command(
             dut_hostname, "dfu-programmer atmega32u4 erase", dut_logger
         )
         if retcode_erase != 0:
-            reason = f"'dfu-programmer atmega32u4 erase' failed on DUT {dut_hostname}. Retcode: {retcode_erase}."
-            dut_logger.error(f"    [-] {reason} Skipping further DUT operations.")
+            reason = (
+                "'dfu-programmer atmega32u4 erase' failed on DUT "
+                f"{dut_hostname}. Retcode: {retcode_erase}."
+            )
+            dut_logger.error("    [-] %s Skipping further DUT operations.", reason)
             return {
                 "dut": dut_hostname,
                 "labstation": labstation_hostname,
@@ -407,20 +486,25 @@ def process_device(row_data, keyboard_hex_path):
                 "stage": "DUT DFU Erase",
                 "reason": reason,
             }
-        dut_logger.info(f"    [+] DFU erase successful.")
+        dut_logger.info("    [+] DFU erase successful.")
 
         dut_logger.info(
-            f"[DUT {dut_hostname}] Running dfu-programmer flash '{remote_hex_path}'..."
+            "[DUT %s] Running dfu-programmer flash '%s'...",
+            dut_hostname,
+            remote_hex_path,
         )
         cmd_flash_dfu = (
-            f"dfu-programmer atmega32u4 flash {shlex.quote(remote_hex_path)}"
+            "dfu-programmer atmega32u4 flash " f"{shlex.quote(remote_hex_path)}"
         )
-        _, _, retcode_flash = execute_ssh_command(
+        unused_, unused_, retcode_flash = execute_ssh_command(
             dut_hostname, cmd_flash_dfu, dut_logger
         )
         if retcode_flash != 0:
-            reason = f"'{cmd_flash_dfu}' failed on DUT {dut_hostname}. Retcode: {retcode_flash}."
-            dut_logger.error(f"    [-] {reason} Skipping further DUT operations.")
+            reason = (
+                f"'{cmd_flash_dfu}' failed on DUT {dut_hostname}. "
+                f"Retcode: {retcode_flash}."
+            )
+            dut_logger.error("    [-] %s Skipping further DUT operations.", reason)
             return {
                 "dut": dut_hostname,
                 "labstation": labstation_hostname,
@@ -428,21 +512,26 @@ def process_device(row_data, keyboard_hex_path):
                 "stage": "DUT DFU Flash",
                 "reason": reason,
             }
-        dut_logger.info(f"    [+] DFU flash successful.")
+        dut_logger.info("    [+] DFU flash successful.")
 
         dut_logger.info(
-            f"[LABSTATION {labstation_hostname}] Running post-DUT-flash dut-control commands..."
+            "[LABSTATION %s] Running post-DUT-flash dut-control commands...",
+            labstation_hostname,
         )
         dut_control_command_post = (
-            f"dut-control -p {servod_port} at_hwb:off atmega_rst:on atmega_rst:off"
+            f"dut-control -p {servod_port} " "at_hwb:off atmega_rst:on atmega_rst:off"
         )
-        _, _, retcode_post = execute_ssh_command(
+        unused_, unused_, retcode_post = execute_ssh_command(
             labstation_hostname, dut_control_command_post, dut_logger
         )
         if retcode_post != 0:
-            reason = f"Command '{dut_control_command_post}' failed on labstation. Retcode: {retcode_post}."
+            reason = (
+                f"Command '{dut_control_command_post}' failed on labstation. "
+                f"Retcode: {retcode_post}."
+            )
             dut_logger.error(
-                f"    [-] {reason} Marking as failed due to post command fail"
+                "    [-] %s Marking as failed due to post command fail",
+                reason,
             )
             return {
                 "dut": dut_hostname,
@@ -451,19 +540,25 @@ def process_device(row_data, keyboard_hex_path):
                 "stage": "Labstation Post-Flash Commands",
                 "reason": reason,
             }
-        dut_logger.info(f"    [+] Labstation post-DUT-flash commands executed.")
+        dut_logger.info("    [+] Labstation post-DUT-flash commands executed.")
 
         dut_logger.info(
-            f"[DUT {dut_hostname}] Waiting 3s and Checking for LUFA Keyboard Demo Application (03eb:2042)..."
+            "[DUT %s] Waiting 3s and Checking for LUFA Keyboard Demo "
+            "Application (03eb:2042)...",
+            dut_hostname,
         )
         time.sleep(3)
         lufa_keyboard_id = "03eb:2042"
-        stdout_lsusb_lufa, _, retcode_lsusb_lufa = execute_ssh_command(
+        stdout_lsusb_lufa, unused_, retcode_lsusb_lufa = execute_ssh_command(
             dut_hostname, "lsusb -v", dut_logger
         )
         if retcode_lsusb_lufa != 0 or lufa_keyboard_id not in stdout_lsusb_lufa:
-            reason = f"LUFA Keyboard Demo App '{lufa_keyboard_id}' not found on DUT {dut_hostname} after flashing. Retcode: {retcode_lsusb_lufa}."
-            dut_logger.error(f"    [-] {reason}")
+            reason = (
+                f"LUFA Keyboard Demo App '{lufa_keyboard_id}' not found on "
+                f"DUT {dut_hostname} after flashing. Retcode: "
+                f"{retcode_lsusb_lufa}."
+            )
+            dut_logger.error("    [-] %s", reason)
             return {
                 "dut": dut_hostname,
                 "labstation": labstation_hostname,
@@ -473,7 +568,9 @@ def process_device(row_data, keyboard_hex_path):
             }
 
         dut_logger.info(
-            f"    [SUCCESS] DUT {dut_hostname} successfully processed and LUFA Keyboard Demo App found!"
+            "    [SUCCESS] DUT %s successfully processed and LUFA Keyboard "
+            "Demo App found!",
+            dut_hostname,
         )
         return None
     finally:
@@ -483,17 +580,22 @@ def process_device(row_data, keyboard_hex_path):
         with file_log_lock:
             with open(LOG_FILE_NAME, "a", encoding="utf-8") as f:
                 f.write(
-                    f"--- BEGIN LOG FOR DUT: {dut_hostname or 'UnknownDUT'} | Servo: {target_servo_serial or 'UnknownSerial'} ---\n"
+                    f"--- BEGIN LOG FOR DUT: {dut_hostname or 'UnknownDUT'} | "
+                    "Servo: "
+                    f"{target_servo_serial or 'UnknownSerial'} ---\n"
                 )
                 f.write(dut_log_content)
                 f.write(
-                    f"--- END LOG FOR DUT: {dut_hostname or 'UnknownDUT'} | Servo: {target_servo_serial or 'UnknownSerial'} ---\n\n"
+                    f"--- END LOG FOR DUT: {dut_hostname or 'UnknownDUT'} | "
+                    "Servo: "
+                    f"{target_servo_serial or 'UnknownSerial'} ---\n\n"
                 )
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Automate Labstation and DUT interactions via SSH using system ssh/scp.",
+        description="Automate Labstation and DUT interactions via SSH using "
+        "system ssh/scp.",
         formatter_class=argparse.RawTextHelpFormatter,
         epilog=f"""
 Example CSV format:
@@ -502,13 +604,16 @@ Example CSV format:
   dut_hostname2,serial456,labstation_host2,9998
 
 Notes:
-- This script uses system 'ssh' and 'scp'. Ensure they are configured for passwordless
+- This script uses system 'ssh' and 'scp'. Ensure they are configured for
+  passwordless
   access (e.g., using SSH keys and ssh-agent) for the user '{SSH_USERNAME}'.
 - SSH connection options {COMMON_SSH_OPTIONS} are used.
-  These suppress host key prompts, which is convenient for automation but has security
+  These suppress host key prompts, which is convenient for automation but has
+  security
   implications. Use with caution and in controlled environments.
 - Number of worker threads: {NUM_WORKERS}
-- Logs are primarily on console for real-time. Detailed per-DUT logs are in: {LOG_FILE_NAME}
+- Logs are primarily on console for real-time. Detailed per-DUT logs are in:
+  {LOG_FILE_NAME}
   (each DUT's log is written contiguously upon completion).
 - CSV reports for successful and failed DUTs will also be generated.
 """,
@@ -555,10 +660,12 @@ Notes:
 
     initial_log_messages.append("--- SSH Configuration ---")
     initial_log_messages.append(
-        f"[*] Using SSH username: '{SSH_USERNAME}' for all connections via system ssh/scp."
+        f"[*] Using SSH username: '{SSH_USERNAME}' for all connections "
+        "via system ssh/scp."
     )
     initial_log_messages.append(
-        f"[*] Assuming passwordless SSH (key-based authentication) is configured for the system."
+        "[*] Assuming passwordless SSH (key-based authentication) is "
+        "configured for the system."
     )
     initial_log_messages.append(
         f"[*] Common SSH options: {' '.join(COMMON_SSH_OPTIONS)}"
@@ -579,7 +686,7 @@ Notes:
     processed_device_count = 0
     device_rows = []
     csv_fieldnames = []  # To store headers from input CSV
-    successful_dut_original_rows = []  # To store original row data for successful DUTs
+    successful_dut_original_rows = []  # Store original row data for successful DUTs
     failed_dut_original_rows = []  # To store original row data for failed DUTs
 
     try:
@@ -594,12 +701,20 @@ Notes:
                 return
 
             csv_fieldnames = list(reader.fieldnames)  # Store headers
-            console_logger.info(f"Detected CSV columns: {csv_fieldnames}")
+            console_logger.info("Detected CSV columns: %s", csv_fieldnames)
 
-            required_cols = ["dut", "servo_serial", "labstation", "servo_port"]
+            required_cols = [
+                "dut",
+                "servo_serial",
+                "labstation",
+                "servo_port",
+            ]
             missing_cols = [col for col in required_cols if col not in csv_fieldnames]
             if missing_cols:
-                msg = f"Error: CSV file '{args.csv_file}' is missing required columns: {', '.join(missing_cols)}"
+                msg = (
+                    f"Error: CSV file '{args.csv_file}' is missing required "
+                    f"columns: {', '.join(missing_cols)}"
+                )
                 console_logger.error(msg)
                 with file_log_lock:
                     with open(LOG_FILE_NAME, "a", encoding="utf-8") as f:
@@ -616,7 +731,10 @@ Notes:
                     f.write(msg + "\n\n")
             return
 
-        msg = f"Starting processing for {len(device_rows)} devices with {NUM_WORKERS} workers..."
+        msg = (
+            f"Starting processing for {len(device_rows)} devices with "
+            f"{NUM_WORKERS} workers..."
+        )
         console_logger.info(msg)
         with file_log_lock:
             with open(LOG_FILE_NAME, "a", encoding="utf-8") as f:
@@ -644,11 +762,16 @@ Notes:
                         )  # Add original data to success list
                     processed_device_count += 1
                     console_logger.info(
-                        f"Completed processing for DUT: {dut}. ({processed_device_count}/{len(device_rows)})"
+                        "Completed processing for DUT: %s. (%d/%d)",
+                        dut,
+                        processed_device_count,
+                        len(device_rows),
                     )
                 except Exception as e:
                     console_logger.error(
-                        f"An unexpected error occurred processing device {dut}: {e}"
+                        "An unexpected error occurred processing device %s: %s",
+                        dut,
+                        e,
                     )
                     failed_devices_reports.append(
                         {
@@ -664,7 +787,11 @@ Notes:
                     )  # Also count as failed for CSV report
                     processed_device_count += 1
                     console_logger.info(
-                        f"Completed processing (with unhandled error in thread) for DUT: {dut}. ({processed_device_count}/{len(device_rows)})"
+                        "Completed processing (with unhandled error in "
+                        "thread) for DUT: %s. (%d/%d)",
+                        dut,
+                        processed_device_count,
+                        len(device_rows),
                     )
 
     except FileNotFoundError:
@@ -688,7 +815,7 @@ Notes:
         # Successful DUTs CSV
         successful_csv_filename = f"successful_duts_{_timestamp_for_log}.csv"
         msg_success_csv = (
-            f"Generating CSV report for successful DUTs: {successful_csv_filename}"
+            "Generating CSV report for successful DUTs: " f"{successful_csv_filename}"
         )
         console_logger.info(msg_success_csv)
         csv_report_log_messages.append(msg_success_csv)
@@ -701,18 +828,20 @@ Notes:
                 writer.writerows(successful_dut_original_rows)
             if not successful_dut_original_rows:
                 csv_report_log_messages.append(
-                    f"No successful DUTs to report in {successful_csv_filename}."
+                    "No successful DUTs to report in " f"{successful_csv_filename}."
                 )
         except IOError as e:
             err_msg = (
-                f"Error writing successful DUTs CSV {successful_csv_filename}: {e}"
+                "Error writing successful DUTs CSV " f"{successful_csv_filename}: {e}"
             )
             console_logger.error(err_msg)
             csv_report_log_messages.append(err_msg)
 
         # Failed DUTs CSV
         failed_csv_filename = f"failed_duts_{_timestamp_for_log}.csv"
-        msg_failed_csv = f"Generating CSV report for failed DUTs: {failed_csv_filename}"
+        msg_failed_csv = (
+            "Generating CSV report for failed DUTs: " f"{failed_csv_filename}"
+        )
         console_logger.info(msg_failed_csv)
         csv_report_log_messages.append(msg_failed_csv)
         try:
@@ -724,7 +853,8 @@ Notes:
                 writer.writerows(failed_dut_original_rows)
             if not failed_dut_original_rows:
                 csv_report_log_messages.append(
-                    f"No failed DUTs to report in {failed_csv_filename} (or all succeeded)."
+                    f"No failed DUTs to report in {failed_csv_filename} "
+                    "(or all succeeded)."
                 )
         except IOError as e:
             err_msg = f"Error writing failed DUTs CSV {failed_csv_filename}: {e}"
@@ -732,7 +862,10 @@ Notes:
             csv_report_log_messages.append(err_msg)
 
     else:
-        no_header_msg = "Skipping CSV report generation as no CSV headers were found (e.g., empty or invalid input CSV)."
+        no_header_msg = (
+            "Skipping CSV report generation as no CSV headers were found "
+            "(e.g., empty or invalid input CSV)."
+        )
         console_logger.info(no_header_msg)
         csv_report_log_messages.append(no_header_msg)
 
@@ -752,15 +885,17 @@ Notes:
         )
         for item in failed_devices_reports:
             summary_lines.append(
-                f"  DUT: {item['dut']}, Labstation: {item['labstation']}, Servo Serial: {item.get('servo_serial', 'N/A')}"
+                f"  DUT: {item['dut']}, Labstation: {item['labstation']}, "
+                "Servo Serial: "
+                f"{item.get('servo_serial', 'N/A')}"
             )
             summary_lines.append(f"    Stage: {item['stage']}")
             summary_lines.append(f"    Reason: {item['reason']}")
             summary_lines.append("-" * 20)
-    else:
         if processed_device_count > 0 and device_rows:
             summary_lines.append(
-                "\n\n--- All specified devices processed. See individual DUT logs and CSV reports. ---"
+                "\n\n--- All specified devices processed. "
+                "See individual DUT logs and CSV reports. ---"
             )
         elif not device_rows:  # Already handled, but for completeness of summary logic
             pass

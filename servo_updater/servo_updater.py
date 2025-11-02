@@ -416,7 +416,7 @@ def update(dev, serialno, args, devmap):
     print("===== Jumping to RO =====")
     try:
         do_with_retries(select, tinys, "ro")
-    except:
+    except Exception:
         print_servod_warning()
         sys.exit(1)
 
