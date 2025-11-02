@@ -171,8 +171,8 @@ class ptyDriver:
                 if result is not None:
                     result = tuple(res.decode("utf-8") for res in result)
                 result_list.append(result)
-        except pexpect.TIMEOUT:
-            raise ptyError("Timeout waiting for response.")
+        except pexpect.TIMEOUT as e:
+            raise ptyError("Timeout waiting for response.") from e
         finally:
             if not regex_list:
                 # Must be longer than delaybeforesend

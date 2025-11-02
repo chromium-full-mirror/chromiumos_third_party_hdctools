@@ -47,8 +47,7 @@ def _OsPipeFiles():
     rd_fd, wr_fd = os.pipe()
     try:
         return os.fdopen(rd_fd, "r"), os.fdopen(wr_fd, "w")
-    # If anything went wrong with fdopen(), do our best to clean up.
-    except OSError:
+    except OSError as e:
         # Save original exception for re-raising, in case os.close() triggers an
         # exception.  Note that saving exc_traceback here creates a circular
         # reference.
@@ -63,7 +62,7 @@ def _OsPipeFiles():
             except OSError:
                 pass
             # Re-raise the original exception.
-            raise exc_type(exc_value, exc_traceback)
+            raise exc_type(exc_value, exc_traceback) from e
         finally:
             # Break the exc_traceback circular reference.
             del exc_type, exc_value, exc_traceback

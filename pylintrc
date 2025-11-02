@@ -472,7 +472,6 @@ disable=
     missing-module-docstring,
     no-member,
     protected-access,
-    raise-missing-from,
     simplifiable-if-expression,
     super-init-not-called,
     super-with-arguments,

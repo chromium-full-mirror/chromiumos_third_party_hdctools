@@ -96,7 +96,7 @@ class Hierarchy:
             raise HierarchyError(
                 "Unhandled issue resetting device at busnum: %d "
                 "devnum: %d sysfs_path: %r. %s" % (busnum, devnum, sysfs_path, str(e))
-            )
+            ) from e
 
     @staticmethod
     def GetAllUsbDevices(vid_pid_list=None):
@@ -288,7 +288,7 @@ class Hierarchy:
                 raise HierarchyError(
                     "Unexpected content %r at sysfs file %r. %s"
                     % (content, dev_file_full, str(e))
-                )
+                ) from e
 
     @staticmethod
     def DevNumFromSysfs(sysfs_path):

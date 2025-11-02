@@ -775,10 +775,11 @@ class SystemConfig:
                 try:
                     input_type = ALLOWABLE_INPUT_TYPES[params["input_type"]]
                     return input_type(map_vstr)
-                except ValueError:
+                except ValueError as e:
                     err += "\n%s Input should be 'int' or 'float'." % (
                         "Or" if "Map" in err else ""
                     )
+                    raise SystemConfigError(err) from e
             else:
                 self._logger.error("Unrecognized input type.")
         # TODO(tbroch): deprecate below once all controls have input_type params
@@ -788,13 +789,13 @@ class SystemConfig:
             pass
         try:
             return float(str(map_vstr))
-        except ValueError:
+        except ValueError as e:
             # No we know that nothing worked, and there was an error.
             err += (
                 " %r can't be cast to default input type %r or fallback input "
                 "type %r" % (map_vstr, "int", "float")
             )
-            raise SystemConfigError(err)
+            raise SystemConfigError(err) from e
 
     # pylint: disable=invalid-name
     # Naming convention to dynamically find methods based on config parameter
@@ -848,12 +849,12 @@ class SystemConfig:
             fmt = params["fmt"]
             try:
                 func = getattr(self, "_Fmt_%s" % fmt)
-            except AttributeError:
-                raise SystemConfigError("Unrecognized format %s" % fmt)
+            except AttributeError as e:
+                raise SystemConfigError("Unrecognized format %s" % fmt) from e
             try:
                 reformat_value = func(value)
-            except Exception:
-                raise SystemConfigError("Problem executing format %s" % fmt)
+            except Exception as e:
+                raise SystemConfigError("Problem executing format %s" % fmt) from e
         if "map" in params:
             map_dict = self._lookup(MAP_TAG, params["map"])
             if map_dict:

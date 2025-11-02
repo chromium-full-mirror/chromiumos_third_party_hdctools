@@ -86,7 +86,7 @@ class Scratch:
         except (ValueError, TypeError) as e:
             raise ScratchError(
                 "Entry arguments malformed. %s: %s" % (type(e).__name__, str(e))
-            )
+            ) from e
         entryf = self._EntryF(entry)
         if os.path.exists(entryf):
             msg = "Adding entry for port already in use. Port: %d." % int(port)
@@ -223,12 +223,12 @@ class Scratch:
         with open(entryf, "r", encoding="utf-8") as f:
             try:
                 entry = json.load(f)
-            except ValueError:
+            except ValueError as e:
                 # Invalid json file
                 os.remove(entryf)
                 raise ScratchError(
                     "id: %s had invalid json formatting. Removed." % identifier
-                )
+                ) from e
         return entry
 
     def _Sanitize(self):

@@ -139,8 +139,8 @@ class ptyDriver:
                 # the subgroups of the match.
                 result = match.group(*list(range(lastindex + 1))) if match else None
                 result_list.append(result)
-        except pexpect.TIMEOUT:
-            raise ptyError("Timeout waiting for response.")
+        except pexpect.TIMEOUT as e:
+            raise ptyError("Timeout waiting for response.") from e
         finally:
             self._close()
         return result_list

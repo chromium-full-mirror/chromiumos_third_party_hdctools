@@ -138,8 +138,8 @@ def setup():
     """
     try:
         return docker.from_env()
-    except docker.errors.DockerException:
-        raise StartServodException(error_message)
+    except docker.errors.DockerException as e:
+        raise StartServodException(error_message) from e
 
 
 def needs_update_check():
