@@ -150,6 +150,9 @@ def get_board_model_pairs(board_exclude_list=[]):
     if not board_model_list:
         raise TestFixtureError("Failed to find ANY boards, likely there is a test bug.")
 
+    if os.getenv("SERVOD_LIMIT_TEST_DUT"):
+        board_model_list = board_model_list[: int(os.getenv("SERVOD_LIMIT_TEST_DUT"))]
+
     return board_model_list
 
 

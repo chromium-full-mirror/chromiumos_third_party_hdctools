@@ -107,6 +107,7 @@ setup(
         "servo.common.config",
         "servo.common.proto",
         "servo.common.utils",
+        "servo.dockerfiles",
     ],
     package_data={
         "servo": [

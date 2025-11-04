@@ -10,11 +10,11 @@ class StopCommand(run_command.RunCommandBase):
     def __init__(self):
         super().__init__(None)
 
-    def execute_command(self, container, passthrough, detach=False):
+    def execute_command(self, container, command, detach=False):
         container.kill()
         return (0, None)
 
 
 if __name__ == "__main__":
-    command = StopCommand()
-    command.run_command_in_container()
+    stop_command = StopCommand()
+    stop_command.run_command_in_container()

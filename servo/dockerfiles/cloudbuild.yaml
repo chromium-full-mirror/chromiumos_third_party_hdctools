@@ -27,36 +27,33 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - --cache=true
   - --cache-ttl=96h
-  - -f=/workspace/servo/dockerfiles/Dockerfile.cq
+  - -f=/workspace/servo/dockerfiles/Dockerfile
   waitFor: ['src-prep']
 
-- name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
-  id: 'test-prep'
-  entrypoint: 'bash'
+- name: 'gcr.io/kaniko-project/executor:latest'
+  id: 'test-build'
   args:
-  - '-c'
-  - |
-    set -x
-    cp /usr/local/lib/python3.13/dist-packages/servo/proto/servo_dev_info.textproto /workspace/servo/proto/
-    cp /usr/local/lib/python3.13/dist-packages/servo/proto/servo_dev_pb2.py /workspace/servo/proto/
-    cp /usr/local/lib/python3.13/dist-packages/servo/data/*_inas.xml  /workspace/servo/data/
-
+  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servodtest:$COMMIT_SHA
+  - --cache=true
+  - --cache-ttl=96h
+  - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
+  - -f=/workspace/servo/dockerfiles/Dockerfile.test
   waitFor: ['build']
 
-- name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA'
+- name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servodtest:$COMMIT_SHA'
   id: 'test-python'
   entrypoint: pytest
   env:
     - PYTHONPATH=/workspace/
   args:
-    - -n=auto
-    - --forked
+    - -n=logical
     - --cov-report=lcov
+    - --forked
     - --cov=/usr/local/lib/python3.13/dist-packages/servo
     - --cov=/usr/local/lib/python3.13/dist-packages/usbkm232
     - --cov=/usr/local/lib/python3.13/dist-packages/ec3po
     - /workspace/
-  waitFor: ['test-prep']
+  waitFor: ['test-build']
 
 
 - name: 'pyfound/black:24.2.0'

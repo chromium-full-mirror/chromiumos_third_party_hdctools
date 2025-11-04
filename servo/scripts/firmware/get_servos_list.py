@@ -488,7 +488,8 @@ def main(unused_argv):
     print(
         (
             f"Writing {len(hostnames)} DUT hostnames to "
-            f"{args.stage}_{args.servo_type[0]}_list.csv and additional information to "
+            f"{args.stage}_{args.servo_type[0]}_list.csv and additional "
+            "information to "
             f"{args.stage}_{args.servo_type[0]}_list_debug.csv"
         )
     )
@@ -498,8 +499,9 @@ def main(unused_argv):
     print("To proceed with release run below command:")
     print(
         (
-            f"\t./fleet_rollout.py --channel ALPHA --select from-csv --csv-file "
-            f"{args.stage}_{args.servo_type[0]}_list.csv --servo_type {args.servo_type[0]}"
+            f"\t./fleet_rollout.py --channel ALPHA --select from-csv "
+            f"--csv-file {args.stage}_{args.servo_type[0]}_list.csv "
+            f"--servo_type {args.servo_type[0]}"
         )
     )
 

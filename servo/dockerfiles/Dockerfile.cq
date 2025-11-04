@@ -19,6 +19,7 @@ RUN apt-get update \
     && apt-get install -y \
     autoconf \
     build-essential \
+    equivs \
     clang \
     curl \
     git \
@@ -41,6 +42,13 @@ ENV CXX=clang++
 # from portage.
 ENV BUILDCC_PREFIX=
 
+# Override the libraries we build ourselves, and do it early: no need to mess
+# up the library builds by building against distro packages that we don't
+# intend to use.
+COPY servo/dockerfiles/equivs-control .
+RUN equivs-build equivs-control
+RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
+
 ######################################################################
 FROM clang-builder as libusb-builder
 
@@ -58,37 +66,28 @@ RUN sed -i 's/Libs: -L\${libdir} -lusb-1.0/Libs: -L\${libdir} -lusb-1.0 -lpthrea
 #####################################################################
 FROM clang-builder as libftdi
 
-RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.2.tar.bz2 \
-    && tar xf libftdi1-1.2.tar.bz2 \
-    && rm libftdi1-1.2.tar.bz2
+RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.5.tar.bz2 \
+    && tar xf libftdi1-1.5.tar.bz2 \
+    && rm libftdi1-1.5.tar.bz2
 
-COPY --link --from=chromiumos_overlays \
-    /chromiumos-overlay/dev-embedded/libftdi/files/libftdi-1.2-getopts.patch \
-    /libftdi1-1.2/
 
-COPY --link --from=chromiumos_overlays \
+COPY --from=chromiumos_overlays \
     /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
     /usr/share/libftdi/
 
 RUN apt-get update --no-install-recommends  \
     && apt-get install -y --no-install-recommends  \
     cmake \
+    libconfuse-dev \
     && rm -rf /var/lib/apt/lists/*
 
 
-COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 
-WORKDIR /libftdi1-1.2
-
-RUN git apply libftdi-1.2-getopts.patch
-
-# The examples have a linking issue, not used for anything, disable them.
-RUN sed -i s/.*examples.*//g CMakeLists.txt
-RUN sed -i s/.*examples.*//g libftdi1.spec.in
-
+WORKDIR /libftdi1-1.5
 
 RUN mkdir build \
     && cd build \
@@ -97,6 +96,23 @@ RUN mkdir build \
     && make install
 
 WORKDIR /
+
+######################################################################
+FROM libftdi as ec-builder
+
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
+
+WORKDIR /
+
+RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
+
+WORKDIR /flashmap
+RUN make && make install
+
+RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
+
+WORKDIR /
+RUN tar cvf libs.tar /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
 FROM libftdi as pigweed-builder
@@ -111,8 +127,20 @@ COPY servo/dockerfiles/setup_pigweed.py .
 RUN python3 setup_pigweed.py bdist_wheel
 
 ######################################################################
-FROM libftdi as hdctools-builder
-COPY / hdctools/
+FROM libftdi as gcstool-builder
+
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/ec
+
+WORKDIR /ec
+
+RUN git checkout gsc_utils && git pull
+RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
+RUN make -C extra/usb_updater gsctool
+
+RUN strip  /ec/extra/usb_updater/gsctool
+
+######################################################################
+FROM libftdi as hdctools-builder-base
 
 RUN apt-get update \
     && apt-get install -y \
@@ -120,11 +148,18 @@ RUN apt-get update \
     python3-grpc-tools \
     python3-pytest
 
+######################################################################
+FROM hdctools-builder-base as hdctools-builder
+# For cloud build and for developers copying the local source is correct, if
+# you need to build from checked in code vs you local source comment out the
+# copy command and uncomment the clone command.
+COPY / hdctools/
+#RUN git clone https://chromium.googlesource.com/chromiumos/third_party/hdctools
+
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
 RUN make -j $(nproc)
 RUN make install
-
 
 WORKDIR /hdctools/servo
 RUN python3 setup.py bdist_wheel
@@ -135,99 +170,108 @@ WORKDIR /hdctools/servo_updater
 RUN python3 setup.py bdist_wheel
 
 #####################################################################
-FROM hdctools-builder as hdctools-usbkm232-builder
-
-WORKDIR /hdctools/usbkm232
-RUN python3 setup.py bdist_wheel
-
-#####################################################################
 FROM hdctools-builder as hdctools-ec3po-builder
 
 WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
 
 ######################################################################
-FROM debian:trixie-slim
+FROM debian:trixie-slim as base
+
+COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
+
+RUN apt-get update --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
+    fwupd \
+    iptables \
+    lsof \
+    procps \
+    python3 \
+    python3-backoff \
+    python3-packaging \
+    python3-pexpect \
+    python3-pip \
+    python3-protobuf \
+    python3-requests \
+    python3-serial \
+    python3-usb \
+    usbutils \
+    python3-grpc-tools \
+    python3-grpcio \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
+    && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
+    && rm -f /hdctools-docker-fake_9999-1_all.deb
 
 # Install libusb.
 COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
 COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
 COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
-COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
-
-RUN apt-get update --no-install-recommends \
-    && apt-get install -y --no-install-recommends \
-    dnsutils \
-    fwupd \
-    iptables \
-    iputils-ping \
-    kmod \
-    libatomic1 \
-    libpci-dev \
-    lsof \
-    procps \
-    sudo \
-    usbutils \
-    udev \
-    xz-utils \
-    build-essential \
-    make \
-    gcc \
-    python3 \
-    python3-backoff \
-    python3-mock \
-    python3-packaging \
-    python3-pexpect \
-    python3-protobuf \
-    python3-serial \
-    python3-pytest \
-    python3-pytest-cov \
-    python3-pytest-forked \
-    python3-pytest-mock \
-    python3-pytest-xdist \
-    python3-usb \
-    python3-requests \
-    python3-pip \
-    python3-grpc-tools \
-    python3-grpcio \
-    wget \
-    && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft
-
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
 
 WORKDIR /wheels
-COPY --link --from=hdctools-builder /usr/lib/libftdii2c*.so /usr/lib/
-COPY --link --from=hdctools-builder /usr/lib/libftdiuart*.so /usr/lib/
-COPY --link --from=hdctools-builder /usr/lib/libftdigpio*.so /usr/lib/
-COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
-COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
-COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
-COPY --link --from=hdctools-ec3po-builder /hdctools/ec3po/dist/* ./
 COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels
 
-RUN chmod u+x /usr/sbin/* /usr/bin/*
+# Install servo_firmware.
+RUN mkdir -p /usr/share/servo_updater/firmware/
 
-COPY --link --from=hdctools-builder /hdctools/servo/tests/ /hdctools/servo/tests/
-COPY --link --from=hdctools-builder /hdctools/ec3po/tests/ /hdctools/ec3po/tests/
+COPY --link --from=chromiumos_overlays \
+    /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
+    /usr/share/libftdi/
+
+COPY --link --from=ec-builder libs.tar .
+RUN tar xvf libs.tar
+RUN rm libs.tar
 
 ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
 
-COPY /servo/dockerfiles/start_servod.sh /servo/dockerfiles/stop_servod.sh \
-    /
+COPY /servo/dockerfiles/update_servo_firmware.py \
+    /servo/dockerfiles/start_servod.sh \
+    /servo/dockerfiles/start_servod_dev.sh \
+    /servo/dockerfiles/stop_servod.sh /
+
+# Running sync in the container with no params will crash the host bare metal as all disks
+# are mounted, put a script in the place of sync that checks are lease one argument is passed
+# if no arguments are passed an error is thrown.
+RUN mv /bin/sync /usr/local/bin/real_sync
+COPY /servo/dockerfiles/sync /bin
+RUN chmod 755 /bin/sync
 
 # Try to remove as much as possible to make the container smaller
 RUN apt-get remove --purge -y \
-    xz-utils \
-    build-essential \
-    make \
-    gcc \
-    python3-pip \
     wget \
     && apt-get autoclean \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /var/cache/debconf \
     && rm -rf /usr/share/doc \
     && rm -rf /usr/share/zoneinfo/
+
+RUN rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/locale/*
+RUN find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name "en" -exec rm -rf {} +
+
+######################################################################
+FROM base
+
+WORKDIR /hdctools/chromeos/
+WORKDIR /wheels
+COPY --link --from=hdctools-builder /usr/lib/libftdii2c*.so /usr/lib/
+COPY --link --from=hdctools-builder /usr/lib/libftdiuart*.so /usr/lib/
+COPY --link --from=hdctools-builder /usr/lib/libftdigpio*.so /usr/lib/
+COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
+COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
+COPY --link --from=hdctools-ec3po-builder /hdctools/ec3po/dist/* ./
+RUN pip3  install  *.whl --break-system-packages
+WORKDIR /
+RUN rm -rf wheels
+# ensure that /usr/local/lib is properly known and set up, especially libusb
+RUN ldconfig
+
+RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
+
+RUN apt-get remove --purge -y \
+    python3-pip \
+    && apt-get autoclean

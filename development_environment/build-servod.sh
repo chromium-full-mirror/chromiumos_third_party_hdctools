@@ -24,6 +24,9 @@ then
 	    -t "${IMAGE}" \
 	    -o type=image \
 	    -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
+elif [ "$1" == "cq" ]
+then
+	 docker build -t "${IMAGE}cq" -f servo/dockerfiles/Dockerfile.cq .
 else
      docker build -t "${IMAGE}" -f servo/dockerfiles/Dockerfile .
 fi

@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1.4
+# Copyright 2025 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+ARG BASE_IMG=servod:dev
+
+FROM ${BASE_IMG}
+
+RUN apt-get update --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
+    python3-pytest \
+    python3-pytest-cov \
+    python3-pytest-forked \
+    python3-pytest-mock \
+    python3-pytest-xdist \
+    python3-mock
+
+
+COPY /servo/tests/ /hdctools/servo/tests/
+COPY /ec3po/tests/ /hdctools/ec3po/tests/
+COPY /pyproject.toml /hdctools

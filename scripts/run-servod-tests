@@ -2,7 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-echo "DEV: starting grpc server ...................."
-python3 servo/data/grpc_server/grpc_server_setup.py &
+build-servod cq
 
-start-servod -t "$@"
+TEST_IMAGE="servod:devtest"
+docker build \
+    --build-arg=BASE_IMG=servod:devcq \
+    -t "${TEST_IMAGE}" -f servo/dockerfiles/Dockerfile.test .
+
+docker run -it -e SERVOD_LIMIT_TEST_DUT=1 \
+    --ulimit=nofile=65535:65535 \
+    "${TEST_IMAGE}" \
+    python3 servo/data/grpc_server/grpc_server_setup.py& \
+    pytest -n 15 --forked /hdctools

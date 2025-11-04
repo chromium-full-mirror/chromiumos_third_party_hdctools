@@ -85,13 +85,11 @@ class ServoDevice:
     """Device class that each corresponds to a physical servo device."""
 
     # Reinit capable devices.
-    REINIT_CAPABLE = set(
-        [
-            servo_dev_templates.GetID("ccd_cr50"),
-            servo_dev_templates.GetID("ccd_gsc"),
-            servo_dev_templates.GetID("ccd_gsc_nt"),
-        ]
-    )
+    REINIT_CAPABLE = {
+        servo_dev_templates.GetID("ccd_cr50"),
+        servo_dev_templates.GetID("ccd_gsc"),
+        servo_dev_templates.GetID("ccd_gsc_nt"),
+    }
 
     # Available attempts to reconnect a device
     REINIT_ATTEMPTS = 100

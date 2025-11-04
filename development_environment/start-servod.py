@@ -285,7 +285,7 @@ def start_servod(
         if sleep:
             command = ["sleep", "infinity"]
         elif test:
-            command = ["pytest", "-n", "auto", "/hdctools/"]
+            command = ["pytest", "-n", "auto", "--forked", "/hdctools/"]
             if passthrough_args:
                 command += passthrough_args
 

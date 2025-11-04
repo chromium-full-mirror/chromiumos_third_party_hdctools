@@ -89,7 +89,7 @@ def _SendShutdown(pipe_wr):
         # The write here is purely a signaling mechanism, and thus the content
         # being written does not matter.
         os.write(pipe_wr.fileno(), b".")
-    except (OSError, IOError) as error:
+    except OSError as error:
         if error.errno != errno.EPIPE:
             raise
     finally:

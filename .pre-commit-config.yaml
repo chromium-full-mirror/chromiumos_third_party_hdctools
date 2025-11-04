@@ -11,7 +11,7 @@ repos:
     -   id: end-of-file-fixer
         exclude: .*\.svg
     -   id: trailing-whitespace
-        exclude: .*\.svg
+        exclude: ^(.*\.svg|.*\.md)$
     -   id: check-toml
     -   id: check-merge-conflict
 
