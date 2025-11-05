@@ -16,7 +16,8 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     wget \
     gnupg \
     curl \
-    gnupg-agent
+    gnupg-agent \
+    sudo
 
 # Install vscode
 RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
@@ -65,7 +66,6 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     python3-setuptools \
     python3-usb \
     software-properties-common \
-    sudo \
     usbutils \
     vim
 
