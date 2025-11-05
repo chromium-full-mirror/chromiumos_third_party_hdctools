@@ -37,15 +37,14 @@ repos:
   - repo: local
     hooks:
     - id: pylint
-      name: pylint
-      entry: pylint
-      language: system
+      name: Pylint (Docker)
+      entry: -e 'XDG_CACHE_HOME=/tmp' registry.gitlab.com/pipeline-components/pylint:latest
+      language: docker_image
       types: [python]
-      args:
-        [
-          "-rn", # Only display messages
-          "-sn", # Don't display the score
-        ]
+      args: [
+        "-rn", # Only display messages
+        "-sn", # Don't display the score
+      ]
 
   - repo: local
     hooks:
