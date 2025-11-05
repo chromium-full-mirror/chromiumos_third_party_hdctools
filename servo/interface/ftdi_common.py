@@ -9,8 +9,8 @@ from servo import servo_dev_templates
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4
 
-DEFAULT_VID = servo_dev_templates.GetVID("servo_v4")
-DEFAULT_PID = servo_dev_templates.GetPID("servo_v4")
+DEFAULT_VID = servo_dev_templates.get_vid("servo_v4")
+DEFAULT_PID = servo_dev_templates.get_pid("servo_v4")
 
 INTERFACE_TYPE_ANY = ctypes.c_int(0)
 INTERFACE_TYPE_GPIO = ctypes.c_int(1)

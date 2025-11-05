@@ -25,13 +25,13 @@ class TinyServod:
         )
         self.suart.run()
         # Pass a fake dictionary as params to appease the hw_driver API.
-        self.pty = pty_driver.ptyDriver(self.suart, {"cmd": "get"})
+        self.pty = pty_driver.PtyDriver(self.suart, {"cmd": "get"})
 
     def reinitialize(self):
         """Reinitialize the connect after a reset/disconnect/etc."""
         self.suart.reinitialize()
         # Pass a fake dictionary as params to appease the hw_driver API.
-        self.pty = pty_driver.ptyDriver(self.suart, {"cmd": "get"})
+        self.pty = pty_driver.PtyDriver(self.suart, {"cmd": "get"})
 
     def close(self):
         """Close out the connection and release resources.

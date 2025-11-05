@@ -25,6 +25,20 @@ def _get_new_files():
     return new_files
 
 
+LICENSE_HEADER = (
+    # Line 1 - copyright.
+    r".*Copyright(?P<copyright> \(c\))? "
+    r"(?P<year>20[0-9]{2})(?:-20[0-9]{2})? "
+    r"The Chromium(?P<chromium_space_os> )?OS Authors(?P<period>\.)?"
+    r"(?P<rights_reserved> All rights reserved\.)?\n"
+    # Line 2 - License.
+    r".*Use of this source code is governed by a BSD-style license that "
+    r"can be\n"
+    # Line 3 - License continuation.
+    r".*found in the LICENSE file\.\n"
+)
+
+
 def _check_license(files):
     """Verifies the Chromium OS license/copyright header.
 
@@ -32,18 +46,6 @@ def _check_license(files):
     http://dev.chromium.org/developers/coding-style#TOC-File-headers
     """
 
-    LICENSE_HEADER = (
-        # Line 1 - copyright.
-        r".*Copyright(?P<copyright> \(c\))? "
-        r"(?P<year>20[0-9]{2})(?:-20[0-9]{2})? "
-        r"The Chromium(?P<chromium_space_os> )?OS Authors(?P<period>\.)?"
-        r"(?P<rights_reserved> All rights reserved\.)?\n"
-        # Line 2 - License.
-        r".*Use of this source code is governed by a BSD-style license that "
-        r"can be\n"
-        # Line 3 - License continuation.
-        r".*found in the LICENSE file\.\n"
-    )
     license_re = re.compile(LICENSE_HEADER, re.MULTILINE)
 
     bad_files = []

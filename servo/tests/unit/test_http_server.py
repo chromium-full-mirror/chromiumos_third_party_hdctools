@@ -29,9 +29,9 @@ class TestHttpRequestHandler(unittest.TestCase):
         self.http_handler.wfile.write = unittest.mock.MagicMock()
         self.http_handler.wfile.flush = unittest.mock.MagicMock()
 
-    def test_do_POST(self):
-        """Test do_POST."""
-        self.http_handler.do_POST()
+    def test_do_post(self):
+        """Test do_post."""
+        self.http_handler.do_post()
 
         self.http_handler.send_response.assert_called_once_with(200)
         self.http_handler.send_header.assert_any_call("Content-Type", "text/plain")
@@ -42,7 +42,7 @@ class TestHttpRequestHandler(unittest.TestCase):
         self.http_handler.wfile.write.assert_called_once_with(self.data.encode("utf_8"))
         self.http_handler.wfile.flush.assert_called_once()
 
-    def test_do_GET(self):
+    def test_do_get(self):
         """Test do_GET."""
         self.http_handler.do_GET()
 

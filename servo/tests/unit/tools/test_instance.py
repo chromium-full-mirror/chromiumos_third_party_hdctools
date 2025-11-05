@@ -24,7 +24,7 @@ class TestInstance(unittest.TestCase):
     def test_show(self):
         """Test show()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             return_value={
                 "active": True,
                 "port": 9998,
@@ -38,7 +38,7 @@ class TestInstance(unittest.TestCase):
 
         i.show(args)
 
-        i._scratch.FindById.assert_called_once_with("id")
+        i._scratch.find_by_id.assert_called_once_with("id")
         i._logger.info.assert_called_once_with(
             "port : 9998\nserials : sa2143\npid : 21411"
         )
@@ -46,7 +46,7 @@ class TestInstance(unittest.TestCase):
     def test_show_error(self):
         """Test show()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             side_effect=scratch.ScratchError("scratch error")
         )
         i.error = unittest.mock.MagicMock()
@@ -56,13 +56,13 @@ class TestInstance(unittest.TestCase):
 
         i.show(args)
 
-        i._scratch.FindById.assert_called_once_with("id")
+        i._scratch.find_by_id.assert_called_once_with("id")
         i.error.assert_called_once_with("scratch error")
 
     def test_show_all(self):
         """Test show_all()."""
         i = instance.Instance()
-        i._scratch.GetAllEntries = unittest.mock.MagicMock(
+        i._scratch.get_all_entries = unittest.mock.MagicMock(
             return_value=[
                 {"active": True, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": True, "port": 9997, "serials": "sa2142", "pid": 21410},
@@ -74,7 +74,7 @@ class TestInstance(unittest.TestCase):
 
         i.show_all(args)
 
-        i._scratch.GetAllEntries.assert_called_once()
+        i._scratch.get_all_entries.assert_called_once()
         i._logger.info.assert_called_once_with(
             "port : 9998\nserials : sa2143\npid : 21411\n---\n"
             "port : 9997\nserials : sa2142\npid : 21410\n---\n"
@@ -84,20 +84,20 @@ class TestInstance(unittest.TestCase):
     def test_show_all_no_entries(self):
         """Test show_all()."""
         i = instance.Instance()
-        i._scratch.GetAllEntries = unittest.mock.MagicMock(return_value=[])
+        i._scratch.get_all_entries = unittest.mock.MagicMock(return_value=[])
         i._logger.info = unittest.mock.MagicMock()
         args = argparse.Namespace()
 
         i.show_all(args)
 
-        i._scratch.GetAllEntries.assert_called_once()
+        i._scratch.get_all_entries.assert_called_once()
         i._logger.info.assert_called_once_with("No entries found.")
 
     @unittest.mock.patch("time.sleep", unittest.mock.MagicMock())
     def test_wait_for_active(self):
         """Test wait_for_active()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             side_effect=[
                 {"active": False, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": False, "port": 9998, "serials": "sa2143", "pid": 21411},
@@ -119,7 +119,7 @@ class TestInstance(unittest.TestCase):
         ):
             i.wait_for_active(args)
 
-        i._scratch.FindById.assert_has_calls(
+        i._scratch.find_by_id.assert_has_calls(
             [
                 unittest.mock.call("id"),
                 unittest.mock.call("id"),
@@ -147,7 +147,7 @@ class TestInstance(unittest.TestCase):
     def test_wait_for_active_no_active(self):
         """Test wait_for_active()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             side_effect=[
                 {"active": False, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": False, "port": 9998, "serials": "sa2143", "pid": 21411},
@@ -169,7 +169,7 @@ class TestInstance(unittest.TestCase):
         ):
             i.wait_for_active(args)
 
-        i._scratch.FindById.assert_has_calls(
+        i._scratch.find_by_id.assert_has_calls(
             [
                 unittest.mock.call("id"),
                 unittest.mock.call("id"),
@@ -198,7 +198,7 @@ class TestInstance(unittest.TestCase):
     def test_wait_for_active_error(self):
         """Test wait_for_active()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             side_effect=[
                 {"active": False, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": False, "port": 9998, "serials": "sa2143", "pid": 21411},
@@ -220,7 +220,7 @@ class TestInstance(unittest.TestCase):
         ):
             i.wait_for_active(args)
 
-        i._scratch.FindById.assert_has_calls(
+        i._scratch.find_by_id.assert_has_calls(
             [
                 unittest.mock.call("id"),
                 unittest.mock.call("id"),
@@ -249,7 +249,7 @@ class TestInstance(unittest.TestCase):
     def test_stop(self):
         """Test stop()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             return_value={
                 "active": True,
                 "port": 9998,
@@ -257,7 +257,7 @@ class TestInstance(unittest.TestCase):
                 "pid": 21411,
             }
         )
-        i._scratch.RemoveEntry = unittest.mock.MagicMock()
+        i._scratch.remove_entry = unittest.mock.MagicMock()
         i._logger.info = unittest.mock.MagicMock()
         args = argparse.Namespace()
         args.id = "id"
@@ -270,7 +270,7 @@ class TestInstance(unittest.TestCase):
         ):
             i.stop(args)
 
-        i._scratch.FindById.assert_called_once_with("id")
+        i._scratch.find_by_id.assert_called_once_with("id")
         os.kill.assert_has_calls(
             [
                 unittest.mock.call(21411, signal.SIGTERM),
@@ -302,12 +302,12 @@ class TestInstance(unittest.TestCase):
                 ),
             ]
         )
-        i._scratch.RemoveEntry.assert_called_once_with("id")
+        i._scratch.remove_entry.assert_called_once_with("id")
 
     def test_stop_scratch_error(self):
         """Test stop()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             side_effect=scratch.ScratchError("scratch err")
         )
         i._logger.info = unittest.mock.MagicMock()
@@ -316,7 +316,7 @@ class TestInstance(unittest.TestCase):
 
         i.stop(args)
 
-        i._scratch.FindById.assert_called_once_with("id")
+        i._scratch.find_by_id.assert_called_once_with("id")
         i._logger.info.assert_called_once_with("scratch err")
 
     @unittest.mock.patch(
@@ -326,12 +326,12 @@ class TestInstance(unittest.TestCase):
     def test_stop_os_error(self):
         """Test stop()."""
         i = instance.Instance()
-        i._scratch.FindById = unittest.mock.MagicMock(
+        i._scratch.find_by_id = unittest.mock.MagicMock(
             side_effect=[
                 {"active": True, "port": 9998, "serials": "sa2143", "pid": 21411}
             ]
         )
-        i._scratch.RemoveEntry = unittest.mock.MagicMock()
+        i._scratch.remove_entry = unittest.mock.MagicMock()
         i._logger.info = unittest.mock.MagicMock()
         args = argparse.Namespace()
         args.id = "id"
@@ -344,7 +344,7 @@ class TestInstance(unittest.TestCase):
         ):
             i.stop(args)
 
-        i._scratch.FindById.assert_called_once_with("id")
+        i._scratch.find_by_id.assert_called_once_with("id")
         os.kill.assert_has_calls(
             [unittest.mock.call(21411, signal.SIGTERM), unittest.mock.call(21411, 0)]
         )
@@ -358,12 +358,12 @@ class TestInstance(unittest.TestCase):
                 ),
             ]
         )
-        i._scratch.RemoveEntry.assert_called_once_with("id")
+        i._scratch.remove_entry.assert_called_once_with("id")
 
     def test_rebuild(self):
         """Test rebuild()."""
         i = instance.Instance()
-        i._scratch.GetAllEntries = unittest.mock.MagicMock(
+        i._scratch.get_all_entries = unittest.mock.MagicMock(
             return_value=[
                 {"active": True, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": True, "port": 9997, "serials": "sa2142", "pid": 21410},
@@ -378,7 +378,7 @@ class TestInstance(unittest.TestCase):
 
         i.rebuild(args)
 
-        self.assertEqual(i._scratch.GetAllEntries.call_count, 2)
+        self.assertEqual(i._scratch.get_all_entries.call_count, 2)
         i._logger.info.assert_called_once_with("port %r already known.", 9998)
         self.assertEqual(
             i._scratch.GenerateEntryFromPort.call_count,
@@ -391,7 +391,7 @@ class TestInstance(unittest.TestCase):
     def test_rebuild_unknown_port(self):
         """Test rebuild()."""
         i = instance.Instance()
-        i._scratch.GetAllEntries = unittest.mock.MagicMock(
+        i._scratch.get_all_entries = unittest.mock.MagicMock(
             return_value=[
                 {"active": True, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": True, "port": 9997, "serials": "sa2142", "pid": 21410},
@@ -406,7 +406,7 @@ class TestInstance(unittest.TestCase):
 
         i.rebuild(args)
 
-        self.assertEqual(i._scratch.GetAllEntries.call_count, 2)
+        self.assertEqual(i._scratch.get_all_entries.call_count, 2)
         i._logger.info.assert_not_called()
         self.assertEqual(
             i._scratch.GenerateEntryFromPort.call_count,
@@ -419,7 +419,7 @@ class TestInstance(unittest.TestCase):
     def test_rebuild_no_port(self):
         """Test rebuild()."""
         i = instance.Instance()
-        i._scratch.GetAllEntries = unittest.mock.MagicMock(
+        i._scratch.get_all_entries = unittest.mock.MagicMock(
             return_value=[
                 {"active": True, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": True, "port": 9997, "serials": "sa2142", "pid": 21410},
@@ -434,7 +434,7 @@ class TestInstance(unittest.TestCase):
 
         i.rebuild(args)
 
-        i._scratch.GetAllEntries.assert_called_once()
+        i._scratch.get_all_entries.assert_called_once()
         i._logger.info.assert_not_called()
         self.assertEqual(
             i._scratch.GenerateEntryFromPort.call_count,
@@ -447,7 +447,7 @@ class TestInstance(unittest.TestCase):
     def test_rebuild_failure(self):
         """Test rebuild()."""
         i = instance.Instance()
-        i._scratch.GetAllEntries = unittest.mock.MagicMock(
+        i._scratch.get_all_entries = unittest.mock.MagicMock(
             return_value=[
                 {"active": True, "port": 9998, "serials": "sa2143", "pid": 21411},
                 {"active": True, "port": 9997, "serials": "sa2142", "pid": 21410},
@@ -464,7 +464,7 @@ class TestInstance(unittest.TestCase):
             i.rebuild(args)
 
         self.assertEqual(cm.exception.code, 1)
-        i._scratch.GetAllEntries.assert_called_once()
+        i._scratch.get_all_entries.assert_called_once()
         i._logger.info.assert_not_called()
         i._scratch.GenerateEntryFromPort.assert_called_once_with(9990)
         i.error.assert_called_once_with("Could not rebuild entry for port %r", 9990)

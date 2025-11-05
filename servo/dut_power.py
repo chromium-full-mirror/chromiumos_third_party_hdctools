@@ -374,18 +374,18 @@ class DutPower:
         # ProgressPrinters while handling the SIGTERM/SIGINT signals
         sleep_waiting = threading.Event()
         sleep_sampling = threading.Event()
-        setup_done = pm.MeasurePower(wait=args.wait, powerstate=args.powerstate)
+        setup_done = pm.measure_power(wait=args.wait, powerstate=args.powerstate)
         handler = lambda signal, _unused, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
             sw.set(),
             ss.set(),
-            pm.FinishMeasurement(),
+            pm.finish_measurement(),
         )
         if args.visualization:
             handler = (
                 lambda signal, _unused, pm=pm, sw=sleep_waiting, ss=sleep_sampling: (
                     sw.set(),
                     ss.set(),
-                    pm.FinishMeasurement(),
+                    pm.finish_measurement(),
                     self.visualization_server.server_close(),
                     self.visualization_server.shutdown(),
                 )
@@ -434,11 +434,11 @@ class DutPower:
           pm: PowerMeasurement object that measures power and stores measurement data.
         """
         if args.save_summary:
-            pm.SaveSummary(args.outdir, args.message)
+            pm.save_summary(args.outdir, args.message)
         if args.save_raw_data:
-            pm.SaveRawData(args.outdir)
+            pm.save_raw_data(args.outdir)
         if args.save_json:
-            pm.SaveSummaryJSON(args.outdir)
+            pm.save_summary_json(args.outdir)
         if args.save_logs:
             # pylint: disable=protected-access
             outdir = pm._outdir
@@ -484,10 +484,10 @@ class DutPower:
 
         self._measure_power(args, pm)
 
-        # Indicate that measurement should stop, as ProcessMeasurement sets
+        # Indicate that measurement should stop, as process_measurement sets
         # stop_signal internally as well
-        pm.ProcessMeasurement()
-        pm.DisplaySummary()
+        pm.process_measurement()
+        pm.display_summary()
         self._save_results(args, pm)
 
 

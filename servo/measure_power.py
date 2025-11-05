@@ -168,9 +168,9 @@ class ServodPowerTracker(threading.Thread):
                 temp_sample_data = []
                 sample_tuples, duration_ms = self._sample_ctrls(self._ctrls)
                 for domain, sample in sample_tuples:
-                    # temp_stats.AddSample(domain, sample)
+                    # temp_stats.add_sample(domain, sample)
                     temp_sample_data.append((domain, sample))
-                self._stats.AddSamples(sample_tuples)
+                self._stats.add_samples(sample_tuples)
                 self.set_sample_data(temp_sample_data)
             else:
                 duration_ms = 0
@@ -239,8 +239,8 @@ class ServodPowerTracker(threading.Thread):
         Returns:
           StatsManager object containing info from the run
         """
-        self._stats.TrimSamples(tstart, tend)
-        self._stats.CalculateStats()
+        self._stats.trim_samples(tstart, tend)
+        self._stats.calculate_stats()
         return self._stats
 
     def __str__(self):
@@ -275,7 +275,7 @@ class HighResServodPowerTracker(ServodPowerTracker):
             temp_sample_data = []
 
             for domain, sample in sample_tuples:
-                temp_stats.AddSample(domain, sample)
+                temp_stats.add_sample(domain, sample)
                 temp_sample_data.append((domain, sample))
             self.set_sample_data(temp_sample_data)
 
@@ -297,13 +297,13 @@ class HighResServodPowerTracker(ServodPowerTracker):
         temp_stats: StatsManager object which may contain a collection
                     of rail measurements.
         """
-        temp_stats.CalculateStats()
-        temp_summary = temp_stats.GetSummary()
+        temp_stats.calculate_stats()
+        temp_summary = temp_stats.get_summary()
         samples = [
             (measurement, summary["mean"])
             for measurement, summary in temp_summary.items()
         ]
-        self._stats.AddSamples(samples)
+        self._stats.add_samples(samples)
 
     def process_measurement(self, tstart=None, tend=None):
         """Process the measurement by calculating stats.
@@ -323,8 +323,8 @@ class HighResServodPowerTracker(ServodPowerTracker):
         #         within [tstart, tend].
         # tend: add the padding to avoid losing data points that have at least half
         #       of samples within [tstart, tend].
-        self._stats.TrimSamples(tstart, tend, self._rate / 2)
-        self._stats.CalculateStats()
+        self._stats.trim_samples(tstart, tend, self._rate / 2)
+        self._stats.calculate_stats()
         return self._stats
 
 
@@ -473,7 +473,7 @@ class ECPowerTracker(ServodPowerTracker):
             adjusted_sample_tuples.append((name, sample))
             temp_sample_data.append((name, sample))
         self.set_sample_data(temp_sample_data)
-        self._stats.AddSamples(adjusted_sample_tuples)
+        self._stats.add_samples(adjusted_sample_tuples)
         self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
         super(ECPowerTracker, self).run()
 
@@ -547,7 +547,7 @@ class PowerMeasurement:
       _fast: if True measurements will skip explicit powerstate retrieval
       _logger: PowerMeasurement logger
 
-      Note: PowerMeasurement garbage collection, or any call to Reset(), will
+      Note: PowerMeasurement garbage collection, or any call to reset(), will
             result in an attempt to clean up directories that were created and
             left empty.
     """
@@ -667,7 +667,7 @@ class PowerMeasurement:
                     self._logger.info(
                         "Will not be using %r tracker (nothing to track)", tracker
                     )
-        self.Reset()
+        self.reset()
         for tracker in power_trackers:
             if not self._fast:
                 try:
@@ -681,11 +681,11 @@ class PowerMeasurement:
         if not self._power_trackers:
             raise NoSourceError("No power measurement source successfully setup.")
 
-    def Reset(self):
-        """Reset PowerMeasurement object to reuse for a new measurement.
+    def reset(self):
+        """reset PowerMeasurement object to reuse for a new measurement.
 
         The same PowerMeasurement object can be used for multiple power
-        collection runs on the same servod instance by calling Reset() on
+        collection runs on the same servod instance by calling reset() on
         it. This will wipe the previous run's data to allow for a fresh
         reading.
 
@@ -697,7 +697,9 @@ class PowerMeasurement:
         self._stop_signal.clear()
         self._processing_done = False
 
-    def MeasureTimedPower(self, sample_time=60, wait=0, powerstate=UNKNOWN_POWERSTATE):
+    def measure_timed_power(
+        self, sample_time=60, wait=0, powerstate=UNKNOWN_POWERSTATE
+    ):
         """Measure power in the main thread.
 
         Measure power for |sample_time| seconds before processing the results and
@@ -709,12 +711,12 @@ class PowerMeasurement:
           wait: seconds to wait before collecting power
           powerstate: (optional) pass the powerstate if known
         """
-        setup_done = self.MeasurePower(wait=wait, powerstate=powerstate)
+        setup_done = self.measure_power(wait=wait, powerstate=powerstate)
         setup_done.wait()
         time.sleep(sample_time + wait)
-        self.FinishMeasurement()
+        self.finish_measurement()
 
-    def MeasurePower(self, wait=0, powerstate=UNKNOWN_POWERSTATE):
+    def measure_power(self, wait=0, powerstate=UNKNOWN_POWERSTATE):
         """Measure power in the background until caller indicates to stop.
 
         Spins up a background measurement thread and then returns events to manage
@@ -730,15 +732,15 @@ class PowerMeasurement:
           Event - |setup_done|
           Caller can wait on |setup_done| to know when setup for measurement is done
         """
-        self.Reset()
+        self.reset()
         measure_t = threading.Thread(
-            target=self._MeasurePower, kwargs={"wait": wait, "powerstate": powerstate}
+            target=self._measure_power, kwargs={"wait": wait, "powerstate": powerstate}
         )
         measure_t.daemon = True
         measure_t.start()
         return self._setup_done
 
-    def _MeasurePower(self, wait, powerstate=UNKNOWN_POWERSTATE):
+    def _measure_power(self, wait, powerstate=UNKNOWN_POWERSTATE):
         """Power measurement thread method coordinating sampling threads.
 
         Args:
@@ -768,14 +770,14 @@ class PowerMeasurement:
             for power_tracker in self._power_trackers:
                 power_tracker.start()
 
-    def FinishMeasurement(self):
+    def finish_measurement(self):
         """Signal to stop collection to Trackers before joining their threads."""
         self._stop_signal.set()
         for tracker in self._power_trackers:
             if tracker.is_alive():
                 tracker.join()
 
-    def GetPMStatus(self):
+    def get_pm_status(self):
         """Pass the information if the power measurement is finished or not
         Returns:
           True:  power measurement is finished
@@ -783,25 +785,25 @@ class PowerMeasurement:
         """
         return self._stop_signal.is_set()
 
-    def ProcessMeasurement(self, tstart=None, tend=None):
+    def process_measurement(self, tstart=None, tend=None):
         """Trim data to [tstart, tend] before calculating stats.
 
-        Call FinishMeasurement internally to ensure that data collection is fully
+        Call finish_measurement internally to ensure that data collection is fully
         wrapped up.
 
         Args:
           tstart: first timestamp to include. Seconds since epoch
           tend: last timestamp to include. Seconds since epoch
         """
-        # In case the caller did not explicitly call FinishMeasurement yet.
-        self.FinishMeasurement()
+        # In case the caller did not explicitly call finish_measurement yet.
+        self.finish_measurement()
         try:
             for tracker in self._power_trackers:
                 self._stats[tracker.title] = tracker.process_measurement(tstart, tend)
         finally:
             self._processing_done = True
 
-    def SaveRawData(self, outdir=None):
+    def save_raw_data(self, outdir=None):
         """Save raw data of the PowerMeasurement run.
 
         Files can be read into object by using numpy.loadtxt()
@@ -821,11 +823,11 @@ class PowerMeasurement:
         outdir = outdir if outdir else self._outdir
         outfiles = []
         for stat in self._stats.values():
-            outfiles.extend(stat.SaveRawData(outdir))
+            outfiles.extend(stat.save_raw_data(outdir))
         self._logger.info("Storing raw data at:\n%s", "\n".join(outfiles))
         return outfiles
 
-    def GetRawData(self):
+    def get_raw_data(self):
         """Retrieve raw data for current run.
 
         Retrieve a dictionary of each StatsManager object this run used, where
@@ -845,9 +847,9 @@ class PowerMeasurement:
         """
         if not self._processing_done:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-        return {name: stat.GetRawData() for name, stat in self._stats.items()}
+        return {name: stat.get_raw_data() for name, stat in self._stats.items()}
 
-    def SaveTrimmedSummary(self, tag, tstart, tend, outdir=None, message=None):
+    def save_trimmed_summary(self, tag, tstart, tend, outdir=None, message=None):
         """Save a formatted summary that only contains [tstart, tend] data.
 
         Args:
@@ -877,11 +879,11 @@ class PowerMeasurement:
         # that the tag can help identify the summary
         for s in stats_managers:
             s._title += "(%s)" % tag
-        return self._SaveSummary(
+        return self._save_summary(
             stats_managers=stats_managers, outdir=outdir, message=message
         )
 
-    def SaveSummary(self, outdir=None, message=None):
+    def save_summary(self, outdir=None, message=None):
         """Save summary of the PowerMeasurement run.
 
         Args:
@@ -896,11 +898,11 @@ class PowerMeasurement:
         """
         if not self._processing_done:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-        return self._SaveSummary(
+        return self._save_summary(
             stats_managers=self._stats.values(), outdir=outdir, message=message
         )
 
-    def _SaveSummary(self, stats_managers=None, outdir=None, message=None):
+    def _save_summary(self, stats_managers=None, outdir=None, message=None):
         """Save summary of the PowerMeasurement run.
 
         Args:
@@ -917,7 +919,7 @@ class PowerMeasurement:
         if stats_managers is None:
             stats_managers = []
         outdir = outdir if outdir else self._outdir
-        outfiles = [stat.SaveSummary(outdir) for stat in stats_managers]
+        outfiles = [stat.save_summary(outdir) for stat in stats_managers]
         if message:
             for fname in outfiles:
                 with open(fname, "a", encoding="utf-8") as f:
@@ -928,7 +930,7 @@ class PowerMeasurement:
         self._logger.info("Storing .md summaries at:\n%s", "\n".join(md_outfiles))
         return outfiles
 
-    def GetSummary(self):
+    def get_summary(self):
         """Retrieve summary of the PowerMeasurement run.
 
         Retrieve a dictionary of each StatsManager object this run used, where
@@ -952,9 +954,9 @@ class PowerMeasurement:
         """
         if not self._processing_done:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-        return {name: stat.GetSummary() for name, stat in self._stats.items()}
+        return {name: stat.get_summary() for name, stat in self._stats.items()}
 
-    def GetFormattedSummary(self):
+    def get_formatted_summary(self):
         """Retrieve summary of the PowerMeasurement run.
 
         See StatsManager._DisplaySummary() for more details
@@ -967,14 +969,14 @@ class PowerMeasurement:
         """
         if not self._processing_done:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-        summaries = [stat.SummaryToString() for stat in self._stats.values()]
+        summaries = [stat.summary_to_string() for stat in self._stats.values()]
         return "\n".join(summaries)
 
-    def DisplaySummary(self):
-        """Print summary retrieved from GetFormattedSummary() call."""
-        print("\n%s" % self.GetFormattedSummary())
+    def display_summary(self):
+        """Print summary retrieved from get_formatted_summary() call."""
+        print("\n%s" % self.get_formatted_summary())
 
-    def SaveSummaryJSON(self, outdir=None):
+    def save_summary_json(self, outdir=None):
         """Save summary of the PowerMeasurement run as JSON.
 
         Args:
@@ -988,9 +990,11 @@ class PowerMeasurement:
         """
         if not self._processing_done:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
-        return self._SaveSummaryJSON(stats_managers=self._stats.values(), outdir=outdir)
+        return self._save_summary_json(
+            stats_managers=self._stats.values(), outdir=outdir
+        )
 
-    def _SaveSummaryJSON(self, stats_managers=None, outdir=None):
+    def _save_summary_json(self, stats_managers=None, outdir=None):
         """Save summary of the PowerMeasurement run as JSON.
 
         Args:
@@ -1006,11 +1010,11 @@ class PowerMeasurement:
         if stats_managers is None:
             stats_managers = []
         outdir = outdir if outdir else self._outdir
-        json_outfiles = [stat.SaveSummaryJSON(outdir) for stat in stats_managers]
+        json_outfiles = [stat.save_summary_json(outdir) for stat in stats_managers]
         self._logger.info("Storing .md summaries at:\n%s", "\n".join(json_outfiles))
         return json_outfiles
 
-    def GetSampleData(self):
+    def get_sample_data(self):
         """This function can pass the latest power information
 
         Collect the data in each tracker and append the data into an array
@@ -1018,15 +1022,15 @@ class PowerMeasurement:
         Returns:
           return the latest power information
         """
-        sampleData = []
+        sample_data = []
 
         for power_data in self._power_trackers:
             data = power_data.get_sample_data()
             if data:
-                sampleData += data
-        return sampleData
+                sample_data += data
+        return sample_data
 
-    def CleanSampleData(self):
+    def clean_sample_data(self):
         """This function will clean the current data structure which saves
         the power data.
         """

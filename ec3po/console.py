@@ -222,7 +222,7 @@ class Console:
         self.token_db = None
 
         if token_db:
-            self.LoadTokenDatabase(token_db)
+            self.load_token_database(token_db)
 
     def __str__(self):
         """Show internal state of Console object as a string."""
@@ -247,7 +247,7 @@ class Console:
             )
         )
 
-    def LoadTokenDatabase(self, token_path=None):
+    def load_token_database(self, token_path=None):
         """Load the token database.
 
         Loads the token database and configures the detokenizer.
@@ -293,7 +293,7 @@ class Console:
                 self.z_detokenizer.show_errors = True
                 self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
 
-    def LogConsoleOutput(self, data):
+    def log_console_output(self, data):
         """Log to debug user MCU output to controller_pty when line is filled.
 
         The logging also suppresses the Cr50 spinner lines by removing characters
@@ -335,7 +335,7 @@ class Console:
                 line.append("%s" % (chr(byte),))
         self.output_line_log_buffer = line
 
-    def PrintHistory(self):
+    def print_history(self):
         """Print the history of entered commands."""
         fd = self.controller_pty
         # Make it pretty by figuring out how wide to pad the numbers.
@@ -344,7 +344,7 @@ class Console:
             line = b" %*d %s\r\n" % (wide, i, self.history[i])
             os.write(fd, line)
 
-    def ShowPreviousCommand(self):
+    def show_previous_command(self):
         """Shows the previous command from the history list."""
         # There's nothing to do if there's no history at all.
         if not self.history:
@@ -369,7 +369,7 @@ class Console:
 
         # Backspace the line.
         for _unused in range(self.input_buffer_pos):
-            self.SendBackspace()
+            self.send_backspace()
 
         # Print the last entry in the history buffer.
         self.logger.debug(
@@ -384,7 +384,7 @@ class Console:
         self.input_buffer = prev_cmd
         self.input_buffer_pos = len(prev_cmd)
 
-    def ShowNextCommand(self):
+    def show_next_command(self):
         """Shows the next command from the history list."""
         # Don't do anything if there's no history at all.
         if not self.history:
@@ -402,7 +402,7 @@ class Console:
             self.logger.debug("Restoring partial command of %r", self.partial_cmd)
             # Backspace the line.
             for _unused in range(self.input_buffer_pos):
-                self.SendBackspace()
+                self.send_backspace()
             # Print the partially entered command if any.
             os.write(fd, self.partial_cmd)
             self.input_buffer = self.partial_cmd
@@ -422,7 +422,7 @@ class Console:
 
         # Backspace the line.
         for _unused in range(self.input_buffer_pos):
-            self.SendBackspace()
+            self.send_backspace()
 
         # Print the newer entry from the history buffer.
         self.logger.debug(
@@ -437,7 +437,7 @@ class Console:
         self.input_buffer_pos = len(next_cmd)
         self.logger.debug("new history position: %d.", self.history_pos)
 
-    def SliceOutChar(self):
+    def slice_out_char(self):
         """Remove a char from the line and shift everything over 1 column."""
         fd = self.controller_pty
         # Remove the character at the input_buffer_pos by slicing it out.
@@ -452,10 +452,10 @@ class Console:
         # Update the input buffer position.
         self.input_buffer_pos += moved_col
         # Reset the cursor
-        self.MoveCursor("left", moved_col)
+        self.move_cursor("left", moved_col)
 
-    def HandleEsc(self, byte):
-        """HandleEsc processes escape sequences.
+    def handle_esc(self, byte):
+        """handle_esc processes escape sequences.
 
         Args:
           byte: An integer representing the current byte in the sequence.
@@ -476,21 +476,21 @@ class Console:
             # Left Arrow key was pressed.
             if byte == ord("D"):
                 self.logger.debug("Left arrow key pressed.")
-                self.MoveCursor("left", 1)
+                self.move_cursor("left", 1)
                 self.esc_state = 0  # Reset the state.
                 return
 
             # Right Arrow key.
             if byte == ord("C"):
                 self.logger.debug("Right arrow key pressed.")
-                self.MoveCursor("right", 1)
+                self.move_cursor("right", 1)
                 self.esc_state = 0  # Reset the state.
                 return
 
             # Up Arrow key.
             if byte == ord("A"):
                 self.logger.debug("Up arrow key pressed.")
-                self.ShowPreviousCommand()
+                self.show_previous_command()
                 # Reset the state.
                 self.esc_state = 0  # Reset the state.
                 return
@@ -498,7 +498,7 @@ class Console:
             # Down Arrow key.
             if byte == ord("B"):
                 self.logger.debug("Down arrow key pressed.")
-                self.ShowNextCommand()
+                self.show_next_command()
                 # Reset the state.
                 self.esc_state = 0  # Reset the state.
                 return
@@ -528,7 +528,7 @@ class Console:
             # HOME key.
             if byte == ord("~"):
                 self.logger.debug("Home key pressed.")
-                self.MoveCursor("left", self.input_buffer_pos)
+                self.move_cursor("left", self.input_buffer_pos)
                 self.esc_state = 0  # Reset the state.
                 self.logger.debug("ESC sequence complete.")
                 return
@@ -539,7 +539,7 @@ class Console:
             if byte == ord("~"):
                 self.logger.debug("Delete key pressed.")
                 if self.input_buffer_pos != len(self.input_buffer):
-                    self.SliceOutChar()
+                    self.slice_out_char()
                 self.esc_state = 0  # Reset the state.
 
         elif self.esc_state is EscState.ESC_BRACKET_8:
@@ -547,7 +547,9 @@ class Console:
             # END key.
             if byte == ord("~"):
                 self.logger.debug("End key pressed.")
-                self.MoveCursor("right", len(self.input_buffer) - self.input_buffer_pos)
+                self.move_cursor(
+                    "right", len(self.input_buffer) - self.input_buffer_pos
+                )
                 self.esc_state = 0  # Reset the state.
                 self.logger.debug("ESC sequence complete.")
                 return
@@ -558,7 +560,7 @@ class Console:
             self.logger.error("Unexpected sequence. %c", byte)
             self.esc_state = 0
 
-    def ProcessInput(self):
+    def process_input(self):
         """Captures the input determines what actions to take."""
         # There's nothing to do if the input buffer is empty.
         if len(self.input_buffer) == 0:
@@ -575,14 +577,14 @@ class Console:
 
         # The 'history' command is a special case that we handle locally.
         if cmd == "history":
-            self.PrintHistory()
+            self.print_history()
             return
 
         # Send the command to the interpreter.
         self.logger.debug("Sending command to interpreter.")
         self.cmd_pipe.send(self.input_buffer)
 
-    def CheckForEnhancedECImage(self):
+    def check_for_enhanced_ec_image(self):
         """Performs an interrogation of the EC image.
 
         Send a SYN and expect an ACK.  If no ACK or the response is incorrect, then
@@ -626,14 +628,14 @@ class Console:
 
         return is_enhanced
 
-    def HandleChar(self, byte):
-        """HandleChar does a certain action when it receives a character.
+    def handle_char(self, byte):
+        """handle_char does a certain action when it receives a character.
 
         Args:
           byte: An integer representing the character received from the user.
 
         Raises:
-          EOFError: Allowed to propagate through from self.CheckForEnhancedECImage()
+          EOFError: Allowed to propagate through from self.check_for_enhanced_ec_image()
               i.e. from self.dbg_pipe.recv().
         """
         fd = self.controller_pty
@@ -680,7 +682,7 @@ class Console:
                 )
             elif self.interrogation_mode == b"always":
                 # Only interrogate the EC if the interrogation mode is set to 'always'.
-                self.enhanced_ec = self.CheckForEnhancedECImage()
+                self.enhanced_ec = self.check_for_enhanced_ec_image()
                 self.logger.debug("Enhanced EC image? %r", self.enhanced_ec)
 
         if not self.enhanced_ec:
@@ -694,7 +696,7 @@ class Console:
 
         # Keep handling the ESC sequence if we're in the middle of it.
         if self.esc_state != 0:
-            self.HandleEsc(byte)
+            self.handle_esc(byte)
             return
 
         # When we're at the end of the line, we should only allow going backwards,
@@ -727,7 +729,7 @@ class Console:
             # Print the prompt.
             os.write(fd, self.prompt)
             # Process the input.
-            self.ProcessInput()
+            self.process_input()
             # Now, clear the buffer.
             self.input_buffer = b""
             self.input_buffer_pos = 0
@@ -741,53 +743,53 @@ class Console:
             self.logger.debug("Backspace pressed.")
             if self.input_buffer_pos > 0:
                 # Move left 1 column.
-                self.MoveCursor("left", 1)
+                self.move_cursor("left", 1)
                 # Remove the character at the input_buffer_pos by slicing it out.
-                self.SliceOutChar()
+                self.slice_out_char()
 
             self.logger.debug("input_buffer_pos: %d", self.input_buffer_pos)
 
         # Ctrl+A. Move cursor to beginning of the line
         elif byte == ControlKey.CTRL_A:
             self.logger.debug("Control+A pressed.")
-            self.MoveCursor("left", self.input_buffer_pos)
+            self.move_cursor("left", self.input_buffer_pos)
 
         # Ctrl+B. Move cursor left 1 column.
         elif byte == ControlKey.CTRL_B:
             self.logger.debug("Control+B pressed.")
-            self.MoveCursor("left", 1)
+            self.move_cursor("left", 1)
 
         # Ctrl+D. Delete a character.
         elif byte == ControlKey.CTRL_D:
             self.logger.debug("Control+D pressed.")
             if self.input_buffer_pos != len(self.input_buffer):
                 # Remove the character by slicing it out.
-                self.SliceOutChar()
+                self.slice_out_char()
 
         # Ctrl+E. Move cursor to end of the line.
         elif byte == ControlKey.CTRL_E:
             self.logger.debug("Control+E pressed.")
-            self.MoveCursor("right", len(self.input_buffer) - self.input_buffer_pos)
+            self.move_cursor("right", len(self.input_buffer) - self.input_buffer_pos)
 
         # Ctrl+F. Move cursor right 1 column.
         elif byte == ControlKey.CTRL_F:
             self.logger.debug("Control+F pressed.")
-            self.MoveCursor("right", 1)
+            self.move_cursor("right", 1)
 
         # Ctrl+K. Kill line.
         elif byte == ControlKey.CTRL_K:
             self.logger.debug("Control+K pressed.")
-            self.KillLine()
+            self.kill_line()
 
         # Ctrl+N. Next line.
         elif byte == ControlKey.CTRL_N:
             self.logger.debug("Control+N pressed.")
-            self.ShowNextCommand()
+            self.show_next_command()
 
         # Ctrl+P. Previous line.
         elif byte == ControlKey.CTRL_P:
             self.logger.debug("Control+P pressed.")
-            self.ShowPreviousCommand()
+            self.show_previous_command()
 
         # ESC sequence
         elif byte == ControlKey.ESC:
@@ -795,7 +797,7 @@ class Console:
             self.esc_state = EscState.ESC_START
 
         # Only print printable chars.
-        elif IsPrintable(byte):
+        elif is_printable(byte):
             # Drop the character if we're full.
             if buffer_full:
                 self.logger.debug("Dropped char: %c(%d)", byte, byte)
@@ -818,12 +820,12 @@ class Console:
 
             # Reset the cursor if we wrote any extra bytes.
             if extra_bytes_written:
-                self.MoveCursor("left", extra_bytes_written)
+                self.move_cursor("left", extra_bytes_written)
 
             self.logger.debug("input_buffer_pos: %d", self.input_buffer_pos)
 
-    def MoveCursor(self, direction, count):
-        """MoveCursor moves the cursor left or right by count columns.
+    def move_cursor(self, direction, count):
+        """move_cursor moves the cursor left or right by count columns.
 
         Args:
           direction: A string that should be either 'left' or 'right' representing
@@ -862,7 +864,7 @@ class Console:
         if count != 0:
             os.write(fd, seq)
 
-    def KillLine(self):
+    def kill_line(self):
         """Kill the rest of the line based on the input buffer position."""
         # Killing the line is killing all the text to the right.
         diff = len(self.input_buffer) - self.input_buffer_pos
@@ -874,20 +876,20 @@ class Console:
                 "Resetting input buffer position to %d...",
                 len(self.input_buffer),
             )
-            self.MoveCursor("left", -diff)
+            self.move_cursor("left", -diff)
             return
         if diff:
-            self.MoveCursor("right", diff)
+            self.move_cursor("right", diff)
             for _unused in range(diff):
-                self.SendBackspace()
+                self.send_backspace()
             self.input_buffer_pos -= diff
             self.input_buffer = self.input_buffer[0 : self.input_buffer_pos]
 
-    def SendBackspace(self):
+    def send_backspace(self):
         """Backspace a character on the console."""
         os.write(self.controller_pty, b"\033[1D \033[1D")
 
-    def ProcessOOBMQueue(self):
+    def process_oobm_queue(self):
         """Retrieve an item from the OOBM queue and process it."""
         item = self.oobm_queue.get()
         self.logger.debug("OOBM cmd: %r", item)
@@ -897,7 +899,7 @@ class Console:
             # An integer is required in order to set the log level.
             if len(cmd) < 2:
                 self.logger.debug("Insufficient args")
-                self.PrintOOBMHelp()
+                self.print_oobm_help()
                 return
             try:
                 self.logger.debug("Log level change request.")
@@ -909,7 +911,7 @@ class Console:
                 self.cmd_pipe.send(item)
             except ValueError:
                 # Ignoring the request if an integer was not provided.
-                self.PrintOOBMHelp()
+                self.print_oobm_help()
 
         elif cmd[0] == b"timestamp":
             mode = cmd[1].lower()
@@ -945,7 +947,7 @@ class Console:
                 # Send command to interpreter as well.
                 self.cmd_pipe.send(b"enhanced " + str(self.enhanced_ec).encode("ascii"))
             else:
-                self.PrintOOBMHelp()
+                self.print_oobm_help()
 
         elif cmd[0] == b"tokens":
             # Toggle tokens on/off and optionally accept path to token database
@@ -972,12 +974,12 @@ class Console:
             self.logger.debug("Updated is_tokenized to %s.", self.is_tokenized)
             if self.is_tokenized:
                 token_path = pathlib.Path(cmd[2].decode()) if len(cmd) == 3 else None
-                self.LoadTokenDatabase(token_path)
+                self.load_token_database(token_path)
 
         else:
-            self.PrintOOBMHelp()
+            self.print_oobm_help()
 
-    def PrintOOBMHelp(self):
+    def print_oobm_help(self):
         """Prints out the OOBM help."""
         # Print help syntax.
         os.write(self.controller_pty, b"\r\n" + b"Known OOBM commands:\r\n")
@@ -988,7 +990,7 @@ class Console:
         os.write(self.controller_pty, b"  loglevel <int>\r\n")
         os.write(self.controller_pty, b"  tokens <off | on [path]>\r\n")
 
-    def CheckBufferForEnhancedImage(self, data):
+    def check_buffer_for_enhanced_image(self, data):
         """Adds data to a look buffer and checks to see for enhanced EC image.
 
         The EC's console task prints a string upon initialization which says that
@@ -1023,7 +1025,7 @@ class Console:
         # Move the sliding window.
         self.look_buffer = self.look_buffer[-LOOK_BUFFER_SIZE:]
 
-    def SendToController(self, data: bytes):
+    def send_to_controller(self, data: bytes):
         """Send data to controller pty.
 
         Args:
@@ -1033,7 +1035,7 @@ class Console:
             # A timestamp is required at the beginning of this line
             if self.tm_req:
                 now = datetime.now()
-                tm = CanonicalizeTimeString(now.strftime(HOST_STRFTIME))
+                tm = canonicalize_time_string(now.strftime(HOST_STRFTIME))
                 os.write(self.controller_pty, tm)
                 self.tm_req = False
 
@@ -1041,7 +1043,7 @@ class Console:
             # except if the last character is a newline
             nls_found = data.count(b"\n", 0, -1)
             now = datetime.now()
-            tm = CanonicalizeTimeString(now.strftime("\n" + HOST_STRFTIME))
+            tm = canonicalize_time_string(now.strftime("\n" + HOST_STRFTIME))
             data_tm = data.replace(b"\n", tm, nls_found)
         else:
             data_tm = data
@@ -1051,7 +1053,7 @@ class Console:
             self.tm_req = True
         os.write(self.controller_pty, data_tm)
 
-    def HandleDebugPipeData(self, data: bytes, controller_connected, command_active):
+    def handle_debug_pipe_data(self, data: bytes, controller_connected, command_active):
         """Handle data coming from debug pipe.
 
         Args:
@@ -1065,15 +1067,15 @@ class Console:
                 ("u" if controller_connected else "") + ("i" if command_active else ""),
                 data.strip(),
             )
-        self.LogConsoleOutput(data)
+        self.log_console_output(data)
         if controller_connected:
-            self.SendToController(data)
+            self.send_to_controller(data)
 
         if command_active:
             os.write(self.interface_pty, data)
 
 
-def CanonicalizeTimeString(timestr):
+def canonicalize_time_string(timestr):
     """Canonicalize the timestamp string.
 
     Args:
@@ -1085,7 +1087,7 @@ def CanonicalizeTimeString(timestr):
     return timestr[:-3].encode("ascii") + b" "
 
 
-def IsPrintable(byte):
+def is_printable(byte):
     """Determines if a byte is printable.
 
     Args:
@@ -1097,7 +1099,7 @@ def IsPrintable(byte):
     return ord(" ") <= byte <= ord("~")
 
 
-def StartLoop(console, command_active, shutdown_pipe=None):
+def start_loop(console, command_active, shutdown_pipe=None):
     """Starts the infinite loop of console processing.
 
     Args:
@@ -1167,11 +1169,11 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 for i in line:
                                     try:
                                         # Handle each character as it arrives.
-                                        console.HandleChar(i)
+                                        console.handle_char(i)
                                     except EOFError:
                                         console.logger.debug(
                                             "ec3po console received EOF from dbg_pipe "
-                                            "in HandleChar()"
+                                            "in handle_char()"
                                             " while reading console.controller_pty"
                                         )
                                         continue_looping = False
@@ -1196,11 +1198,11 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                             for i in line:
                                 try:
                                     # Handle each character as it arrives.
-                                    console.HandleChar(i)
+                                    console.handle_char(i)
                                 except EOFError:
                                     console.logger.debug(
                                         "ec3po console received EOF from dbg_pipe "
-                                        "in HandleChar()"
+                                        "in handle_char()"
                                         " while reading console.interface_pty"
                                     )
                                     continue_looping = False
@@ -1240,7 +1242,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
 
                         if console.interrogation_mode == b"auto":
                             # Search look buffer for enhanced EC image string.
-                            console.CheckBufferForEnhancedImage(data)
+                            console.check_buffer_for_enhanced_image(data)
 
                         if console.is_tokenized and console.z_detokenizer:
                             for is_message, chunk in console.decoder.read_messages(
@@ -1252,7 +1254,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                         chunk,
                                     )
                                     message = message.replace(b"\n", b"\r\n")
-                                    console.HandleDebugPipeData(
+                                    console.handle_debug_pipe_data(
                                         message,
                                         controller_connected,
                                         command_active.value,
@@ -1260,7 +1262,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
                                 else:  # raw text
                                     chunk = chunk.replace(TOKEN_SUFFIX, b"")
                                     if len(chunk) > 0:
-                                        console.HandleDebugPipeData(
+                                        console.handle_debug_pipe_data(
                                             chunk,
                                             controller_connected,
                                             command_active.value,
@@ -1268,7 +1270,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
 
                             continue
 
-                        console.HandleDebugPipeData(
+                        console.handle_debug_pipe_data(
                             data, controller_connected, command_active.value
                         )
 
@@ -1283,7 +1285,7 @@ def StartLoop(console, command_active, shutdown_pipe=None):
 
             while not console.oobm_queue.empty():
                 console.logger.debug("OOBM queue ready for reading.")
-                console.ProcessOOBMQueue()
+                console.process_oobm_queue()
 
     except KeyboardInterrupt:
         pass
@@ -1362,7 +1364,7 @@ def main(argv):
 
     # Spawn an interpreter process.
     itpr_process = threadproc_shim.ThreadOrProcess(
-        target=interpreter.StartLoop, args=(itpr,)
+        target=interpreter.start_loop, args=(itpr,)
     )
     # Make sure to kill the interpreter when we terminate.
     itpr_process.daemon = True
@@ -1386,7 +1388,7 @@ def main(argv):
     )
     # Start serving the console.
     v = threadproc_shim.Value(ctypes.c_bool, False)
-    StartLoop(console, v)
+    start_loop(console, v)
 
 
 if __name__ == "__main__":

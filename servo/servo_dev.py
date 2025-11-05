@@ -25,7 +25,7 @@ import servo.utils.usb_hierarchy as usb_hierarchy
 HwDriverError = servo_drv.hw_driver.HwDriverError
 
 
-def _YesNoInput(message):
+def _yes_no_input(message):
     """Prompt for y/n character input.
 
     The y/n question will be repeated after any character input that is not
@@ -86,9 +86,9 @@ class ServoDevice:
 
     # Reinit capable devices.
     REINIT_CAPABLE = {
-        servo_dev_templates.GetID("ccd_cr50"),
-        servo_dev_templates.GetID("ccd_gsc"),
-        servo_dev_templates.GetID("ccd_gsc_nt"),
+        servo_dev_templates.get_id("ccd_cr50"),
+        servo_dev_templates.get_id("ccd_gsc"),
+        servo_dev_templates.get_id("ccd_gsc_nt"),
     }
 
     # Available attempts to reconnect a device
@@ -247,7 +247,7 @@ class ServoDevice:
 
     def usb_devnum(self):
         """Return the current usb devnum."""
-        return usb_hierarchy.Hierarchy.DevNumFromSysfs(self._sysfs_path)
+        return usb_hierarchy.Hierarchy.dev_num_from_sysfs(self._sysfs_path)
 
     def get_interface_list(self):
         """Return interface_list."""
@@ -288,7 +288,7 @@ class ServoDevice:
 
             self._logger.info("Initializing interface %d to %s", i, name)
             try:
-                result = _interface.Build(
+                result = _interface.build(
                     name=name,
                     index=i,
                     vid=self.template.VID,
@@ -634,7 +634,7 @@ class ServoDevice:
                     control_name,
                 )
                 continue
-            if step_init and not _YesNoInput(
+            if step_init and not _yes_no_input(
                 "Initialize control {!r} to value {!r}? ".format(control_name, value)
             ):
                 self._logger.debug(

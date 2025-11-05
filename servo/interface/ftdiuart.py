@@ -126,7 +126,7 @@ class Fuart(uart.Uart):
             raise FuartError("doing fuart_init", err)
 
     @staticmethod
-    def Build(index, vid, pid, sid, **_kwargs):
+    def build(index, vid, pid, sid, **_kwargs):
         """Factory method to implement the interface."""
         interface, pid = ftdi_utils.get_interface_and_pid(index, pid)
         fobj = Fuart(vendor=vid, product=pid, interface=interface, serialname=sid)

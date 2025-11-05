@@ -27,6 +27,8 @@ fi
 pushd "$(dirname "$(readlink -f "$0")")" > /dev/null
 checksum=$(tar cfP - ../development_environment/ | md5sum)
 script_name=$(basename "$0")
+# Replace all hyphens with underscores
+script_name="${script_name//-/_}"
 image_exists=$(docker images -q servod-bootstrap:latest 2> /dev/null)
 
 if [ -z "${image_exists}" ] ||

@@ -17,7 +17,7 @@ from servo_updater import servo_updater
 COMMAND_CHANNEL_MASK = 0x1
 
 
-class ec3poServoError(pty_driver.ptyError):
+class ec3poServoError(pty_driver.PtyError):
     """Exception class."""
 
 
@@ -36,7 +36,7 @@ def _GetIteChipidReStr(command):
           'Usage:' then an error occurred.
 
     This returns str instead of re.compile() because that is what the
-    pty_driver.ptyDriver._issue_cmd_get_results() interface accepts.
+    pty_driver.PtyDriver._issue_cmd_get_results() interface accepts.
     """
     return (
         # Match the beginning of a line.
@@ -53,7 +53,7 @@ def _GetIteChipidReStr(command):
     )
 
 
-class ec3poServo(pty_driver.ptyDriver):
+class ec3poServo(pty_driver.PtyDriver):
     """Parent object to servo console controls."""
 
     def _drv_init(self):

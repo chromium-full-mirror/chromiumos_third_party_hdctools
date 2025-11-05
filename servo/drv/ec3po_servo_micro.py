@@ -33,7 +33,7 @@ usbpd_uart_config = {
 CONSOLE_READINESS_DELAY = 0.5
 
 
-class ec3poServoMicroError(pty_driver.ptyError):
+class ec3poServoMicroError(pty_driver.PtyError):
     """Exception class for ec."""
 
 

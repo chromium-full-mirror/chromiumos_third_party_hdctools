@@ -56,14 +56,16 @@ class Instance(tool.Tool):
     def show(self, args):
         """Print info of servod instance found by -p/-s args."""
         try:
-            entry = self._scratch.FindById(args.id)
+            entry = self._scratch.find_by_id(args.id)
             self._logger.info(_format_info(entry))
         except scratch.ScratchError as e:
             self.error(str(e))
 
     def show_all(self, _unused):
         """Print info of all registered servod instances."""
-        output_lines = [_format_info(entry) for entry in self._scratch.GetAllEntries()]
+        output_lines = [
+            _format_info(entry) for entry in self._scratch.get_all_entries()
+        ]
         if output_lines:
             self._logger.info("\n---\n".join(output_lines))
         else:
@@ -89,7 +91,7 @@ class Instance(tool.Tool):
         end = time.time() + timeout
         while time.time() < end:
             try:
-                entry = self._scratch.FindById(args.id)
+                entry = self._scratch.find_by_id(args.id)
                 if entry[scratch.ACTIVE_ENTRY_KEY]:
                     # Entry has come up.
                     self._logger.info("Instance associated with id %r ready.", args.id)
@@ -116,7 +118,7 @@ class Instance(tool.Tool):
                 entry
         """
         try:
-            entry = self._scratch.FindById(args.id)
+            entry = self._scratch.find_by_id(args.id)
             pid = entry["pid"]
         except scratch.ScratchError as e:
             self._logger.info(str(e))
@@ -147,7 +149,7 @@ class Instance(tool.Tool):
             os.kill(pid, signal.SIGKILL)
         finally:
             # Irrespective, the entry needs to be removed.
-            self._scratch.RemoveEntry(args.id)
+            self._scratch.remove_entry(args.id)
 
     def rebuild(self, args):
         """Rebuild servodscratch.
@@ -164,13 +166,13 @@ class Instance(tool.Tool):
         known_ports = lambda entries: set(int(entry["port"]) for entry in entries)
         if args.port:
             port = args.port
-            if port in known_ports(self._scratch.GetAllEntries()):
+            if port in known_ports(self._scratch.get_all_entries()):
                 self._logger.info("port %r already known.", port)
             elif not self._scratch.GenerateEntryFromPort(port):
                 self.error("Could not rebuild entry for port %r", port)
         # PORT_RANGE[1] + 1 as PORT_RANGE[1] should be in the set.
         ports = set(range(PORT_RANGE[0], PORT_RANGE[1] + 1))
-        ports -= known_ports(self._scratch.GetAllEntries())
+        ports -= known_ports(self._scratch.get_all_entries())
         for port in ports:
             # GenerateEntryFromPort will attempt to generate a new entry if
             # a ServoClient can be bound to |port|.

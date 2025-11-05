@@ -221,7 +221,7 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.servo_parsing.ArgMarkedAsUserSupplied",
+        "servo.servo_parsing.arg_marked_as_user_supplied",
         unittest.mock.MagicMock(return_value=True),
     )
     @unittest.mock.patch(
@@ -249,7 +249,7 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.servo_parsing.ArgMarkedAsUserSupplied",
+        "servo.servo_parsing.arg_marked_as_user_supplied",
         unittest.mock.MagicMock(return_value=True),
     )
     def test_start_xml_server_user_supplied_busy_port(self):
@@ -278,7 +278,7 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.servo_parsing.ArgMarkedAsUserSupplied",
+        "servo.servo_parsing.arg_marked_as_user_supplied",
         unittest.mock.MagicMock(return_value=True),
     )
     def test_start_xml_server_error(self):
@@ -309,7 +309,7 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.servo_parsing.ArgMarkedAsUserSupplied",
+        "servo.servo_parsing.arg_marked_as_user_supplied",
         unittest.mock.MagicMock(return_value=False),
     )
     def test_start_xml_server_default_range(self):
@@ -344,7 +344,7 @@ class TestServoStarter(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.servo_parsing.ArgMarkedAsUserSupplied",
+        "servo.servo_parsing.arg_marked_as_user_supplied",
         unittest.mock.MagicMock(return_value=False),
     )
     def test_start_xml_server_default_range_busy_port(self):
@@ -549,7 +549,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
         dev_entry_1.devopts.interfaces = []
         dev_entry_1.devopts.token_db = "default"
-        dev_entry_1.dev_template = servo_dev_templates.GetTemplateClassByName(
+        dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
             "ccd_cr50"
         )
         dev_entry_2 = unittest.mock.MagicMock()
@@ -560,7 +560,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.devopts.board = dev_entry_2.devopts.model = "testing"
         dev_entry_2.devopts.interfaces = []
         dev_entry_2.devopts.token_db = "default"
-        dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName(
+        dev_entry_2.dev_template = servo_dev_templates.get_template_class_by_name(
             "servo_v4p1"
         )
         dev_entries = [dev_entry_1, dev_entry_2]
@@ -640,7 +640,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
         dev_entry_1.devopts.interfaces = []
         dev_entry_1.devopts.token_db = "default"
-        dev_entry_1.dev_template = servo_dev_templates.GetTemplateClassByName(
+        dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
             "ccd_cr50"
         )
         dev_entry_2 = unittest.mock.MagicMock()
@@ -651,7 +651,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.devopts.board = dev_entry_2.devopts.model = "testing"
         dev_entry_2.devopts.interfaces = []
         dev_entry_2.devopts.token_db = "default"
-        dev_entry_2.dev_template = servo_dev_templates.GetTemplateClassByName(
+        dev_entry_2.dev_template = servo_dev_templates.get_template_class_by_name(
             "servo_v4p1"
         )
         dev_entries = [dev_entry_1, dev_entry_2]
@@ -688,12 +688,12 @@ class TestServoStarter(unittest.TestCase):
         starter = servod.ServodStarter([])
         starter._logger = unittest.mock.MagicMock()
         starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.RemoveEntry = unittest.mock.MagicMock()
+        starter._scratchutil.remove_entry = unittest.mock.MagicMock()
         starter._host = "localhost"
         starter._servo_port = 9999
 
         starter.cleanup()
-        starter._scratchutil.RemoveEntry.assert_called_once_with(starter._servo_port)
+        starter._scratchutil.remove_entry.assert_called_once_with(starter._servo_port)
 
     @unittest.mock.patch(
         "servo.servod.ServodStarter.__init__",
@@ -749,8 +749,8 @@ class TestServoStarter(unittest.TestCase):
             return_value={"dev1": "serial1", "dev2": "serial2"}
         )
         starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.AddEntry = unittest.mock.MagicMock()
-        starter._scratchutil.MarkActive = unittest.mock.MagicMock()
+        starter._scratchutil.add_entry = unittest.mock.MagicMock()
+        starter._scratchutil.mark_active = unittest.mock.MagicMock()
         starter._watchdog_thread = unittest.mock.MagicMock()
         starter._watchdog_thread.start = unittest.mock.MagicMock()
         starter._watchdog_thread.deactivate = unittest.mock.MagicMock()
@@ -766,12 +766,12 @@ class TestServoStarter(unittest.TestCase):
             starter.serve()
 
         self.assertEqual(result.exception.code, 0)
-        starter._scratchutil.AddEntry.assert_called_once_with(
+        starter._scratchutil.add_entry.assert_called_once_with(
             9999, set(["serial1", "serial2"]), unittest.mock.ANY
         )
         starter._watchdog_thread.start.assert_called_once()
         starter._server_thread.start.assert_called_once()
-        starter._scratchutil.MarkActive.assert_called_once_with(9999)
+        starter._scratchutil.mark_active.assert_called_once_with(9999)
         starter._watchdog_thread.deactivate.assert_called_once()
         starter._watchdog_thread.join.assert_called_once()
         starter._server_thread.join.assert_called_once()
@@ -791,7 +791,7 @@ class TestServoStarter(unittest.TestCase):
         )
         starter._servod.close = unittest.mock.MagicMock()
         starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.AddEntry = unittest.mock.MagicMock(
+        starter._scratchutil.add_entry = unittest.mock.MagicMock(
             side_effect=scratch.ScratchError()
         )
         starter._servo_port = 9999
@@ -800,7 +800,7 @@ class TestServoStarter(unittest.TestCase):
             starter.serve()
 
         self.assertEqual(result.exception.code, 1)
-        starter._scratchutil.AddEntry.assert_called_once_with(
+        starter._scratchutil.add_entry.assert_called_once_with(
             9999, set(["serial1", "serial2"]), unittest.mock.ANY
         )
         starter._servod.close.assert_called_once()
@@ -823,8 +823,8 @@ class TestServoStarter(unittest.TestCase):
             return_value={"dev1": "serial1", "dev2": "serial2"}
         )
         starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.AddEntry = unittest.mock.MagicMock()
-        starter._scratchutil.MarkActive = unittest.mock.MagicMock()
+        starter._scratchutil.add_entry = unittest.mock.MagicMock()
+        starter._scratchutil.mark_active = unittest.mock.MagicMock()
         starter._watchdog_thread = unittest.mock.MagicMock()
         starter._watchdog_thread.start = unittest.mock.MagicMock()
         starter._watchdog_thread.deactivate = unittest.mock.MagicMock()
@@ -840,12 +840,12 @@ class TestServoStarter(unittest.TestCase):
             starter.serve()
 
         self.assertEqual(result.exception.code, 0)
-        starter._scratchutil.AddEntry.assert_called_once_with(
+        starter._scratchutil.add_entry.assert_called_once_with(
             9999, set(["serial1", "serial2"]), unittest.mock.ANY
         )
         starter._watchdog_thread.start.assert_called_once()
         starter._server_thread.start.assert_called_once()
-        starter._scratchutil.MarkActive.assert_called_once_with(9999)
+        starter._scratchutil.mark_active.assert_called_once_with(9999)
         starter._watchdog_thread.deactivate.assert_called_once()
         starter._watchdog_thread.join.assert_called_once()
         starter._server_thread.join.assert_called_once()

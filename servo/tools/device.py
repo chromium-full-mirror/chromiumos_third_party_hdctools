@@ -10,7 +10,7 @@ import time
 import usb
 
 from servo.common import tiny_servod
-from servo.drv.pty_driver import ptyError
+from servo.drv.pty_driver import PtyError
 from servo.tools import tool
 import servo.utils.usb_hierarchy as uh
 
@@ -65,9 +65,9 @@ class Device(tool.Tool):
         """
         # This list is used to find all servos on the system.
         vid_pid_list = [(SERVO_VID, None)]
-        devs = uh.Hierarchy.GetAllUsbDeviceSysfsPaths(vid_pid_list)
+        devs = uh.Hierarchy.get_all_usb_device_sysfs_paths(vid_pid_list)
         for dev_path in devs:
-            dev_serial = uh.Hierarchy.SerialFromSysfs(dev_path)
+            dev_serial = uh.Hierarchy.serial_from_sysfs(dev_path)
             if dev_serial == serial:
                 return dev_path
         return None
@@ -79,9 +79,9 @@ class Device(tool.Tool):
         dev_path = self._usb_path(args.serial)
         if not dev_path:
             self.error("Device with serial %r not found.", args.serial)
-        vid = uh.Hierarchy.VendorIDFromSysfs(dev_path)
-        pid = uh.Hierarchy.ProductIDFromSysfs(dev_path)
-        devnum = uh.Hierarchy.DevNumFromSysfs(dev_path)
+        vid = uh.Hierarchy.vendor_id_from_sysfs(dev_path)
+        pid = uh.Hierarchy.product_id_from_sysfs(dev_path)
+        devnum = uh.Hierarchy.dev_num_from_sysfs(dev_path)
         if vid not in self.USB_CONSOLE_IFACE or pid not in self.USB_CONSOLE_IFACE[vid]:
             self.error(
                 "Device %04x:%04x %s does not support reboot", vid, pid, args.serial
@@ -91,7 +91,7 @@ class Device(tool.Tool):
         ts.pty._issue_cmd_get_results("chan 0", [">"])
         try:
             ts.pty._issue_cmd_get_results("reboot", [">"])
-        except ptyError as ex:
+        except PtyError as ex:
             # We except a no-data error here occasionally, if the reboot
             # was too quick for the console to send a newline. That's fine.
             if "No data was sent from the pty" not in str(ex):
@@ -146,8 +146,8 @@ class Device(tool.Tool):
         if not dev_path:
             self.error("Device with serial %r not found.", args.serial)
         # Now, retrieve busnum and devnum using sysfs as those values are cached.
-        devnum = uh.Hierarchy.DevNumFromSysfs(dev_path)
-        busnum = uh.Hierarchy.BusNumFromSysfs(dev_path)
+        devnum = uh.Hierarchy.dev_num_from_sysfs(dev_path)
+        busnum = uh.Hierarchy.bus_num_from_sysfs(dev_path)
         dev = usb.core.find(address=devnum, bus=busnum)
         if dev is None:
             self.error("Device with serial %r not found on pyusb.", args.serial)
@@ -178,7 +178,7 @@ class Device(tool.Tool):
         while time.time() < end:
             try:
                 # check devnum reset
-                if devnum == uh.Hierarchy.DevNumFromSysfs(dev_path):
+                if devnum == uh.Hierarchy.dev_num_from_sysfs(dev_path):
                     self.error(
                         "%r likely unsuccessful. devnum stayed the same.", action
                     )

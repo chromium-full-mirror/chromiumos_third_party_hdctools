@@ -41,7 +41,7 @@ def generate_proto(source):
             sys.exit(-1)
 
 
-class servo_build_py(build_py.build_py):
+class ServoBuildPy(build_py.build_py):
     """Custom build_py class for servod to do setup"""
 
     # The only reason we include the servo.data package is to build INA
@@ -104,7 +104,7 @@ setup(
             "proto/*.textproto",
         ],
     },
-    cmdclass={"build_py": servo_build_py},
+    cmdclass={"build_py": ServoBuildPy},
     url="http://www.chromium.org",
     maintainer="chromium os",
     maintainer_email="chromium-os-dev@chromium.org",

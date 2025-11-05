@@ -5,13 +5,13 @@
 """Manage color formatting for console output."""
 
 # By default, this package is inactive. The user has to request it.
-active = False
+ACTIVE = False
 
 
 def activate():
     """Activate color mode to produce colorful output."""
-    global active
-    active = True
+    global ACTIVE
+    ACTIVE = True
 
 
 BASE = "\033"
@@ -29,8 +29,8 @@ GREEN_BG = BASE + "[42;1m"
 
 
 def _fmt(msg, mode):
-    """Return |msg| wrapped by |mode| if |active| otherwise just |msg|."""
-    if active:
+    """Return |msg| wrapped by |mode| if |ACTIVE| otherwise just |msg|."""
+    if ACTIVE:
         # msg might end in '\n'. This is usually used to split the string
         # later, and thus the '\n' should not be part of the formatting (otherwise
         # it will be split out.

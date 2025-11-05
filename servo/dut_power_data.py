@@ -47,7 +47,7 @@ class DataSampler:
         if self._data_sample is None:
             return '""'
         output_type = STREAMING_CHART_OUTPUT_TYPE
-        if self._pm.GetPMStatus():
+        if self._pm.get_pm_status():
             output_type = LINE_CHART_OUTPUT_TYPE
         return self._data_sample.to_json(
             output_type, time.time() - SAMPLING_DELTA_PERIOD
@@ -118,9 +118,9 @@ class DataSampler:
 
         self._logger.info("Begin the sample generator to fetch the power data")
 
-        while not self._pm.GetPMStatus():
+        while not self._pm.get_pm_status():
             # Get the power data from power management
-            latest_samples = self._pm.GetSampleData()
+            latest_samples = self._pm.get_sample_data()
             if latest_samples:
                 data_sample_format = self.get_data_sample_format(latest_samples)
                 # If the data sample format is empty, we need to find
@@ -134,7 +134,7 @@ class DataSampler:
 
                 # After fetching the data, we can clean the temporary
                 # data structure in power measurement
-                self._pm.CleanSampleData()
+                self._pm.clean_sample_data()
 
                 # After define the format, read the data from power measurement
                 # and insert into the data structure

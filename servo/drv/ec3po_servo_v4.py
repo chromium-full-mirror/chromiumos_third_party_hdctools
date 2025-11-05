@@ -14,7 +14,7 @@ from servo.drv import ec3po_servo
 from servo.drv import pty_driver
 
 
-class ec3poServoV4Error(pty_driver.ptyError):
+class ec3poServoV4Error(pty_driver.PtyError):
     """Exception class."""
 
 
@@ -104,7 +104,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
             try:
                 optional_res = self._issue_safe_cmd_get_results("cc", [rx])
                 return optional_res[0][1]
-            except pty_driver.ptyError:
+            except pty_driver.PtyError:
                 self._logger.warning(
                     "%s unsupported, return %s. Update the servo v4 fw."
                     % (warn_str, str(default))
@@ -328,7 +328,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
             self._issue_cmd_get_results(
                 "usbc_action chg %s" % str(value), [r"CHG SRC \d+mV"], timeout=1
             )
-        except pty_driver.ptyError:
+        except pty_driver.PtyError:
             # TODO(b:140256624): This is a hack to ensure chg subcmd exists.
             # Drop this when we phase out the old servo_v4 firmware.
             raise ec3poServoV4Error("Unsupported command, update servo_v4 firmware")

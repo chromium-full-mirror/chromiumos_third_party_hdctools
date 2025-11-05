@@ -53,13 +53,13 @@ class Scratch:
         self._dir = scratch
         self._logger = logging.getLogger(type(self).__name__)
         os.makedirs(self._dir, exist_ok=True)
-        self._Sanitize()
+        self._sanitize()
 
-    def _EntryF(self, entry):
+    def _entry_f(self, entry):
         """Generate a filename for |entry|."""
         return os.path.join(self._dir, str(entry[PORT_KEY]))
 
-    def AddEntry(self, port, serials, pid):
+    def add_entry(self, port, serials, pid):
         """Register information about servod instance.
 
         Args:
@@ -87,7 +87,7 @@ class Scratch:
             raise ScratchError(
                 "Entry arguments malformed. %s: %s" % (type(e).__name__, str(e))
             ) from e
-        entryf = self._EntryF(entry)
+        entryf = self._entry_f(entry)
         if os.path.exists(entryf):
             msg = "Adding entry for port already in use. Port: %d." % int(port)
             self._logger.error(msg)
@@ -105,13 +105,13 @@ class Scratch:
                 raise ScratchError(msg)
             serialfs.append(serialf)
 
-        self._WriteEntry(entry)
+        self._write_entry(entry)
 
         # Add the symlinks as well.
         for serialf in serialfs:
             os.symlink(os.path.basename(entryf), serialf)
 
-    def RemoveEntry(self, identifier):
+    def remove_entry(self, identifier):
         """Remove information about servod instance.
 
         Args:
@@ -128,22 +128,22 @@ class Scratch:
                 os.remove(fullf)
         os.remove(entryf)
 
-    def MarkActive(self, identifier):
+    def mark_active(self, identifier):
         """Mark entry at |identifier| as active."""
-        entry = self.FindById(identifier)
+        entry = self.find_by_id(identifier)
         if entry[ACTIVE_ENTRY_KEY]:
             self._logger.info("Entry at %r already marked active.")
         else:
             entry[ACTIVE_ENTRY_KEY] = True
-            self._WriteEntry(entry)
+            self._write_entry(entry)
 
-    def _WriteEntry(self, entry):
+    def _write_entry(self, entry):
         """Write entry to file."""
-        entryf = self._EntryF(entry)
+        entryf = self._entry_f(entry)
         with open(entryf, "w", encoding="utf-8") as f:
             json.dump(entry, f)
 
-    def GetAllEntries(self):
+    def get_all_entries(self):
         """Find and load servod instance info for all registered servod instances.
 
         Returns:
@@ -165,7 +165,7 @@ class Scratch:
                     os.remove(entryf)
         return entries
 
-    def GenerateEntryFromPort(self, port):
+    def generate_entry_from_port(self, port):
         """Given a port number, try to generate an entry from it.
 
         Tries to ask servod instance for information to retroactively
@@ -193,7 +193,7 @@ class Scratch:
                 # The serials have to be unique. Enforce this here by creating a set
                 serials = list(set(serials.values()))
                 pid = sclient.get("servod_pid")
-                self.AddEntry(port=port, serials=serials, pid=pid)
+                self.add_entry(port=port, serials=serials, pid=pid)
                 return True
         except socket.error:
             # expected to fail as no servod instance should be running on an
@@ -203,7 +203,7 @@ class Scratch:
             # Don't rebuild an entry if the entry already exists.
             return False
 
-    def FindById(self, identifier):
+    def find_by_id(self, identifier):
         """Find and load servod instance info for identifier.
 
         Args:
@@ -231,9 +231,9 @@ class Scratch:
                 ) from e
         return entry
 
-    def _Sanitize(self):
+    def _sanitize(self):
         """Verify that all known servod ports are still in use, delete otherwise."""
-        for entry in self.GetAllEntries():
+        for entry in self.get_all_entries():
             testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             port = entry[PORT_KEY]
             try:
@@ -243,7 +243,7 @@ class Scratch:
                     "servod instance. Removing entry.",
                     str(port),
                 )
-                self.RemoveEntry(port)
+                self.remove_entry(port)
             except socket.error:
                 # Expected to fail when binding to a valid servod instance socket.
                 pass

@@ -20,7 +20,7 @@ from packaging import version
 from servo import servo_parsing
 from servo import sversion_util
 from servo_updater.ecusb import tiny_servod
-from servo_updater.ecusb.pty_driver import ptyError
+from servo_updater.ecusb.pty_driver import PtyError
 import servo_updater.ecusb.tiny_servo_common as c
 import servo_updater.fw_update as fw_update
 
@@ -219,7 +219,7 @@ def do_version(tinys):
 
     try:
         results = tinys.pty._issue_cmd_get_results(cmd, [regex])[0]
-    except ptyError:
+    except PtyError:
         print_servod_warning()
         sys.exit(1)
 

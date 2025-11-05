@@ -9,7 +9,7 @@ import unittest
 from servo_mfg import exec_util
 
 
-def _runShortlivedProcess(cmd: str) -> Optional[int]:
+def _run_shortlived_process(cmd: str) -> Optional[int]:
     """Runs a process using the non-blocking API and kills it after at most 1 second.
 
     This is explicitly using exec_nonblocking to facilitate its
@@ -17,9 +17,9 @@ def _runShortlivedProcess(cmd: str) -> Optional[int]:
     as it may be.
     """
     process = exec_util.exec_nonblocking([cmd])
-    graceTime = time.time() + 1
+    grace_time = time.time() + 1
     while process.poll() is None:
-        if time.time() > graceTime:
+        if time.time() > grace_time:
             raise ValueError("test timed out")
     return process.poll()
 
@@ -27,14 +27,14 @@ def _runShortlivedProcess(cmd: str) -> Optional[int]:
 class TestHelpers(unittest.TestCase):
     """Test helper functions."""
 
-    def test_Passthrough(self):
+    def test_passthrough(self):
         """Test that hint returns the first element of cmd verbatim by default."""
         assert exec_util._exec_line(["a"]) == "a"
         assert exec_util._exec_line(["a", "b"]) == "a"
         assert exec_util._exec_line(["a"], hint=None) == "a"
         assert exec_util._exec_line(["a", "b"], hint=None) == "a"
 
-    def test_Hint(self):
+    def test_hint(self):
         """Test that the hint ends up at the right location."""
         assert exec_util._exec_line(["a"], hint="first hint"), "a (first hint)"
         assert exec_util._exec_line(["a", "b"], hint="another hint"), "a (another hint)"
@@ -43,50 +43,50 @@ class TestHelpers(unittest.TestCase):
 class TestNonBlocking(unittest.TestCase):
     """Test non-blocking execution."""
 
-    def test_ExitCode(self):
+    def test_exit_code(self):
         """Test that we can eventually get the exit code of a process."""
-        ret = _runShortlivedProcess("/usr/bin/true")
+        ret = _run_shortlived_process("/usr/bin/true")
         assert ret == 0
-        ret = _runShortlivedProcess("/usr/bin/false")
+        ret = _run_shortlived_process("/usr/bin/false")
         assert ret == 1
 
 
 class TestBlocking(unittest.TestCase):
     """Test blocking execution."""
 
-    def test_QuickExit(self):
+    def test_quick_exit(self):
         """Test that a quickly exiting process just runs and exits cleanly."""
         (ret, _unused, _unused) = exec_util.exec_blocking(["/usr/bin/false"])
         assert ret == 1
 
-    def test_Warning(self):
+    def test_warning(self):
         """Test that after |timeout| seconds there's a warning on the log."""
         timeout = 2
-        exceedTimeout = 1.5 * timeout
-        doubleTimeout = 2 * timeout
+        exceed_timeout = 1.5 * timeout
+        double_timeout = 2 * timeout
         now = time.time()
         (ret, _unused, _unused) = exec_util.exec_blocking(
-            ["/usr/bin/sleep", f"{exceedTimeout}"], timeout=timeout
+            ["/usr/bin/sleep", f"{exceed_timeout}"], timeout=timeout
         )
         then = time.time()
         assert ret == 0
-        assert then - now >= exceedTimeout
-        assert then - now < doubleTimeout
+        assert then - now >= exceed_timeout
+        assert then - now < double_timeout
 
-    def test_KilledProcess(self):
+    def test_killed_process(self):
         """Test that the process is killed after 2*|timeout| seconds."""
         timeout = 2
-        doubleTimeout = 2 * timeout
-        exceedDouble = 1.5 * doubleTimeout
+        double_timeout = 2 * timeout
+        exceed_double = 1.5 * double_timeout
         now = time.time()
         (ret, _unused, _unused) = exec_util.exec_blocking(
-            ["/usr/bin/sleep", f"{exceedDouble}"], timeout=timeout
+            ["/usr/bin/sleep", f"{exceed_double}"], timeout=timeout
         )
         then = time.time()
         assert ret is None
-        assert then - now < exceedDouble
+        assert then - now < exceed_double
 
-    def test_ConsoleOutput(self):
+    def test_console_output(self):
         """Test that stdout and stderr are reported back."""
         (ret, stdout, stderr) = exec_util.exec_blocking(
             ["/bin/sh", "-c", "echo foo && echo bar"]

@@ -10,7 +10,7 @@ import sys
 import docker
 
 
-format_str = "{0:<25} {1:<10} {2:<15} {3:<15} {4:<26} {5:<5}"
+FORMAT_STR = "{0:<25} {1:<10} {2:<15} {3:<15} {4:<26} {5:<5}"
 
 
 def parse_args(arguments):
@@ -22,7 +22,7 @@ def parse_args(arguments):
 
 def print_header():
     print()
-    print(format_str.format("Name", "Image", "Board", "Model", "Servo Serial", "Port"))
+    print(FORMAT_STR.format("Name", "Image", "Board", "Model", "Servo Serial", "Port"))
 
 
 def determine_host_port(container):
@@ -56,7 +56,7 @@ def print_line(container):
     except IndexError:
         pass
     print(
-        format_str.format(
+        FORMAT_STR.format(
             container.name,
             image,
             servod_cmd_args.board,

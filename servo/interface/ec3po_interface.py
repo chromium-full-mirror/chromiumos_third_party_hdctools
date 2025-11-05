@@ -30,7 +30,7 @@ EC_TOKENS_CONTROL = "uses_cros_ec_tokens"
 EC_TOKENS_VALUES = {"never": False, "always": True}
 
 
-def _RunCallbacks(*callbacks):
+def _run_callbacks(*callbacks):
     """Run the provided callbacks.  Return the value from the last one."""
     retval = None
     for callback in callbacks:
@@ -38,7 +38,7 @@ def _RunCallbacks(*callbacks):
     return retval
 
 
-def _OsPipeFiles():
+def _os_pipe_files():
     """Like os.pipe(), except returns file objects instead of file descriptors.
 
     Returns: (read_file, write_file) - A two-item tuple of the read and write
@@ -68,7 +68,7 @@ def _OsPipeFiles():
             del exc_type, exc_value, exc_traceback
 
 
-def _SendShutdown(pipe_wr):
+def _send_shutdown(pipe_wr):
     """Indicate shutdown by unblocking reads on a pipe.
 
     Args:
@@ -141,8 +141,8 @@ class EC3PO(uart.Uart):
         #
         # This will become simpler after ec3po is updated to use threads instead of
         # subprocesses, which is being done as part of http://crbug.com/79684405.
-        self._itpr_shutdown_pipe_rd, self._itpr_shutdown_pipe_wr = _OsPipeFiles()
-        self._c_shutdown_pipe_rd, self._c_shutdown_pipe_wr = _OsPipeFiles()
+        self._itpr_shutdown_pipe_rd, self._itpr_shutdown_pipe_wr = _os_pipe_files()
+        self._c_shutdown_pipe_rd, self._c_shutdown_pipe_wr = _os_pipe_files()
 
         # Create an interpreter instance.
         itpr = interpreter.Interpreter(
@@ -153,13 +153,13 @@ class EC3PO(uart.Uart):
 
         # Spawn an interpreter process.
         itpr_process = threadproc_shim.ThreadOrProcess(
-            target=_RunCallbacks,
+            target=_run_callbacks,
             args=(
-                threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_wr.close),
-                threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_rd.close),
-                threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_wr.close),
+                threadproc_shim.do_if(subprocs=self._itpr_shutdown_pipe_wr.close),
+                threadproc_shim.do_if(subprocs=self._c_shutdown_pipe_rd.close),
+                threadproc_shim.do_if(subprocs=self._c_shutdown_pipe_wr.close),
                 functools.partial(
-                    interpreter.StartLoop,
+                    interpreter.start_loop,
                     itpr,
                     shutdown_pipe=self._itpr_shutdown_pipe_rd,
                 ),
@@ -223,16 +223,16 @@ class EC3PO(uart.Uart):
         self._console = new_console
         new_console._logger = logging.getLogger("Console")
         # Spawn a console process.
-        v = threadproc_shim.Value(ctypes.c_bool, False)
+        v = threadproc_shim.value(ctypes.c_bool, False)
         self._command_active = v
         console_process = threadproc_shim.ThreadOrProcess(
-            target=_RunCallbacks,
+            target=_run_callbacks,
             args=(
-                threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_rd.close),
-                threadproc_shim.DoIf(subprocs=self._itpr_shutdown_pipe_wr.close),
-                threadproc_shim.DoIf(subprocs=self._c_shutdown_pipe_wr.close),
+                threadproc_shim.do_if(subprocs=self._itpr_shutdown_pipe_rd.close),
+                threadproc_shim.do_if(subprocs=self._itpr_shutdown_pipe_wr.close),
+                threadproc_shim.do_if(subprocs=self._c_shutdown_pipe_wr.close),
                 functools.partial(
-                    console.StartLoop,
+                    console.start_loop,
                     new_console,
                     v,
                     shutdown_pipe=self._c_shutdown_pipe_rd,
@@ -259,7 +259,7 @@ class EC3PO(uart.Uart):
         )
 
     @staticmethod
-    def Build(
+    def build(
         index,  # pylint: disable=unused-argument
         vid,
         pid,
@@ -298,7 +298,7 @@ class EC3PO(uart.Uart):
             "Skip initializing EC3PO for %s, no control specified.",
             raw_uart_name,
         )
-        return empty.Empty.Build()
+        return empty.Empty.build()
 
     @staticmethod
     def name():
@@ -405,9 +405,9 @@ class EC3PO(uart.Uart):
         # whether these writes are still needed.  If so, consider troubleshooting
         # further at that time.
         try:
-            _SendShutdown(self._itpr_shutdown_pipe_wr)
+            _send_shutdown(self._itpr_shutdown_pipe_wr)
         finally:
-            _SendShutdown(self._c_shutdown_pipe_wr)
+            _send_shutdown(self._c_shutdown_pipe_wr)
 
         total_timeout = 2
         end_time = time.time() + total_timeout

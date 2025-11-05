@@ -20,7 +20,7 @@ DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms
 FLUSH_UART_TIMEOUT = 1
 
 
-class ptyError(hw_driver.HwDriverError):
+class PtyError(hw_driver.HwDriverError):
     """Exception class for pty errors."""
 
 
@@ -33,7 +33,7 @@ UART_PARAMS = {
 }
 
 
-class ptyDriver(hw_driver.HwDriver):
+class PtyDriver(hw_driver.HwDriver):
     """."""
 
     # The default regex to use for set. It simply checks whether the control
@@ -43,7 +43,7 @@ class ptyDriver(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(ptyDriver, self)._drv_init()
+        super(PtyDriver, self)._drv_init()
         self._child = None
         self._fd = None
         self._cmd_iface = False
@@ -109,7 +109,7 @@ class ptyDriver(hw_driver.HwDriver):
     def _flush(self):
         """Flush device output to prevent previous messages interfering."""
         if self._child.sendline("") != 1:
-            raise ptyError("Failed to send newline.")
+            raise PtyError("Failed to send newline.")
         # Have a maximum timeout for the flush operation. We should have cleared
         # all data from the buffer, but if data is regularly being generated, we
         # can't guarantee it will ever stop.
@@ -138,9 +138,9 @@ class ptyDriver(hw_driver.HwDriver):
         """
         if "uart_cmd" in self._params:
             if "regex" not in self._params:
-                raise ptyError("Required param 'regex' not in params")
+                raise PtyError("Required param 'regex' not in params")
             if "group" not in self._params:
-                raise ptyError("Required param 'group' not in params")
+                raise PtyError("Required param 'group' not in params")
             self._uart_cmd = self._params["uart_cmd"]
             self._regex = self._params["regex"]
             self._group = int(self._params["group"])
@@ -271,7 +271,7 @@ class ptyDriver(hw_driver.HwDriver):
           flush:  Flag to decide to flush console (send newline) before cmd.
 
         Raises:
-          ptyError: Raised when writing to the device fails.
+          PtyError: Raised when writing to the device fails.
         """
         if flush:
             self._flush()
@@ -279,7 +279,7 @@ class ptyDriver(hw_driver.HwDriver):
             cmds = [cmds]
         for cmd in cmds:
             if self._child.sendline(cmd) != len(cmd) + 1:
-                raise ptyError("Failed to send command.")
+                raise PtyError("Failed to send command.")
             # Multiple commands sent together choke the console queue.
             time.sleep(max(rate, 0.01))
 
@@ -321,7 +321,7 @@ class ptyDriver(hw_driver.HwDriver):
               [('High temp: 37.2', '37', '2'), ('Low temp: 36.4', '36', '4')]
 
         Raises:
-          ptyError: If timed out waiting for a response
+          PtyError: If timed out waiting for a response
         """
         result_list = []
         flush = flush if flush is not None else self._Get_uart_flush()
@@ -369,7 +369,7 @@ class ptyDriver(hw_driver.HwDriver):
                     msg = "No data was sent from the pty."
                 if hasattr(self._interface, "_source"):
                     msg = "%s: %s" % (self._interface._source, msg)
-                raise ptyError(msg)
+                raise PtyError(msg)
             finally:
                 # Reenable capturing the console output
                 self._interface.resume_capture()
@@ -427,7 +427,7 @@ class ptyDriver(hw_driver.HwDriver):
         """
         return 1 if self._interface._uart_state["uart_flush"] else 0
 
-    def _Set_uart_timeout(self, timeout):
+    def _set_uart_timeout(self, timeout):
         """Set timeout value for waiting for the device response.
 
         Args:
@@ -435,7 +435,7 @@ class ptyDriver(hw_driver.HwDriver):
         """
         self._interface._uart_state["uart_timeout"] = timeout
 
-    def _Get_uart_timeout(self):
+    def _get_uart_timeout(self):
         """Get timeout value for waiting for the device response.
 
         Returns:
@@ -462,18 +462,18 @@ class ptyDriver(hw_driver.HwDriver):
             r'\nExample valid input: \'[r"Chip:\s+(\S+)\s", r"Board:\s+(\S+)\s"]\''
         )
         if not isinstance(regexp, str):
-            raise ptyError(err_msg + sample_usage)
+            raise PtyError(err_msg + sample_usage)
 
         regex_list = ast.literal_eval(regexp)
         # If regex_list is not None, do type check
         if regex_list is not None:
             if not isinstance(regex_list, list):
-                raise ptyError(err_msg + sample_usage)
+                raise PtyError(err_msg + sample_usage)
             for regex in regex_list:
                 try:
                     re.compile(regex)
                 except:
-                    raise ptyError(
+                    raise PtyError(
                         err_msg + "\n%s is not a valid regex." % regex + sample_usage
                     )
         self._interface._uart_state["uart_regexp"] = regex_list

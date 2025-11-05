@@ -56,7 +56,7 @@ class DeviceTemplateError(Exception):
     """Error class for device templates."""
 
 
-def GetTemplateClassByName(name):
+def get_template_class_by_name(name):
     """Get the ServoDevTemplate protobuf message class associated with |name|.
 
     Args:
@@ -73,7 +73,7 @@ def GetTemplateClassByName(name):
     return SERVO_NAME_TEMPLATE_MAP[name]
 
 
-def GetTemplateClass(vid, pid, serial=None):
+def get_template_class(vid, pid, serial=None):
     """Get the ServoDevTemplate message class associated with (vid, pid, serial).
 
     Note: the serialname is only used when (vid, pid) leave ambiguity (more than
@@ -124,10 +124,10 @@ def GetTemplateClass(vid, pid, serial=None):
         for dev_class in dev_class_candidates:
             logging.error("Found ServoDev template class %s", dev_class.__name__)
         return None
-    return GetTemplateClassByName(dev_class_candidates.pop())
+    return get_template_class_by_name(dev_class_candidates.pop())
 
 
-def GetID(name):
+def get_id(name):
     """Get the ID from the servo class associated with |name|.
 
     Args:
@@ -145,7 +145,7 @@ def GetID(name):
     return (dev.VID, dev.PID)
 
 
-def GetVID(name):
+def get_vid(name):
     """Get the VID from the servo class associated with |name|.
 
     Args:
@@ -163,7 +163,7 @@ def GetVID(name):
     return dev.VID
 
 
-def GetPID(name):
+def get_pid(name):
     """Get the PID from the servo class associated with |name|.
 
     Args:
@@ -181,7 +181,7 @@ def GetPID(name):
     return dev.PID
 
 
-def GetAllServoIDs():
+def get_all_servo_ids():
     """Get a set of types of the vid/pid pairs of all known servo devices.
 
     Returns:
@@ -190,7 +190,7 @@ def GetAllServoIDs():
     return SERVO_ID_DEFAULTS
 
 
-def _InitMaps(device_list):
+def _init_maps(device_list):
     """Helper to initialize the vid/pid/lotid maps for easy retrieval.
     This helper gets called on protobuf import to populate the vid/pid/lotid
     maps with the right classes, to facilitate retrieval of the template class.
@@ -214,7 +214,7 @@ def _InitMaps(device_list):
                     SERVO_LOTID_TEMPLATE_MAP[lotid].add(device.TYPE)
 
 
-def _ReadTextProto(file_path):
+def _read_text_proto(file_path):
     """Retrieve values from the TextProto file
 
     Args:
@@ -228,8 +228,8 @@ def _ReadTextProto(file_path):
 
 
 # Import servo device info and initialize maps
-device_templates = _ReadTextProto(_TEXTPROTO_PATH)
-_InitMaps(device_templates)
+device_templates = _read_text_proto(_TEXTPROTO_PATH)
+_init_maps(device_templates)
 # Servo types used to categorize servo devices
 DEBUG_HEADER_SERVO_TYPES = set(["servo_micro", "servo_v2", "c2d2"])
 CCD_SERVO_TYPES = set(["ccd_cr50", "ccd_gsc", "ccd_gsc_nt"])

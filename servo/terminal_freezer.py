@@ -12,7 +12,7 @@ import subprocess
 import time
 
 
-def PIDNamespaceUsed():
+def pid_namespace_used():
     """Checks to see if we are running with PID namespaces."""
     with open("/proc/1/cmdline", encoding="utf-8") as f:
         if "cros_sdk" in f.readline():
@@ -27,7 +27,7 @@ class TerminalFreezer:
         self._tty = tty
         self._logger = logging.getLogger("Terminal Freezer (%s)" % self._tty)
         self._processes = None
-        if PIDNamespaceUsed():
+        if pid_namespace_used():
             self._logger.warning(
                 "This chroot was not entered with"
                 ' "cros_sdk --no-ns-pid", make sure not to interfere'

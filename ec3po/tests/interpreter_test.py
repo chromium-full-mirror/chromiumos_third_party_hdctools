@@ -14,7 +14,7 @@ from ec3po import interpreter
 from ec3po import threadproc_shim
 
 
-def GetBuiltins(func):
+def get_builtins(func):
     return "builtins." + func
 
 
@@ -39,7 +39,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # Mock the open() function so we can inspect reads/writes to the EC.
         self.ec_uart_pty = mock.mock_open()
 
-        with mock.patch(GetBuiltins("open"), self.ec_uart_pty):
+        with mock.patch(get_builtins("open"), self.ec_uart_pty):
             # Create an interpreter.
             self.itpr = interpreter.Interpreter(
                 self.tempfile.name,
@@ -50,7 +50,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
             )
 
     @mock.patch("ec3po.interpreter.os")
-    def test_HandlingCommandsThatProduceNoOutput(self, mock_os):
+    def test_handling_commands_that_produce_no_output(self, mock_os):
         """Verify that the Interpreter correctly handles non-output commands.
 
         Args:
@@ -62,10 +62,10 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # Have a command come in the command pipe.  The first command will be an
         # interrogation to determine if the EC is enhanced or not.
         self.cmd_pipe_user.send(interpreter.EC_SYN)
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
         # At this point, the command should be queued up waiting to be sent, so
         # let's actually send it to the EC.
-        self.itpr.SendCmdToEC()
+        self.itpr.send_cmd_to_ec()
         expected_ec_calls.extend(
             [mock.call().write(interpreter.EC_SYN), mock.call().flush()]
         )
@@ -75,24 +75,24 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # os.read().
         expected_ec_calls.append(mock.call().fileno())
         # Simulate the response.
-        self.itpr.HandleECData()
+        self.itpr.handle_ec_data()
 
         # Now that the interrogation was complete, it's time to send down the real
         # command.
         test_cmd = b"chan save"
         # Send the test command down the pipe.
         self.cmd_pipe_user.send(test_cmd)
-        self.itpr.HandleUserData()
-        self.itpr.SendCmdToEC()
+        self.itpr.handle_user_data()
+        self.itpr.send_cmd_to_ec()
         # Since the EC image is enhanced, we should have sent a packed command.
-        expected_ec_calls.append(mock.call().write(self.itpr.PackCommand(test_cmd)))
+        expected_ec_calls.append(mock.call().write(self.itpr.pack_command(test_cmd)))
         expected_ec_calls.append(mock.call().flush())
 
         # Now that the first command was sent, we should send another command which
         # produces no output.  The console would send another interrogation.
         self.cmd_pipe_user.send(interpreter.EC_SYN)
-        self.itpr.HandleUserData()
-        self.itpr.SendCmdToEC()
+        self.itpr.handle_user_data()
+        self.itpr.send_cmd_to_ec()
         expected_ec_calls.extend(
             [mock.call().write(interpreter.EC_SYN), mock.call().flush()]
         )
@@ -102,22 +102,22 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # os.read().
         expected_ec_calls.append(mock.call().fileno())
         # Simulate the response.
-        self.itpr.HandleECData()
+        self.itpr.handle_ec_data()
 
         # Now send the second test command.
         test_cmd = b"chan 0"
         self.cmd_pipe_user.send(test_cmd)
-        self.itpr.HandleUserData()
-        self.itpr.SendCmdToEC()
+        self.itpr.handle_user_data()
+        self.itpr.send_cmd_to_ec()
         # Since the EC image is enhanced, we should have sent a packed command.
-        expected_ec_calls.append(mock.call().write(self.itpr.PackCommand(test_cmd)))
+        expected_ec_calls.append(mock.call().write(self.itpr.pack_command(test_cmd)))
         expected_ec_calls.append(mock.call().flush())
 
         # Finally, verify that the appropriate writes were actually sent to the EC.
         self.ec_uart_pty.assert_has_calls(expected_ec_calls)
 
     @mock.patch("ec3po.interpreter.os")
-    def test_CommandRetryingOnError(self, mock_os):
+    def test_command_retrying_on_error(self, mock_os):
         """Verify that commands are retried if an error is encountered.
 
         Args:
@@ -129,10 +129,10 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # Have a command come in the command pipe.  The first command will be an
         # interrogation to determine if the EC is enhanced or not.
         self.cmd_pipe_user.send(interpreter.EC_SYN)
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
         # At this point, the command should be queued up waiting to be sent, so
         # let's actually send it to the EC.
-        self.itpr.SendCmdToEC()
+        self.itpr.send_cmd_to_ec()
         expected_ec_calls.extend(
             [mock.call().write(interpreter.EC_SYN), mock.call().flush()]
         )
@@ -142,14 +142,14 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # os.read().
         expected_ec_calls.append(mock.call().fileno())
         # Simulate the response.
-        self.itpr.HandleECData()
+        self.itpr.handle_ec_data()
 
         # Let's send a command that is received on the EC-side with an error.
         test_cmd = b"accelinfo"
         self.cmd_pipe_user.send(test_cmd)
-        self.itpr.HandleUserData()
-        self.itpr.SendCmdToEC()
-        packed_cmd = self.itpr.PackCommand(test_cmd)
+        self.itpr.handle_user_data()
+        self.itpr.send_cmd_to_ec()
+        packed_cmd = self.itpr.pack_command(test_cmd)
         expected_ec_calls.extend([mock.call().write(packed_cmd), mock.call().flush()])
         # Have the EC return the error string twice.
         mock_os.read.side_effect = [b"&&EE", b"&&EE"]
@@ -158,7 +158,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
             # os.read().
             expected_ec_calls.append(mock.call().fileno())
             # Simulate the response.
-            self.itpr.HandleECData()
+            self.itpr.handle_ec_data()
 
             # Since an error was received, the EC should attempt to retry the command.
             expected_ec_calls.extend(
@@ -171,45 +171,45 @@ class TestEnhancedECBehavior(unittest.TestCase):
                 "Unexpected cmd_remaining count.",
             )
             # Actually retry the command.
-            self.itpr.SendCmdToEC()
+            self.itpr.send_cmd_to_ec()
 
         # Now assume that the last one goes through with no trouble.
         expected_ec_calls.extend([mock.call().write(packed_cmd), mock.call().flush()])
-        self.itpr.SendCmdToEC()
+        self.itpr.send_cmd_to_ec()
 
         # Verify all the calls.
         self.ec_uart_pty.assert_has_calls(expected_ec_calls)
 
-    def test_PackCommandsForEnhancedEC(self):
+    def test_pack_commands_for_enhanced_ec(self):
         """Verify that the interpreter packs commands for enhanced EC images."""
         # Assume current EC image is enhanced.
         self.itpr.enhanced_ec = True
         # Receive a command from the user.
         test_cmd = b"gettime"
         self.cmd_pipe_user.send(test_cmd)
-        # Mock out PackCommand to see if it was called.
-        self.itpr.PackCommand = mock.MagicMock()
+        # Mock out pack_command to see if it was called.
+        self.itpr.pack_command = mock.MagicMock()
         # Have the interpreter handle the command.
-        self.itpr.HandleUserData()
-        # Verify that PackCommand() was called.
-        self.itpr.PackCommand.assert_called_once_with(test_cmd)
+        self.itpr.handle_user_data()
+        # Verify that pack_command() was called.
+        self.itpr.pack_command.assert_called_once_with(test_cmd)
 
-    def test_DontPackCommandsForNonEnhancedEC(self):
+    def test_dont_pack_commands_for_non_enhanced_ec(self):
         """Verify the interpreter doesn't pack commands for non-enhanced images."""
         # Assume current EC image is not enhanced.
         self.itpr.enhanced_ec = False
         # Receive a command from the user.
         test_cmd = b"gettime"
         self.cmd_pipe_user.send(test_cmd)
-        # Mock out PackCommand to see if it was called.
-        self.itpr.PackCommand = mock.MagicMock()
+        # Mock out pack_command to see if it was called.
+        self.itpr.pack_command = mock.MagicMock()
         # Have the interpreter handle the command.
-        self.itpr.HandleUserData()
-        # Verify that PackCommand() was called.
-        self.itpr.PackCommand.assert_not_called()
+        self.itpr.handle_user_data()
+        # Verify that pack_command() was called.
+        self.itpr.pack_command.assert_not_called()
 
     @mock.patch("ec3po.interpreter.os")
-    def test_KeepingTrackOfInterrogation(self, mock_os):
+    def test_keeping_track_of_interrogation(self, mock_os):
         """Verify that the interpreter can track the state of the interrogation.
 
         Args:
@@ -225,7 +225,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
 
         # Assume an interrogation request comes in from the user.
         self.cmd_pipe_user.send(interpreter.EC_SYN)
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
 
         # Verify the state is now within an interrogation.
         self.assertTrue(self.itpr.interrogating, "interrogating should be True")
@@ -237,7 +237,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
 
         # Assume that the EC responds with an EC_ACK.
         mock_os.read.side_effect = [interpreter.EC_ACK]
-        self.itpr.HandleECData()
+        self.itpr.handle_ec_data()
 
         # Now, the interrogation should be complete and we should know that the
         # current EC image is enhanced.
@@ -247,7 +247,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # Now let's perform another interrogation, but pretend that the EC ignores
         # it.
         self.cmd_pipe_user.send(interpreter.EC_SYN)
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
 
         # Verify interrogating state.
         self.assertTrue(self.itpr.interrogating, "interrogating sholud be True")
@@ -258,7 +258,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
         # Let's pretend that we get a random debug print.  This should clear the
         # interrogating flag.
         mock_os.read.side_effect = [b"[1660.593076 HC 0x103]"]
-        self.itpr.HandleECData()
+        self.itpr.handle_ec_data()
 
         # Verify that interrogating flag is cleared and enhanced_ec is still False.
         self.assertFalse(self.itpr.interrogating, "interrogating should be False.")
@@ -286,7 +286,7 @@ class TestUARTDisconnection(unittest.TestCase):
         # Mock the open() function so we can inspect reads/writes to the EC.
         self.ec_uart_pty = mock.mock_open()
 
-        with mock.patch(GetBuiltins("open"), self.ec_uart_pty):
+        with mock.patch(get_builtins("open"), self.ec_uart_pty):
             # Create an interpreter.
             self.itpr = interpreter.Interpreter(
                 self.tempfile.name,
@@ -302,11 +302,11 @@ class TestUARTDisconnection(unittest.TestCase):
             ("The interpreter should be initialized in a connected state"),
         )
 
-    def test_DisconnectStopsECTraffic(self):
+    def test_disconnect_stops_ec_traffic(self):
         """Verify that when in disconnected state, no debug prints are sent."""
         # Let's send a disconnect command through the command pipe.
         self.cmd_pipe_user.send(b"disconnect")
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
 
         # Verify interpreter is disconnected from EC.
         self.assertFalse(
@@ -317,13 +317,13 @@ class TestUARTDisconnection(unittest.TestCase):
         # inputs list.
         self.assertFalse(self.itpr.ec_uart_pty in self.itpr.inputs)
 
-    def test_CommandsDroppedWhenDisconnected(self):
+    def test_commands_dropped_when_disconnected(self):
         """Verify that when in disconnected state, commands are dropped."""
         # Send a command, followed by 'disconnect'.
         self.cmd_pipe_user.send(b"taskinfo")
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
         self.cmd_pipe_user.send(b"disconnect")
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
 
         # Verify interpreter is disconnected from EC.
         self.assertFalse(
@@ -337,7 +337,7 @@ class TestUARTDisconnection(unittest.TestCase):
         command = "help\n"
         for char in command:
             self.cmd_pipe_user.send(char.encode("utf-8"))
-            self.itpr.HandleUserData()
+            self.itpr.handle_user_data()
 
         # The command queue should be empty.
         self.assertEqual(0, self.itpr.ec_cmd_queue.qsize())
@@ -345,8 +345,8 @@ class TestUARTDisconnection(unittest.TestCase):
         # Now send the reconnect command.
         self.cmd_pipe_user.send(b"reconnect")
 
-        with mock.patch(GetBuiltins("open"), mock.mock_open()):
-            self.itpr.HandleUserData()
+        with mock.patch(get_builtins("open"), mock.mock_open()):
+            self.itpr.handle_user_data()
 
         # Verify interpreter is connected.
         self.assertTrue(self.itpr.connected)
@@ -356,11 +356,11 @@ class TestUARTDisconnection(unittest.TestCase):
         # not a member of the outputs.
         self.assertFalse(self.itpr.ec_uart_pty in self.itpr.outputs)
 
-    def test_ReconnectAllowsECTraffic(self):
+    def test_reconnect_allows_ec_traffic(self):
         """Verify that when connected, EC UART traffic is allowed."""
         # Let's send a disconnect command through the command pipe.
         self.cmd_pipe_user.send(b"disconnect")
-        self.itpr.HandleUserData()
+        self.itpr.handle_user_data()
 
         # Verify interpreter is disconnected.
         self.assertFalse(
@@ -373,8 +373,8 @@ class TestUARTDisconnection(unittest.TestCase):
         # Issue reconnect command through the command pipe.
         self.cmd_pipe_user.send(b"reconnect")
 
-        with mock.patch(GetBuiltins("open"), mock.mock_open()):
-            self.itpr.HandleUserData()
+        with mock.patch(get_builtins("open"), mock.mock_open()):
+            self.itpr.handle_user_data()
 
         # Verify interpreter is connected.
         self.assertTrue(self.itpr.connected, ("The interpreter should be connected."))

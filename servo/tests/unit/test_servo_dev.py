@@ -25,8 +25,8 @@ class TestServoDevice(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.servod = servo_server.Servod()
         self.micro_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_micro"),
-            tmpl.GetPID("servo_micro"),
+            tmpl.get_vid("servo_micro"),
+            tmpl.get_pid("servo_micro"),
             "servo_micro_serial",
             "/sys/bus/usb/devices/-2-1.2.3",
         )
@@ -39,8 +39,8 @@ class TestServoDevice(unittest.TestCase):
             self.micro_entry, system_config.SystemConfig(), None, self.servod
         )
         self.v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v4"),
-            tmpl.GetPID("servo_v4"),
+            tmpl.get_vid("servo_v4"),
+            tmpl.get_pid("servo_v4"),
             "servo_v4_serial",
             "/sys/bus/usb/devices/-2-1.2",
         )
@@ -72,8 +72,8 @@ class TestServoDevice(unittest.TestCase):
         self.assertFalse(self.v4_dev._manual_interfaces)
         self.assertEqual(
             self.v4_dev._interfaces,
-            servo_interfaces.INTERFACE_DEFAULTS[tmpl.GetVID("servo_v4")][
-                tmpl.GetPID("servo_v4")
+            servo_interfaces.INTERFACE_DEFAULTS[tmpl.get_vid("servo_v4")][
+                tmpl.get_pid("servo_v4")
             ],
         )
         self.assertEqual(len(self.v4_dev._interface_list), len(self.v4_dev._interfaces))
@@ -182,13 +182,13 @@ class TestServoDevice(unittest.TestCase):
         """Test get_id()."""
         self.assertEqual(
             self.v4_dev.get_id(),
-            (tmpl.GetVID("servo_v4"), tmpl.GetPID("servo_v4"), "servo_v4_serial"),
+            (tmpl.get_vid("servo_v4"), tmpl.get_pid("servo_v4"), "servo_v4_serial"),
         )
         self.assertEqual(
             self.micro_dev.get_id(),
             (
-                tmpl.GetVID("servo_micro"),
-                tmpl.GetPID("servo_micro"),
+                tmpl.get_vid("servo_micro"),
+                tmpl.get_pid("servo_micro"),
                 "servo_micro_serial",
             ),
         )
@@ -237,7 +237,7 @@ class TestServoDevice(unittest.TestCase):
         self.assertFalse(self.v4_dev.disconnect_is_ok())
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value="123"),
     )
     def test_usb_devnum(self):
@@ -249,7 +249,7 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev.get_interface_list(), self.v4_dev._interface_list)
 
     @unittest.mock.patch(
-        "servo.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.interface.build", unittest.mock.MagicMock(return_value=None)
     )
     def test_init_servo_interfaces(self):
         """Test init_servo_interfaces()."""
@@ -272,7 +272,7 @@ class TestServoDevice(unittest.TestCase):
                 self.assertTrue(self.micro_dev._interface_init[i])
 
     @unittest.mock.patch(
-        "servo.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.interface.build", unittest.mock.MagicMock(return_value=None)
     )
     def test_init_servo_interfaces_error(self):
         """Test init_servo_interfaces()."""
@@ -291,7 +291,7 @@ class TestServoDevice(unittest.TestCase):
                 self.assertTrue(self.v4_dev._interface_init[i])
 
     @unittest.mock.patch(
-        "servo.interface.Build",
+        "servo.interface.build",
         unittest.mock.MagicMock(side_effect=ValueError("valueerr")),
     )
     def test_init_servo_interfaces_fault_tolerant(self):
@@ -304,8 +304,8 @@ class TestServoDevice(unittest.TestCase):
     def test_set_board_and_model(self):
         """Test set_board_and_model()."""
         v2_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v2"),
-            tmpl.GetPID("servo_v2"),
+            tmpl.get_vid("servo_v2"),
+            tmpl.get_pid("servo_v2"),
             "servo_v2_serial",
             "/sys/bus/usb/devices/-2-1.2",
         )
@@ -408,13 +408,13 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.connect.assert_called_once()
 
     @unittest.mock.patch(
-        "servo.interface.ec3po_interface.EC3PO.Build",
+        "servo.interface.ec3po_interface.EC3PO.build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.ec3po_interface.EC3PO)
         ),
     )
     @unittest.mock.patch(
-        "servo.interface.stm32uart.Suart.Build",
+        "servo.interface.stm32uart.Suart.build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.stm32uart.Suart)
         ),
@@ -428,10 +428,10 @@ class TestServoDevice(unittest.TestCase):
     def test_close(self):
         """Test close()."""
         self.v4_dev._interface_list = [
-            _interface.ec3po_interface.EC3PO.Build(),
-            _interface.stm32uart.Suart.Build(),
-            _interface.empty.Empty.Build(),
-            _interface.ec3po_interface.EC3PO.Build(),
+            _interface.ec3po_interface.EC3PO.build(),
+            _interface.stm32uart.Suart.build(),
+            _interface.empty.Empty.build(),
+            _interface.ec3po_interface.EC3PO.build(),
         ]
         self.v4_dev._logger.info = unittest.mock.MagicMock()
 
@@ -691,8 +691,8 @@ class TestServoDevice(unittest.TestCase):
         v4_json = json.loads(self.v4_dev.to_json())
         self.assertEqual(v4_json["prefix"], ["v4"])
         self.assertEqual(v4_json["type"], "servo_v4")
-        self.assertEqual(v4_json["vendor_id"], tmpl.GetVID("servo_v4"))
-        self.assertEqual(v4_json["product_id"], tmpl.GetPID("servo_v4"))
+        self.assertEqual(v4_json["vendor_id"], tmpl.get_vid("servo_v4"))
+        self.assertEqual(v4_json["product_id"], tmpl.get_pid("servo_v4"))
         self.assertEqual(v4_json["serial"], "servo_v4_serial")
         self.assertEqual(v4_json["sysfs_path"], "/sys/bus/usb/devices/-2-1.2")
         self.assertEqual(v4_json["root_hub_device"], None)
@@ -701,8 +701,8 @@ class TestServoDevice(unittest.TestCase):
         micro_json = json.loads(self.micro_dev.to_json())
         self.assertEqual(micro_json["prefix"], ["micro"])
         self.assertEqual(micro_json["type"], "servo_micro")
-        self.assertEqual(micro_json["vendor_id"], tmpl.GetVID("servo_micro"))
-        self.assertEqual(micro_json["product_id"], tmpl.GetPID("servo_micro"))
+        self.assertEqual(micro_json["vendor_id"], tmpl.get_vid("servo_micro"))
+        self.assertEqual(micro_json["product_id"], tmpl.get_pid("servo_micro"))
         self.assertEqual(micro_json["serial"], "servo_micro_serial")
         self.assertEqual(micro_json["sysfs_path"], "/sys/bus/usb/devices/-2-1.2.3")
         self.assertEqual(micro_json["root_hub_device"], None)

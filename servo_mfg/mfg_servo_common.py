@@ -19,8 +19,8 @@ import servo.interface.stm32uart as stm32uart
 from servo_updater import servo_updater
 
 
-logfile = None
-testerlogfile = None
+LOGFILE = None
+TESTERLOGFILE = None
 
 
 class ServoMfgCommonError(Exception):
@@ -49,43 +49,43 @@ def open_logfile(filename):
 
 
 def finish_logfile():
-    """Finish a logfile and detach logging."""
-    global logfile
-    logfile = None
+    """Finish a LOGFILE and detach logging."""
+    global LOGFILE
+    LOGFILE = None
 
 
 def setup_logfile(logname, serial):
-    """Open a logfile for this servo device."""
-    global logfile
-    if logfile:
-        logfile.flush()
-        logfile.close()
+    """Open a LOGFILE for this servo device."""
+    global LOGFILE
+    if LOGFILE:
+        LOGFILE.flush()
+        LOGFILE.close()
 
     filename = "%s_%s_%s.log" % (logname, serial, time.time())
-    logfile = open_logfile(filename)
+    LOGFILE = open_logfile(filename)
 
 
 def setup_tester_logfile(testerlogname):
-    """Open a logfile for this test session."""
-    global testerlogfile
+    """Open a LOGFILE for this test session."""
+    global TESTERLOGFILE
 
     filename = "%s_%s.log" % (testerlogname, time.time())
-    testerlogfile = open_logfile(filename)
+    TESTERLOGFILE = open_logfile(filename)
 
 
 def log(output):
     """Print output to console, and any open logfiles."""
-    global logfile
-    global testerlogfile
+    global LOGFILE
+    global TESTERLOGFILE
     print(output)
-    if logfile:
-        logfile.write(output)
-        logfile.write("\n")
-        logfile.flush()
-    if testerlogfile:
-        testerlogfile.write(output)
-        testerlogfile.write("\n")
-        testerlogfile.flush()
+    if LOGFILE:
+        LOGFILE.write(output)
+        LOGFILE.write("\n")
+        LOGFILE.flush()
+    if TESTERLOGFILE:
+        TESTERLOGFILE.write(output)
+        TESTERLOGFILE.write("\n")
+        TESTERLOGFILE.flush()
 
 
 def check_usb(vidpid):
@@ -189,6 +189,6 @@ def setup_tinyservod(vidpid, interface):
         vendor=vid, product=pid, interface=interface, serialname=None
     )
     suart.run()
-    pty = pty_driver.ptyDriver(suart, [])
+    pty = pty_driver.PtyDriver(suart, [])
 
     return pty

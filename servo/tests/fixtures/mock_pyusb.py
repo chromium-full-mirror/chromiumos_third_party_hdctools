@@ -25,11 +25,11 @@ _logger = logging.getLogger("mock_pyusb")
 def mock_endpoint(mocker):
     """A mock USB endpoint to emulate hardware for for servo testing."""
 
-    def generate_mock_endpoint(bEndpointAddress, parent, description):
+    def generate_mock_endpoint(b_endpoint_address, parent, description):
         """Create a Mock object that represents a PyUSB endpoint
 
         Args:
-            bEndpointAddress (int): Endpoint id
+            b_endpoint_address (int): Endpoint id
             parent (Mock interface): The mock interface that contains this
                                      endpoints.
             description (str): Name of the endpoint, example "CR50 Uart" used
@@ -174,7 +174,7 @@ def mock_endpoint(mocker):
 
             return _mock_write_str_ep(ep, data)
 
-        mock_endpoint.bEndpointAddress = bEndpointAddress
+        mock_endpoint.bEndpointAddress = b_endpoint_address
         mock_endpoint.read.side_effect = partial(mock_read, mock_endpoint, description)
         mock_endpoint.write.side_effect = partial(mock_write, mock_endpoint)
         mock_endpoint.parent = parent
@@ -191,7 +191,7 @@ def mock_interface(mocker, mock_endpoint):
         Args:
             mock_interface (Mock): Mock interface object used to access / store data.
             args (dict): dictionary of arguments, we expect there to be an argument
-                         called bEndpointAddress that
+                         called b_endpoint_address that
 
         Returns:
             Mock: Mock endpoint for the given address.
@@ -199,10 +199,15 @@ def mock_interface(mocker, mock_endpoint):
         return mock_interface.endpoints[args["bEndpointAddress"]]
 
     def generate_mock_interface(
-        bInterfaceNumber, endpoints_nos, description, parent, mocked_data, default_reply
+        b_interface_number,
+        endpoints_nos,
+        description,
+        parent,
+        mocked_data,
+        default_reply,
     ):
         mock_interface = mocker.Mock(name="Interface")
-        mock_interface.bInterfaceNumber = bInterfaceNumber
+        mock_interface.bInterfaceNumber = b_interface_number
         mock_interface.endpoints = {}
         for endpoint_no in endpoints_nos:
             mock_interface.endpoints[endpoint_no] = mock_endpoint(
@@ -229,10 +234,16 @@ def mock_pyusb(mocker):
     mock_pyusb = mocker.Mock(name="PyUSB")
     mock_pyusb.devices = []
 
-    def mock_find(mock_pyusb, find_all, idVendor, idProduct, serial_number=None):
+    def mock_find(
+        mock_pyusb, find_all, idVendor, idProduct, serial_number=None
+    ):  # pylint: disable=invalid-name
+
         found_devices = []
         for device in mock_pyusb.devices:
-            if device.idVendor == idVendor and device.idProduct == idProduct:
+            if (
+                device.idVendor == idVendor and device.idProduct == idProduct
+            ):  # pylint: disable=invalid-name
+
                 found_devices.append(device)
         return found_devices
 

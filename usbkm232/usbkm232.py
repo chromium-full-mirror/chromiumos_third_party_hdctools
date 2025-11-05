@@ -12,12 +12,12 @@ import serial
 VERSION = "0.0.1"
 
 
-class usbkm232Error(Exception):
-    """Exception class for usbkm232."""
+class Usbkm232Error(Exception):
+    """Exception class for Usbkm232."""
 
 
-class usbkm232:
-    """usbkm232 Class."""
+class Usbkm232:
+    """Usbkm232 Class."""
 
     MAX_RSP_RETRIES = 10
     USB_QUEUE_DEPTH = 6
@@ -158,26 +158,26 @@ class usbkm232:
     }
 
     def __init__(self, serial_device):
-        """Constructor for usbkm232 class."""
+        """Constructor for Usbkm232 class."""
         self.serial = serial.Serial(serial_device, 9600, timeout=0.1)
         self.serial.interCharTimeout = 0.5
         self.serial.timeout = 0.5
         self.serial.writeTimeout = 0.5
 
     def _press(self, press_ch):
-        """Encode and return character to press using usbkm232.
+        """Encode and return character to press using Usbkm232.
 
         Args:
           press_ch: character to press
 
         Returns:
-          Proper encoding to send to the uart side of the usbkm232 to create the
+          Proper encoding to send to the uart side of the Usbkm232 to create the
           desired key press.
         """
         return "%c" % self.KEYS[press_ch]
 
     def _release(self, release_ch):
-        """Encode and return character to release using usbkm232.
+        """Encode and return character to release using Usbkm232.
 
         This value is simply the _press_ value + 128
 
@@ -185,13 +185,13 @@ class usbkm232:
           release_ch: character to release
 
         Returns:
-          Proper encoding to send to the uart side of the usbkm232 to create the
+          Proper encoding to send to the uart side of the Usbkm232 to create the
           desired key release.
         """
         return "%c" % (self.KEYS[release_ch] | 0x80)
 
     def _rsp(self, orig_ch):
-        """Check response after sending character to usbkm232.
+        """Check response after sending character to Usbkm232.
 
         The response is the one's complement of the value sent.  This method
         blocks until proper response is received.
@@ -200,7 +200,7 @@ class usbkm232:
           orig_ch: original character sent.
 
         Raises:
-          usbkm232Error: if response was incorrect or timed out
+          Usbkm232Error: if response was incorrect or timed out
         """
         count = 0
         rsp = self.serial.read(1)
@@ -212,16 +212,16 @@ class usbkm232:
             count += 1
 
         if count == self.MAX_RSP_RETRIES:
-            raise usbkm232Error("Failed to get correct response from usbkm232")
-        print("usbkm232: response [-] = \\0%03o 0x%02x" % (ord(rsp), ord(rsp)))
+            raise Usbkm232Error("Failed to get correct response from Usbkm232")
+        print("Usbkm232: response [-] = \\0%03o 0x%02x" % (ord(rsp), ord(rsp)))
 
     def _write(self, mylist, check=False, clear=True):
-        """Write list of commands to usbkm232.
+        """Write list of commands to Usbkm232.
 
         Args:
           mylist: list of encoded commands to send to the uart side of the
-            usbkm232
-          check: boolean determines whether response from usbkm232 should be
+            Usbkm232
+          check: boolean determines whether response from Usbkm232 should be
             checked.
           clear: boolean determines whether keystroke clear should be sent at end
             of the sequence.
@@ -230,7 +230,7 @@ class usbkm232:
         #               more than just one make/break
         for i, write_ch in enumerate(mylist):
             print(
-                "usbkm232: writing  [%d] = \\0%03o 0x%02x"
+                "Usbkm232: writing  [%d] = \\0%03o 0x%02x"
                 % (i, ord(write_ch), ord(write_ch))
             )
             self.serial.write(write_ch.encode("utf-8"))
@@ -239,16 +239,16 @@ class usbkm232:
             time.sleep(0.05)
 
         if clear:
-            print("usbkm232: clearing keystrokes")
+            print("Usbkm232: clearing keystrokes")
             self.serial.write(self.CLEAR.encode("utf-8"))
             if check:
                 self._rsp(self.CLEAR)
 
     def writestr(self, mystr):
-        """Write string to usbkm232.
+        """Write string to Usbkm232.
 
         Args:
-          mystr: string to send across the usbkm232
+          mystr: string to send across the Usbkm232
         """
         rlist = []
         for write_ch in mystr:
@@ -277,7 +277,7 @@ class usbkm232:
         self._write([self._press("<tab>")])
 
     def close(self):
-        """Close usbkm232 device."""
+        """Close Usbkm232 device."""
         self.serial.close()
 
 
@@ -287,7 +287,7 @@ def main():
         print("-E- USAGE: %s <device of uart>")
         sys.exit(-1)
 
-    kbd = usbkm232(sys.argv[1])
+    kbd = Usbkm232(sys.argv[1])
     try:
         while True:
             user_input = input("Enter string to type: ")

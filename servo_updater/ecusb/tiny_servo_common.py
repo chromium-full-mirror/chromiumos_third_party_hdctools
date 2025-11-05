@@ -192,7 +192,7 @@ def do_serialno(serialno, pty):
 
     Raises:
       TinyServoError: on failure to set.
-      ptyError: on command interface error.
+      PtyError: on command interface error.
     """
     cmd = r"serialno set %s" % serialno
     regex = r"Serial number:\s+(\S+)"
@@ -240,6 +240,6 @@ def setup_tinyservod(vidpid, interface, serialname=None, debuglog=False):
         debuglog=debuglog,
     )
     suart.run()
-    pty = pty_driver.ptyDriver(suart, [])
+    pty = pty_driver.PtyDriver(suart, [])
 
     return pty

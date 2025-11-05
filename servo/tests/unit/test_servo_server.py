@@ -193,9 +193,9 @@ class TestServod(unittest.TestCase):
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev3 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
-        dev.template = servo_dev_templates.GetTemplateClassByName("servo_v4p1")
-        dev2.template = servo_dev_templates.GetTemplateClassByName("ccd_cr50")
-        dev3.template = servo_dev_templates.GetTemplateClassByName("c2d2")
+        dev.template = servo_dev_templates.get_template_class_by_name("servo_v4p1")
+        dev2.template = servo_dev_templates.get_template_class_by_name("ccd_cr50")
+        dev3.template = servo_dev_templates.get_template_class_by_name("c2d2")
         servod._unique_devices = {"dev": dev, "dev2": dev2, "dev3": dev3}
         dev._serial = "dev_serial"
         dev2._serial = "dev2_serial"
@@ -453,8 +453,8 @@ class TestServod(unittest.TestCase):
         servod = servo_server.Servod()
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
-        dev.template = servo_dev_templates.GetTemplateClassByName("servo_v4")
-        dev.template = servo_dev_templates.GetTemplateClassByName("ccd_cr50")
+        dev.template = servo_dev_templates.get_template_class_by_name("servo_v4")
+        dev.template = servo_dev_templates.get_template_class_by_name("ccd_cr50")
         servod._unique_devices = {"dev": dev, "dev2": dev2}
         servod.validate_dut_controller()
 
@@ -463,7 +463,7 @@ class TestServod(unittest.TestCase):
         servod = servo_server.Servod()
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         servod._unique_devices = {"dev": dev}
-        dev.template = servo_dev_templates.GetTemplateClassByName("servo_v4")
+        dev.template = servo_dev_templates.get_template_class_by_name("servo_v4")
         servod.get_board = unittest.mock.MagicMock(return_value=None)
         servod.validate_dut_controller()
 
@@ -474,7 +474,7 @@ class TestServod(unittest.TestCase):
         servod._logger.info = unittest.mock.MagicMock()
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         servod._unique_devices = {"dev": dev}
-        dev.template = servo_dev_templates.GetTemplateClassByName("servo_v4")
+        dev.template = servo_dev_templates.get_template_class_by_name("servo_v4")
         servod.get_board = unittest.mock.MagicMock(return_value="atlas")
         servod.get = unittest.mock.MagicMock(return_value="type-c")
         servod.set = unittest.mock.MagicMock()
@@ -520,7 +520,7 @@ class TestServod(unittest.TestCase):
         servod._logger.fatal = unittest.mock.MagicMock()
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         servod._unique_devices = {"dev": dev}
-        dev.template = servo_dev_templates.GetTemplateClassByName("servo_v4")
+        dev.template = servo_dev_templates.get_template_class_by_name("servo_v4")
         servod.get_board = unittest.mock.MagicMock(return_value="atlas")
         servod.get = unittest.mock.MagicMock(return_value="type-c")
         servod.set = unittest.mock.MagicMock()

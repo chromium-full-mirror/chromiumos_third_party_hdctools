@@ -23,11 +23,11 @@ class TestDevice(unittest.TestCase):
         self.assertEqual(device.Device().help, "Manage servo device.")
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.GetAllUsbDeviceSysfsPaths",
+        "servo.utils.usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths",
         unittest.mock.MagicMock(return_value=["/path/1/a/b/c", "/path/2/a/b/c"]),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.SerialFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.serial_from_sysfs",
         unittest.mock.MagicMock(side_effect=["not_id", "id"]),
     )
     def test__usb_path(self):
@@ -35,20 +35,20 @@ class TestDevice(unittest.TestCase):
         d = device.Device()
         res = d._usb_path("id")
 
-        usb_hierarchy.Hierarchy.GetAllUsbDeviceSysfsPaths.assert_called_once_with(
+        usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths.assert_called_once_with(
             [(device.SERVO_VID, None)]
         )
-        usb_hierarchy.Hierarchy.SerialFromSysfs.assert_has_calls(
+        usb_hierarchy.Hierarchy.serial_from_sysfs.assert_has_calls(
             [unittest.mock.call("/path/1/a/b/c"), unittest.mock.call("/path/2/a/b/c")]
         )
         self.assertEqual(res, "/path/2/a/b/c")
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.GetAllUsbDeviceSysfsPaths",
+        "servo.utils.usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths",
         unittest.mock.MagicMock(return_value=["/path/1/a/b/c", "/path/2/a/b/c"]),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.SerialFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.serial_from_sysfs",
         unittest.mock.MagicMock(side_effect=["not_id", "not_id"]),
     )
     def test__usb_path_nonexistent(self):
@@ -56,10 +56,10 @@ class TestDevice(unittest.TestCase):
         d = device.Device()
         res = d._usb_path("id")
 
-        usb_hierarchy.Hierarchy.GetAllUsbDeviceSysfsPaths.assert_called_once_with(
+        usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths.assert_called_once_with(
             [(device.SERVO_VID, None)]
         )
-        usb_hierarchy.Hierarchy.SerialFromSysfs.assert_has_calls(
+        usb_hierarchy.Hierarchy.serial_from_sysfs.assert_has_calls(
             [unittest.mock.call("/path/1/a/b/c"), unittest.mock.call("/path/2/a/b/c")]
         )
         self.assertIsNone(res)
@@ -93,27 +93,27 @@ class TestDevice(unittest.TestCase):
         d.error.assert_called_once_with("Device with serial %r not found.", "id")
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.VendorIDFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.vendor_id_from_sysfs",
         unittest.mock.MagicMock(return_value=0x18D1),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.ProductIDFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.product_id_from_sysfs",
         unittest.mock.MagicMock(return_value=0x501B),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.drv.pty_driver.ptyDriver.__init__",
+        "servo.drv.pty_driver.PtyDriver.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.drv.pty_driver.ptyDriver._issue_cmd_get_results",
+        "servo.drv.pty_driver.PtyDriver._issue_cmd_get_results",
         unittest.mock.MagicMock(
             side_effect=[
                 None,
-                pty_driver.ptyError("No data was sent from the pty"),
+                pty_driver.PtyError("No data was sent from the pty"),
                 None,
                 None,
                 None,
@@ -152,14 +152,16 @@ class TestDevice(unittest.TestCase):
         d.reboot(args)
 
         d._usb_path.assert_called_once_with("id")
-        usb_hierarchy.Hierarchy.VendorIDFromSysfs.assert_called_once_with(
+        usb_hierarchy.Hierarchy.vendor_id_from_sysfs.assert_called_once_with(
             "/path/1/a/b/c"
         )
-        usb_hierarchy.Hierarchy.ProductIDFromSysfs.assert_called_once_with(
+        usb_hierarchy.Hierarchy.product_id_from_sysfs.assert_called_once_with(
             "/path/1/a/b/c"
         )
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
-        pty_driver.ptyDriver._issue_cmd_get_results.assert_has_calls(
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
+        pty_driver.PtyDriver._issue_cmd_get_results.assert_has_calls(
             [
                 unittest.mock.call("chan 0", [">"]),
                 unittest.mock.call("reboot", [">"]),
@@ -213,15 +215,15 @@ class TestDevice(unittest.TestCase):
         d.error.assert_called_once_with("Device with serial %r not found.", "id")
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.VendorIDFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.vendor_id_from_sysfs",
         unittest.mock.MagicMock(return_value=0x18D1),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.ProductIDFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.product_id_from_sysfs",
         unittest.mock.MagicMock(return_value=0x5042),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     def test_reboot_cannot_reboot(self):
@@ -237,37 +239,39 @@ class TestDevice(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 1)
         d._usb_path.assert_called_once_with("id")
-        usb_hierarchy.Hierarchy.VendorIDFromSysfs.assert_called_once_with(
+        usb_hierarchy.Hierarchy.vendor_id_from_sysfs.assert_called_once_with(
             "/path/1/a/b/c"
         )
-        usb_hierarchy.Hierarchy.ProductIDFromSysfs.assert_called_once_with(
+        usb_hierarchy.Hierarchy.product_id_from_sysfs.assert_called_once_with(
             "/path/1/a/b/c"
         )
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
         d.error.assert_called_once_with(
             "Device %04x:%04x %s does not support reboot", 0x18D1, 0x5042, "id"
         )
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.VendorIDFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.vendor_id_from_sysfs",
         unittest.mock.MagicMock(return_value=0x18D1),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.ProductIDFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.product_id_from_sysfs",
         unittest.mock.MagicMock(return_value=0x501B),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.drv.pty_driver.ptyDriver.__init__",
+        "servo.drv.pty_driver.PtyDriver.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.drv.pty_driver.ptyDriver._issue_cmd_get_results",
+        "servo.drv.pty_driver.PtyDriver._issue_cmd_get_results",
         unittest.mock.MagicMock(
-            side_effect=[None, pty_driver.ptyError("No data was sent from the pty")]
+            side_effect=[None, pty_driver.PtyError("No data was sent from the pty")]
         ),
     )
     @unittest.mock.patch(
@@ -297,14 +301,16 @@ class TestDevice(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 1)
         d._usb_path.assert_called_once_with("id")
-        usb_hierarchy.Hierarchy.VendorIDFromSysfs.assert_called_once_with(
+        usb_hierarchy.Hierarchy.vendor_id_from_sysfs.assert_called_once_with(
             "/path/1/a/b/c"
         )
-        usb_hierarchy.Hierarchy.ProductIDFromSysfs.assert_called_once_with(
+        usb_hierarchy.Hierarchy.product_id_from_sysfs.assert_called_once_with(
             "/path/1/a/b/c"
         )
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
-        pty_driver.ptyDriver._issue_cmd_get_results.assert_has_calls(
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
+        pty_driver.PtyDriver._issue_cmd_get_results.assert_has_calls(
             [unittest.mock.call("chan 0", [">"]), unittest.mock.call("reboot", [">"])]
         )
         d._check_devnum_reset("/path/1/a/b/c", 1, "reboot")
@@ -345,11 +351,11 @@ class TestDevice(unittest.TestCase):
         )
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.BusNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.bus_num_from_sysfs",
         unittest.mock.MagicMock(return_value=2),
     )
     @unittest.mock.patch("usb.core.find", unittest.mock.MagicMock())
@@ -365,8 +371,12 @@ class TestDevice(unittest.TestCase):
         d.usb_comms(args)
 
         d._usb_path.assert_called_once_with("id")
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
-        usb_hierarchy.Hierarchy.BusNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
+        usb_hierarchy.Hierarchy.bus_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
         usb.core.find.assert_called_once_with(address=1, bus=2)
         usb.util.get_string.assert_called_once()
         d.error.assert_not_called()
@@ -387,11 +397,11 @@ class TestDevice(unittest.TestCase):
         d.error.assert_called_once_with("Device with serial %r not found.", "id")
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.BusNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.bus_num_from_sysfs",
         unittest.mock.MagicMock(return_value=2),
     )
     @unittest.mock.patch("usb.core.find", unittest.mock.MagicMock(return_value=None))
@@ -408,19 +418,23 @@ class TestDevice(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 1)
         d._usb_path.assert_called_once_with("id")
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
-        usb_hierarchy.Hierarchy.BusNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
+        usb_hierarchy.Hierarchy.bus_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
         usb.core.find.assert_called_once_with(address=1, bus=2)
         d.error.assert_called_once_with(
             "Device with serial %r not found on pyusb.", "id"
         )
 
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.BusNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.bus_num_from_sysfs",
         unittest.mock.MagicMock(return_value=2),
     )
     @unittest.mock.patch("usb.core.find", unittest.mock.MagicMock())
@@ -441,8 +455,12 @@ class TestDevice(unittest.TestCase):
 
         self.assertEqual(cm.exception.code, 1)
         d._usb_path.assert_called_once_with("id")
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
-        usb_hierarchy.Hierarchy.BusNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
+        usb_hierarchy.Hierarchy.bus_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
         usb.core.find.assert_called_once_with(address=1, bus=2)
         usb.util.get_string.assert_called_once()
         d.error.assert_called_once_with(
@@ -451,7 +469,7 @@ class TestDevice(unittest.TestCase):
 
     @unittest.mock.patch("time.sleep", unittest.mock.MagicMock())
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=2),
     )
     def test__check_devnum_reset(self):
@@ -464,12 +482,14 @@ class TestDevice(unittest.TestCase):
         ):
             d._check_devnum_reset("/path/1/a/b/c", 1, "reset")
 
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
         d.error.assert_not_called()
 
     @unittest.mock.patch("time.sleep", unittest.mock.MagicMock())
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(return_value=1),
     )
     def test__check_devnum_reset_same_devnum(self):
@@ -484,14 +504,16 @@ class TestDevice(unittest.TestCase):
                 d._check_devnum_reset("/path/1/a/b/c", 1, "reset")
 
         self.assertEqual(cm.exception.code, 1)
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_called_once_with("/path/1/a/b/c")
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_called_once_with(
+            "/path/1/a/b/c"
+        )
         d.error.assert_called_once_with(
             "%r likely unsuccessful. devnum stayed the same.", "reset"
         )
 
     @unittest.mock.patch("time.sleep", unittest.mock.MagicMock())
     @unittest.mock.patch(
-        "servo.utils.usb_hierarchy.Hierarchy.DevNumFromSysfs",
+        "servo.utils.usb_hierarchy.Hierarchy.dev_num_from_sysfs",
         unittest.mock.MagicMock(side_effect=usb_hierarchy.HierarchyError()),
     )
     def test__check_devnum_reset_cannot_read_devnum(self):
@@ -506,7 +528,7 @@ class TestDevice(unittest.TestCase):
                 d._check_devnum_reset("/path/1/a/b/c", 1, "reset")
 
         self.assertEqual(cm.exception.code, 1)
-        usb_hierarchy.Hierarchy.DevNumFromSysfs.assert_has_calls(
+        usb_hierarchy.Hierarchy.dev_num_from_sysfs.assert_has_calls(
             [
                 unittest.mock.call("/path/1/a/b/c"),
                 unittest.mock.call("/path/1/a/b/c"),

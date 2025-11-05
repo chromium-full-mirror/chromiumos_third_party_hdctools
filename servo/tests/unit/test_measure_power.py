@@ -86,7 +86,7 @@ class TestServodPowerTracker(unittest.TestCase):
                 ([("rail_name", 3), ("rail_name2", 4), ("Sample_msecs", 43.5)], 33.1),
             ]
         )
-        self.tracker._stats.AddSamples = unittest.mock.MagicMock()
+        self.tracker._stats.add_samples = unittest.mock.MagicMock()
         self.tracker.set_sample_data = unittest.mock.MagicMock()
 
         self.tracker.run()
@@ -104,7 +104,7 @@ class TestServodPowerTracker(unittest.TestCase):
                 unittest.mock.call(["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]),
             ]
         )
-        self.tracker._stats.AddSamples.assert_has_calls(
+        self.tracker._stats.add_samples.assert_has_calls(
             [
                 unittest.mock.call(
                     [("rail_name", 1), ("rail_name2", 2), ("Sample_msecs", 43.3)]
@@ -186,12 +186,12 @@ class TestServodPowerTracker(unittest.TestCase):
 
     def test_process_measurement(self):
         """Test process_measurement()."""
-        self.tracker._stats.TrimSamples = unittest.mock.MagicMock()
-        self.tracker._stats.CalculateStats = unittest.mock.MagicMock()
+        self.tracker._stats.trim_samples = unittest.mock.MagicMock()
+        self.tracker._stats.calculate_stats = unittest.mock.MagicMock()
 
         res = self.tracker.process_measurement(123, 456)
-        self.tracker._stats.TrimSamples.assert_called_once_with(123, 456)
-        self.tracker._stats.CalculateStats.assert_called_once()
+        self.tracker._stats.trim_samples.assert_called_once_with(123, 456)
+        self.tracker._stats.calculate_stats.assert_called_once()
         self.assertEqual(res, self.tracker._stats)
 
     def test_str(self):
@@ -262,25 +262,25 @@ class TestHighResServodPowerTracker(unittest.TestCase):
     def test_record_mean_samples(self):
         """Test _record_mean_samples()."""
         temp_stats = stats_manager.StatsManager()
-        temp_stats.AddSample("rail_name", 1)
-        temp_stats.AddSample("rail_name2", 2)
-        temp_stats.AddSample("rail_name", 3)
-        temp_stats.AddSample("rail_name2", 4)
-        self.tracker._stats.AddSamples = unittest.mock.MagicMock()
+        temp_stats.add_sample("rail_name", 1)
+        temp_stats.add_sample("rail_name2", 2)
+        temp_stats.add_sample("rail_name", 3)
+        temp_stats.add_sample("rail_name2", 4)
+        self.tracker._stats.add_samples = unittest.mock.MagicMock()
 
         self.tracker._record_mean_samples(temp_stats)
-        self.tracker._stats.AddSamples.assert_called_once_with(
+        self.tracker._stats.add_samples.assert_called_once_with(
             [("rail_name", 2.0), ("rail_name2", 3.0)]
         )
 
     def test_process_measurement(self):
         """Test process_measurement()."""
-        self.tracker._stats.TrimSamples = unittest.mock.MagicMock()
-        self.tracker._stats.CalculateStats = unittest.mock.MagicMock()
+        self.tracker._stats.trim_samples = unittest.mock.MagicMock()
+        self.tracker._stats.calculate_stats = unittest.mock.MagicMock()
 
         res = self.tracker.process_measurement(123, 456)
-        self.tracker._stats.TrimSamples.assert_called_once_with(123, 456, 1)
-        self.tracker._stats.CalculateStats.assert_called_once()
+        self.tracker._stats.trim_samples.assert_called_once_with(123, 456, 1)
+        self.tracker._stats.calculate_stats.assert_called_once()
         self.assertEqual(res, self.tracker._stats)
 
 
@@ -440,7 +440,7 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
                 ([("rail_name", 3), ("rail_name2", 4), ("Sample_msecs", 43.5)], 33.1),
             ]
         )
-        self.tracker._stats.AddSamples = unittest.mock.MagicMock()
+        self.tracker._stats.add_samples = unittest.mock.MagicMock()
         self.tracker.set_sample_data = unittest.mock.MagicMock()
 
         self.tracker.run()
@@ -455,7 +455,7 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
         self.tracker._sample_ctrls.assert_has_calls(
             [unittest.mock.call(["ppchg5_mw"]), unittest.mock.call(["ppchg5_mw"])]
         )
-        self.tracker._stats.AddSamples.assert_has_calls(
+        self.tracker._stats.add_samples.assert_has_calls(
             [
                 unittest.mock.call(
                     [("rail_name", 1), ("rail_name2", 2), ("Sample_msecs", 43.3)]
@@ -544,7 +544,7 @@ class TestECPowerTracker(unittest.TestCase):
                 ([("avg_ppvar_vbat_mw", 3), ("Sample_msecs", 43.5)], 33.1),
             ]
         )
-        self.tracker._stats.AddSamples = unittest.mock.MagicMock()
+        self.tracker._stats.add_samples = unittest.mock.MagicMock()
         self.tracker.set_sample_data = unittest.mock.MagicMock()
         self.tracker._ctrls = ["avg_ppvar_vbat_mw"]
 
@@ -565,7 +565,7 @@ class TestECPowerTracker(unittest.TestCase):
                 unittest.mock.call(["avg_ppvar_vbat_mw"]),
             ]
         )
-        self.tracker._stats.AddSamples.assert_has_calls(
+        self.tracker._stats.add_samples.assert_has_calls(
             [
                 unittest.mock.call([("avg_ppvar_vbat_mw", 22), ("Sample_msecs", 43.1)]),
                 unittest.mock.call([("avg_ppvar_vbat_mw", 1), ("Sample_msecs", 43.3)]),
@@ -820,7 +820,7 @@ class TestPowerMeasurement(unittest.TestCase):
         measure_power.OnboardADCAccumPowerTracker.verify.assert_called_once()
         measure_power.ECPowerTracker.verify.assert_called_once()
 
-    def test_Reset(self):
+    def test_reset(self):
         """Test Reset()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._stats = {"a": "testing"}
@@ -828,33 +828,33 @@ class TestPowerMeasurement(unittest.TestCase):
         pm._stop_signal.set()
         pm._processing_done = True
 
-        pm.Reset()
+        pm.reset()
 
         self.assertEqual(pm._stats, {})
         self.assertFalse(pm._setup_done.is_set())
         self.assertFalse(pm._stop_signal.is_set())
         self.assertFalse(pm._processing_done)
 
-    def test_MeasureTimedPower(self):
-        """Test MeasureTimedPower()."""
+    def test_measure_timed_power(self):
+        """Test measure_timed_power()."""
         setup_done = threading.Event()
         setup_done.wait = unittest.mock.MagicMock()
         pm = measure_power.PowerMeasurement("localhost", 9990)
-        pm.MeasurePower = unittest.mock.MagicMock(return_value=setup_done)
-        pm.FinishMeasurement = unittest.mock.MagicMock()
+        pm.measure_power = unittest.mock.MagicMock(return_value=setup_done)
+        pm.finish_measurement = unittest.mock.MagicMock()
 
         with unittest.mock.patch("time.sleep", unittest.mock.MagicMock()):
-            pm.MeasureTimedPower()
+            pm.measure_timed_power()
             time.sleep.assert_any_call(60 + 0)
 
-        pm.MeasurePower.assert_called_once_with(
+        pm.measure_power.assert_called_once_with(
             wait=0, powerstate=measure_power.UNKNOWN_POWERSTATE
         )
         setup_done.wait.assert_called_once()
-        pm.FinishMeasurement.assert_called_once()
+        pm.finish_measurement.assert_called_once()
 
-    def test_MeasurePower(self):
-        """Test MeasurePower()."""
+    def test_measure_power(self):
+        """Test measure_power()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
 
         with unittest.mock.patch(
@@ -864,10 +864,10 @@ class TestPowerMeasurement(unittest.TestCase):
                 with unittest.mock.patch(
                     "threading.Thread.start", unittest.mock.MagicMock()
                 ):
-                    res = pm.MeasurePower()
+                    res = pm.measure_power()
 
                     threading.Thread.__init__.assert_called_once_with(
-                        target=pm._MeasurePower,
+                        target=pm._measure_power,
                         kwargs={
                             "wait": 0,
                             "powerstate": measure_power.UNKNOWN_POWERSTATE,
@@ -876,8 +876,8 @@ class TestPowerMeasurement(unittest.TestCase):
                     threading.Thread.start.assert_called_once()
                     self.assertEqual(res, pm._setup_done)
 
-    def test__MeasurePower(self):
-        """Test _MeasurePower()."""
+    def test__measure_power(self):
+        """Test _measure_power()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._fast = False
         pm._setup_done.set = unittest.mock.MagicMock()
@@ -894,7 +894,7 @@ class TestPowerMeasurement(unittest.TestCase):
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
-            pm._MeasurePower(10, "S0")
+            pm._measure_power(10, "S0")
             measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
                 False, "S0"
             )
@@ -911,8 +911,8 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.OnboardADCAccumPowerTracker.start.assert_called_once()
             measure_power.ECPowerTracker.start.assert_called_once()
 
-    def test__MeasurePower_unknown(self):
-        """Test _MeasurePower()."""
+    def test__measure_power_unknown(self):
+        """Test _measure_power()."""
         results = {
             "ec_board": "atlas",
             "servo_adcs_enabled": "on",
@@ -937,7 +937,7 @@ class TestPowerMeasurement(unittest.TestCase):
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
-            pm._MeasurePower(10)
+            pm._measure_power(10)
             measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
                 False, "S0"
             )
@@ -954,8 +954,8 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.OnboardADCAccumPowerTracker.start.assert_called_once()
             measure_power.ECPowerTracker.start.assert_called_once()
 
-    def test__MeasurePower_unknown_failure(self):
-        """Test _MeasurePower()."""
+    def test__measure_power_unknown_failure(self):
+        """Test _measure_power()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._sclient.get = unittest.mock.MagicMock(
             side_effect=client.ServoClientError(None, None)
@@ -975,7 +975,7 @@ class TestPowerMeasurement(unittest.TestCase):
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
-            pm._MeasurePower(10)
+            pm._measure_power(10)
             measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
                 False, measure_power.UNKNOWN_POWERSTATE
             )
@@ -994,8 +994,8 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.OnboardADCAccumPowerTracker.start.assert_called_once()
             measure_power.ECPowerTracker.start.assert_called_once()
 
-    def test__MeasurePower_fast_stop(self):
-        """Test _MeasurePower()."""
+    def test__measure_power_fast_stop(self):
+        """Test _measure_power()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._fast = True
         pm._setup_done.set = unittest.mock.MagicMock()
@@ -1012,7 +1012,7 @@ class TestPowerMeasurement(unittest.TestCase):
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
-            pm._MeasurePower(10, "S0")
+            pm._measure_power(10, "S0")
             measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
                 True, "S0"
             )
@@ -1029,8 +1029,8 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.OnboardADCAccumPowerTracker.start.assert_not_called()
             measure_power.ECPowerTracker.start.assert_not_called()
 
-    def test_FinishMeasurement(self):
-        """Test FinishMeasurement()."""
+    def test_finish_measurement(self):
+        """Test finish_measurement()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._stop_signal.set = unittest.mock.MagicMock()
         measure_power.OnboardADCPowerTracker.is_alive = unittest.mock.MagicMock(
@@ -1046,28 +1046,28 @@ class TestPowerMeasurement(unittest.TestCase):
         measure_power.OnboardADCAccumPowerTracker.join = unittest.mock.MagicMock()
         measure_power.ECPowerTracker.join = unittest.mock.MagicMock()
 
-        pm.FinishMeasurement()
+        pm.finish_measurement()
 
         pm._stop_signal.set.assert_called_once()
         measure_power.OnboardADCPowerTracker.join.assert_called_once()
         measure_power.OnboardADCAccumPowerTracker.join.assert_not_called()
         measure_power.ECPowerTracker.join.assert_called_once()
 
-    def test_GetPMStatus(self):
-        """Test GetPMStatus()."""
+    def test_get_pm_status(self):
+        """Test get_pm_status()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._stop_signal.is_set = unittest.mock.MagicMock(
             side_effect=[True, False, True]
         )
 
-        self.assertTrue(pm.GetPMStatus())
-        self.assertFalse(pm.GetPMStatus())
-        self.assertTrue(pm.GetPMStatus())
+        self.assertTrue(pm.get_pm_status())
+        self.assertFalse(pm.get_pm_status())
+        self.assertTrue(pm.get_pm_status())
 
-    def test_ProcessMeasurement(self):
-        """Test ProcessMeasurement()."""
+    def test_process_measurement(self):
+        """Test process_measurement()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
-        pm.FinishMeasurement = unittest.mock.MagicMock()
+        pm.finish_measurement = unittest.mock.MagicMock()
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
         stats_manager3 = stats_manager.StatsManager()
@@ -1081,7 +1081,7 @@ class TestPowerMeasurement(unittest.TestCase):
             return_value=stats_manager3
         )
 
-        pm.ProcessMeasurement(123, 456)
+        pm.process_measurement(123, 456)
 
         measure_power.OnboardADCPowerTracker.process_measurement.assert_called_once_with(  # pylint: disable=line-too-long
             123, 456
@@ -1097,55 +1097,59 @@ class TestPowerMeasurement(unittest.TestCase):
         self.assertEqual(pm._stats["ec"], stats_manager3)
         self.assertTrue(pm._processing_done)
 
-    def test_SaveRawData(self):
-        """Test SaveRawData()."""
+    def test_save_raw_data(self):
+        """Test save_raw_data()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager(title="adc")
         stats_manager2 = stats_manager.StatsManager(title="ec")
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
-        stats_manager1.SaveRawData = unittest.mock.MagicMock(return_value=["raw1.txt"])
-        stats_manager2.SaveRawData = unittest.mock.MagicMock(return_value=["raw2.txt"])
+        stats_manager1.save_raw_data = unittest.mock.MagicMock(
+            return_value=["raw1.txt"]
+        )
+        stats_manager2.save_raw_data = unittest.mock.MagicMock(
+            return_value=["raw2.txt"]
+        )
 
-        self.assertEqual(pm.SaveRawData(), ["raw1.txt", "raw2.txt"])
-        stats_manager1.SaveRawData.assert_called_once_with(None)
-        stats_manager2.SaveRawData.assert_called_once_with(None)
+        self.assertEqual(pm.save_raw_data(), ["raw1.txt", "raw2.txt"])
+        stats_manager1.save_raw_data.assert_called_once_with(None)
+        stats_manager2.save_raw_data.assert_called_once_with(None)
 
-    def test_SaveRawData_failure(self):
-        """Test SaveRawData()."""
+    def test_save_raw_data_failure(self):
+        """Test save_raw_data()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.SaveRawData()
+            pm.save_raw_data()
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test_GetRawData(self):
-        """Test GetRawData()."""
+    def test_get_raw_data(self):
+        """Test get_raw_data()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager(title="adc")
         stats_manager2 = stats_manager.StatsManager(title="ec")
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
-        stats_manager1.GetRawData = unittest.mock.MagicMock(return_value="raw1")
-        stats_manager2.GetRawData = unittest.mock.MagicMock(return_value="raw2")
+        stats_manager1.get_raw_data = unittest.mock.MagicMock(return_value="raw1")
+        stats_manager2.get_raw_data = unittest.mock.MagicMock(return_value="raw2")
 
-        self.assertEqual(pm.GetRawData(), {"adc": "raw1", "ec": "raw2"})
+        self.assertEqual(pm.get_raw_data(), {"adc": "raw1", "ec": "raw2"})
 
-    def test_GetRawData_failure(self):
-        """Test GetRawData()."""
+    def test_get_raw_data_failure(self):
+        """Test get_raw_data()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.GetRawData()
+            pm.get_raw_data()
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test_SaveTrimmedSummary(self):
-        """Test SaveTrimmedSummary()."""
+    def test_save_trimmed_summary(self):
+        """Test save_trimmed_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
-        pm._SaveSummary = unittest.mock.MagicMock(return_value=["file1.txt"])
+        pm._save_summary = unittest.mock.MagicMock(return_value=["file1.txt"])
         stats_manager1 = stats_manager.StatsManager(title="adc")
         stats_manager2 = stats_manager.StatsManager(title="ec")
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
@@ -1154,7 +1158,7 @@ class TestPowerMeasurement(unittest.TestCase):
         )
         stats_manager2.TrimmedCopy = unittest.mock.MagicMock(return_value=None)
 
-        res = pm.SaveTrimmedSummary("tag", 123, 456)
+        res = pm.save_trimmed_summary("tag", 123, 456)
 
         stats_manager1.TrimmedCopy.assert_called_once_with(
             tag="tag", tstart=123, tend=456
@@ -1164,169 +1168,169 @@ class TestPowerMeasurement(unittest.TestCase):
         )
         self.assertEqual(stats_manager1._title, "adc(tag)")
         self.assertEqual(stats_manager2._title, "ec")
-        pm._SaveSummary.assert_called_once()
-        _unused, kwargs = pm._SaveSummary.call_args
+        pm._save_summary.assert_called_once()
+        _unused, kwargs = pm._save_summary.call_args
         self.assertEqual(kwargs["stats_managers"], [stats_manager1])
         self.assertEqual(res, ["file1.txt"])
 
-    def test_SaveTrimmedSummary_failure(self):
-        """Test SaveTrimmedSummary()."""
+    def test_save_trimmed_summary_failure(self):
+        """Test save_trimmed_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.SaveTrimmedSummary("tag", 123, 456)
+            pm.save_trimmed_summary("tag", 123, 456)
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test_SaveSummary(self):
-        """Test SaveSummary()."""
+    def test_save_summary(self):
+        """Test save_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
-        pm._SaveSummary = unittest.mock.MagicMock(
+        pm._save_summary = unittest.mock.MagicMock(
             return_value=["file1.txt", "file2.txt"]
         )
 
-        res = pm.SaveSummary()
+        res = pm.save_summary()
 
-        pm._SaveSummary.assert_called_once()
-        _unused, kwargs = pm._SaveSummary.call_args
+        pm._save_summary.assert_called_once()
+        _unused, kwargs = pm._save_summary.call_args
         self.assertEqual(
             list(kwargs["stats_managers"]), [stats_manager1, stats_manager2]
         )
         self.assertEqual(res, ["file1.txt", "file2.txt"])
 
-    def test_SaveSummary_failure(self):
-        """Test SaveSummary()."""
+    def test_save_summary_failure(self):
+        """Test save_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.SaveSummary()
+            pm.save_summary()
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test__SaveSummary(self):
-        """Test _SaveSummary()."""
+    def test__save_summary(self):
+        """Test _save_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
-        stats_manager1.SaveSummary = unittest.mock.MagicMock(return_value="file1.txt")
-        stats_manager2.SaveSummary = unittest.mock.MagicMock(return_value="file2.txt")
+        stats_manager1.save_summary = unittest.mock.MagicMock(return_value="file1.txt")
+        stats_manager2.save_summary = unittest.mock.MagicMock(return_value="file2.txt")
         stats_manager1.SaveSummaryMD = unittest.mock.MagicMock(return_value="file1.md")
         stats_manager2.SaveSummaryMD = unittest.mock.MagicMock(return_value="file2.md")
 
-        res = pm._SaveSummary([stats_manager1, stats_manager2])
+        res = pm._save_summary([stats_manager1, stats_manager2])
 
         stats_manager1.SaveSummaryMD.assert_called_once_with(pm._outdir)
         stats_manager2.SaveSummaryMD.assert_called_once_with(pm._outdir)
         self.assertEqual(res, ["file1.txt", "file2.txt"])
 
-    def test_GetSummary(self):
-        """Test GetSummary()."""
+    def test_get_summary(self):
+        """Test get_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
-        stats_manager1.GetSummary = unittest.mock.MagicMock(return_value="testing1")
-        stats_manager2.GetSummary = unittest.mock.MagicMock(return_value="testing2")
+        stats_manager1.get_summary = unittest.mock.MagicMock(return_value="testing1")
+        stats_manager2.get_summary = unittest.mock.MagicMock(return_value="testing2")
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
 
-        res = pm.GetSummary()
+        res = pm.get_summary()
 
-        stats_manager1.GetSummary.assert_called_once()
-        stats_manager2.GetSummary.assert_called_once()
+        stats_manager1.get_summary.assert_called_once()
+        stats_manager2.get_summary.assert_called_once()
         self.assertEqual(res, {"adc": "testing1", "ec": "testing2"})
 
-    def test_GetSummary_failure(self):
-        """Test GetSummary()."""
+    def test_get_summary_failure(self):
+        """Test get_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.GetSummary()
+            pm.get_summary()
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test_GetFormattedSummary(self):
-        """Test GetFormattedSummary()."""
+    def test_get_formatted_summary(self):
+        """Test get_formatted_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
-        stats_manager1.SummaryToString = unittest.mock.MagicMock(
+        stats_manager1.summary_to_string = unittest.mock.MagicMock(
             return_value="testing1"
         )
-        stats_manager2.SummaryToString = unittest.mock.MagicMock(
+        stats_manager2.summary_to_string = unittest.mock.MagicMock(
             return_value="testing2"
         )
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
 
-        res = pm.GetFormattedSummary()
+        res = pm.get_formatted_summary()
 
-        stats_manager1.SummaryToString.assert_called_once()
-        stats_manager2.SummaryToString.assert_called_once()
+        stats_manager1.summary_to_string.assert_called_once()
+        stats_manager2.summary_to_string.assert_called_once()
         self.assertEqual(res, "testing1\ntesting2")
 
-    def test_GetFormattedSummary_failure(self):
-        """Test GetFormattedSummary()."""
+    def test_get_formatted_summary_failure(self):
+        """Test get_formatted_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.GetFormattedSummary()
+            pm.get_formatted_summary()
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test_DisplaySummary(self):
-        """Test DisplaySummary()."""
+    def test_display_summary(self):
+        """Test display_summary()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
-        pm.GetFormattedSummary = unittest.mock.MagicMock(return_value="summary")
+        pm.get_formatted_summary = unittest.mock.MagicMock(return_value="summary")
 
         with unittest.mock.patch("builtins.print", unittest.mock.MagicMock()):
-            pm.DisplaySummary()
-            pm.GetFormattedSummary.assert_called_once()
+            pm.display_summary()
+            pm.get_formatted_summary.assert_called_once()
             print.assert_called_with("\nsummary")
 
-    def test_SaveSummaryJSON(self):
-        """Test SaveSummaryJSON()."""
+    def test_save_summary_json(self):
+        """Test save_summary_json()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = True
-        pm._SaveSummaryJSON = unittest.mock.MagicMock(return_value=["testing.json"])
+        pm._save_summary_json = unittest.mock.MagicMock(return_value=["testing.json"])
 
-        res = pm.SaveSummaryJSON()
+        res = pm.save_summary_json()
 
-        pm._SaveSummaryJSON.assert_called_once()
+        pm._save_summary_json.assert_called_once()
         self.assertEqual(res, ["testing.json"])
 
-    def test_SaveSummaryJSON_failure(self):
-        """Test SaveSummaryJSON()."""
+    def test_save_summary_json_failure(self):
+        """Test save_summary_json()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            pm.SaveSummaryJSON()
+            pm.save_summary_json()
         self.assertEqual(str(cm.exception), pm.PREMATURE_RETRIEVAL_MSG)
 
-    def test__SaveSummaryJSON(self):
-        """Test _SaveSummaryJSON()."""
+    def test__save_summary_json(self):
+        """Test _save_summary_json()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
-        stats_manager1.SaveSummaryJSON = unittest.mock.MagicMock(
+        stats_manager1.save_summary_json = unittest.mock.MagicMock(
             return_value="file1.json"
         )
-        stats_manager2.SaveSummaryJSON = unittest.mock.MagicMock(
+        stats_manager2.save_summary_json = unittest.mock.MagicMock(
             return_value="file2.json"
         )
 
-        res = pm._SaveSummaryJSON([stats_manager1, stats_manager2])
+        res = pm._save_summary_json([stats_manager1, stats_manager2])
 
-        stats_manager1.SaveSummaryJSON.assert_called_once_with(pm._outdir)
-        stats_manager2.SaveSummaryJSON.assert_called_once_with(pm._outdir)
+        stats_manager1.save_summary_json.assert_called_once_with(pm._outdir)
+        stats_manager2.save_summary_json.assert_called_once_with(pm._outdir)
         self.assertEqual(res, ["file1.json", "file2.json"])
 
-    def test_GetSampleData(self):
-        """Test GetSampleData()."""
+    def test_get_sample_data(self):
+        """Test get_sample_data()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         measure_power.OnboardADCPowerTracker.get_sample_data = unittest.mock.MagicMock(
             return_value=["1"]
@@ -1338,15 +1342,15 @@ class TestPowerMeasurement(unittest.TestCase):
             return_value=["3"]
         )
 
-        res = pm.GetSampleData()
+        res = pm.get_sample_data()
 
         measure_power.OnboardADCPowerTracker.get_sample_data.assert_called_once()
         measure_power.OnboardADCAccumPowerTracker.get_sample_data.assert_called_once()
         measure_power.ECPowerTracker.get_sample_data.assert_called_once()
         self.assertEqual(res, ["1", "3"])
 
-    def test_CleanSampleData(self):
-        """Test CleanSampleData()."""
+    def test_clean_sample_data(self):
+        """Test clean_sample_data()."""
         pm = measure_power.PowerMeasurement("localhost", 9990)
         measure_power.OnboardADCPowerTracker.clean_sample_data = (
             unittest.mock.MagicMock()
@@ -1356,7 +1360,7 @@ class TestPowerMeasurement(unittest.TestCase):
         )
         measure_power.ECPowerTracker.clean_sample_data = unittest.mock.MagicMock()
 
-        pm.CleanSampleData()
+        pm.clean_sample_data()
 
         measure_power.OnboardADCPowerTracker.clean_sample_data.assert_called_once()
         measure_power.OnboardADCAccumPowerTracker.clean_sample_data.assert_called_once()

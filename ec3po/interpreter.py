@@ -137,7 +137,7 @@ class Interpreter:
             )
         )
 
-    def EnqueueCmd(self, command):
+    def enqueue_cmd(self, command):
         """Enqueue a command to be sent to the EC UART.
 
         Args:
@@ -150,7 +150,7 @@ class Interpreter:
         if self.connected and self.ec_uart_pty not in self.outputs:
             self.outputs.append(self.ec_uart_pty)
 
-    def PackCommand(self, raw_cmd):
+    def pack_command(self, raw_cmd):
         r"""Packs a command for use with error checking.
 
         For error checking, we pack console commands in a particular format.  The
@@ -179,7 +179,7 @@ class Interpreter:
             # The first pair of hex digits are the length of the command.
             packed_cmd.append(b"%02x" % (len(raw_cmd),))
             # Then the CRC8 of cmd.
-            packed_cmd.append(b"%02x" % (Crc8(raw_cmd),))
+            packed_cmd.append(b"%02x" % (crc8(raw_cmd),))
             packed_cmd.append(b"&")
             # Now, the raw command followed by 2 newlines.
             packed_cmd.append(raw_cmd)
@@ -188,7 +188,7 @@ class Interpreter:
 
         return raw_cmd
 
-    def ProcessCommand(self, command):
+    def process_command(self, command):
         """Captures the input determines what actions to take.
 
         Args:
@@ -275,13 +275,13 @@ class Interpreter:
             self.enhanced_ec = False
         elif self.enhanced_ec:
             # Enhanced EC images require the plaintext commands to be packed.
-            command = self.PackCommand(command)
+            command = self.pack_command(command)
             # TODO(aaboagye): Make a dict of commands and keys and eventually,
             # handle partial matching based on unique prefixes.
 
-        self.EnqueueCmd(command)
+        self.enqueue_cmd(command)
 
-    def HandleCmdRetries(self):
+    def handle_cmd_retries(self):
         """Attempts to retry commands if possible."""
         if self.cmd_retries > 0:
             # The EC encountered an error.  We'll have to retry again.
@@ -289,7 +289,7 @@ class Interpreter:
             self.cmd_retries -= 1
             self.logger.warning("Retries remaining: %d", self.cmd_retries)
             # Retry the command and add the EC UART to the writers again.
-            self.EnqueueCmd(self.last_cmd)
+            self.enqueue_cmd(self.last_cmd)
             self.outputs.append(self.ec_uart_pty)
         else:
             # We're out of retries, so just give up.
@@ -299,7 +299,7 @@ class Interpreter:
             # Reset the retry count.
             self.cmd_retries = COMMAND_RETRIES
 
-    def SendCmdToEC(self):
+    def send_cmd_to_ec(self):
         """Sends a command to the EC."""
         # If we're retrying a command, just try to send it again.
         if self.cmd_retries < COMMAND_RETRIES:
@@ -331,7 +331,7 @@ class Interpreter:
             # Remove the EC UART from the writers while we wait for a response.
             self.outputs.remove(self.ec_uart_pty)
 
-    def HandleECData(self):
+    def handle_ec_data(self):
         """Handle any debug prints from the EC."""
         self.logger.log(1, "EC has data")
         # Read what the EC sent us.
@@ -340,7 +340,7 @@ class Interpreter:
         if b"&E" in data and self.enhanced_ec:
             # We received an error, so we should retry it if possible.
             self.logger.warning("Error string found in data.")
-            self.HandleCmdRetries()
+            self.handle_cmd_retries()
             return
 
         # If we were interrogating, check the response and update our knowledge
@@ -357,7 +357,7 @@ class Interpreter:
         self.logger.log(1, "Forwarding to user...")
         self.dbg_pipe.send(data)
 
-    def HandleUserData(self):
+    def handle_user_data(self):
         """Handle any incoming commands from the user.
 
         Raises:
@@ -366,10 +366,10 @@ class Interpreter:
         self.logger.log(1, "Command data available.  Begin processing.")
         data = self.cmd_pipe.recv()
         # Process the command.
-        self.ProcessCommand(data)
+        self.process_command(data)
 
 
-def Crc8(data):
+def crc8(data):
     """Calculates the CRC8 of data.
 
     The generator polynomial used is: x^8 + x^2 + x + 1.
@@ -391,10 +391,10 @@ def Crc8(data):
     return crc >> 8
 
 
-def StartLoop(interp, shutdown_pipe=None):
+def start_loop(interp, shutdown_pipe=None):
     """Starts an infinite loop of servicing the user and the EC.
 
-    StartLoop checks to see if there are any commands to process, processing them
+    start_loop checks to see if there are any commands to process, processing them
     if any, and forwards EC output to the user.
 
     When sending a command to the EC, we send the command once and check the
@@ -452,16 +452,16 @@ def StartLoop(interp, shutdown_pipe=None):
                             )
                         # Handle any debug prints from the EC.
                         if fileno == ec_uart_pty_fileno:
-                            interp.HandleECData()
+                            interp.handle_ec_data()
 
                         # Handle any commands from the user.
                         elif fileno == interp.cmd_pipe.fileno():
                             try:
-                                interp.HandleUserData()
+                                interp.handle_user_data()
                             except EOFError:
                                 interp.logger.debug(
                                     "ec3po interpreter received EOF from cmd_pipe in "
-                                    "HandleUserData()"
+                                    "handle_user_data()"
                                 )
                                 continue_looping = False
 
@@ -477,7 +477,7 @@ def StartLoop(interp, shutdown_pipe=None):
                     if event & select.EPOLLOUT and fileno in output_filenos:
                         # Send a command to the EC.)
                         if fileno == ec_uart_pty_fileno:
-                            interp.SendCmdToEC()
+                            interp.send_cmd_to_ec()
 
     except KeyboardInterrupt:
         pass

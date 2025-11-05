@@ -216,7 +216,7 @@ class usbImageManager(hw_driver.HwDriver):
         # all |image_location_candidates| here assume that the device is on the same
         # bus as the servo device. If the servo is attached to a usb controller
         # that has both usb2 and usb3 busses, we need to search both.
-        busnum = usb_hierarchy.Hierarchy.BusNumFromSysfs(hub_on_servo)
+        busnum = usb_hierarchy.Hierarchy.bus_num_from_sysfs(hub_on_servo)
         usb3_busnum = usb_hierarchy.Hierarchy.ComplementBusNum(busnum)
         if usb3_busnum is not None:
             # It can be none if the bus only appears in one speed.

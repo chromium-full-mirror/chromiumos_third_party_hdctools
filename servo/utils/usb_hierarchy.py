@@ -51,7 +51,7 @@ class Hierarchy:
     USBDEVFS_RESET = ord("U") << 8 | 20
 
     @classmethod
-    def MockUsbSysfsPathForTest(cls, mock_dir):
+    def mock_usb_sysfs_path_for_test(cls, mock_dir):
         """Set the sysfs usb devices path to |mock_dir| for testing.
 
         Args:
@@ -60,17 +60,17 @@ class Hierarchy:
         cls.SYSFS_PATH = mock_dir
 
     @classmethod
-    def RestoreDefaultUsbSysfsPathForTest(cls):
+    def restore_default_usb_sysfs_path_for_test(cls):
         """Restore the sysfs usb devices path to its default value."""
         cls.SYSFS_PATH = cls.DEFAULT_SYSFS_PATH
 
     def __init__(self):
         """Initialize UsbHierarchy by refreshing the hierarchy once."""
         # Get the current USB sysfs hierarchy.
-        self.RefreshHierarchy()
+        self.refresh_hierarchy()
 
     @staticmethod
-    def ResetDeviceSysfs(sysfs_path):
+    def reset_device_sysfs(sysfs_path):
         """Perform ioctl reset on the usb device.
 
         Args:
@@ -82,8 +82,8 @@ class Hierarchy:
         """
         if not os.path.exists(sysfs_path):
             raise HierarchyError("No device at %r" % sysfs_path)
-        busnum = Hierarchy.BusNumFromSysfs(sysfs_path)
-        devnum = Hierarchy.DevNumFromSysfs(sysfs_path)
+        busnum = Hierarchy.bus_num_from_sysfs(sysfs_path)
+        devnum = Hierarchy.dev_num_from_sysfs(sysfs_path)
         dev_path = "/dev/bus/usb/%03d/%03d" % (busnum, devnum)
         if not os.path.exists(dev_path):
             raise HierarchyError("No device at %r but expected." % dev_path)
@@ -99,7 +99,7 @@ class Hierarchy:
             ) from e
 
     @staticmethod
-    def GetAllUsbDevices(vid_pid_list=None):
+    def get_all_usb_devices(vid_pid_list=None):
         """Return all associated USB devices which match the given VID/PID's.
 
         Args:
@@ -128,7 +128,7 @@ class Hierarchy:
         return all_devices
 
     @staticmethod
-    def GetAllUsbDeviceSysfsPaths(vid_pid_list=None):
+    def get_all_usb_device_sysfs_paths(vid_pid_list=None):
         """Return all USB devices sysfs path which match the given VID/PID's.
 
         Args:
@@ -152,8 +152,8 @@ class Hierarchy:
         for vid, pid in vid_pid_list:
             vid_lookup[vid].append(pid)
         for path in usb_hierarchy.hierarchy.values():
-            vid = Hierarchy.VendorIDFromSysfs(path)
-            pid = Hierarchy.ProductIDFromSysfs(path)
+            vid = Hierarchy.vendor_id_from_sysfs(path)
+            pid = Hierarchy.product_id_from_sysfs(path)
             if None in vid_lookup[vid] or pid in vid_lookup[vid]:
                 # A device only matches if the vid/pid pair is known, or if the pid
                 # is a wildcard (pid = None)
@@ -161,7 +161,7 @@ class Hierarchy:
         return dev_paths
 
     @staticmethod
-    def GetUsbDeviceSysfsPath(vid, pid, serial):
+    def get_usb_device_sysfs_path(vid, pid, serial):
         """Given vendor id, product id, and serial return usb sysfs directory.
 
         Args:
@@ -178,10 +178,10 @@ class Hierarchy:
         usb_hierarchy = Hierarchy()
         dev_paths = []
         for path in usb_hierarchy.hierarchy.values():
-            path_vid = Hierarchy.VendorIDFromSysfs(path)
-            path_pid = Hierarchy.ProductIDFromSysfs(path)
+            path_vid = Hierarchy.vendor_id_from_sysfs(path)
+            path_pid = Hierarchy.product_id_from_sysfs(path)
             try:
-                path_serial = Hierarchy.SerialFromSysfs(path)
+                path_serial = Hierarchy.serial_from_sysfs(path)
             except HierarchyError:
                 # Not all devices have a serial file. In that case, ignore the device.
                 continue
@@ -206,8 +206,8 @@ class Hierarchy:
     @backoff.on_exception(
         backoff.expo, (HierarchyError, ValueError, usb.core.USBError), max_tries=5
     )
-    def GetAllUsbDevicesWithRetry(vid, pid):
-        return Hierarchy.GetAllUsbDevices([(vid, pid)])
+    def get_all_usb_devices_with_retry(vid, pid):
+        return Hierarchy.get_all_usb_devices([(vid, pid)])
 
     @staticmethod
     @backoff.on_exception(
@@ -217,7 +217,7 @@ class Hierarchy:
         raise_on_giveup=False,
         giveup=lambda x: None,
     )
-    def GetUsbDevice(vid, pid, serial):
+    def get_usb_device(vid, pid, serial):
         """Given vendor id, product id, and serial return usb device object.
 
         Args:
@@ -232,7 +232,7 @@ class Hierarchy:
           HierarchyError: if more than one device are found with those
                              attributes.
         """
-        devices = Hierarchy.GetAllUsbDevicesWithRetry(vid, pid)
+        devices = Hierarchy.get_all_usb_devices_with_retry(vid, pid)
         devs = []
         bad_serial_read = False
         for device in devices:
@@ -257,7 +257,7 @@ class Hierarchy:
         return devs[0] if devs else None
 
     @staticmethod
-    def _ReadFromSysfs(sysfs_path, dev_file, cast=str):
+    def _read_from_sysfs(sysfs_path, dev_file, cast=str):
         """Read |dev_file| from |sysfs_path| and return result cast into |cast|.
 
         Args:
@@ -291,7 +291,7 @@ class Hierarchy:
                 ) from e
 
     @staticmethod
-    def DevNumFromSysfs(sysfs_path):
+    def dev_num_from_sysfs(sysfs_path):
         """Look for |DEV_FILE| under |sysfs_path| and return its value.
 
         Args:
@@ -300,10 +300,10 @@ class Hierarchy:
         Returns:
           Contents of the file, cast to an int
         """
-        return Hierarchy._ReadFromSysfs(sysfs_path, Hierarchy.DEV_FILE, cast=int)
+        return Hierarchy._read_from_sysfs(sysfs_path, Hierarchy.DEV_FILE, cast=int)
 
     @staticmethod
-    def BusNumFromSysfs(sysfs_path):
+    def bus_num_from_sysfs(sysfs_path):
         """Look for |BUS_FILE| under |sysfs_path| and return its value.
 
         Args:
@@ -312,10 +312,10 @@ class Hierarchy:
         Returns:
           Contents of the file, cast to an int
         """
-        return Hierarchy._ReadFromSysfs(sysfs_path, Hierarchy.BUS_FILE, cast=int)
+        return Hierarchy._read_from_sysfs(sysfs_path, Hierarchy.BUS_FILE, cast=int)
 
     @staticmethod
-    def VendorIDFromSysfs(sysfs_path):
+    def vendor_id_from_sysfs(sysfs_path):
         """Look for |VID_FILE| under |sysfs_path| and return its value.
 
         Args:
@@ -324,12 +324,12 @@ class Hierarchy:
         Returns:
           Contents of the file, interpreted as a hex value, cast to an int
         """
-        return Hierarchy._ReadFromSysfs(
+        return Hierarchy._read_from_sysfs(
             sysfs_path, Hierarchy.VID_FILE, lambda x: int("0x%s" % x, 0)
         )
 
     @staticmethod
-    def ProductIDFromSysfs(sysfs_path):
+    def product_id_from_sysfs(sysfs_path):
         """Look for |PID_FILE| under |sysfs_path| and return its value.
 
         Args:
@@ -338,12 +338,12 @@ class Hierarchy:
         Returns:
           Contents of the file, interpreted as a hex value, cast to an int
         """
-        return Hierarchy._ReadFromSysfs(
+        return Hierarchy._read_from_sysfs(
             sysfs_path, Hierarchy.PID_FILE, lambda x: int("0x%s" % x, 0)
         )
 
     @staticmethod
-    def SerialFromSysfs(sysfs_path):
+    def serial_from_sysfs(sysfs_path):
         """Look for |SERIAL_FILE| under |sysfs_path| and return its value.
 
         Args:
@@ -352,10 +352,10 @@ class Hierarchy:
         Returns:
           Contents of the file, cast to a string
         """
-        return Hierarchy._ReadFromSysfs(sysfs_path, Hierarchy.SERIAL_FILE)
+        return Hierarchy._read_from_sysfs(sysfs_path, Hierarchy.SERIAL_FILE)
 
     @staticmethod
-    def ComplementBusNum(busnum):
+    def complement_bus_num(busnum):
         """Find the complement bus to |busnum|.
 
         Assuming that |busnum| runs on usb3, this will find the busnum for the same
@@ -401,7 +401,7 @@ class Hierarchy:
             )
         return complement_candidates[0]
 
-    def _RefreshHierarchy(self):
+    def _refresh_hierarchy(self):
         """Walk through usb sysfs files and gather device information.
 
         The usb sysfs dir contains dirs of the following format:
@@ -431,8 +431,8 @@ class Hierarchy:
             if self.DEV_RE.match(usb_dir):
                 usb_dir = os.path.join(self.SYSFS_PATH, usb_dir)
                 try:
-                    dev = Hierarchy.DevNumFromSysfs(usb_dir)
-                    bus = Hierarchy.BusNumFromSysfs(usb_dir)
+                    dev = Hierarchy.dev_num_from_sysfs(usb_dir)
+                    bus = Hierarchy.bus_num_from_sysfs(usb_dir)
                 except (IOError, HierarchyError):
                     # This means no bus/dev files. Skip
                     continue
@@ -440,11 +440,11 @@ class Hierarchy:
                 hierarchy[(bus, dev)] = usb_dir
         return hierarchy
 
-    def RefreshHierarchy(self):
-        self.hierarchy = self._RefreshHierarchy()
+    def refresh_hierarchy(self):
+        self.hierarchy = self._refresh_hierarchy()
 
     @staticmethod
-    def GetSysfsParentHubStub(sysfs_dev_path):
+    def get_sysfs_parent_hub_stub(sysfs_dev_path):
         """Retrieve the usb port hub path up to and not including the device itself.
 
         This helper retrieves the ParentHubStub. This is useful to determine if two
@@ -488,7 +488,7 @@ class Hierarchy:
 
         return os.path.join(usbdir, parent) if parent else None
 
-    def GetDevPortPath(self, usb_device):
+    def get_dev_port_path(self, usb_device):
         """Return the USB sysfs path of the supplied usb_device.
 
         Args:
@@ -503,7 +503,7 @@ class Hierarchy:
         )
         return dev_port_path
 
-    def GetParentHubStub(self, usb_device):
+    def get_parent_hub_stub(self, usb_device):
         """Return the USB sysfs path of the supplied usb_device's parent.
 
         Args:
@@ -513,12 +513,12 @@ class Hierarchy:
           SysFS path string of parent of the supplied usb device,
           or None if not found.
         """
-        dev_port_path = self.GetDevPortPath(usb_device)
+        dev_port_path = self.get_dev_port_path(usb_device)
         if dev_port_path:
-            return Hierarchy.GetSysfsParentHubStub(dev_port_path)
+            return Hierarchy.get_sysfs_parent_hub_stub(dev_port_path)
         return None
 
-    def DevOnDevHub(self, dev_with_internal_hub, dev):
+    def dev_on_dev_hub(self, dev_with_internal_hub, dev):
         """Check if |dev| is connected to |dev_with_internal_hub|'s internal hub.
 
         This also works in multiple layers e.g. if there are more hubs attached
@@ -531,15 +531,15 @@ class Hierarchy:
         Returns:
           True if |dev| on the internal hub; False otherwise.
         """
-        hub_dev_port_path = self.GetDevPortPath(dev_with_internal_hub)
+        hub_dev_port_path = self.get_dev_port_path(dev_with_internal_hub)
         if not hub_dev_port_path:
             return False
-        internal_hub_path = Hierarchy.GetSysfsParentHubStub(hub_dev_port_path)
-        dev_port_path = self.GetDevPortPath(dev)
-        return Hierarchy.DevOnHubPortFromSysfs(internal_hub_path, dev_port_path)
+        internal_hub_path = Hierarchy.get_sysfs_parent_hub_stub(hub_dev_port_path)
+        dev_port_path = self.get_dev_port_path(dev)
+        return Hierarchy.dev_on_hub_port_from_sysfs(internal_hub_path, dev_port_path)
 
     @staticmethod
-    def DevOnHubPortFromSysfs(hub_stub, dev_port_path):
+    def dev_on_hub_port_from_sysfs(hub_stub, dev_port_path):
         """Static helper to see if |hub_stub| is an ancestor to |dev_port_path|.
 
         |hub_stub| is not a valid /sys/bus/usb/devices path but rather
@@ -579,7 +579,7 @@ class Hierarchy:
         return False
 
     @staticmethod
-    def DevDirectOnHubPortFromSysfs(hub_stub, dev_port_path):
+    def dev_direct_on_hub_port_from_sysfs(hub_stub, dev_port_path):
         """Static helper to see if |hub_stub| is a direct ancestor to |dev_port_path|.
 
         |hub_stub| is not a valid /sys/bus/usb/devices path but rather
@@ -601,5 +601,5 @@ class Hierarchy:
             # or has an invalid path.
             return False
 
-        dev_port_hub = Hierarchy.GetSysfsParentHubStub(dev_port_path)
+        dev_port_hub = Hierarchy.get_sysfs_parent_hub_stub(dev_port_path)
         return hub_stub == dev_port_hub

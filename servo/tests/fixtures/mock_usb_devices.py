@@ -346,14 +346,17 @@ def mock_c2d2_configuration(mocker, mock_interface):
 
 @pytest.fixture(scope="function")
 def mock_v4p1_usb_device(mock_usb_device, mock_v4p1_configuration):
-    def create_device(mock_usb_device, iSerial, bus, address):
+
+    def create_device(
+        mock_usb_device, iSerial, bus, address
+    ):  # pylint: disable=invalid-name
         mock_device = mock_usb_device(
             "Servo V4.1 Device",
-            tmpl.GetVID("servo_v4p1"),
-            tmpl.GetPID("servo_v4p1"),
+            tmpl.get_vid("servo_v4p1"),
+            tmpl.get_pid("servo_v4p1"),
             mock_v4p1_configuration,
         )
-        mock_device.iSerial = iSerial
+        mock_device.iSerial = iSerial  # pylint: disable=invalid-name
         mock_device.bus = bus
         mock_device.address = address
         return mock_device
@@ -363,14 +366,17 @@ def mock_v4p1_usb_device(mock_usb_device, mock_v4p1_configuration):
 
 @pytest.fixture(scope="function")
 def mock_cr50_usb_device(mock_usb_device, mock_cr50_configuration):
-    def create_device(mock_usb_device, iSerial, bus, address):
+
+    def create_device(
+        mock_usb_device, iSerial, bus, address
+    ):  # pylint: disable=invalid-name
         mock_device = mock_usb_device(
             "CR50 Device",
-            tmpl.GetVID("ccd_cr50"),
-            tmpl.GetPID("ccd_cr50"),
+            tmpl.get_vid("ccd_cr50"),
+            tmpl.get_pid("ccd_cr50"),
             mock_cr50_configuration,
         )
-        mock_device.iSerial = iSerial
+        mock_device.iSerial = iSerial  # pylint: disable=invalid-name
         mock_device.bus = bus
         mock_device.address = address
         return mock_device
@@ -380,14 +386,17 @@ def mock_cr50_usb_device(mock_usb_device, mock_cr50_configuration):
 
 @pytest.fixture(scope="function")
 def mock_ccd_gsc_usb_device(mock_usb_device, mock_ccd_gsc_configuration):
-    def create_device(mock_usb_device, iSerial, bus, address):
+
+    def create_device(
+        mock_usb_device, iSerial, bus, address
+    ):  # pylint: disable=invalid-name
         mock_device = mock_usb_device(
             "DT Device",
-            tmpl.GetVID("ccd_gsc"),
-            tmpl.GetPID("ccd_gsc"),
+            tmpl.get_vid("ccd_gsc"),
+            tmpl.get_pid("ccd_gsc"),
             mock_ccd_gsc_configuration,
         )
-        mock_device.iSerial = iSerial
+        mock_device.iSerial = iSerial  # pylint: disable=invalid-name
         mock_device.bus = bus
         mock_device.address = address
         return mock_device
@@ -397,14 +406,17 @@ def mock_ccd_gsc_usb_device(mock_usb_device, mock_ccd_gsc_configuration):
 
 @pytest.fixture(scope="function")
 def mock_ccd_gsc_nt_usb_device(mock_usb_device, mock_ccd_gsc_nt_configuration):
-    def create_device(mock_usb_device, iSerial, bus, address):
+
+    def create_device(
+        mock_usb_device, iSerial, bus, address
+    ):  # pylint: disable=invalid-name
         mock_device = mock_usb_device(
             "NT Device",
-            tmpl.GetVID("ccd_gsc_nt"),
-            tmpl.GetPID("ccd_gsc_nt"),
+            tmpl.get_vid("ccd_gsc_nt"),
+            tmpl.get_pid("ccd_gsc_nt"),
             mock_ccd_gsc_nt_configuration,
         )
-        mock_device.iSerial = iSerial
+        mock_device.iSerial = iSerial  # pylint: disable=invalid-name
         mock_device.bus = bus
         mock_device.address = address
         return mock_device
@@ -414,14 +426,17 @@ def mock_ccd_gsc_nt_usb_device(mock_usb_device, mock_ccd_gsc_nt_configuration):
 
 @pytest.fixture(scope="function")
 def mock_servo_micro_usb_device(mock_usb_device, mock_servo_micro_configuration):
-    def create_device(mock_usb_device, iSerial, bus, address):
+
+    def create_device(
+        mock_usb_device, iSerial, bus, address
+    ):  # pylint: disable=invalid-name
         mock_device = mock_usb_device(
             "Servo Micro Device",
-            tmpl.GetVID("servo_micro"),
-            tmpl.GetPID("servo_micro"),
+            tmpl.get_vid("servo_micro"),
+            tmpl.get_pid("servo_micro"),
             mock_servo_micro_configuration,
         )
-        mock_device.iSerial = iSerial
+        mock_device.iSerial = iSerial  # pylint: disable=invalid-name
         mock_device.bus = bus
         mock_device.address = address
         return mock_device
@@ -431,14 +446,18 @@ def mock_servo_micro_usb_device(mock_usb_device, mock_servo_micro_configuration)
 
 @pytest.fixture(scope="function")
 def mock_c2d2_usb_device(mock_usb_device, mock_c2d2_configuration):
-    def create_device(mock_usb_device, iSerial, bus, address):
+
+    def create_device(
+        mock_usb_device, iSerial, bus, address
+    ):  # pylint: disable=invalid-name
+
         mock_device = mock_usb_device(
             "C2d2 Device",
-            tmpl.GetVID("c2d2"),
-            tmpl.GetPID("c2d2"),
+            tmpl.get_vid("c2d2"),
+            tmpl.get_pid("c2d2"),
             mock_c2d2_configuration,
         )
-        mock_device.iSerial = iSerial
+        mock_device.iSerial = iSerial  # pylint: disable=invalid-name
         mock_device.bus = bus
         mock_device.address = address
         return mock_device
@@ -454,7 +473,9 @@ def mock_usb_device(mocker):
         mocker (): Mocker module injected by pytest.
     """
 
-    def create_device(name, idVendor, idProduct, configuration):
+    def create_device(
+        name, idVendor, idProduct, configuration
+    ):  # pylint: disable=invalid-name
         """Create a new mock USB device
 
         Args:
@@ -467,8 +488,8 @@ def mock_usb_device(mocker):
             Mock: A mock that represents a USB device in PyUSB.
         """
         mock_device = mocker.Mock(name=name)
-        mock_device.idProduct = idProduct
-        mock_device.idVendor = idVendor
+        mock_device.idProduct = idProduct  # pylint: disable=invalid-name
+        mock_device.idVendor = idVendor  # pylint: disable=invalid-name
         mock_device.configuration = configuration()
         mock_device.get_active_configuration.return_value = mock_device.configuration
         return mock_device

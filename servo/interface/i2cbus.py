@@ -27,7 +27,7 @@ class I2CBus(i2c_base.BaseI2CBus):
         self._interface = interface
 
     @staticmethod
-    def Build(interface_data, **_kwargs):
+    def build(interface_data, **_kwargs):
         """Factory method to implement the interface."""
         return I2CBus("/dev/i2c-%d" % interface_data["bus_num"])
 

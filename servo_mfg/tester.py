@@ -101,7 +101,7 @@ class Tester:
         s = scratch.Scratch()
         # This can raise an error, but it's a valid error, so just let it go through
         # as it indicates that servod failed to come up somehow in the scratch.
-        entry = s.FindById(self._serial)
+        entry = s.find_by_id(self._serial)
         port = entry["port"]
         self._logger.info("Servod came up and is running on port %r", port)
         self._client = client.ServoClient(port=port)

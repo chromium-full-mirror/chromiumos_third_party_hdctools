@@ -39,11 +39,11 @@ def restricted_command(func):
     return wrapper
 
 
-class cr50Error(pty_driver.ptyError):
+class cr50Error(pty_driver.PtyError):
     """Exception class for Cr50."""
 
 
-class cr50(pty_driver.ptyDriver):
+class cr50(pty_driver.PtyDriver):
     """Object to access drv=cr50 controls.
 
     Note, instances of this object get dispatched via base class,
@@ -102,7 +102,7 @@ class cr50(pty_driver.ptyDriver):
                     "\n\n", [r"([^-=]>|Console is enabled)"]
                 )
                 break
-            except pty_driver.ptyError as e:
+            except pty_driver.PtyError as e:
                 logging.debug(
                     "cr50 prompt detection failed, %d attempts left.", trys_left
                 )
@@ -227,7 +227,7 @@ class cr50(pty_driver.ptyDriver):
                 )
                 if result is None:
                     raise cr50Error("Unable to enable bit bang mode!")
-            except pty_driver.ptyError as e:
+            except pty_driver.PtyError as e:
                 raise cr50Error("Unable to enable bit bang mode!") from e
 
             self._interface.ccd_uart_bitbang_settings["enabled"] = 1
@@ -346,7 +346,7 @@ class cr50(pty_driver.ptyDriver):
                 )
             if result is None:
                 raise cr50Error("recbtnforce failed, Check GscFullConsole perm.")
-        except pty_driver.ptyError as e:
+        except pty_driver.PtyError as e:
             raise cr50Error("Unable to change recbtnforce status!") from e
 
     def _Get_rec_mode(self):

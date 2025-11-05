@@ -43,7 +43,7 @@ class TestUsbHierarchy(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self._usb_dir = tempfile.mkdtemp()
         # This ensures that UsbHierarchy will use |_fake_sysfs_usb_path|.
-        Hierarchy.MockUsbSysfsPathForTest(self._usb_dir)
+        Hierarchy.mock_usb_sysfs_path_for_test(self._usb_dir)
         self._hierarchy = Hierarchy()
         # The default values to use to mock a sysfs entry
         self._busnum = 2
@@ -61,13 +61,13 @@ class TestUsbHierarchy(unittest.TestCase):
     def tearDown(self):
         """Remove /sys/bus/usb/devices mocking & destroy temp directory."""
         shutil.rmtree(self._usb_dir)
-        Hierarchy.RestoreDefaultUsbSysfsPathForTest()
+        Hierarchy.restore_default_usb_sysfs_path_for_test()
         unittest.TestCase.tearDown(self)
 
-    def test_FindConformingUsbDevice(self):
+    def test_find_conforming_usb_device(self):
         """Find a conforming usb device in the UsbHierarchy."""
         # Add a fake entry with all attributes
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -77,18 +77,18 @@ class TestUsbHierarchy(unittest.TestCase):
             pid=self._pid,
         )
         # This should now recognize the device.
-        self._hierarchy.RefreshHierarchy()
+        self._hierarchy.refresh_hierarchy()
         # Assert that there is only one entry
         assert len(self._hierarchy.hierarchy) == 1
         # Assert that the entry corresponds to the fake device added above by
-        dev_path = self._hierarchy.GetDevPortPath(self._fake_dev)
+        dev_path = self._hierarchy.get_dev_port_path(self._fake_dev)
         assert dev_path
         assert dev_path.endswith(self._hub_port_path)
 
-    def test_SkipUsbDeviceMissingBusnum(self):
+    def test_skip_usb_device_missing_busnum(self):
         """A device missing a busnum file is skipped in the UsbHierarchy."""
         # Add a fake entry with all attributes, expect busnum
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -97,14 +97,14 @@ class TestUsbHierarchy(unittest.TestCase):
             pid=self._pid,
         )
         # This should now recognize the device.
-        self._hierarchy.RefreshHierarchy()
+        self._hierarchy.refresh_hierarchy()
         # Assert that there is no entry, as this entry should have been skipped
         assert not self._hierarchy.hierarchy
 
-    def test_SkipUsbDeviceMissingDevnum(self):
+    def test_skip_usb_device_missing_devnum(self):
         """A device missing a devnum file is skipped in the UsbHierarchy."""
         # Add a fake entry with all attributes, expect devnum
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             busnum=self._busnum,
@@ -113,14 +113,14 @@ class TestUsbHierarchy(unittest.TestCase):
             pid=self._pid,
         )
         # This should now recognize the device.
-        self._hierarchy.RefreshHierarchy()
+        self._hierarchy.refresh_hierarchy()
         # Assert that there is no entry, as this entry should have been skipped
         assert not self._hierarchy.hierarchy
 
-    def test_NoSkipUsbDeviceMissingOtherDescriptors(self):
+    def test_no_skip_usb_device_missing_other_descriptors(self):
         """A device with bus/devnum is added even when lacking other descriptors."""
         # Add a fake entry with no attributes, expect devnum and busnum
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -128,15 +128,15 @@ class TestUsbHierarchy(unittest.TestCase):
         )
         # This should now recognize the device, as those two are the only required
         # ones to be index.
-        self._hierarchy.RefreshHierarchy()
+        self._hierarchy.refresh_hierarchy()
         # Assert that there is one entry
         assert len(self._hierarchy.hierarchy) == 1
         # Assert that the entry corresponds to the fake device added above by
-        dev_path = self._hierarchy.GetDevPortPath(self._fake_dev)
+        dev_path = self._hierarchy.get_dev_port_path(self._fake_dev)
         assert dev_path
         assert dev_path.endswith(self._hub_port_path)
 
-    def test_GetAllUsbDeviceSysfsPaths(self):
+    def test_get_all_usb_device_sysfs_paths(self):
         """Verify we retrieve all devices conforming to vid/pid pairs."""
         # Add 3 distinct devices that all have the same vid/pid
         devices = 3
@@ -144,7 +144,7 @@ class TestUsbHierarchy(unittest.TestCase):
             port_path = self._hub_port_path + ".%s" % str(extra)
             serial = self._serial + str(extra)
             devnum = self._devnum + extra
-            AddFakeUsbEntry(
+            add_fake_usb_entry(
                 usb_devices_dir=self._usb_dir,
                 hub_port_path=port_path,
                 busnum=self._busnum,
@@ -155,9 +155,9 @@ class TestUsbHierarchy(unittest.TestCase):
             )
         # Ensure all devices are found when supplying the vid/pid
         vid_pid_list = [(self._vid, self._pid)]
-        assert len(Hierarchy.GetAllUsbDeviceSysfsPaths(vid_pid_list)) == devices
+        assert len(Hierarchy.get_all_usb_device_sysfs_paths(vid_pid_list)) == devices
 
-    def test_GetAllUsbDeviceSysfsPathsNoList(self):
+    def test_get_all_usb_device_sysfs_paths_no_list(self):
         """Verify we retrieve all devices if no filters provided."""
         devices = 5
         for extra in range(devices):
@@ -168,7 +168,7 @@ class TestUsbHierarchy(unittest.TestCase):
             devnum = self._devnum + extra
             vid = self._vid + extra
             pid = self._pid + extra
-            AddFakeUsbEntry(
+            add_fake_usb_entry(
                 usb_devices_dir=self._usb_dir,
                 hub_port_path=port_path,
                 busnum=self._busnum,
@@ -179,12 +179,12 @@ class TestUsbHierarchy(unittest.TestCase):
             )
         vid_pid_list = [(self._vid, self._pid)]
         # This is to ensure that only one device is actually found
-        assert len(Hierarchy.GetAllUsbDeviceSysfsPaths(vid_pid_list)) == 1
+        assert len(Hierarchy.get_all_usb_device_sysfs_paths(vid_pid_list)) == 1
         # This is to ensure that once the filters are all lifted, all devices
         # are found.
-        assert len(Hierarchy.GetAllUsbDeviceSysfsPaths()) == devices
+        assert len(Hierarchy.get_all_usb_device_sysfs_paths()) == devices
 
-    def test_GetAllUsbDeviceSysfsPathsPIDWildcard(self):
+    def test_get_all_usb_device_sysfs_paths_pid_wildcard(self):
         """Verify we retrieve all devices when pid is a wildcard."""
         devices = 5
         for extra in range(devices):
@@ -194,7 +194,7 @@ class TestUsbHierarchy(unittest.TestCase):
             serial = self._serial + str(extra)
             devnum = self._devnum + extra
             pid = self._pid + extra
-            AddFakeUsbEntry(
+            add_fake_usb_entry(
                 usb_devices_dir=self._usb_dir,
                 hub_port_path=port_path,
                 busnum=self._busnum,
@@ -205,15 +205,15 @@ class TestUsbHierarchy(unittest.TestCase):
             )
         vid_pid_list = [(self._vid, self._pid)]
         # This is to ensure that only one device is actually found
-        assert len(Hierarchy.GetAllUsbDeviceSysfsPaths(vid_pid_list)) == 1
+        assert len(Hierarchy.get_all_usb_device_sysfs_paths(vid_pid_list)) == 1
         # This is to ensure that once we lift the restriction on pid i.e. it's
         # a wildcard, all devices are found again
         vid_pid_list = [(self._vid, None)]
-        assert len(Hierarchy.GetAllUsbDeviceSysfsPaths(vid_pid_list)) == devices
+        assert len(Hierarchy.get_all_usb_device_sysfs_paths(vid_pid_list)) == devices
 
-    def test_GetUsbDeviceSysfsPath(self):
+    def test_get_usb_device_sysfs_path(self):
         """Verify retrieving the sysfs directory path works as expected."""
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -223,17 +223,17 @@ class TestUsbHierarchy(unittest.TestCase):
             serial=self._serial,
         )
         vid, pid, sid = self._vid, self._pid, self._serial
-        dev_path = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
+        dev_path = Hierarchy.get_usb_device_sysfs_path(vid=vid, pid=pid, serial=sid)
         # Assert on an existing device that the path exists.
         assert os.path.exists(dev_path)
         # Assert if the device does not exist, that None is returned.
-        dev_path = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial="fake")
+        dev_path = Hierarchy.get_usb_device_sysfs_path(vid=vid, pid=pid, serial="fake")
         assert dev_path is None
 
-    def test_GetUsbDeviceSysfsPathNoSerialNoError(self):
+    def test_get_usb_device_sysfs_path_no_serial_no_error(self):
         """Verify missing 'serial' file does not throw error."""
         # Skip adding serial file.
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -242,12 +242,12 @@ class TestUsbHierarchy(unittest.TestCase):
             pid=self._pid,
         )
         vid, pid, sid = self._vid, self._pid, self._serial
-        dev_path = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
+        dev_path = Hierarchy.get_usb_device_sysfs_path(vid=vid, pid=pid, serial=sid)
         assert dev_path is None
 
-    def test_GetUsbDeviceSysfsPathMultipleVidPidSerialFails(self):
+    def test_get_usb_device_sysfs_path_multiple_vid_pid_serial_fails(self):
         """Verify that more than one vid:pid serial pair throws an error."""
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -257,7 +257,7 @@ class TestUsbHierarchy(unittest.TestCase):
             serial=self._serial,
         )
         # Edit the dev-port path and the dev-num so that two entries are added.
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path="1.1.2",
             devnum=self._devnum + 1,
@@ -268,69 +268,69 @@ class TestUsbHierarchy(unittest.TestCase):
         )
         vid, pid, sid = self._vid, self._pid, self._serial
         with self.assertRaisesRegex(HierarchyError, "Found 2 devices with"):
-            _unused = Hierarchy.GetUsbDeviceSysfsPath(vid=vid, pid=pid, serial=sid)
+            _unused = Hierarchy.get_usb_device_sysfs_path(vid=vid, pid=pid, serial=sid)
 
-    def test_GetDevPortPath(self):
+    def test_get_dev_port_path(self):
         """Retrieving the /sys/bus/usb/devices path for a device works."""
         # Define own root hub number instead of using default to verify path name.
         root_hub = 3
         # Add a fake entry with minimum necessary attributes to be a valid entry
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             root_hub=root_hub,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
             busnum=self._busnum,
         )
-        self._hierarchy.RefreshHierarchy()
-        dev_path = self._hierarchy.GetDevPortPath(self._fake_dev)
+        self._hierarchy.refresh_hierarchy()
+        dev_path = self._hierarchy.get_dev_port_path(self._fake_dev)
         # The usb device's dirname is <root-hub>-<port-hub>[.<port-hub>]*
         expected_dev_dir = "%s-%s" % (root_hub, self._hub_port_path)
         # The entire sysfs path is the sysfs directory used (here mocked)
         # and the full_dev_dirname above.
         assert os.path.join(self._usb_dir, expected_dev_dir) == dev_path
 
-    def test_GetSysfsParentHubStubLogic(self):
-        """Ensure that the utility function GetSysfsParentHubStub works."""
+    def test_get_sysfs_parent_hub_stub_logic(self):
+        """Ensure that the utility function get_sysfs_parent_hub_stub works."""
         no_parent = "1-2"
         valid = "%s.1" % no_parent
         full_dir_no_parent = os.path.join(self._usb_dir, no_parent)
         full_dir_valid = "%s.1" % full_dir_no_parent
         # The root hub is returned when asking for the parent of a device without one
-        assert Hierarchy.GetSysfsParentHubStub(no_parent) == no_parent[0:-2]
+        assert Hierarchy.get_sysfs_parent_hub_stub(no_parent) == no_parent[0:-2]
         # The same is true if a full path is supplied.
         assert (
-            Hierarchy.GetSysfsParentHubStub(full_dir_no_parent)
+            Hierarchy.get_sysfs_parent_hub_stub(full_dir_no_parent)
             == full_dir_no_parent[0:-2]
         )
         # The parent stub should be returned if there is a parent device.
-        assert no_parent == Hierarchy.GetSysfsParentHubStub(valid)
+        assert no_parent == Hierarchy.get_sysfs_parent_hub_stub(valid)
         # If a full path is supplied the parent stub plus the directories leading up
         # to the usb device should be returned.
-        assert full_dir_no_parent == Hierarchy.GetSysfsParentHubStub(full_dir_valid)
+        assert full_dir_no_parent == Hierarchy.get_sysfs_parent_hub_stub(full_dir_valid)
 
-    def test_GetParentHubStub(self):
+    def test_get_parent_hub_stub(self):
         """Retrieving the .../devices/d-[d.d.d.d].d parent hub path stub works."""
         # Define own root hub number instead of using default to verify path name.
         root_hub = 3
         # Add a fake entry with minimum necessary attributes to be a valid entry
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             root_hub=root_hub,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
             busnum=self._busnum,
         )
-        self._hierarchy.RefreshHierarchy()
-        found_stub = self._hierarchy.GetParentHubStub(self._fake_dev)
+        self._hierarchy.refresh_hierarchy()
+        found_stub = self._hierarchy.get_parent_hub_stub(self._fake_dev)
         # The usb device's dirname is <root-hub>-<port-hub>[.<port-hub>]*
         expected_dev_dir = "%s-%s" % (root_hub, self._hub_port_path)
-        parent_stub = Hierarchy.GetSysfsParentHubStub(expected_dev_dir)
+        parent_stub = Hierarchy.get_sysfs_parent_hub_stub(expected_dev_dir)
         # The entire parent hub sysfs substring  is the sysfs directory used
         # (here mocked) and the parent-stub above.
         assert os.path.join(self._usb_dir, parent_stub) == found_stub
 
-    def test_GetParentHubStubAttachedToRootHub(self):
+    def test_get_parent_hub_stub_attached_to_root_hub(self):
         """The parent hub path stub is the root-hub if attached to the root-hub."""
         # Define own root hub number instead of using default to verify path name.
         root_hub = 3
@@ -338,33 +338,33 @@ class TestUsbHierarchy(unittest.TestCase):
         # attached to the root hub
         hub_port_path = "1"
         # Add a fake entry with minimum necessary attributes to be a valid entry
-        AddFakeUsbEntry(
+        add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             root_hub=root_hub,
             hub_port_path=hub_port_path,
             devnum=self._devnum,
             busnum=self._busnum,
         )
-        self._hierarchy.RefreshHierarchy()
-        found_stub = self._hierarchy.GetParentHubStub(self._fake_dev)
+        self._hierarchy.refresh_hierarchy()
+        found_stub = self._hierarchy.get_parent_hub_stub(self._fake_dev)
         assert found_stub[-1] == str(root_hub)
 
-    def test_DevOnHubPortOnConformingDevices(self):
+    def test_dev_on_hub_port_on_conforming_devices(self):
         """DevOnHubPort is True when the device is a child of the hub stub."""
         default_hub_port_path = self._hub_port_path
         # Create another hub_port_path that's on the same parent
-        parent_stub = Hierarchy.GetSysfsParentHubStub(default_hub_port_path)
+        parent_stub = Hierarchy.get_sysfs_parent_hub_stub(default_hub_port_path)
         new_dev_hub_port_path = "%s.7.9.7" % parent_stub
-        assert Hierarchy.DevOnHubPortFromSysfs(parent_stub, new_dev_hub_port_path)
+        assert Hierarchy.dev_on_hub_port_from_sysfs(parent_stub, new_dev_hub_port_path)
 
-    def test_NoDevOnHubPortOnConformingDevices(self):
+    def test_no_dev_on_hub_port_on_conforming_devices(self):
         """DevOnHubPort is False when dev_path is not a child of the hub stub."""
         hub_port_stub = "2-1.2.3"
         # This device hangs on hub 1.2.4 and not 1.2.3
         dev_port_path = "2-1.2.4.7"
-        assert not Hierarchy.DevOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+        assert not Hierarchy.dev_on_hub_port_from_sysfs(hub_port_stub, dev_port_path)
 
-    def test_NoDevOnHubPortOnCommonAncestorHub(self):
+    def test_no_dev_on_hub_port_on_common_ancestor_hub(self):
         """DevOnHubPort is False on conforming devices not sharing the same hub.
 
         This test has a common ancestor hub which is a common scenario on
@@ -377,47 +377,49 @@ class TestUsbHierarchy(unittest.TestCase):
         # on that same 4.1 hub. Micro has no internal hub so this is
         # one port shorter.
         dev_port_path = "2-4.1.4"
-        assert not Hierarchy.DevOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+        assert not Hierarchy.dev_on_hub_port_from_sysfs(hub_port_stub, dev_port_path)
 
-    def test_DevOnHubPortSamePathDifferentRootHub(self):
+    def test_dev_on_hub_port_same_path_different_root_hub(self):
         """DevOnHubPort is False when the root hub is different."""
         # To test the hub-port logic as above you really only need the port path
         # string. This test is to make sure that while that is true, the entire
         # path i.e. the root-hub is also taken into consideration
         hub_port_stub = "2-1.2"
         dev_port_path = "3-1.2.3"
-        assert not Hierarchy.DevOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+        assert not Hierarchy.dev_on_hub_port_from_sysfs(hub_port_stub, dev_port_path)
 
-    def test_DevDirectOnHubPort(self):
+    def test_dev_direct_on_hub_port(self):
         """DevDirectOnHubPort is True when the device is a direct child of
         the hub stub.
         """
         hub_port_stub = "2-1.2"
         dev_port_path = "2-1.2.3"
-        assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+        assert Hierarchy.dev_direct_on_hub_port_from_sysfs(hub_port_stub, dev_port_path)
 
-    def test_DevDirectOnRootHubPort(self):
+    def test_dev_direct_on_root_hub_port(self):
         """DevDirectOnHubPort is True when the device is a direct child of the
         root hub stub.
         """
         hub_port_stub = "2"
         dev_port_path = "2-1"
-        assert Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+        assert Hierarchy.dev_direct_on_hub_port_from_sysfs(hub_port_stub, dev_port_path)
 
-    def test_DevNotDirectOnHubPort(self):
+    def test_dev_not_direct_on_hub_port(self):
         """DevDirectOnHubPort is False when the root hub is different."""
         # To test the hub-port logic as above you really only need the port path
         # string. This test is to make sure that while that is true, the entire
         # path i.e. the root-hub is also taken into consideration
         hub_port_stub = "2-1"
         dev_port_path = "2-1.2.3"
-        assert not Hierarchy.DevDirectOnHubPortFromSysfs(hub_port_stub, dev_port_path)
+        assert not Hierarchy.dev_direct_on_hub_port_from_sysfs(
+            hub_port_stub, dev_port_path
+        )
 
-    def test_DevNumFromSysfsNoFile(self):
+    def test_dev_num_from_sysfs_no_file(self):
         """HierarchyError is raised on missing devnum file."""
         # Note: as all the *FromSysfs methods use the same underlying method,
         # this one test is a proxy for all of them failing due to missing file.
-        devd = AddFakeUsbEntry(
+        devd = add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             # Note the omission of devnum  here
@@ -432,14 +434,14 @@ class TestUsbHierarchy(unittest.TestCase):
             ".* cannot be read because the file cannot "
             "be found.",
         ):
-            Hierarchy.DevNumFromSysfs(devd)
+            Hierarchy.dev_num_from_sysfs(devd)
 
-    def test_DevNumFromSysfs(self):
+    def test_dev_num_from_sysfs(self):
         """devnum is read out correctly and cast to be an int."""
         # Note: this test is a proxy for all *FromSysfs methods that cast to int:
         # - DevNum
         # - BusNum
-        devd = AddFakeUsbEntry(
+        devd = add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -448,16 +450,16 @@ class TestUsbHierarchy(unittest.TestCase):
             vid=self._vid,
             pid=self._pid,
         )
-        devnum = Hierarchy.DevNumFromSysfs(devd)
+        devnum = Hierarchy.dev_num_from_sysfs(devd)
         assert isinstance(devnum, int)
         assert devnum == self._devnum
 
-    def test_DevNumFromSysfsNoInt(self):
+    def test_dev_num_from_sysfs_no_int(self):
         """HierarchyError is raised if devnum's content cannot be cast to int()."""
         # Note: this test is a proxy for all *FromSysfs methods that cast to int:
         # - DevNum
         # - BusNum
-        devd = AddFakeUsbEntry(
+        devd = add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             busnum=self._busnum,
@@ -465,7 +467,7 @@ class TestUsbHierarchy(unittest.TestCase):
             vid=self._vid,
             pid=self._pid,
         )
-        # The AddFakeUsbEntry call casts the contents so we need to write it
+        # The add_fake_usb_entry call casts the contents so we need to write it
         # ourselves here.
         devnum_f = os.path.join(devd, Hierarchy.DEV_FILE)
         content = "not-int-castable"
@@ -475,14 +477,14 @@ class TestUsbHierarchy(unittest.TestCase):
             HierarchyError,
             "Unexpected content %r at sysfs file %r" % (content, devnum_f),
         ):
-            _unused = Hierarchy.DevNumFromSysfs(devd)
+            _unused = Hierarchy.dev_num_from_sysfs(devd)
 
-    def test_VendorIDFromSysfs(self):
+    def test_vendor_id_from_sysfs(self):
         """idVendor is read out correctly and cast to be an int with base 16."""
         # Note: this test is a proxy for all *FromSysfs methods that cast to int:
         # - VendorID
         # - ProductID
-        devd = AddFakeUsbEntry(
+        devd = add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -491,22 +493,22 @@ class TestUsbHierarchy(unittest.TestCase):
             pid=self._pid,
         )
         # We manually write the content here to ensure that it would not
-        # pass a standard int cast, and that AddFakeUsbEntry does not do
+        # pass a standard int cast, and that add_fake_usb_entry does not do
         # the cast for us.
         vid = "fe"
         vid_f = os.path.join(devd, Hierarchy.VID_FILE)
         with open(vid_f, "w", encoding="utf-8") as f:
             f.write(vid)
-        retrieved_vid = Hierarchy.VendorIDFromSysfs(devd)
+        retrieved_vid = Hierarchy.vendor_id_from_sysfs(devd)
         assert isinstance(retrieved_vid, int)
         assert retrieved_vid == 0xFE
 
-    def test_VendorIDFromSysfsNoInt(self):
+    def test_vendor_id_from_sysfs_no_int(self):
         """HierarchyError is raised if idVendor's contents are not base 16 int."""
         # Note: this test is a proxy for all *FromSysfs methods that cast to int:
         # - VendorID
         # - ProductID
-        devd = AddFakeUsbEntry(
+        devd = add_fake_usb_entry(
             usb_devices_dir=self._usb_dir,
             hub_port_path=self._hub_port_path,
             devnum=self._devnum,
@@ -514,7 +516,7 @@ class TestUsbHierarchy(unittest.TestCase):
             serial=self._serial,
             pid=self._pid,
         )
-        # The AddFakeUsbEntry call casts the contents so we need to write it
+        # The add_fake_usb_entry call casts the contents so we need to write it
         # ourselves here.
         bad_vid = "ge"
         vid_f = os.path.join(devd, Hierarchy.VID_FILE)
@@ -524,10 +526,10 @@ class TestUsbHierarchy(unittest.TestCase):
             HierarchyError,
             "Unexpected content %r at sysfs file %r" % (bad_vid, vid_f),
         ):
-            _unused = Hierarchy.VendorIDFromSysfs(devd)
+            _unused = Hierarchy.vendor_id_from_sysfs(devd)
 
 
-def AddFakeUsbEntry(
+def add_fake_usb_entry(
     usb_devices_dir,
     hub_port_path,
     root_hub=2,
@@ -576,57 +578,57 @@ if __name__ == "__main__":
 
 
 class TestUsbHierarchyPyTest:
-    def test_GetUsbDevice(self, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device(self, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         _mock_usb.devices.append(device)
-        found_device = Hierarchy.GetUsbDevice(
+        found_device = Hierarchy.get_usb_device(
             device.idVendor, device.idProduct, device.iSerial
         )
         assert found_device.iSerial == device.iSerial
 
-    def test_GetUsbDeviceNoFound(self, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device_no_found(self, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         _mock_usb.devices.append(device)
-        found_device = Hierarchy.GetUsbDevice(
+        found_device = Hierarchy.get_usb_device(
             device.idVendor, device.idProduct, "garbage"
         )
         assert found_device is None
 
-    def test_GetUsbDeviceMultiple(self, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device_multiple(self, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
         _mock_usb.devices.append(device)
         _mock_usb.devices.append(device2)
-        found_device = Hierarchy.GetUsbDevice(
+        found_device = Hierarchy.get_usb_device(
             device.idVendor, device.idProduct, device.iSerial
         )
         assert found_device.iSerial == device.iSerial
 
-    def test_GetUsbDeviceDuplicate(self, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device_duplicate(self, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno", 2, 2)
         _mock_usb.devices.append(device)
         _mock_usb.devices.append(device2)
         with pytest.raises(HierarchyError):
-            Hierarchy.GetUsbDevice(device.idVendor, device.idProduct, device.iSerial)
+            Hierarchy.get_usb_device(device.idVendor, device.idProduct, device.iSerial)
 
-    def test_GetUsbDeviceBadUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device_bad_usb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
         device2.iSerial = ValueError("This is a test")
         _mock_usb.devices.append(device)
         _mock_usb.devices.append(device2)
-        found_device = Hierarchy.GetUsbDevice(
+        found_device = Hierarchy.get_usb_device(
             device.idVendor, device.idProduct, device.iSerial
         )
         assert found_device.iSerial == device.iSerial
 
-    def test_GetUsbDeviceAllBadUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device_all_bad_usb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
@@ -634,12 +636,14 @@ class TestUsbHierarchyPyTest:
         device.iSerial = ValueError("This is a test")
         _mock_usb.devices.append(device)
         _mock_usb.devices.append(device2)
-        found_device = Hierarchy.GetUsbDevice(
+        found_device = Hierarchy.get_usb_device(
             device.idVendor, device.idProduct, device.iSerial
         )
         assert found_device is None
 
-    def test_GetUsbDeviceAllBadCoreUsb(self, mocker, mock_v4p1_usb_device, mock_pyusb):
+    def test_get_usb_device_all_bad_core_usb(
+        self, mocker, mock_v4p1_usb_device, mock_pyusb
+    ):
         _mock_usb = mock_pyusb
         device = mock_v4p1_usb_device("serialno", 1, 1)
         device2 = mock_v4p1_usb_device("serialno2", 2, 2)
@@ -647,7 +651,7 @@ class TestUsbHierarchyPyTest:
         device.iSerial = usb.core.USBError("This is a test")
         _mock_usb.devices.append(device)
         _mock_usb.devices.append(device2)
-        found_device = Hierarchy.GetUsbDevice(
+        found_device = Hierarchy.get_usb_device(
             device.idVendor, device.idProduct, device.iSerial
         )
         assert found_device is None

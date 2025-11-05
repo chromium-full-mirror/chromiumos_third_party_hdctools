@@ -49,7 +49,7 @@ class SerialProgrammer(programmer.Programmer):
         Returns:
           serial name of the |self._vid|:|self._pid| device in sysfs
         """
-        return usb_hierarchy.Hierarchy.SerialFromSysfs(self._find())
+        return usb_hierarchy.Hierarchy.serial_from_sysfs(self._find())
 
     def _program(self, serial, tiny_servod, **_):
         """Program by connecting to servo console and writing the |serial|."""

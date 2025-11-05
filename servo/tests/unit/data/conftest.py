@@ -68,7 +68,7 @@ def build_system_config(cfile, setup):
     if setup is not None:
         if setup not in SUPPORTED_SETUPS:
             raise SystemConfigTestError("Unsupported setup %r" % setup)
-        sdev_template = templates.GetTemplateClassByName(setup)
+        sdev_template = templates.get_template_class_by_name(setup)
         files.append(sdev_template.DEFAULT_CONFIG)
     if cfile is not None:
         files.append(cfile)
