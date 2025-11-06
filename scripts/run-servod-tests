@@ -20,4 +20,4 @@ docker build \
 docker run -it -e SERVOD_LIMIT_TEST_DUT=1 \
     --ulimit=nofile=65535:65535 \
     "${TEST_IMAGE}" \
-    pytest -n 15 --forked /hdctools
+    pytest -x ${TESTS}
