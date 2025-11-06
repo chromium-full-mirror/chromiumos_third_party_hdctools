@@ -83,6 +83,7 @@ ignored-modules=
     servo_dev_templates,
     servo_mfg,
     servo_updater,
+    setuptools,
     sweetberry_preprocessor,
     usb,
     usbkm232,
