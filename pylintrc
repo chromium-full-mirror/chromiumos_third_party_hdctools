@@ -458,7 +458,6 @@ disable=
     consider-using-in,
     consider-using-set-comprehension,
     consider-using-with,
-    dangerous-default-value,
     docstring-first-line-empty,
     duplicate-code,
     fixme,

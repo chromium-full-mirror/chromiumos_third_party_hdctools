@@ -87,7 +87,7 @@ def board_supports_servo_type(board, servo_type):
     return ("c2d2" in servo_type) == (board in c2d2_boards)
 
 
-def get_board_model_pairs(board_exclude_list=[]):
+def get_board_model_pairs(board_exclude_list=None):
     """Get a list of board, model tuples that can have tests scheduled.
 
     If a test can not run for a specific board
@@ -99,6 +99,8 @@ def get_board_model_pairs(board_exclude_list=[]):
     Returns:
         list if string tuples: board model pairs.
     """
+    if board_exclude_list is None:
+        board_exclude_list = []
     exclude_list = [
         "servo_nissa_nirwen_ufs_overlay.xml",  # File not in correct format
         "servo_fpmcu_dev_board_common_overlay.xml",  # File not in correct format
