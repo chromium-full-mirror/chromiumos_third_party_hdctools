@@ -69,4 +69,10 @@
     <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="ite_spi_ccd_uart"/>
   </control>
+  <control>
+    <name>dev_mode</name>
+    <alias>servo_spi_programming</alias>
+    <doc>Controls a mux on Tanjiro that switches between AP or GSC+Servo access to AP SPI flash.</doc>
+    <params clobber_ok="patch" od="PP" map="onoff" init="off" />
+  </control>
 </root>
