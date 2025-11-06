@@ -30,6 +30,7 @@ class DeviceWatchdog(threading.Thread):
         """
 
         def __init__(self):
+            super().__init__()
             self.last_log = None
             self.next_log_time = time.time()
 
