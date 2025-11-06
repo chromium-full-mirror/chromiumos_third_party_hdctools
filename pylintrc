@@ -463,7 +463,6 @@ disable=
     docstring-first-line-empty,
     duplicate-code,
     fixme,
-    function-redefined,
     global-statement,
     global-variable-not-assigned,
     inconsistent-return-statements,

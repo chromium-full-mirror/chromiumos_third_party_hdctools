@@ -438,7 +438,7 @@ class TestServoDeviceFinder(unittest.TestCase):
         main = finder.choose_main_device(devs)
         assert main == test_entry
 
-    def test_choose_main_device_multiple_user_main_no_user_input(self):
+    def test_choose_main_device_multiple_user_main_no_user_input_no_main(self):
         """Test choose_main_device ask for user input if user choose multiple main
         devices during servod invocation. Error out if user does not provide any
         input.
