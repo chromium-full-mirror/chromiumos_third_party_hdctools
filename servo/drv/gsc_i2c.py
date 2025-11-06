@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 """Driver for GSC I2C interface
- This is for the special-purpose commands that GSC can handle.
+This is for the special-purpose commands that GSC can handle.
 """
 
 from servo.drv import hw_driver

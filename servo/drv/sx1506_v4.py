@@ -1,8 +1,7 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for sx1506 16bit ioexpander, with power on defaults for for servo v4
-"""
+"""Driver for sx1506 16bit ioexpander, with power on defaults for for servo v4"""
 from servo.drv import sx1506
 
 

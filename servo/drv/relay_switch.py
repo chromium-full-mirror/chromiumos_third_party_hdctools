@@ -67,10 +67,10 @@ class relaySwitch(hw_driver.HwDriver):
         # Activate the relay switch
 
         try:
-            ser.write(b"\xA0\x01\x01\xA2\r\n")
+            ser.write(b"\xa0\x01\x01\xa2\r\n")
             # Wait the delay
             time.sleep(press_secs)
             # De-activate the relay switch
-            ser.write(b"\xA0\x01\x00\xA1\r\n")
+            ser.write(b"\xa0\x01\x00\xa1\r\n")
         finally:
             ser.close()

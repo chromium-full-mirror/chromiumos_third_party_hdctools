@@ -1,8 +1,7 @@
 # Copyright 2014 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for sleep delay pseudo-control.
-"""
+"""Driver for sleep delay pseudo-control."""
 import time
 
 from servo.drv import hw_driver

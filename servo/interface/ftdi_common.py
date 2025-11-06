@@ -1,8 +1,7 @@
 # Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Defines common structures for use with c libraries related to FTDI devices.
-"""
+"""Defines common structures for use with c libraries related to FTDI devices."""
 import ctypes
 
 from servo import servo_dev_templates

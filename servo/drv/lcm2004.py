@@ -1,7 +1,7 @@
 # Copyright 2014 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-""" Text-based LCD module driver for LCM2004."""
+"""Text-based LCD module driver for LCM2004."""
 
 # servo libs
 from servo.drv import hw_driver

@@ -1,8 +1,7 @@
 # Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for board config controls tca6416 dual port (16bit) ioexpander.
-"""
+"""Driver for board config controls tca6416 dual port (16bit) ioexpander."""
 from servo.drv import hw_driver
 from servo.drv import i2c_reg
 

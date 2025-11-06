@@ -1,8 +1,7 @@
 # Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for board config controls pca9537, a 4-bit ioexpander.
-"""
+"""Driver for board config controls pca9537, a 4-bit ioexpander."""
 from servo.drv import hw_driver
 from servo.drv import tca6416
 

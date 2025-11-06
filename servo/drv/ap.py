@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-    AP console communications driver. Automations that need to interact
-    with the AP console should inherit from this driver, or build a composition
-    containing this driver.
-    This driver exposes methods to login, logout, set password, and
-    username to login, and check if a session is logged in.
+AP console communications driver. Automations that need to interact
+with the AP console should inherit from this driver, or build a composition
+containing this driver.
+This driver exposes methods to login, logout, set password, and
+username to login, and check if a session is logged in.
 """
 import logging
 import time
