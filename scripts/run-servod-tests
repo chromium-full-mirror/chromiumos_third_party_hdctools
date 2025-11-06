@@ -2,7 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-build-servod cq
+set -ex
+
+TESTS=hdctools
+
+if [ -n "${1}" ]; then
+   TESTS="${1}"
+fi
+
+scripts/build-servod cq
 
 TEST_IMAGE="servod:devtest"
 docker build \
