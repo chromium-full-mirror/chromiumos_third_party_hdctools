@@ -411,7 +411,6 @@ class TestServoDeviceFinder(unittest.TestCase):
         """Test choose_main_device ask for user input if user choose multiple
         main devices during servod invocation.
         """
-        """Test choose_main_device return the only main device chosen by the user."""
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),
@@ -443,7 +442,6 @@ class TestServoDeviceFinder(unittest.TestCase):
         devices during servod invocation. Error out if user does not provide any
         input.
         """
-        """Test choose_main_device return the only main device chosen by the user."""
         test_entry = ServoDeviceEntry(
             vid=dev_templates.GetVID("servo_micro"),
             pid=dev_templates.GetPID("servo_micro"),

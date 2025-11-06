@@ -473,7 +473,6 @@ disable=
     missing-function-docstring,
     missing-module-docstring,
     no-member,
-    pointless-string-statement,
     protected-access,
     raise-missing-from,
     simplifiable-if-expression,
