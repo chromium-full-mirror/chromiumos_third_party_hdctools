@@ -21,6 +21,9 @@
   <include>
     <name>pdc_ccd_keepalive.xml</name>
   </include>
+  <include>
+    <name>detachable.xml</name>
+  </include>
   <!-- ******** Maps ******** -->
 
   <!-- ******** Controls ******** -->
