@@ -447,7 +447,6 @@ confidence=HIGH,
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=
-    access-member-before-definition,
     arguments-differ,
     attribute-defined-outside-init,
     broad-exception-caught,

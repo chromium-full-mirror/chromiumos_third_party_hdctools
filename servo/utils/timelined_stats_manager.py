@@ -53,6 +53,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
           timeline_key: key used for relative timeline column (starts at 0)
           rate: rate that the data is collected by dut-power (in seconds)
         """
+        self._logger = logging.getLogger(type(self).__name__)
         self._tkey = time_key
         self._tlkey = timeline_key
         super(TimelinedStatsManager, self).__init__(
