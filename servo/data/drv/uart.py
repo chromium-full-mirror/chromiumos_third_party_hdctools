@@ -1,8 +1,7 @@
 # Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for board config controls of type=uart.
-"""
+"""Driver for board config controls of type=uart."""
 import logging
 
 from servo.data.drv import pty_driver

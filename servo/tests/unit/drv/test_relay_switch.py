@@ -64,8 +64,8 @@ class TestRelaySwitch(unittest.TestCase):
 
         # Confirm that all resultant calls occur
         write_calls = [
-            mock.call(b"\xA0\x01\x01\xA2\r\n"),
-            mock.call(b"\xA0\x01\x00\xA1\r\n"),
+            mock.call(b"\xa0\x01\x01\xa2\r\n"),
+            mock.call(b"\xa0\x01\x00\xa1\r\n"),
         ]
         serial_mock.return_value.write.assert_has_calls(write_calls)
         serial_mock.return_value.close.assert_called_once()

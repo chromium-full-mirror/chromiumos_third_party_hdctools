@@ -1,8 +1,7 @@
 # Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Allows creation of i2c interface via libftdii2c (C) library for FTDI devices.
-"""
+"""Allows creation of i2c interface via libftdii2c (C) library for FTDI devices."""
 
 import ctypes
 import logging

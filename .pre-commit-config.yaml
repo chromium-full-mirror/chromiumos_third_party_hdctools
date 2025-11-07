@@ -15,19 +15,22 @@ repos:
     -   id: check-toml
     -   id: check-merge-conflict
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+  - repo: local
     hooks:
-      - id: isort
-        name: isort (python)
-        types: [python]
+    - id: black
+      name: Black (Docker)
+      entry: pyfound/black:25.9.0 black
+      language: docker_image
+      exclude: servo/data/.*
+      types: [python]
 
-  - repo: https://github.com/psf/black
-    rev: 24.2.0
+  - repo: local
     hooks:
-      - id: black
-        exclude: servo/data/.*
-        types: [python]
+    - id: isort
+      name: isort (Docker)
+      entry: xcgd/isort isort
+      language: docker_image
+      types: [python]
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0

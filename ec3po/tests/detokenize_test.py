@@ -1057,7 +1057,7 @@ class DetokenizeNestedDomains(unittest.TestCase):
             "Nested decoding fails no domain was specified, but token is in D1",
         )
         self.assertEqual(
-            str(detok.detokenize(b"\x02\0\0\0\x0D${D1}AQAAAA==")),
+            str(detok.detokenize(b"\x02\0\0\0\x0d${D1}AQAAAA==")),
             "This is a nested base64 argument",
             "Succeeds when domain is specified",
         )

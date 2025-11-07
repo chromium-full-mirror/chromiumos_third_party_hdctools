@@ -1,8 +1,7 @@
 # Copyright 2020 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Driver for c2d2 specific controls through ec3po.
-"""
+"""Driver for c2d2 specific controls through ec3po."""
 
 from servo.data.drv import ec3po_servo
 from servo.data.drv import pty_driver
