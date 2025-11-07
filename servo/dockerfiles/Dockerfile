@@ -305,7 +305,6 @@ RUN apt-get update --no-install-recommends \
     python3-protobuf \
     python3-requests \
     python3-pip \
-    python3-grpcio \
     python3-grpc-tools \
     python3-serial \
     python3-usb \
@@ -314,6 +313,7 @@ RUN apt-get update --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
+    && python3 -m pip install grpcio==1.76.0 --break-system-packages --root-user-action ignore \
     && rm -f /hdctools-docker-fake_9999-1_all.deb
 
 # Install libusb.
