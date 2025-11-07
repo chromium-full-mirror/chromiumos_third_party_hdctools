@@ -73,7 +73,7 @@ steps:
     - /workspace
   waitFor: ['src-prep']
 
-- name: 'cytopia/pylint'
+- name: 'registry.gitlab.com/pipeline-components/pylint:latest'
   id: 'test-pylint'
   entrypoint: 'pylint'
   args:

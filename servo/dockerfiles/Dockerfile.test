@@ -14,9 +14,14 @@ RUN apt-get update --no-install-recommends \
     python3-pytest-forked \
     python3-pytest-mock \
     python3-pytest-xdist \
-    python3-mock
+    python3-mock \
+    python3-setuptools \
+    python3-wheel \
+    python3-pip
 
+COPY / /hdctools/
+WORKDIR /hdctools
+RUN python3 servo/setup_tests.py bdist_wheel
+RUN pip3 install dist/*.whl --break-system-packages
 
-COPY /servo/tests/ /hdctools/servo/tests/
-COPY /ec3po/tests/ /hdctools/ec3po/tests/
-COPY /pyproject.toml /hdctools
+WORKDIR /

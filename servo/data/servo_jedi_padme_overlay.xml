@@ -1,0 +1,9 @@
+<root>
+  <include>
+    <name>servo_jedi_overlay.xml</name>
+  </include>
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="" port_count="1" />
+  </control>
+</root>
