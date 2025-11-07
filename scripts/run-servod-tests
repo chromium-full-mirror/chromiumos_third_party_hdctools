@@ -4,7 +4,7 @@
 
 set -ex
 
-TESTS=hdctools
+TESTS="."
 
 if [ -n "${1}" ]; then
    TESTS="${1}"
@@ -12,12 +12,36 @@ fi
 
 scripts/build-servod cq
 
+CALLER_UID=$(id -u)
+
 TEST_IMAGE="servod:devtest"
+
+COVERAGE_FLAGS=""
+COVERAGE_POST_PROCESS=""
+DOCKER_MOUNT=""
+if [ -d ${PWD}/coverage ]; then
+    COVERAGE_FLAGS="--cov=/usr/local/lib/python3.13/dist-packages/servo \
+        --cov=/usr/local/lib/python3.13/dist-packages/servo_updater \
+        --cov=/usr/local/lib/python3.13/dist-packages/ec3po \
+        --cov-report=lcov:/coverage/lcov.info \
+        --cov-report=html:/coverage/cov.html "
+
+    COVERAGE_POST_PROCESS="&& \
+        sed -i s#/usr/local/lib/python3.13/dist-packages/##g /coverage/lcov.info && \
+        chown -R ${CALLER_UID} /coverage/*"
+
+    DOCKER_MOUNT="--volume ${PWD}/coverage:/coverage "
+fi
+
 docker build \
     --build-arg=BASE_IMG=servod:devcq \
     -t "${TEST_IMAGE}" -f servo/dockerfiles/Dockerfile.test .
 
-docker run -it -e SERVOD_LIMIT_TEST_DUT=1 \
+docker run -e SERVOD_LIMIT_TEST_DUT=1 \
     --ulimit=nofile=65535:65535 \
-    "${TEST_IMAGE}" \
-    pytest -x ${TESTS}
+    ${DOCKER_MOUNT} \
+    ${TEST_IMAGE} \
+    bash -c "pushd hdctools && \\
+    pytest -x ${COVERAGE_FLAGS} ${TESTS} && \\
+    popd \\
+    ${COVERAGE_POST_PROCESS}"

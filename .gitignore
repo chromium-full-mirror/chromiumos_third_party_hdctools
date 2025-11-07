@@ -30,3 +30,5 @@ scripts/checksum
 
 #banned words local cache
 blocked_terms.txt
+
+coverage/**
