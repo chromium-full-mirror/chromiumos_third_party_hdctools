@@ -448,7 +448,6 @@ confidence=HIGH,
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
 disable=
-    access-member-before-definition,
     arguments-differ,
     attribute-defined-outside-init,
     broad-exception-caught,
@@ -460,11 +459,9 @@ disable=
     consider-using-in,
     consider-using-set-comprehension,
     consider-using-with,
-    dangerous-default-value,
     docstring-first-line-empty,
     duplicate-code,
     fixme,
-    function-redefined,
     global-statement,
     global-variable-not-assigned,
     inconsistent-return-statements,
@@ -475,7 +472,6 @@ disable=
     missing-function-docstring,
     missing-module-docstring,
     no-member,
-    pointless-string-statement,
     protected-access,
     raise-missing-from,
     simplifiable-if-expression,

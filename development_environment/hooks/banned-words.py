@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import base64
+import datetime
 import os
 import re
 import sys
@@ -11,6 +12,7 @@ from urllib import request
 
 
 UNBLOCKED_TERMS_FILE = "unblocked_terms.txt"
+BLOCKED_TERMS_FILE = "blocked_terms.txt"
 
 
 def _read_terms_from_array(lines):
@@ -19,7 +21,7 @@ def _read_terms_from_array(lines):
         line = line.split("#", 1)[0]
         if not line:
             continue
-        keywords.add(line)
+        keywords.add(line.strip())
     return keywords
 
 
@@ -132,12 +134,23 @@ def _check_keywords_in_file(file_to_check):
 
 def main():
     global _default_terms
-    _default_terms = _read_terms_from_gitiles(
-        (
-            "https://chromium.googlesource.com/chromiumos/"
-            "repohooks/+/refs/heads/main/blocked_terms.txt?format=TEXT"
+    if os.path.isfile(BLOCKED_TERMS_FILE):
+        mod_timestamp = os.path.getmtime(BLOCKED_TERMS_FILE)
+        mod_datetime = datetime.datetime.fromtimestamp(mod_timestamp)
+        current_time = datetime.datetime.now()
+        time_difference = current_time - mod_datetime
+        if time_difference.total_seconds() < 3600:
+            _default_terms = _read_terms_file(BLOCKED_TERMS_FILE)
+
+    if not _default_terms:
+        _default_terms = _read_terms_from_gitiles(
+            (
+                "https://chromium.googlesource.com/chromiumos/"
+                "repohooks/+/refs/heads/main/blocked_terms.txt?format=TEXT"
+            )
         )
-    )
+        with open(BLOCKED_TERMS_FILE, "w", encoding="utf-8") as blocked:
+            blocked.write("\n".join(_default_terms))
     for filename in sys.argv:
         if os.path.isfile(filename):
             _check_keywords_in_file(filename)

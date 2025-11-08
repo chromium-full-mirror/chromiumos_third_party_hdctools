@@ -20,5 +20,5 @@ docker build \
 docker run -it -e SERVOD_LIMIT_TEST_DUT=1 \
     --ulimit=nofile=65535:65535 \
     "${TEST_IMAGE}" \
-    python3 servo/data/grpc_server/grpc_server_setup.py& \
-    pytest -n 15 --forked /hdctools
+    python3 servo/data/grpc_server/grpc_server_setup.py & \
+    pytest -x ${TESTS}

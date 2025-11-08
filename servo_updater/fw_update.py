@@ -34,9 +34,6 @@ def log(msg):
     sys.stdout.flush()
 
 
-"""Sends firmware update to CROS EC usb endpoint."""
-
-
 class Supdate:
     """Class to access firmware update endpoints.
 

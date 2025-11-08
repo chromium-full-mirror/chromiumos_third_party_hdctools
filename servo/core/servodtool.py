@@ -40,9 +40,9 @@ def servodutil(cmdline=sys.argv[1:]):
 
 # pylint: disable=dangerous-default-value
 def main(cmdline=sys.argv[1:]):
+    """Entry function for cmdline servodtool utility."""
     if len(cmdline) > 0 and cmdline[0] == "--":
         cmdline = cmdline[1:]
-    """Entry function for cmdline servodtool utility."""
     # pylint: disable=protected-access
     parser = argparse.ArgumentParser()
     # Add double-dashes in help message to unify docker and standalone versions

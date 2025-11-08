@@ -900,7 +900,7 @@ class PowerMeasurement:
             stats_managers=self._stats.values(), outdir=outdir, message=message
         )
 
-    def _SaveSummary(self, stats_managers=[], outdir=None, message=None):
+    def _SaveSummary(self, stats_managers=None, outdir=None, message=None):
         """Save summary of the PowerMeasurement run.
 
         Args:
@@ -914,6 +914,8 @@ class PowerMeasurement:
         Raises:
           PowerMeasurementError: if called before measurement processing is done
         """
+        if stats_managers is None:
+            stats_managers = []
         outdir = outdir if outdir else self._outdir
         outfiles = [stat.SaveSummary(outdir) for stat in stats_managers]
         if message:
@@ -988,7 +990,7 @@ class PowerMeasurement:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
         return self._SaveSummaryJSON(stats_managers=self._stats.values(), outdir=outdir)
 
-    def _SaveSummaryJSON(self, stats_managers=[], outdir=None):
+    def _SaveSummaryJSON(self, stats_managers=None, outdir=None):
         """Save summary of the PowerMeasurement run as JSON.
 
         Args:
@@ -1001,6 +1003,8 @@ class PowerMeasurement:
         Raises:
           PowerMeasurementError: if called before measurement processing is done
         """
+        if stats_managers is None:
+            stats_managers = []
         outdir = outdir if outdir else self._outdir
         json_outfiles = [stat.SaveSummaryJSON(outdir) for stat in stats_managers]
         self._logger.info("Storing .md summaries at:\n%s", "\n".join(json_outfiles))

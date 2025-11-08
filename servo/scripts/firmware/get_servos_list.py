@@ -41,11 +41,11 @@ def join_helper(to_join: list) -> str:
 
 
 def define_query(
-    servo_type_raws: list = ["%"],
-    pools: list = ["%"],
-    states: list = ["%"],
-    servo_states: list = ["%"],
-    servo_fw_channels: list = ["%"],
+    servo_type_raws: list = None,
+    pools: list = None,
+    states: list = None,
+    servo_states: list = None,
+    servo_fw_channels: list = None,
 ) -> str:
     """
     Constructs a SQL query to fetch DUT information from the UFS based on provided

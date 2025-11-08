@@ -27,3 +27,6 @@ servo/sversion.py
 
 # checksum for script bootstrap
 scripts/checksum
+
+#banned words local cache
+blocked_terms.txt
