@@ -1,8 +1,0 @@
-<root>
-  <include>
-    <name>servo_gru_overlay.xml</name>
-  </include>
-  <include>
-    <name>warm_reset_reconf.xml</name>
-  </include>
-</root>
