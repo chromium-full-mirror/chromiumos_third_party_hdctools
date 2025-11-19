@@ -305,6 +305,7 @@ RUN apt-get update --no-install-recommends \
     python3-requests \
     python3-serial \
     python3-usb \
+    sudo \
     usbutils \
     wget \
     && rm -rf /var/lib/apt/lists/* \
