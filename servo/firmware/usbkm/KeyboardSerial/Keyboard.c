@@ -142,7 +142,7 @@ static uint8_t      KEYS[] = {
         0, //'<mouse_right>': 67,
         0, //'<mouse_up>': 68,
         0, //'<mouse_down>': 69,
-        0, //'<lwin>': 70,
+        HID_KEYBOARD_SC_LEFT_GUI, //'<lwin>': 70,
         0, //'<rwin>': 71,
         0, //'<win apl>': 72,
         0, //'<mouse_lbtn_press>': 73,
