@@ -7,11 +7,11 @@ import logging
 from servo.data.drv import pty_driver
 
 
-class uartError(pty_driver.ptyError):
+class uartError(pty_driver.PtyError):
     """Error class for uart class."""
 
 
-class uart(pty_driver.ptyDriver):
+class uart(pty_driver.PtyDriver):
     """Object to access type=uart controls.
 
     Note, instances of this object get dispatched via base class,

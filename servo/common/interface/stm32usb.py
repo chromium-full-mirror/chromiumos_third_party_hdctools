@@ -150,14 +150,14 @@ class Susb:
         # Find the stm32.
         devid = self.get_device_info()
         try:
-            dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
+            dev = usb_hierarchy.Hierarchy.get_usb_device(*devid)
         except (ValueError, usb.core.USBTimeoutError):
             self._logger.debug(
                 "device not found on first attempt. Potentially debouncing."
             )
             time.sleep(self.DEV_DEBOUNCE_S)
             # The device should be found now. If not, let the error go through.
-            dev = usb_hierarchy.Hierarchy.GetUsbDevice(*devid)
+            dev = usb_hierarchy.Hierarchy.get_usb_device(*devid)
         if not dev:
             raise usb_hierarchy.HierarchyError(
                 (

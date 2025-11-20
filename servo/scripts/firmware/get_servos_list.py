@@ -110,17 +110,19 @@ def define_query(
                 f"{servo_fw_channel} is not a supported servo fw channels."
             )
 
-    # Construct the SQL query with filter conditions
-    FILTER = """EXISTS (SELECT 1 FROM UNNEST([%s]) AS pattern WHERE %s LIKE pattern)"""
+    # Construct the SQL query with sql_filter conditions
+    sql_filter = (
+        """EXISTS (SELECT 1 FROM UNNEST([%s]) AS pattern WHERE %s LIKE pattern)"""
+    )
     query = f"""
         SELECT DISTINCT hostname, board, model, state, servo_state
         FROM chrome_fleet_analytics.cros_fleet.latest_dut_info
         WHERE RIGHT(board, 10) != 'labstation'
-        AND {FILTER % (join_helper(tmp_servo_type_raws), "servo_type_raw")}
-        AND {FILTER % (join_helper(pools), "pool")}
-        AND {FILTER % (join_helper(states), "state")}
-        AND {FILTER % (join_helper(servo_fw_channels), "servo_fw_channel")}
-        AND {FILTER % (join_helper(servo_states), "servo_state")}
+        AND {sql_filter % (join_helper(tmp_servo_type_raws), "servo_type_raw")}
+        AND {sql_filter % (join_helper(pools), "pool")}
+        AND {sql_filter % (join_helper(states), "state")}
+        AND {sql_filter % (join_helper(servo_fw_channels), "servo_fw_channel")}
+        AND {sql_filter % (join_helper(servo_states), "servo_state")}
         AND pool NOT LIKE "%satlab%"
         AND hostname NOT like "%satlab%"
         AND servo_hostname NOT IN (
@@ -195,15 +197,15 @@ def group_all_hostnames_by_model(
                             are lists of DUT details for that model.
     """
 
-    MODEL = 2  # Index of the model in the inner list
+    model = 2  # Index of the model in the inner list
     hostnames_by_model = {}
 
     for hostname_details in hostnames_list:
         # check if we already have key and list for specific model
-        if hostname_details[MODEL] not in hostnames_by_model:
-            hostnames_by_model[hostname_details[MODEL]] = []
+        if hostname_details[model] not in hostnames_by_model:
+            hostnames_by_model[hostname_details[model]] = []
 
-        hostnames_by_model[hostname_details[MODEL]].append(hostname_details)
+        hostnames_by_model[hostname_details[model]].append(hostname_details)
 
     return hostnames_by_model
 

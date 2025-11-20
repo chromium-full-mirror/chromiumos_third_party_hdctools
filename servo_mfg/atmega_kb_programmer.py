@@ -153,7 +153,7 @@ class AtmegaKBEmulatorProgrammer(programmer.Programmer):
         Read ioexpander output register to determine current value of atmega_reset.
 
         Args:
-          pty: object, ptyDriver instance talking to servo UART
+          pty: object, PtyDriver instance talking to servo UART
 
         Returns:
           int, i2c read result from RST register.
@@ -171,7 +171,7 @@ class AtmegaKBEmulatorProgrammer(programmer.Programmer):
         """Write to gpio expander to set atmega reset signal.
 
         Args:
-          pty: object, ptyDriver instance talking to servo UART
+          pty: object, PtyDriver instance talking to servo UART
           wr_val: int, value to write to the gpio. 1 to turn on reset, 0 to turn off
         """
         # pylint: disable=protected-access
@@ -189,7 +189,7 @@ class AtmegaKBEmulatorProgrammer(programmer.Programmer):
         the signal once so it can reboot in the right mode.
 
         Args:
-          pty: object, ptyDriver instance talking to servo UART
+          pty: object, PtyDriver instance talking to servo UART
           on: whether DFU should be on or off
         """
         # pylint: disable=protected-access
@@ -201,7 +201,7 @@ class AtmegaKBEmulatorProgrammer(programmer.Programmer):
         """Toggle the reset pin on the atmega to |on|.
 
         Args:
-          pty: object, ptyDriver instance talking to servo UART
+          pty: object, PtyDriver instance talking to servo UART
           on: whether reset should be on or off
 
         Raises:

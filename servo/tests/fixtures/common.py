@@ -24,8 +24,8 @@ device_types = [
 device_details = {}
 for _device_type in device_types:
     device_details[_device_type] = {
-        "idVendor": tmpl.GetVID(_device_type),
-        "idProduct": tmpl.GetPID(_device_type),
+        "idVendor": tmpl.get_vid(_device_type),
+        "idProduct": tmpl.get_pid(_device_type),
     }
 del _device_type
 

@@ -104,7 +104,7 @@ start-servod
 
     [--force_update]
         Force checking if there is an update to docker image. By default, the check
-        is done only once a day for release channel, and everytime for other ones.
+        is done only once a day for release channel, and every time for other ones.
 
     [--token_db token_db_path]
         Path to tokens database on the host machine. Path specified will be mounted
@@ -138,8 +138,8 @@ def setup():
     """
     try:
         return docker.from_env()
-    except docker.errors.DockerException:
-        raise StartServodException(error_message)
+    except docker.errors.DockerException as e:
+        raise StartServodException(error_message) from e
 
 
 def needs_update_check():

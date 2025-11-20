@@ -86,10 +86,10 @@ class Susb:
         else:
             try:
                 dev = dev_list[0]
-            except StopIteration:
+            except StopIteration as e:
                 raise SusbError(
                     "USB device %04x:%04x not found" % (self._vendor, self._product)
-                )
+                ) from e
 
         # If we can't set configuration, it's already been set.
         try:

@@ -35,12 +35,12 @@ _interfaces = [
 ]
 
 # Generate a look-up table for these interface names to factory method.
-_interface_map = {i.name(): i.Build for i in _interfaces}
+_interface_map = {i.name(): i.build for i in _interfaces}
 
 
 # General factory function
-def Build(name, **kwargs):
-    """Build an interface |name| given the kwargs."""
+def build(name, **kwargs):
+    """build an interface |name| given the kwargs."""
     factory = _interface_map.get(name, None)
     if not factory:
         c.build_logger.error("No template class found for interface named %s", name)

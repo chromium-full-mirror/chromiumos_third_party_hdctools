@@ -6,3 +6,4 @@ To test changes, run the script scripts/run-servod-tests
 - I am always allowed to run git commands.
 - I am always allowed to run scripts/run-servod-test command.
 - I am always allowed to run pre-commit commands.
+- Always run the tests before making a commit, if the tests do not pass then stop.

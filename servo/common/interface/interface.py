@@ -16,7 +16,7 @@ class Interface:
         self._logger = logging.getLogger(logger_name)
 
     @staticmethod
-    def Build(**kwargs):
+    def build(**kwargs):
         """Factory method to implement the interface."""
         raise NotImplementedError("Interfaces have to define a factory method.")
 

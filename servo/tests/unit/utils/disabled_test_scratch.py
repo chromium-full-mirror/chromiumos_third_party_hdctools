@@ -38,7 +38,7 @@ class TestScratch(unittest.TestCase):
         shutil.rmtree(self._scratchdir)
         super(TestScratch, self).tearDown()
 
-    def test_Init(self):
+    def test_init(self):
         """Verify scratch creates the directory if it doesn't exist."""
         new_scratchdir = os.path.join(self._scratchdir, "testdir")
         assert not os.path.exists(new_scratchdir)
@@ -47,9 +47,11 @@ class TestScratch(unittest.TestCase):
         assert os.path.exists(new_scratchdir)
         os.rmdir(new_scratchdir)
 
-    def test_AddEntry(self):
-        """AddEntry creates & saves entry, and makes symlinks for each serial."""
-        self._scratch.AddEntry(port=self._dport, serials=self._dserials, pid=self._dpid)
+    def test_add_entry(self):
+        """add_entry creates & saves entry, and makes symlinks for each serial."""
+        self._scratch.add_entry(
+            port=self._dport, serials=self._dserials, pid=self._dpid
+        )
         # Ensure port entry created
         port_entry = os.path.join(self._scratchdir, str(self._dport))
         assert os.path.exists(port_entry)
@@ -72,38 +74,40 @@ class TestScratch(unittest.TestCase):
             "active": False,
         }
 
-    def test_AddEntryNonNumericalPort(self):
-        """Verify AddEntry raises ScratchError when port can't be cast to int."""
+    def test_add_entry_non_numerical_port(self):
+        """Verify add_entry raises ScratchError when port can't be cast to int."""
         port = "hello"
         with self.assertRaisesRegex(
             scratch.ScratchError, "Entry arguments malformed. ValueError"
         ):
-            self._scratch.AddEntry(port, self._dserials, self._dpid)
+            self._scratch.add_entry(port, self._dserials, self._dpid)
 
-    def test_AddEntryNonNumericalPID(self):
-        """Verify AddEntry raises ScratchError when pid can't be cast to int."""
+    def test_add_entry_non_numerical_pid(self):
+        """Verify add_entry raises ScratchError when pid can't be cast to int."""
         pid = "hello"
         with self.assertRaisesRegex(
             scratch.ScratchError, "Entry arguments malformed. ValueError"
         ):
-            self._scratch.AddEntry(self._dport, self._dserials, pid)
+            self._scratch.add_entry(self._dport, self._dserials, pid)
 
-    def test_AddEntryNonListlikeSerials(self):
-        """Verify AddEntry raises ScratchError when serials is not iterable."""
+    def test_add_entry_non_listlike_serials(self):
+        """Verify add_entry raises ScratchError when serials is not iterable."""
         serials = 17
         with self.assertRaisesRegex(
             scratch.ScratchError, "Entry arguments malformed. TypeError"
         ):
-            self._scratch.AddEntry(self._dport, serials, self._dpid)
+            self._scratch.add_entry(self._dport, serials, self._dpid)
 
-    def test_AddEntryTwice(self):
-        """Verify AddEntry raises ScratchError when adding same entry twice."""
-        self._scratch.AddEntry(port=self._dport, serials=self._dserials, pid=self._dpid)
+    def test_add_entry_twice(self):
+        """Verify add_entry raises ScratchError when adding same entry twice."""
+        self._scratch.add_entry(
+            port=self._dport, serials=self._dserials, pid=self._dpid
+        )
         # Ensure error when adding the same entry twice
         with self.assertRaisesRegex(
             scratch.ScratchError, "Adding entry for port already in use"
         ), self.assertLogs(level="ERROR") as log:
-            self._scratch.AddEntry(
+            self._scratch.add_entry(
                 port=self._dport, serials=self._dserials, pid=self._dpid
             )
             self.assertIn("Adding entry for port already in use", log.output[0])
@@ -127,8 +131,8 @@ class TestScratch(unittest.TestCase):
             files_added.append(linkfn)
         return files_added
 
-    def test_RemoveEntry(self):
-        """Verify RemoveEntry removes an entry fully (file + symlinks)."""
+    def test_remove_entry(self):
+        """Verify remove_entry removes an entry fully (file + symlinks)."""
         scratchdir = self._scratchdir
         port = "9809"
         serials = ["8000", "237300", "lolaserial"]
@@ -139,7 +143,7 @@ class TestScratch(unittest.TestCase):
         # Ensure there's a file for each serial, and one for the port
         scratch_files = set(os.path.join(scratchdir, f) for f in os.listdir(scratchdir))
         assert scratch_files == (entry_files | entry2_files)
-        self._scratch.RemoveEntry(port)
+        self._scratch.remove_entry(port)
         # Ensure all files are removed
         scratch_files = set(os.path.join(scratchdir, f) for f in os.listdir(scratchdir))
         assert scratch_files == entry_files
@@ -148,30 +152,30 @@ class TestScratch(unittest.TestCase):
         for serial in serials:
             assert not os.path.exists(os.path.join(self._scratchdir, serial))
 
-    def test_RemoveEntryBadIdentifier(self):
-        """Verify RemoveEntry quietly ignores removing an unknown identifier."""
+    def test_remove_entry_bad_identifier(self):
+        """Verify remove_entry quietly ignores removing an unknown identifier."""
         self._manually_add_entry()
-        self._scratch.RemoveEntry("badid")
+        self._scratch.remove_entry("badid")
 
-    def test_MarkActive(self):
+    def test_mark_active(self):
         """Marking active marks the entry as active."""
         self._manually_add_entry()
-        self._scratch.MarkActive(self._dport)
-        entry_from_file = self._scratch.FindById(self._dport)
+        self._scratch.mark_active(self._dport)
+        entry_from_file = self._scratch.find_by_id(self._dport)
         assert entry_from_file["active"] is True
 
-    def test_MarkActiveSerial(self):
+    def test_mark_active_serial(self):
         """Marking active marks the entry as active accessed through serial."""
         # Take first serial in the default serial list as identifier.
         serial = self._dserials[0]
         self._manually_add_entry()
-        self._scratch.MarkActive(serial)
+        self._scratch.mark_active(serial)
         # Still access the entry through the port as we want to make sure that
         # the latch retrieved the right entry (and not a parallel serial entry.
-        entry_from_file = self._scratch.FindById(self._dport)
+        entry_from_file = self._scratch.find_by_id(self._dport)
         assert entry_from_file["active"] is True
 
-    def test_MarkActiveAlreadyActive(self):
+    def test_mark_active_already_active(self):
         """Marking already active entry active is a noop."""
         entry = {
             "pid": self._dpid,
@@ -180,34 +184,34 @@ class TestScratch(unittest.TestCase):
             "active": True,
         }
         self._manually_add_entry(entry)
-        self._scratch.MarkActive(self._dport)
-        entry_from_file = self._scratch.FindById(self._dport)
+        self._scratch.mark_active(self._dport)
+        entry_from_file = self._scratch.find_by_id(self._dport)
         assert entry_from_file["active"] is True
 
-    def test_MarkActiveEntryUnavailable(self):
+    def test_mark_active_entry_unavailable(self):
         """Marking active an unknown entry fails."""
         self._manually_add_entry()
         with self.assertRaisesRegex(
             scratch.ScratchError, "No servod scratch entry found under id"
         ):
             # Adjust the default port to ensure that no entry can be found.
-            self._scratch.MarkActive(self._dport + 10)
+            self._scratch.mark_active(self._dport + 10)
 
-    def test_FindByIdPort(self):
-        """Verify FindById works using ports."""
+    def test_find_by_id_port(self):
+        """Verify find_by_id works using ports."""
         self._manually_add_entry()
-        entry_from_file = self._scratch.FindById(self._dport)
+        entry_from_file = self._scratch.find_by_id(self._dport)
         assert entry_from_file == self._entry
 
-    def test_FindByIdSerial(self):
-        """Verify FindById works using serials."""
+    def test_find_by_id_serial(self):
+        """Verify find_by_id works using serials."""
         self._manually_add_entry()
         for serial in self._dserials:
-            entry_from_file = self._scratch.FindById(serial)
+            entry_from_file = self._scratch.find_by_id(serial)
             assert entry_from_file == self._entry
 
-    def test_FindByIdBadJSON(self):
-        """Verify FindById raises ScratchError when id points to invalid JSON."""
+    def test_find_by_id_bad_json(self):
+        """Verify find_by_id raises ScratchError when id points to invalid JSON."""
         identifier = "nonsense"
         entryfn = os.path.join(self._scratchdir, identifier)
         with open(entryfn, "w", encoding="utf-8") as entryf:
@@ -216,25 +220,25 @@ class TestScratch(unittest.TestCase):
         with self.assertRaisesRegex(
             scratch.ScratchError, "had invalid json formatting. Removed."
         ):
-            self._scratch.FindById(identifier)
-        # FindById removes invalid json files
+            self._scratch.find_by_id(identifier)
+        # find_by_id removes invalid json files
         assert not os.path.exists(entryfn)
 
-    def test_FindByIdBadId(self):
-        """Verify FindById raises ScratchError when using an unknown id."""
+    def test_find_by_id_bad_id(self):
+        """Verify find_by_id raises ScratchError when using an unknown id."""
         self._manually_add_entry()
         with self.assertRaisesRegex(
             scratch.ScratchError, "No servod scratch entry found under id"
         ):
-            self._scratch.FindById("badid")
+            self._scratch.find_by_id("badid")
 
-    def test_GetAllEntriesEmpty(self):
-        """Verify GetAllEntries() doesn't break when there are no entries."""
+    def test_get_all_entries_empty(self):
+        """Verify get_all_entries() doesn't break when there are no entries."""
         # pylint: disable=use-implicit-booleaness-not-comparison
-        assert self._scratch.GetAllEntries() == []
+        assert self._scratch.get_all_entries() == []
 
-    def test_GetAllEntries(self):
-        """Verify GetAllEntries() retrieves all entries."""
+    def test_get_all_entries(self):
+        """Verify get_all_entries() retrieves all entries."""
         # Dictionary to hold entries added
         mentries = collections.defaultdict(lambda: {"active": False})
         mentries[9999].update({"port": 9999, "serials": ["1999"], "pid": 1234})
@@ -243,12 +247,12 @@ class TestScratch(unittest.TestCase):
         self._manually_add_entry(mentries[9999])
         self._manually_add_entry(mentries[9998])
         self._manually_add_entry(mentries[9997])
-        entries = self._scratch.GetAllEntries()
+        entries = self._scratch.get_all_entries()
         assert len(entries) == len(mentries)
         for entry in entries:
             assert mentries[entry["port"]] == entry
 
-    def test_SanitizeNothingToDo(self):
+    def test_sanitize_nothing_to_do(self):
         """Verify Sanitize does not remove active scratch entry."""
         self._manually_add_entry()
         testsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -261,7 +265,7 @@ class TestScratch(unittest.TestCase):
         assert prevfiles == postfiles
         testsock.close()
 
-    def test_SanitizeStaleEntry(self):
+    def test_sanitize_stale_entry(self):
         """Verify that stale entries in servoscratch are removed."""
         self._manually_add_entry()
         with self.assertLogs(level="WARNING") as log:
@@ -275,7 +279,7 @@ class TestScratch(unittest.TestCase):
         # this a stale entry and remove it.
         assert not os.listdir(self._scratchdir)
 
-    def test_SanitizeMultipleStaleEntry(self):
+    def test_sanitize_multiple_stale_entry(self):
         """Verify that stale entries in servoscratch are removed."""
         self._manually_add_entry()
         entry2 = {

@@ -16,12 +16,12 @@ import pexpect
 from servo.data.drv import pty_driver
 
 
-class apError(pty_driver.ptyError):
+class apError(pty_driver.PtyError):
     """Exception class for AP errors."""
 
 
-class ap(pty_driver.ptyDriver):
-    """Wrapper class around ptyDriver to handle communication
+class ap(pty_driver.PtyDriver):
+    """Wrapper class around PtyDriver to handle communication
     with the AP console.
     """
 
@@ -71,7 +71,7 @@ class ap(pty_driver.ptyDriver):
                 [""], [r"localhost\x1b\[01;34m\s" r"[^\s/]+\s[#$]|" r"localhost login:"]
             )
             return 0 if "localhost login:" in match[0] else 1
-        except pty_driver.ptyError:
+        except pty_driver.PtyError:
             return 0
 
     def _Set_login(self, value):

@@ -80,7 +80,7 @@ VERSION = "%(prog)s " + sversion_util.setuptools_version()
 SVERSION = "%(prog)s " + sversion_util.extended_version()
 
 
-def _DefaultRcFile():
+def _default_rc_file():
     tilde = "~"
     # cros_sdk uses sudo from root to non-root. Avoid SUDO_USER in that situation.
     if int(os.environ.get("SUDO_UID", "0")):
@@ -92,16 +92,16 @@ def _DefaultRcFile():
     return os.path.join(homedir, ".servodrc")
 
 
-DEFAULT_RC_FILE = _DefaultRcFile()
+DEFAULT_RC_FILE = _default_rc_file()
 
 
-def ArgMarkedAsUserSupplied(namespace, arg_name):
+def arg_marked_as_user_supplied(namespace, arg_name):
     """Query whether an argument that uses StoreAndMarkAction is user supplied."""
     marker_name = "%s_%s" % (arg_name, ARG_BY_USER_MARKER)
     return hasattr(namespace, marker_name)
 
 
-def GetServodEnvVars():
+def get_servod_env_vars():
     """Get the name and value of each environment variable used in option parsing.
 
     This is intended as a helper for log messages.
@@ -239,10 +239,10 @@ class BaseServodParser(_BaseServodParser):
             help="hostname of the servod server.",
         )
         if add_port:
-            BaseServodParser.AddRCEnabledPortArg(self)
+            BaseServodParser.add_rc_enabled_port_arg(self)
 
     @staticmethod
-    def AddRCEnabledPortArg(parser, port_flags=["-p", "--port"]):
+    def add_rc_enabled_port_arg(parser, port_flags=["-p", "--port"]):
         """Add the port to the argparser.
 
         Set the default to environment variable ENV_PORT_NAME if defined
@@ -295,10 +295,10 @@ class ServodRCParser(_BaseServodParser):
             type=str,
             help="device serialname stored in eeprom.",
         )
-        ServodRCParser.AddRCEnabledNameArg(self._id_group)
+        ServodRCParser.add_rc_enabled_name_arg(self._id_group)
 
     @staticmethod
-    def AddRCEnabledNameArg(parser, name_flags=["-n", "--name"]):
+    def add_rc_enabled_name_arg(parser, name_flags=["-n", "--name"]):
         """Add the name to the argparser.
 
         Set the default to environment variable ENV_VAR_NAME if defined
@@ -326,7 +326,7 @@ class ServodRCParser(_BaseServodParser):
         )
 
     @staticmethod
-    def PostProcessRCElements(options, rcpath=None, logger=logging):
+    def post_process_rc_elements(options, rcpath=None, logger=logging):
         """Handle 'name' in |options| by substituting it with the intended config.
 
         This replaces the name option in the options with the intended serialname
@@ -350,7 +350,7 @@ class ServodRCParser(_BaseServodParser):
         """
         if not rcpath:
             rcpath = options.rcfile
-        rcd = ServodRCParser.ParseRC(rcpath, logger=logger)
+        rcd = ServodRCParser.parse_rc(rcpath, logger=logger)
         rc = None
         if not options.serialname and options.name:
             # |name| can be set through the commandline or through an environment
@@ -419,11 +419,11 @@ class ServodRCParser(_BaseServodParser):
         opts, xtra = _BaseServodParser.parse_known_args(
             self, args=args, namespace=namespace
         )
-        opts = ServodRCParser.PostProcessRCElements(opts, logger=self._logger)
+        opts = ServodRCParser.post_process_rc_elements(opts, logger=self._logger)
         return (opts, xtra)
 
     @staticmethod
-    def ParseRC(rc_file, logger=logging):
+    def parse_rc(rc_file, logger=logging):
         """Parse servodrc configuration file.
 
         The format of the configuration file is described above in comments to
@@ -502,9 +502,9 @@ class ServodClientParser(ServodRCParser):
         super(ServodClientParser, self).__init__(**kwargs)
         # Add --port to the |_id_group| to ensure exclusion with name and
         # serialname.
-        BaseServodParser.AddRCEnabledPortArg(self._id_group)
+        BaseServodParser.add_rc_enabled_port_arg(self._id_group)
 
-    def _MapSNToPort(self, opts):
+    def _map_sn_to_port(self, opts):
         """Helper to map the serialname in opts to the port its running on.
 
         Args:
@@ -522,7 +522,7 @@ class ServodClientParser(ServodRCParser):
         # |self._scratchdir| is None.
         servo_scratch = scratch.Scratch(self._scratchdir)
         try:
-            entry = servo_scratch.FindById(opts.serialname)
+            entry = servo_scratch.find_by_id(opts.serialname)
         except scratch.ScratchError:
             self.error(
                 "No servod instance running for device with serialname: %r"
@@ -554,10 +554,10 @@ class ServodClientParser(ServodRCParser):
         opts, xtra = _BaseServodParser.parse_known_args(
             self, args=args, namespace=namespace
         )
-        opts = ServodRCParser.PostProcessRCElements(opts, logger=self._logger)
+        opts = ServodRCParser.post_process_rc_elements(opts, logger=self._logger)
         if opts.serialname:
             # If serialname is set, this means that either serialname or name was used
             # to find it, and therefore port cannot have been set by the user due to
             # mutual exclusion.
-            opts = self._MapSNToPort(opts)
+            opts = self._map_sn_to_port(opts)
         return (opts, xtra)

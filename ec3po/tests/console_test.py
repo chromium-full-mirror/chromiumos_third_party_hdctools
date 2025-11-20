@@ -40,7 +40,7 @@ class OutputStream:
     """A class that has methods which return common console output."""
 
     @staticmethod
-    def MoveCursorLeft(count):
+    def move_cursor_left(count):
         """Produces what would be printed to the console if the cursor moved left.
 
         Args:
@@ -55,7 +55,7 @@ class OutputStream:
         return string
 
     @staticmethod
-    def MoveCursorRight(count):
+    def move_cursor_right(count):
         """Produces what would be printed to the console if the cursor moved right.
 
         Args:
@@ -72,14 +72,14 @@ class OutputStream:
 
 BACKSPACE_STRING = b""
 # Move cursor left 1 column.
-BACKSPACE_STRING += OutputStream.MoveCursorLeft(1)
+BACKSPACE_STRING += OutputStream.move_cursor_left(1)
 # Write a space.
 BACKSPACE_STRING += b" "
 # Move cursor left 1 column.
-BACKSPACE_STRING += OutputStream.MoveCursorLeft(1)
+BACKSPACE_STRING += OutputStream.move_cursor_left(1)
 
 
-def CheckConsoleOutput(test_case, exp_console_out):
+def check_console_output(test_case, exp_console_out):
     """Verify what was sent out the console matches what we expect.
 
     Args:
@@ -93,7 +93,7 @@ def CheckConsoleOutput(test_case, exp_console_out):
     test_case.assertEqual(exp_console_out, console_out)
 
 
-def CheckInputBuffer(test_case, exp_input_buffer):
+def check_input_buffer(test_case, exp_input_buffer):
     """Verify that the input buffer contains what we expect.
 
     Args:
@@ -115,7 +115,7 @@ def CheckInputBuffer(test_case, exp_input_buffer):
     )
 
 
-def CheckInputBufferPosition(test_case, exp_pos):
+def check_input_buffer_position(test_case, exp_pos):
     """Verify the input buffer position.
 
     Args:
@@ -134,7 +134,7 @@ def CheckInputBufferPosition(test_case, exp_pos):
     )
 
 
-def CheckHistoryBuffer(test_case, exp_history):
+def check_history_buffer(test_case, exp_history):
     """Verify that the items in the history buffer are what we expect.
 
     Args:
@@ -200,37 +200,37 @@ class TestConsoleEditingMethods(unittest.TestCase):
         # the console believes that the EC it's communicating with is NOT enhanced
         # which is why we have to override it here.
         self.console.enhanced_ec = True
-        self.console.CheckForEnhancedECImage = mock.MagicMock(return_value=True)
+        self.console.check_for_enhanced_ec_image = mock.MagicMock(return_value=True)
 
-    def test_EnteringChars(self):
+    def test_entering_chars(self):
         """Verify that characters are echoed onto the console."""
         test_str = b"abc"
         input_stream = list(test_str)
 
         # Send the characters in.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Check the input position.
         exp_pos = len(test_str)
-        CheckInputBufferPosition(self, exp_pos)
+        check_input_buffer_position(self, exp_pos)
 
         # Verify that the input buffer is correct.
         expected_buffer = test_str
-        CheckInputBuffer(self, expected_buffer)
+        check_input_buffer(self, expected_buffer)
 
         # Check console output
         exp_console_out = test_str
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_EnteringDeletingMoreCharsThanEntered(self):
+    def test_entering_deleting_more_chars_than_entered(self):
         """Verify that we can press backspace more than we have entered chars."""
         test_str = b"spamspam"
         input_stream = list(test_str)
 
         # Send the characters in.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Now backspace 1 more than what we sent.
         input_stream = []
@@ -239,10 +239,10 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send that sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # First, verify that input buffer position is 0.
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer_position(self, 0)
 
         # Next, examine the output stream for the correct sequence.
         exp_console_out = test_str
@@ -250,9 +250,9 @@ class TestConsoleEditingMethods(unittest.TestCase):
             exp_console_out += BACKSPACE_STRING
 
         # Now, verify that we got what we expected.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_EnteringMoreThanCharLimit(self):
+    def test_entering_more_than_char_limit(self):
         """Verify that we drop characters when the line is too long."""
         test_str = self.console.line_limit * b"o"  # All allowed.
         test_str += 5 * b"x"  # All should be dropped.
@@ -260,22 +260,22 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the characters in.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # First, we expect that input buffer position should be equal to the line
         # limit.
         exp_pos = self.console.line_limit
-        CheckInputBufferPosition(self, exp_pos)
+        check_input_buffer_position(self, exp_pos)
 
         # The input buffer should only hold until the line limit.
         exp_buffer = test_str[0 : self.console.line_limit]
-        CheckInputBuffer(self, exp_buffer)
+        check_input_buffer(self, exp_buffer)
 
         # Lastly, check that the extra characters are not printed.
         exp_console_out = exp_buffer
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_ValidKeysOnLongLine(self):
+    def test_valid_keys_on_long_line(self):
         """Verify that we can still press valid keys if the line is too long."""
         # Fill the line.
         test_str = self.console.line_limit * b"o"
@@ -301,19 +301,19 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Left arrow key.
         input_stream.extend(Keys.LEFT_ARROW)
-        exp_console_out += OutputStream.MoveCursorLeft(1)
+        exp_console_out += OutputStream.move_cursor_left(1)
 
         # Right arrow key.
         input_stream.extend(Keys.RIGHT_ARROW)
-        exp_console_out += OutputStream.MoveCursorRight(1)
+        exp_console_out += OutputStream.move_cursor_right(1)
 
         # CTRL+B
         input_stream.append(console.ControlKey.CTRL_B)
-        exp_console_out += OutputStream.MoveCursorLeft(1)
+        exp_console_out += OutputStream.move_cursor_left(1)
 
         # CTRL+F
         input_stream.append(console.ControlKey.CTRL_F)
-        exp_console_out += OutputStream.MoveCursorRight(1)
+        exp_console_out += OutputStream.move_cursor_right(1)
 
         # Let's press enter now so we can test up and down.
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
@@ -343,59 +343,59 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Press the Home key to jump to the beginning of the line.
         input_stream.extend(Keys.HOME)
-        exp_console_out += OutputStream.MoveCursorLeft(self.console.line_limit)
+        exp_console_out += OutputStream.move_cursor_left(self.console.line_limit)
 
         # Press the End key to jump to the end of the line.
         input_stream.extend(Keys.END)
-        exp_console_out += OutputStream.MoveCursorRight(self.console.line_limit)
+        exp_console_out += OutputStream.move_cursor_right(self.console.line_limit)
 
         # Press CTRL+A to jump to the beginning of the line.
         input_stream.append(console.ControlKey.CTRL_A)
-        exp_console_out += OutputStream.MoveCursorLeft(self.console.line_limit)
+        exp_console_out += OutputStream.move_cursor_left(self.console.line_limit)
 
         # Press CTRL+E to jump to the end of the line.
         input_stream.extend(Keys.END)
-        exp_console_out += OutputStream.MoveCursorRight(self.console.line_limit)
+        exp_console_out += OutputStream.move_cursor_right(self.console.line_limit)
 
         # Move left one column so we can delete a character.
         input_stream.extend(Keys.LEFT_ARROW)
-        exp_console_out += OutputStream.MoveCursorLeft(1)
+        exp_console_out += OutputStream.move_cursor_left(1)
 
         # Press the delete key.
         input_stream.extend(Keys.DEL)
         # This should look like a space, and then move cursor left 1 column since
         # we're at the end of line.
-        exp_console_out += b" " + OutputStream.MoveCursorLeft(1)
+        exp_console_out += b" " + OutputStream.move_cursor_left(1)
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify everything happened correctly.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_BackspaceOnEmptyLine(self):
+    def test_backspace_on_empty_line(self):
         """Verify that we can backspace on an empty line with no bad effects."""
         # Send a single backspace.
         test_str = [console.ControlKey.BACKSPACE]
 
         # Send the characters in.
         for byte in test_str:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Check the input position.
         exp_pos = 0
-        CheckInputBufferPosition(self, exp_pos)
+        check_input_buffer_position(self, exp_pos)
 
         # Check that buffer is empty.
         exp_input_buffer = b""
-        CheckInputBuffer(self, exp_input_buffer)
+        check_input_buffer(self, exp_input_buffer)
 
         # Check that the console output is empty.
         exp_console_out = b""
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_BackspaceWithinLine(self):
+    def test_backspace_within_line(self):
         """Verify that we shift the chars over when backspacing within a line."""
         # Misspell 'help'
         test_str = b"heelp"
@@ -408,32 +408,32 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify the input buffer
         exp_input_buffer = b"help"
-        CheckInputBuffer(self, exp_input_buffer)
+        check_input_buffer(self, exp_input_buffer)
 
         # Verify the input buffer position. It should be at 2 (cursor over the 'l')
-        CheckInputBufferPosition(self, 2)
+        check_input_buffer_position(self, 2)
 
         # We expect the console output to be the test string, with two moves to the
         # left, another move left, and then the rest of the line followed by a
         # space.
         exp_console_out = test_str
-        exp_console_out += 2 * OutputStream.MoveCursorLeft(1)
+        exp_console_out += 2 * OutputStream.move_cursor_left(1)
 
         # Move cursor left 1 column.
-        exp_console_out += OutputStream.MoveCursorLeft(1)
+        exp_console_out += OutputStream.move_cursor_left(1)
         # Rest of the line and a space. (test_str in this case)
         exp_console_out += b"lp "
         # Reset the cursor 2 + 1 to the left.
-        exp_console_out += OutputStream.MoveCursorLeft(3)
+        exp_console_out += OutputStream.move_cursor_left(3)
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_JumpToBeginningOfLineViaCtrlA(self):
+    def test_jump_to_beginning_of_line_via_ctrl_a(self):
         """Verify that we can jump to the beginning of a line with Ctrl+A."""
         # Enter some chars and press CTRL+A
         test_str = b"abc"
@@ -442,22 +442,22 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the characters in.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # We expect to see our test string followed by a move cursor left.
         exp_console_out = test_str
-        exp_console_out += OutputStream.MoveCursorLeft(len(test_str))
+        exp_console_out += OutputStream.move_cursor_left(len(test_str))
 
         # Check to see what was printed on the console.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
         # Check that the input buffer position is now 0.
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer_position(self, 0)
 
         # Check input buffer still contains our test string.
-        CheckInputBuffer(self, test_str)
+        check_input_buffer(self, test_str)
 
-    def test_JumpToBeginningOfLineViaHomeKey(self):
+    def test_jump_to_beginning_of_line_via_home_key(self):
         """Jump to beginning of line via HOME key."""
         test_str = b"version"
         input_stream = list(test_str)
@@ -465,20 +465,20 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send out the stream.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # First, verify that input buffer position is now 0.
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer_position(self, 0)
 
         # Next, verify that the input buffer did not change.
-        CheckInputBuffer(self, test_str)
+        check_input_buffer(self, test_str)
 
         # Lastly, check that the cursor moved correctly.
         exp_console_out = test_str
-        exp_console_out += OutputStream.MoveCursorLeft(len(test_str))
-        CheckConsoleOutput(self, exp_console_out)
+        exp_console_out += OutputStream.move_cursor_left(len(test_str))
+        check_console_output(self, exp_console_out)
 
-    def test_JumpToEndOfLineViaEndKey(self):
+    def test_jump_to_end_of_line_via_end_key(self):
         """Jump to the end of the line using the END key."""
         test_str = b"version"
         input_stream = list(test_str)
@@ -488,23 +488,23 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send out the stream.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the input buffer position is correct.  This should be at the
         # end of the test string.
-        CheckInputBufferPosition(self, len(test_str))
+        check_input_buffer_position(self, len(test_str))
 
         # The expected output should be the test string, followed by a jump to the
         # beginning of the line, and lastly a jump to the end of the line.
         exp_console_out = test_str
-        exp_console_out += OutputStream.MoveCursorLeft(len(test_str))
+        exp_console_out += OutputStream.move_cursor_left(len(test_str))
         # Now the jump back to the end of the line.
-        exp_console_out += OutputStream.MoveCursorRight(len(test_str))
+        exp_console_out += OutputStream.move_cursor_right(len(test_str))
 
         # Verify console output stream.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_JumpToEndOfLineViaCtrlE(self):
+    def test_jump_to_end_of_line_via_ctrl_e(self):
         """Enter some chars and then try to jump to the end. (Should be a no-op)"""
         test_str = b"sysinfo"
         input_stream = list(test_str)
@@ -512,44 +512,44 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send out the stream
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the input buffer position isn't any further than we expect.
         # At this point, the position should be at the end of the test string.
-        CheckInputBufferPosition(self, len(test_str))
+        check_input_buffer_position(self, len(test_str))
 
         # Now, let's try to jump to the beginning and then jump back to the end.
         input_stream = [console.ControlKey.CTRL_A, console.ControlKey.CTRL_E]
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Perform the same verification.
-        CheckInputBufferPosition(self, len(test_str))
+        check_input_buffer_position(self, len(test_str))
 
         # Lastly try to jump again, beyond the end.
         input_stream = [console.ControlKey.CTRL_E]
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Perform the same verification.
-        CheckInputBufferPosition(self, len(test_str))
+        check_input_buffer_position(self, len(test_str))
 
         # We expect to see the test string, a jump to the beginning of the line, and
         # one jump to the end of the line.
         exp_console_out = test_str
         # Jump to beginning.
-        exp_console_out += OutputStream.MoveCursorLeft(len(test_str))
+        exp_console_out += OutputStream.move_cursor_left(len(test_str))
         # Jump back to end.
-        exp_console_out += OutputStream.MoveCursorRight(len(test_str))
+        exp_console_out += OutputStream.move_cursor_right(len(test_str))
 
         # Verify the console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_MoveLeftWithArrowKey(self):
+    def test_move_left_with_arrow_key(self):
         """Move cursor left one column with arrow key."""
         test_str = b"tastyspam"
         input_stream = list(test_str)
@@ -557,21 +557,21 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the input buffer position is 1 less than the length.
-        CheckInputBufferPosition(self, len(test_str) - 1)
+        check_input_buffer_position(self, len(test_str) - 1)
 
         # Also, verify that the input buffer is not modified.
-        CheckInputBuffer(self, test_str)
+        check_input_buffer(self, test_str)
 
         # We expect the test string, followed by a one column move left.
-        exp_console_out = test_str + OutputStream.MoveCursorLeft(1)
+        exp_console_out = test_str + OutputStream.move_cursor_left(1)
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_MoveLeftWithCtrlB(self):
+    def test_move_left_with_ctrl_b(self):
         """Move cursor back one column with Ctrl+B."""
         test_str = b"tastyspam"
         input_stream = list(test_str)
@@ -579,21 +579,21 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the input buffer position is 1 less than the length.
-        CheckInputBufferPosition(self, len(test_str) - 1)
+        check_input_buffer_position(self, len(test_str) - 1)
 
         # Also, verify that the input buffer is not modified.
-        CheckInputBuffer(self, test_str)
+        check_input_buffer(self, test_str)
 
         # We expect the test string, followed by a one column move left.
-        exp_console_out = test_str + OutputStream.MoveCursorLeft(1)
+        exp_console_out = test_str + OutputStream.move_cursor_left(1)
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_MoveRightWithArrowKey(self):
+    def test_move_right_with_arrow_key(self):
         """Move cursor one column to the right with the arrow key."""
         test_str = b"version"
         input_stream = list(test_str)
@@ -604,25 +604,25 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the input buffer position is 1.
-        CheckInputBufferPosition(self, 1)
+        check_input_buffer_position(self, 1)
 
         # Also, verify that the input buffer is not modified.
-        CheckInputBuffer(self, test_str)
+        check_input_buffer(self, test_str)
 
         # We expect the test string, followed by a jump to the beginning of the
         # line, and finally a move right 1.
-        exp_console_out = test_str + OutputStream.MoveCursorLeft(len((test_str)))
+        exp_console_out = test_str + OutputStream.move_cursor_left(len((test_str)))
 
         # A move right 1 column.
-        exp_console_out += OutputStream.MoveCursorRight(1)
+        exp_console_out += OutputStream.move_cursor_right(1)
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_MoveRightWithCtrlF(self):
+    def test_move_right_with_ctrl_f(self):
         """Move cursor forward one column with Ctrl+F."""
         test_str = b"panicinfo"
         input_stream = list(test_str)
@@ -632,63 +632,63 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the input buffer position is 1.
-        CheckInputBufferPosition(self, 1)
+        check_input_buffer_position(self, 1)
 
         # Also, verify that the input buffer is not modified.
-        CheckInputBuffer(self, test_str)
+        check_input_buffer(self, test_str)
 
         # We expect the test string, followed by a jump to the beginning of the
         # line, and finally a move right 1.
-        exp_console_out = test_str + OutputStream.MoveCursorLeft(len((test_str)))
+        exp_console_out = test_str + OutputStream.move_cursor_left(len((test_str)))
 
         # A move right 1 column.
-        exp_console_out += OutputStream.MoveCursorRight(1)
+        exp_console_out += OutputStream.move_cursor_right(1)
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_ImpossibleMoveLeftWithArrowKey(self):
+    def test_impossible_move_left_with_arrow_key(self):
         """Verify that we can't move left at the beginning of the line."""
         # We shouldn't be able to move left if we're at the beginning of the line.
         input_stream = Keys.LEFT_ARROW
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Nothing should have been output.
         exp_console_output = b""
-        CheckConsoleOutput(self, exp_console_output)
+        check_console_output(self, exp_console_output)
 
         # The input buffer position should still be 0.
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer_position(self, 0)
 
         # The input buffer itself should be empty.
-        CheckInputBuffer(self, b"")
+        check_input_buffer(self, b"")
 
-    def test_ImpossibleMoveRightWithArrowKey(self):
+    def test_impossible_move_right_with_arrow_key(self):
         """Verify that we can't move right at the end of the line."""
         # We shouldn't be able to move right if we're at the end of the line.
         input_stream = Keys.RIGHT_ARROW
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Nothing should have been output.
         exp_console_output = b""
-        CheckConsoleOutput(self, exp_console_output)
+        check_console_output(self, exp_console_output)
 
         # The input buffer position should still be 0.
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer_position(self, 0)
 
         # The input buffer itself should be empty.
-        CheckInputBuffer(self, b"")
+        check_input_buffer(self, b"")
 
-    def test_KillEntireLine(self):
+    def test_kill_entire_line(self):
         """Verify that we can kill an entire line with Ctrl+K."""
         test_str = b"accelinfo on"
         input_stream = list(test_str)
@@ -697,30 +697,30 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # First, we expect that the input buffer is empty.
-        CheckInputBuffer(self, b"")
+        check_input_buffer(self, b"")
 
         # The buffer position should be 0.
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer_position(self, 0)
 
         # What we expect to see on the console stream should be the following.  The
         # test string, a jump to the beginning of the line, then jump back to the
         # end of the line and replace the line with spaces.
         exp_console_out = test_str
         # Jump to beginning of line.
-        exp_console_out += OutputStream.MoveCursorLeft(len(test_str))
+        exp_console_out += OutputStream.move_cursor_left(len(test_str))
         # Jump to end of line.
-        exp_console_out += OutputStream.MoveCursorRight(len(test_str))
+        exp_console_out += OutputStream.move_cursor_right(len(test_str))
         # Replace line with spaces, which looks like backspaces.
         for _unused in range(len(test_str)):
             exp_console_out += BACKSPACE_STRING
 
         # Verify the console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_KillPartialLine(self):
+    def test_kill_partial_line(self):
         """Verify that we can kill a portion of a line."""
         test_str = b"accelread 0 1"
         input_stream = list(test_str)
@@ -733,14 +733,14 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # First, check that the input buffer was truncated.
         exp_input_buffer = test_str[:-len_to_kill]
-        CheckInputBuffer(self, exp_input_buffer)
+        check_input_buffer(self, exp_input_buffer)
 
         # Verify the input buffer position.
-        CheckInputBufferPosition(self, len(test_str) - len_to_kill)
+        check_input_buffer_position(self, len(test_str) - len_to_kill)
 
         # The console output stream that we expect is the test string followed by a
         # move left of len_to_kill, then a jump to the end of the line and backspace
@@ -748,17 +748,17 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out = test_str
         for _unused in range(len_to_kill):
             # Move left 1 column.
-            exp_console_out += OutputStream.MoveCursorLeft(1)
+            exp_console_out += OutputStream.move_cursor_left(1)
         # Then jump to the end of the line
-        exp_console_out += OutputStream.MoveCursorRight(len_to_kill)
+        exp_console_out += OutputStream.move_cursor_right(len_to_kill)
         # Backspace of len_to_kill
         for _unused in range(len_to_kill):
             exp_console_out += BACKSPACE_STRING
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_InsertingCharacters(self):
+    def test_inserting_characters(self):
         """Verify that we can insert characters within the line."""
         test_str = b"accel 0 1"  # Here we forgot the 'read' part in 'accelread'
         input_stream = list(test_str)
@@ -773,16 +773,16 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # First, verify that the input buffer is correct.
         exp_input_buffer = test_str[:insertion_point] + added_str
         exp_input_buffer += test_str[insertion_point:]
-        CheckInputBuffer(self, exp_input_buffer)
+        check_input_buffer(self, exp_input_buffer)
 
         # Verify that the input buffer position is correct.
         exp_input_buffer_pos = insertion_point + len(added_str)
-        CheckInputBufferPosition(self, exp_input_buffer_pos)
+        check_input_buffer_position(self, exp_input_buffer_pos)
 
         # The console output stream that we expect is the test string, followed by
         # move cursor left until the 'l' was found, the added test string while
@@ -790,7 +790,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out = test_str
         for i in range(len(test_str) - insertion_point):
             # Move cursor left.
-            exp_console_out += OutputStream.MoveCursorLeft(1)
+            exp_console_out += OutputStream.move_cursor_left(1)
 
         # Now for each character, write the rest of the line will be shifted to the
         # right one column.
@@ -801,12 +801,12 @@ class TestConsoleEditingMethods(unittest.TestCase):
             exp_console_out += test_str[insertion_point:]
             # Reset the cursor back left
             reset_dist = len(test_str[insertion_point:])
-            exp_console_out += OutputStream.MoveCursorLeft(reset_dist)
+            exp_console_out += OutputStream.move_cursor_left(reset_dist)
 
         # Verify the console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_StoreCommandHistory(self):
+    def test_store_command_history(self):
         """Verify that entered commands are stored in the history."""
         test_commands = []
         test_commands.append(b"help")
@@ -819,13 +819,13 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # We expect to have the test commands in the history buffer.
         exp_history_buf = test_commands
-        CheckHistoryBuffer(self, exp_history_buf)
+        check_history_buffer(self, exp_history_buf)
 
-    def test_CycleUpThruCommandHistory(self):
+    def test_cycle_up_thru_command_history(self):
         """Verify that the UP arrow key will print itmes in the history buffer."""
         # Enter some commands.
         test_commands = [b"version", b"accelrange 0", b"battery", b"gettime"]
@@ -840,7 +840,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The expected output should be test commands with prompts printed in
         # between, followed by line kills with the previous test commands printed.
@@ -860,16 +860,16 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out += test_commands[0]
 
         # Now, verify.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_UpArrowOnEmptyHistory(self):
+    def test_up_arrow_on_empty_history(self):
         """Ensure nothing happens if the history is empty."""
         # Press the up arrow key twice.
         input_stream = 2 * Keys.UP_ARROW
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # We expect nothing to have happened.
         exp_console_out = b""
@@ -878,12 +878,12 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_history_buf = []
 
         # Verify.
-        CheckConsoleOutput(self, exp_console_out)
-        CheckInputBufferPosition(self, exp_input_buffer_pos)
-        CheckInputBuffer(self, exp_input_buffer)
-        CheckHistoryBuffer(self, exp_history_buf)
+        check_console_output(self, exp_console_out)
+        check_input_buffer_position(self, exp_input_buffer_pos)
+        check_input_buffer(self, exp_input_buffer)
+        check_history_buffer(self, exp_history_buf)
 
-    def test_UpArrowDoesNotGoOutOfBounds(self):
+    def test_up_arrow_does_not_go_out_of_bounds(self):
         """Verify that pressing the up arrow many times won't go out of bounds."""
         # Enter one command.
         test_str = b"help version"
@@ -894,11 +894,11 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the history buffer is correct.
         exp_history_buf = [test_str]
-        CheckHistoryBuffer(self, exp_history_buf)
+        check_history_buffer(self, exp_history_buf)
 
         # We expect that the console output should only contain our entered command,
         # a new prompt, and then our command again.
@@ -907,9 +907,9 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out += test_str
 
         # Verify.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
-    def test_CycleDownThruCommandHistory(self):
+    def test_cycle_down_thru_command_history(self):
         """Verify that we can select entries by hitting the down arrow."""
         # Enter at least 4 commands.
         test_commands = [b"version", b"accelrange 0", b"battery", b"gettime"]
@@ -927,7 +927,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The expected output should be commands that we entered, followed by
         # prompts, then followed by our last two commands in reverse.  Then, we
@@ -952,15 +952,15 @@ class TestConsoleEditingMethods(unittest.TestCase):
             exp_console_out += BACKSPACE_STRING
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
         # Verify input buffer.
         exp_input_buffer = b""  # Empty because our partial command was empty.
         exp_input_buffer_pos = len(exp_input_buffer)
-        CheckInputBuffer(self, exp_input_buffer)
-        CheckInputBufferPosition(self, exp_input_buffer_pos)
+        check_input_buffer(self, exp_input_buffer)
+        check_input_buffer_position(self, exp_input_buffer_pos)
 
-    def test_SavingPartialCommandWhenNavigatingHistory(self):
+    def test_saving_partial_command_when_navigating_history(self):
         """Verify that partial commands are saved when navigating history."""
         # Enter a command.
         test_str = b"accelinfo"
@@ -978,7 +978,7 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The expected output should be the command we entered, a prompt, the
         # partial command, clearing of the partial command, the command entered,
@@ -993,22 +993,22 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_console_out += partial_cmd
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
         # Verify input buffer.
         exp_input_buffer = partial_cmd
         exp_input_buffer_pos = len(exp_input_buffer)
-        CheckInputBuffer(self, exp_input_buffer)
-        CheckInputBufferPosition(self, exp_input_buffer_pos)
+        check_input_buffer(self, exp_input_buffer)
+        check_input_buffer_position(self, exp_input_buffer_pos)
 
-    def test_DownArrowOnEmptyHistory(self):
+    def test_down_arrow_on_empty_history(self):
         """Ensure nothing happens if the history is empty."""
         # Then press the up down arrow twice.
         input_stream = 2 * Keys.DOWN_ARROW
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # We expect nothing to have happened.
         exp_console_out = b""
@@ -1017,12 +1017,12 @@ class TestConsoleEditingMethods(unittest.TestCase):
         exp_history_buf = []
 
         # Verify.
-        CheckConsoleOutput(self, exp_console_out)
-        CheckInputBufferPosition(self, exp_input_buffer_pos)
-        CheckInputBuffer(self, exp_input_buffer)
-        CheckHistoryBuffer(self, exp_history_buf)
+        check_console_output(self, exp_console_out)
+        check_input_buffer_position(self, exp_input_buffer_pos)
+        check_input_buffer(self, exp_input_buffer)
+        check_history_buffer(self, exp_history_buf)
 
-    def test_DeleteCharsUsingDELKey(self):
+    def test_delete_chars_using_del_key(self):
         """Verify that we can delete characters using the DEL key."""
         test_str = b"version"
         input_stream = list(test_str)
@@ -1035,32 +1035,32 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The expected output should be the command we entered, 2 individual cursor
         # moves to the left, and then removing a char and shifting everything to the
         # left one column.
         exp_console_out = test_str
-        exp_console_out += 2 * OutputStream.MoveCursorLeft(1)
+        exp_console_out += 2 * OutputStream.move_cursor_left(1)
 
         # Remove the char by shifting everything to the left one, slicing out the
         # remove char.
         exp_console_out += test_str[-1:] + b" "
 
         # Reset the cursor by moving back 2 columns because of the 'n' and space.
-        exp_console_out += OutputStream.MoveCursorLeft(2)
+        exp_console_out += OutputStream.move_cursor_left(2)
 
         # Verify console output.
-        CheckConsoleOutput(self, exp_console_out)
+        check_console_output(self, exp_console_out)
 
         # Verify input buffer.  The input buffer should have the char sliced out and
         # be positioned where the char was removed.
         exp_input_buffer = test_str[:-2] + test_str[-1:]
         exp_input_buffer_pos = len(exp_input_buffer) - 1
-        CheckInputBuffer(self, exp_input_buffer)
-        CheckInputBufferPosition(self, exp_input_buffer_pos)
+        check_input_buffer(self, exp_input_buffer)
+        check_input_buffer_position(self, exp_input_buffer_pos)
 
-    def test_RepeatedCommandInHistory(self):
+    def test_repeated_command_in_history(self):
         """Verify that we don't store 2 consecutive identical commands in history"""
         # Enter a few commands.
         test_commands = [b"version", b"accelrange 0", b"battery", b"gettime"]
@@ -1074,12 +1074,12 @@ class TestConsoleEditingMethods(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Verify that the history buffer is correct.  The last command, since
         # it was repeated, should not have been added to the history.
         exp_history_buf = test_commands[0 : len(test_commands) - 1]
-        CheckHistoryBuffer(self, exp_history_buf)
+        check_history_buffer(self, exp_history_buf)
 
 
 class TestConsoleCompatibility(unittest.TestCase):
@@ -1107,12 +1107,12 @@ class TestConsoleCompatibility(unittest.TestCase):
             "EC",
         )
 
-    @mock.patch("ec3po.console.Console.CheckForEnhancedECImage")
-    def test_ActAsPassThruInNonEnhancedMode(self, mock_check):
+    @mock.patch("ec3po.console.Console.check_for_enhanced_ec_image")
+    def test_act_as_pass_thru_in_non_enhanced_mode(self, mock_check):
         """Verify we simply pass everything thru to non-enhanced ECs.
 
         Args:
-          mock_check: A MagicMock object replacing the CheckForEnhancedECImage()
+          mock_check: A MagicMock object replacing the check_for_enhanced_ec_image()
             method.
         """
         # Set the interrogation mode to always so that we actually interrogate.
@@ -1130,7 +1130,7 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Expected calls to send down the pipe would be each character of the test
         # command.
@@ -1146,15 +1146,15 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         # Since we're acting as a pass-thru, the input buffer should be empty and
         # input_buffer_pos is 0.
-        CheckInputBuffer(self, b"")
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer(self, b"")
+        check_input_buffer_position(self, 0)
 
-    @mock.patch("ec3po.console.Console.CheckForEnhancedECImage")
-    def test_TransitionFromNonEnhancedToEnhanced(self, mock_check):
+    @mock.patch("ec3po.console.Console.check_for_enhanced_ec_image")
+    def test_transition_from_non_enhanced_to_enhanced(self, mock_check):
         """Verify that we transition correctly to enhanced mode.
 
         Args:
-          mock_check: A MagicMock object replacing the CheckForEnhancedECImage()
+          mock_check: A MagicMock object replacing the check_for_enhanced_ec_image()
             method.
         """
         # Set the interrogation mode to always so that we actually interrogate.
@@ -1183,7 +1183,7 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # At this point, we should have negotiated to enhanced.
         self.assertTrue(
@@ -1192,15 +1192,15 @@ class TestConsoleCompatibility(unittest.TestCase):
         )
 
         # The command would have been dropped however, so verify this...
-        CheckInputBuffer(self, b"")
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer(self, b"")
+        check_input_buffer_position(self, 0)
         # ...and repeat the command.
         input_stream = list(test_command)
         input_stream.append(console.ControlKey.CARRIAGE_RETURN)
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Since we're enhanced now, we should have sent the entire command as one
         # string with no trailing carriage return
@@ -1209,12 +1209,12 @@ class TestConsoleCompatibility(unittest.TestCase):
         # Verify all of the calls.
         self.console.cmd_pipe.send.assert_has_calls(expected_calls)
 
-    @mock.patch("ec3po.console.Console.CheckForEnhancedECImage")
-    def test_TransitionFromEnhancedToNonEnhanced(self, mock_check):
+    @mock.patch("ec3po.console.Console.check_for_enhanced_ec_image")
+    def test_transition_from_enhanced_to_non_enhanced(self, mock_check):
         """Verify that we transition correctly to non-enhanced mode.
 
         Args:
-          mock_check: A MagicMock object replacing the CheckForEnhancedECImage()
+          mock_check: A MagicMock object replacing the check_for_enhanced_ec_image()
             method.
         """
         # Set the interrogation mode to always so that we actually interrogate.
@@ -1234,7 +1234,7 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # But, we will negotiate to non-enhanced however, dropping this command.
         # Verify this.
@@ -1242,8 +1242,8 @@ class TestConsoleCompatibility(unittest.TestCase):
             self.console.enhanced_ec,
             msg=("Did not negotiate to non-enhanced EC image."),
         )
-        CheckInputBuffer(self, b"")
-        CheckInputBufferPosition(self, 0)
+        check_input_buffer(self, b"")
+        check_input_buffer_position(self, 0)
 
         # The carriage return should have passed through though.
         expected_calls = []
@@ -1255,7 +1255,7 @@ class TestConsoleCompatibility(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # Since we're not enhanced now, we should have sent each character in the
         # entire command separately and a carriage return.
@@ -1267,27 +1267,27 @@ class TestConsoleCompatibility(unittest.TestCase):
         # Verify all of the calls.
         self.console.cmd_pipe.send.assert_has_calls(expected_calls)
 
-    def test_EnhancedCheckIfTimedOut(self):
+    def test_enhanced_check_if_timed_out(self):
         """Verify that the check returns false if it times out."""
         # Make the debug pipe "time out".
         self.console.dbg_pipe.poll.return_value = False
-        self.assertFalse(self.console.CheckForEnhancedECImage())
+        self.assertFalse(self.console.check_for_enhanced_ec_image())
 
-    def test_EnhancedCheckIfACKReceived(self):
+    def test_enhanced_check_if_ack_received(self):
         """Verify that the check returns true if the ACK is received."""
         # Make the debug pipe return EC_ACK.
         self.console.dbg_pipe.poll.return_value = True
         self.console.dbg_pipe.recv.return_value = interpreter.EC_ACK
-        self.assertTrue(self.console.CheckForEnhancedECImage())
+        self.assertTrue(self.console.check_for_enhanced_ec_image())
 
-    def test_EnhancedCheckIfWrong(self):
+    def test_enhanced_check_if_wrong(self):
         """Verify that the check returns false if byte received is wrong."""
         # Make the debug pipe return the wrong byte.
         self.console.dbg_pipe.poll.return_value = True
         self.console.dbg_pipe.recv.return_value = b"\xff"
-        self.assertFalse(self.console.CheckForEnhancedECImage())
+        self.assertFalse(self.console.check_for_enhanced_ec_image())
 
-    def test_EnhancedCheckUsingBuffer(self):
+    def test_enhanced_check_using_buffer(self):
         """Verify that given reboot output, enhanced EC images are detected."""
         enhanced_output_stream = b"""
 --- UART initialized after reboot ---
@@ -1319,7 +1319,7 @@ Enhanced Console is enabled (v1.0.0); type HELP for help.
 [0.375150 POWER_GOOD seen]
 """
         for line in enhanced_output_stream.split(b"\n"):
-            self.console.CheckBufferForEnhancedImage(line)
+            self.console.check_buffer_for_enhanced_image(line)
 
         # Since the enhanced console string was present in the output, the console
         # should have caught it.
@@ -1355,7 +1355,7 @@ Console is enabled; type HELP for help.
 [0.010385 power state 5 = S5->S3, in 0x0000]
 """
         for line in non_enhanced_output_stream.split(b"\n"):
-            self.console.CheckBufferForEnhancedImage(line)
+            self.console.check_buffer_for_enhanced_image(line)
 
         # Since the default console string is present in the output, it should be
         # determined to be non enhanced now.
@@ -1391,8 +1391,8 @@ class TestOOBMConsoleCommands(unittest.TestCase):
         )
         self.console.oobm_queue = mock.MagicMock()
 
-    @mock.patch("ec3po.console.Console.CheckForEnhancedECImage")
-    def test_InterrogateCommand(self, mock_check):
+    @mock.patch("ec3po.console.Console.check_for_enhanced_ec_image")
+    def test_interrogate_command(self, mock_check):
         """Verify that 'interrogate' command works as expected.
 
         Args:
@@ -1415,7 +1415,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         input_stream = []
 
@@ -1425,7 +1425,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Process the OOBM queue.
         self.console.oobm_queue.get.side_effect = [cmd]
-        self.console.ProcessOOBMQueue()
+        self.console.process_oobm_queue()
 
         # Type out a few commands.
         input_stream.extend(b"version")
@@ -1437,7 +1437,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The Check function should NOT have been called at all.
         mock_check.assert_not_called()
@@ -1464,7 +1464,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         input_stream = []
         expected_calls = []
@@ -1475,7 +1475,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Process the OOBM queue.
         self.console.oobm_queue.get.side_effect = [cmd]
-        self.console.ProcessOOBMQueue()
+        self.console.process_oobm_queue()
 
         # Type out a few commands.
         input_stream.extend(b"version")
@@ -1487,7 +1487,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The Check function should NOT have been called at all.
         mock_check.assert_not_called()
@@ -1515,7 +1515,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         input_stream = []
         expected_calls = []
@@ -1526,7 +1526,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Process the OOBM queue.
         self.console.oobm_queue.get.side_effect = [cmd]
-        self.console.ProcessOOBMQueue()
+        self.console.process_oobm_queue()
 
         # The Check method should be called 3 times here.
         mock_check.side_effect = [False, False, False]
@@ -1541,7 +1541,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The Check method should have been called 3 times here.
         expected_calls = [mock.call(), mock.call(), mock.call()]
@@ -1568,7 +1568,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         input_stream = []
         expected_calls = []
@@ -1579,7 +1579,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Process the OOBM queue.
         self.console.oobm_queue.get.side_effect = [cmd]
-        self.console.ProcessOOBMQueue()
+        self.console.process_oobm_queue()
 
         # Type out a few commands.
         input_stream.extend(b"chgstate")
@@ -1591,7 +1591,7 @@ class TestOOBMConsoleCommands(unittest.TestCase):
 
         # Send the sequence out.
         for byte in input_stream:
-            self.console.HandleChar(byte)
+            self.console.handle_char(byte)
 
         # The check method should have never been called.
         mock_check.assert_not_called()

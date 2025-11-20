@@ -221,7 +221,7 @@ class Programmer:
             except device_util.DeviceUtilError as e:
                 # repackage here as ProgrammerError to make catching simpler
                 # in higher layers
-                raise ProgrammerError("%s: %s" % (self.NAME, str(e)))
+                raise ProgrammerError("%s: %s" % (self.NAME, str(e))) from e
         # TODO(coconutruben): add an error if there were parent candidates provided,
         # but none were found
         if parent_candidates and not any(

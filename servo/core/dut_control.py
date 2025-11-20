@@ -292,7 +292,7 @@ def do_iteration(requests, options, sclient, stats):
         results = sclient.set_get_all(requests)
 
     if options.print_time:
-        time_str = "%.4f " % (time.time() - _start_time)
+        time_str = "%.4f " % (time.time() - _START_TIME)
 
     for i, result in enumerate(results):
         control = requests[i]
@@ -388,8 +388,8 @@ def real_main(cmdline):
     sclient = client.ServoClient(
         host=options.host, port=options.port, verbose=options.verbose
     )
-    global _start_time
-    _start_time = time.time()
+    global _START_TIME
+    _START_TIME = time.time()
 
     # Perform 1st in order to allow user to then override below
     if options.hwinit:
@@ -429,6 +429,6 @@ def main(cmdline=sys.argv[1:]):
 
 
 # global start time for script
-_start_time = 0
+_START_TIME = 0
 if __name__ == "__main__":
     main()

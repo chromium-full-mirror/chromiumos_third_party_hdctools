@@ -64,7 +64,7 @@ class ServoDeviceEntry:
         # This should be replaced with the (vid, pid, serial, dev_path) key.
         self.__id = vid, pid, serial
         self.__key = vid, pid, serial, dev_path
-        self.__dev_template = servo_dev_templates.GetTemplateClass(vid, pid, serial)
+        self.__dev_template = servo_dev_templates.get_template_class(vid, pid, serial)
         if not self.dev_template:
             raise ServoDeviceHierarchyError(
                 "Cannot retrieve device template for device vid %r pid %r serial %r "
@@ -73,7 +73,7 @@ class ServoDeviceEntry:
         self.cluster_root = None
         self.cluster_members = set()
         if self.dev_template.HUB_SERVO:
-            self.hub_stub = UsbHierarchy.GetSysfsParentHubStub(dev_path)
+            self.hub_stub = UsbHierarchy.get_sysfs_parent_hub_stub(dev_path)
         # Device options of this device. Will be filled by device finder.
         self.devopts = None
         # This is used to hold a pointer to its own ServoDevice object
@@ -255,10 +255,10 @@ class ServoDeviceHierarchy:
         all_servo_devs = []
         # Filter the dev paths by servo id defaults (vid/pid pairs)
         ids = servo_dev_templates.SERVO_ID_DEFAULTS
-        for dev_path in UsbHierarchy.GetAllUsbDeviceSysfsPaths(ids):
-            dev_vid = UsbHierarchy.VendorIDFromSysfs(dev_path)
-            dev_pid = UsbHierarchy.ProductIDFromSysfs(dev_path)
-            dev_serial = UsbHierarchy.SerialFromSysfs(dev_path)
+        for dev_path in UsbHierarchy.get_all_usb_device_sysfs_paths(ids):
+            dev_vid = UsbHierarchy.vendor_id_from_sysfs(dev_path)
+            dev_pid = UsbHierarchy.product_id_from_sysfs(dev_path)
+            dev_serial = UsbHierarchy.serial_from_sysfs(dev_path)
             entry = ServoDeviceEntry(
                 vid=dev_vid, pid=dev_pid, serial=dev_serial, dev_path=dev_path
             )
@@ -278,7 +278,7 @@ class ServoDeviceHierarchy:
                     a_servo_dev_path = a_servo.hub_stub
                 else:
                     a_servo_dev_path = a_servo.dev_path
-                if UsbHierarchy.DevDirectOnHubPortFromSysfs(
+                if UsbHierarchy.dev_direct_on_hub_port_from_sysfs(
                     hub_servo.hub_stub, a_servo_dev_path
                 ):
                     # We only support one level of hub servo.

@@ -21,7 +21,7 @@ import servo_dev_templates
 
 
 # Servo V2 PID
-V2_PID = servo_dev_templates.GetPID("servo_v2")
+V2_PID = servo_dev_templates.get_pid("servo_v2")
 
 
 def do_cmd(cmd, timeout, plist=None, flist=None):

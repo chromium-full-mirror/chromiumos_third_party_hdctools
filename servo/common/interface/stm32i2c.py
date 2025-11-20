@@ -70,7 +70,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
         self._logger.debug("Set up stm32 i2c")
 
     @staticmethod
-    def Build(vid, pid, sid, interface_data, **_kwargs):
+    def build(vid, pid, sid, interface_data, **_kwargs):
         """Factory method to implement the interface."""
         c.build_logger.info("Si2cBus: interface: %s", interface_data)
         port = interface_data.get("port", 0)

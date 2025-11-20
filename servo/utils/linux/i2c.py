@@ -14,7 +14,7 @@ This module is designed to be friendly for 'import *' by making these promises:
 import ctypes
 
 
-# struct i2c_msg flags from include/uapi/linux/i2c.h
+# struct I2cMsg flags from include/uapi/linux/i2c.h
 I2C_M_RD = 0x0001
 I2C_M_TEN = 0x0010
 I2C_M_DMA_SAFE = 0x0200
@@ -71,7 +71,7 @@ I2C_FUNC_SMBUS_EMUL = (
 )
 
 
-class i2c_msg(ctypes.Structure):
+class I2cMsg(ctypes.Structure):
     _fields_ = (
         ("addr", ctypes.c_uint16),
         ("flags", ctypes.c_uint16),

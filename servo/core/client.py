@@ -81,7 +81,7 @@ class ServoClient:
         try:
             return self._server.doc(name)
         except Fault as e:
-            raise ServoClientError("Problem docstring '%s'" % name, e)
+            raise ServoClientError("Problem docstring '%s'" % name, e) from e
 
     def get(self, name):
         """Get the value from servo for control name.
@@ -98,7 +98,7 @@ class ServoClient:
         try:
             return self._server.get(name)
         except Fault as e:
-            raise ServoClientError("Problem getting '%s'" % name, e)
+            raise ServoClientError("Problem getting '%s'" % name, e) from e
 
     def get_all(self):
         """Get all controls current values.
@@ -122,7 +122,7 @@ class ServoClient:
         except Fault as e:
             # TODO(tbroch) : more detail of failure.  Note xmlrpclib only
             #                passes one exception above
-            raise ServoClientError("Problem with %s" % (controls), e)
+            raise ServoClientError("Problem with %s" % (controls), e) from e
         return rv
 
     def set(self, name, value):
@@ -140,7 +140,9 @@ class ServoClient:
         except Fault as e:
             # TODO(tbroch) : more detail of failure.  Note xmlrpclib only
             #                passes one exception above
-            raise ServoClientError("Problem setting '%s' to '%s'" % (name, value), e)
+            raise ServoClientError(
+                "Problem setting '%s' to '%s'" % (name, value), e
+            ) from e
 
     def ftdii2c(self, args):
         """Calling a method of Fi2c."""

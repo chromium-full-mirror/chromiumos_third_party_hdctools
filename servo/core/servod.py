@@ -66,7 +66,7 @@ class ServodError(Exception):
     """Exception class for servod server."""
 
 
-def _GetBoolEnvVar(env_name, default_val):
+def _get_bool_env_var(env_name, default_val):
     """Get the bool value of a boolean environment variable.
 
     Args:
@@ -129,7 +129,7 @@ class ServodStarter:
         # Running servod in chroot is no longer supported.
         self.exit_if_in_chroot()
 
-        env_vars = sorted(servo_parsing.GetServodEnvVars())
+        env_vars = sorted(servo_parsing.get_servod_env_vars())
         self._logger.info(
             "Attempting to parse servod command line: %r\n"
             "With environment variables: %r",
@@ -357,7 +357,7 @@ class ServodStarter:
         server_pars.add_argument(
             "--disable-host-usb3",
             action="store_true",
-            default=_GetBoolEnvVar("SERVOD_DISABLE_HOST_USB3", True),
+            default=_get_bool_env_var("SERVOD_DISABLE_HOST_USB3", True),
             help="Early in servod startup, before servo device discovery, "
             "disable USB3 on all Genesys USB3 hub controllers with VID:PID of "
             "%04x:%04x attached to this system. This is a workaround for "
@@ -525,7 +525,7 @@ class ServodStarter:
         Returns:
           the port at which the xml server starts at
         """
-        if servo_parsing.ArgMarkedAsUserSupplied(sopts, "port"):
+        if servo_parsing.arg_marked_as_user_supplied(sopts, "port"):
             start_port = sopts.port
             end_port = sopts.port
         else:
@@ -712,7 +712,7 @@ class ServodStarter:
 
     def cleanup(self):
         """Perform any cleanup related work after servod server shut down."""
-        self._scratchutil.RemoveEntry(self._servo_port)
+        self._scratchutil.remove_entry(self._servo_port)
         self._logger.info(
             "Server on %s port %s turned down", self._host, self._servo_port
         )
@@ -743,14 +743,14 @@ class ServodStarter:
             signal.signal(sig, handler)
         serials = set(self._servod.get_servo_serials().values())
         try:
-            self._scratchutil.AddEntry(self._servo_port, serials, os.getpid())
+            self._scratchutil.add_entry(self._servo_port, serials, os.getpid())
         except scratch.ScratchError:
             self._servod.close()
             sys.exit(1)
         self._watchdog_thread.start()
         self._server_thread.start()
         # Indicate that servod is running for any process waiting to know.
-        self._scratchutil.MarkActive(self._servo_port)
+        self._scratchutil.mark_active(self._servo_port)
         signal.pause()
         # Set watchdog thread to end
         self._watchdog_thread.deactivate()

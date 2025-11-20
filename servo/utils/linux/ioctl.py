@@ -34,7 +34,7 @@ _IOC_WRITE = 1
 _IOC_READ = 2
 
 
-def _IOC(dir_, type_, nr, size):
+def _ioc(dir_, type_, nr, size):
     return (
         (dir_ << _IOC_DIRSHIFT)
         | (type_ << _IOC_TYPESHIFT)
@@ -43,51 +43,51 @@ def _IOC(dir_, type_, nr, size):
     )
 
 
-def _IOC_TYPECHECK(t):
+def _ioc_typecheck(t):
     return ctypes.sizeof(t)
 
 
-def _IO(type_, nr):
-    return _IOC(_IOC_NONE, type_, nr, 0)
+def _io(type_, nr):
+    return _ioc(_IOC_NONE, type_, nr, 0)
 
 
-def _IOR(type_, nr, size):
-    return _IOC(_IOC_READ, type_, nr, (_IOC_TYPECHECK(size)))
+def _ior(type_, nr, size):
+    return _ioc(_IOC_READ, type_, nr, (_ioc_typecheck(size)))
 
 
-def _IOW(type_, nr, size):
-    return _IOC(_IOC_WRITE, type_, nr, (_IOC_TYPECHECK(size)))
+def _iow(type_, nr, size):
+    return _ioc(_IOC_WRITE, type_, nr, (_ioc_typecheck(size)))
 
 
-def _IOWR(type_, nr, size):
-    return _IOC(_IOC_READ | _IOC_WRITE, type_, nr, (_IOC_TYPECHECK(size)))
+def _iowr(type_, nr, size):
+    return _ioc(_IOC_READ | _IOC_WRITE, type_, nr, (_ioc_typecheck(size)))
 
 
-def _IOR_BAD(type_, nr, size):
-    return _IOC(_IOC_READ, type_, nr, ctypes.sizeof(size))
+def _ior_bad(type_, nr, size):
+    return _ioc(_IOC_READ, type_, nr, ctypes.sizeof(size))
 
 
-def _IOW_BAD(type_, nr, size):
-    return _IOC(_IOC_WRITE, type_, nr, ctypes.sizeof(size))
+def _iow_bad(type_, nr, size):
+    return _ioc(_IOC_WRITE, type_, nr, ctypes.sizeof(size))
 
 
-def _IOWR_BAD(type_, nr, size):
-    return _IOC(_IOC_READ | _IOC_WRITE, type_, nr, ctypes.sizeof(size))
+def _iowr_bad(type_, nr, size):
+    return _ioc(_IOC_READ | _IOC_WRITE, type_, nr, ctypes.sizeof(size))
 
 
-def _IOC_DIR(nr):
+def _ioc_dir(nr):
     return (nr >> _IOC_DIRSHIFT) & _IOC_DIRMASK
 
 
-def _IOC_TYPE(nr):
+def _ioc_type(nr):
     return (nr >> _IOC_TYPESHIFT) & _IOC_TYPEMASK
 
 
-def _IOC_NR(nr):
+def _ioc_nr(nr):
     return (nr >> _IOC_NRSHIFT) & _IOC_NRMASK
 
 
-def _IOC_SIZE(nr):
+def _ioc_size(nr):
     return (nr >> _IOC_SIZESHIFT) & _IOC_SIZEMASK
 
 
@@ -98,4 +98,4 @@ IOCSIZE_MASK = _IOC_SIZEMASK << _IOC_SIZESHIFT
 IOCSIZE_SHIFT = _IOC_SIZESHIFT
 
 
-__all__ = [n for n in dir() if n.startswith("IO") or n.startswith("_IO")]
+__all__ = [n for n in dir() if n.startswith("IO") or n.startswith("_io")]

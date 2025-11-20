@@ -27,7 +27,9 @@ class TestDataSampler(unittest.TestCase):
     def test_get_data_sample_streaming(self):
         """Test get_data_samples."""
         self.data_sampler._data_sample = dut_power_data.DataSample(["name1", "name2"])
-        self.data_sampler._pm.GetPMStatus = unittest.mock.MagicMock(return_value=False)
+        self.data_sampler._pm.get_pm_status = unittest.mock.MagicMock(
+            return_value=False
+        )
         self.data_sampler._data_sample.to_json = unittest.mock.MagicMock(
             return_value="ok"
         )
@@ -43,7 +45,7 @@ class TestDataSampler(unittest.TestCase):
     def test_get_data_sample_non_streaming(self):
         """Test get_data_samples."""
         self.data_sampler._data_sample = dut_power_data.DataSample(["name1", "name2"])
-        self.data_sampler._pm.GetPMStatus = unittest.mock.MagicMock(return_value=True)
+        self.data_sampler._pm.get_pm_status = unittest.mock.MagicMock(return_value=True)
         self.data_sampler._data_sample.to_json = unittest.mock.MagicMock(
             return_value="ok"
         )
@@ -90,13 +92,13 @@ class TestDataSampler(unittest.TestCase):
         """Test sample_generator."""
         samples1 = [("ppdut5", 3.1), ("ppservo5", 4.1), ("ppchg5", 0.0)]
         samples2 = [("ppdut5", 3.2), ("ppservo5", 4.2), ("ppchg5", 0.1)]
-        self.data_sampler._pm.GetPMStatus = unittest.mock.MagicMock(
+        self.data_sampler._pm.get_pm_status = unittest.mock.MagicMock(
             side_effect=[False, False, True]
         )
-        self.data_sampler._pm.GetSampleData = unittest.mock.MagicMock(
+        self.data_sampler._pm.get_sample_data = unittest.mock.MagicMock(
             side_effect=[samples1, samples2]
         )
-        self.data_sampler._pm.CleanSampleData = unittest.mock.MagicMock()
+        self.data_sampler._pm.clean_sample_data = unittest.mock.MagicMock()
 
         self.data_sampler.sample_generator()
 

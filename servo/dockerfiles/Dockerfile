@@ -120,6 +120,7 @@ ENV PKG_CONFIG_PATH=${PKG_CONFIG_PATH}:/usr/local/pkg/
 WORKDIR /ec
 #RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
 RUN make build/host/util/iteflash BOARD=host && \
+    make build/host/util/itecomdbgr BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
     make -C extra/usb_updater usb_updater2
@@ -132,7 +133,8 @@ RUN PACKAGE="unpack_ftb" python3 setup_ec.py bdist_wheel
 RUN strip /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/stm32mon \
     /ec/build/host/util/uartupdatetool \
-    /ec/build/host/util/iteflash
+    /ec/build/host/util/iteflash \
+    /ec/build/host/util/itecomdbgr
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
@@ -308,6 +310,7 @@ RUN apt-get update --no-install-recommends \
     python3-grpc-tools \
     python3-serial \
     python3-usb \
+    sudo \
     usbutils \
     wget \
     && rm -rf /var/lib/apt/lists/* \
@@ -349,6 +352,7 @@ COPY --link --from=ec-builder \
     /ec/build/host/util/stm32mon \
     /ec/build/host/util/uartupdatetool \
     /ec/build/host/util/iteflash \
+    /ec/build/host/util/itecomdbgr \
     /ec/util/flash_ec \
     /ec/util/uart_stress_tester.py \
     /usr/sbin/

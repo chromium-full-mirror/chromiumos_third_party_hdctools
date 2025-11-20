@@ -412,14 +412,14 @@ class TestDutPower(unittest.TestCase):
         args.wait = 10
         args.time = 60
         pm = measure_power.PowerMeasurement()
-        pm.MeasurePower = unittest.mock.MagicMock(return_value=threading.Event())
-        pm.FinishMeasurement = unittest.mock.MagicMock()
+        pm.measure_power = unittest.mock.MagicMock(return_value=threading.Event())
+        pm.finish_measurement = unittest.mock.MagicMock()
         dp.power_data = dut_power_data.DataSampler(pm)
         dp.power_data.sample_generator = unittest.mock.MagicMock()
 
         dp._measure_power(args, pm)
 
-        pm.MeasurePower.assert_called_once_with(
+        pm.measure_power.assert_called_once_with(
             wait=args.wait, powerstate=args.powerstate
         )
         signal.signal.assert_has_calls(
@@ -471,9 +471,9 @@ class TestDutPower(unittest.TestCase):
         args.message = "msg"
         pm = measure_power.PowerMeasurement()
         pm._outdir = None
-        pm.SaveSummary = unittest.mock.MagicMock()
-        pm.SaveRawData = unittest.mock.MagicMock()
-        pm.SaveSummaryJSON = unittest.mock.MagicMock()
+        pm.save_summary = unittest.mock.MagicMock()
+        pm.save_raw_data = unittest.mock.MagicMock()
+        pm.save_summary_json = unittest.mock.MagicMock()
         dp.http_server_handler.save_visualization_html = unittest.mock.MagicMock()
 
         with unittest.mock.patch(
@@ -485,9 +485,9 @@ class TestDutPower(unittest.TestCase):
                 with unittest.mock.patch("shutil.move", unittest.mock.MagicMock()):
                     dp._save_results(args, pm)
 
-                    pm.SaveSummary.assert_called_once_with("dir", "msg")
-                    pm.SaveRawData.assert_called_once_with("dir")
-                    pm.SaveSummaryJSON.assert_called_once_with("dir")
+                    pm.save_summary.assert_called_once_with("dir", "msg")
+                    pm.save_raw_data.assert_called_once_with("dir")
+                    pm.save_summary_json.assert_called_once_with("dir")
                     shutil.move.assert_called_once_with(dp.tmplogfile.name, "logfile")
                     dp.http_server_handler.save_visualization_html.assert_called_once_with(  # pylint: disable=line-too-long
                         None
@@ -498,11 +498,12 @@ class TestDutPower(unittest.TestCase):
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.ProcessMeasurement",
+        "servo.measure_power.PowerMeasurement.process_measurement",
         unittest.mock.MagicMock(),
     )
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.DisplaySummary", unittest.mock.MagicMock()
+        "servo.measure_power.PowerMeasurement.display_summary",
+        unittest.mock.MagicMock(),
     )
     def test_main(self):
         """Test main()."""
@@ -522,8 +523,8 @@ class TestDutPower(unittest.TestCase):
         dp._setup_logging.assert_called_once()
         dp._setup_visualization.assert_called_once()
         dp._measure_power.assert_called_once()
-        measure_power.PowerMeasurement.ProcessMeasurement.assert_called_once()
-        measure_power.PowerMeasurement.DisplaySummary.assert_called_once()
+        measure_power.PowerMeasurement.process_measurement.assert_called_once()
+        measure_power.PowerMeasurement.display_summary.assert_called_once()
         dp._save_results.assert_called_once()
 
     @unittest.mock.patch(

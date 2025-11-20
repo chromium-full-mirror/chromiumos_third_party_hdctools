@@ -54,6 +54,7 @@ ignore-paths=
     .*/data/.*,
     .*/drv/.*,
     servo/tests/unit/syscfg_atlas.py,
+    development_environment/hooks/banned-words.py,
 
 # Files or directories matching the regular expression patterns are skipped.
 # The regex matches against base names, not paths. The default value ignores
@@ -465,15 +466,12 @@ disable=
     global-statement,
     global-variable-not-assigned,
     inconsistent-return-statements,
-    invalid-name,
     invalid-unary-operand-type,
-    logging-format-interpolation,
     missing-class-docstring,
     missing-function-docstring,
     missing-module-docstring,
     no-member,
     protected-access,
-    raise-missing-from,
     simplifiable-if-expression,
     super-init-not-called,
     super-with-arguments,

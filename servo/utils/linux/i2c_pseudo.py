@@ -20,23 +20,23 @@ from servo.utils.linux import ioctl
 I2CP_CONTROLLER_PATH = b"/dev/i2c-pseudo"
 
 
-class i2cp_ioctl_start_output(ctypes.Structure):
+class I2cpIoctlStartOutput(ctypes.Structure):
     _fields_ = (
         ("adapter_num", ctypes.c_uint64),
         ("name_len", ctypes.c_uint32),
     )
 
 
-class i2cp_ioctl_start_arg(ctypes.Structure):
+class I2cpIoctlStartArg(ctypes.Structure):
     _fields_ = (
-        ("output", i2cp_ioctl_start_output),
+        ("output", I2cpIoctlStartOutput),
         ("functionality", ctypes.c_uint32),
         ("timeout_ms", ctypes.c_uint32),
         ("name", ctypes.c_char_p),
     )
 
 
-class i2cp_ioctl_xfer_counters(ctypes.Structure):
+class I2cpIoctlXferCounters(ctypes.Structure):
     _fields_ = (
         ("controller_replied", ctypes.c_uint64),
         ("unknown_failure", ctypes.c_uint64),
@@ -50,16 +50,16 @@ class i2cp_ioctl_xfer_counters(ctypes.Structure):
     )
 
 
-class i2cp_ioctl_xfer_req_output(ctypes.Structure):
+class I2cpIoctlXferReqOutput(ctypes.Structure):
     _fields_ = (
         ("xfer_id", ctypes.c_uint64),
         ("num_msgs", ctypes.c_uint32),
     )
 
 
-class i2cp_ioctl_xfer_req_arg(ctypes.Structure):
+class I2cpIoctlXferReqArg(ctypes.Structure):
     _fields_ = (
-        ("output", i2cp_ioctl_xfer_req_output),
+        ("output", I2cpIoctlXferReqOutput),
         ("msgs", ctypes.POINTER(i2c.i2c_msg)),
         ("data_buf", ctypes.POINTER(ctypes.c_uint8)),
         ("msgs_len", ctypes.c_uint32),
@@ -67,7 +67,7 @@ class i2cp_ioctl_xfer_req_arg(ctypes.Structure):
     )
 
 
-class i2cp_ioctl_xfer_reply_arg(ctypes.Structure):
+class I2cpIoctlXferReplyArg(ctypes.Structure):
     _fields_ = (
         ("msgs", ctypes.POINTER(i2c.i2c_msg)),
         ("xfer_id", ctypes.c_uint64),
@@ -78,10 +78,10 @@ class i2cp_ioctl_xfer_reply_arg(ctypes.Structure):
 
 I2CP_IOCTL_CODE = 0x2C
 
-I2CP_IOCTL_START = ioctl._IOWR(I2CP_IOCTL_CODE, 0, i2cp_ioctl_start_arg)
-I2CP_IOCTL_XFER_REQ = ioctl._IOWR(I2CP_IOCTL_CODE, 1, i2cp_ioctl_xfer_req_arg)
-I2CP_IOCTL_XFER_REPLY = ioctl._IOW(I2CP_IOCTL_CODE, 2, i2cp_ioctl_xfer_reply_arg)
-I2CP_IOCTL_GET_COUNTERS = ioctl._IOR(I2CP_IOCTL_CODE, 3, i2cp_ioctl_xfer_counters)
+I2CP_IOCTL_START = ioctl._IOWR(I2CP_IOCTL_CODE, 0, I2cpIoctlStartArg)
+I2CP_IOCTL_XFER_REQ = ioctl._IOWR(I2CP_IOCTL_CODE, 1, I2cpIoctlXferReqArg)
+I2CP_IOCTL_XFER_REPLY = ioctl._IOW(I2CP_IOCTL_CODE, 2, I2cpIoctlXferReplyArg)
+I2CP_IOCTL_GET_COUNTERS = ioctl._IOR(I2CP_IOCTL_CODE, 3, I2cpIoctlXferCounters)
 I2CP_IOCTL_SHUTDOWN = ioctl._IO(I2CP_IOCTL_CODE, 4)
 
 

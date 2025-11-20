@@ -53,7 +53,7 @@ class ServoDeviceDiscoveryMode(Enum):
     NO_AUTO = 2
 
 
-def _ClusterSortKey(servo_dev_entry):
+def _cluster_sort_key(servo_dev_entry):
     """Return a key for sorting servos in a cluster with the root servo first.
 
     This function is intended for use as a sorting key.  There is no reason to
@@ -224,7 +224,7 @@ class ServoDeviceFinder:
         }
         # Now replace the sets with sorted lists, for consistent logging output.
         # Within each servo cluster, the root servo should be listed first.
-        clusters = sorted(sorted(clstr, key=_ClusterSortKey) for clstr in clusters)
+        clusters = sorted(sorted(clstr, key=_cluster_sort_key) for clstr in clusters)
         self._logger.info(
             "Servo clusters represented by the candidates:\n%s",
             pprint.pformat(clusters),
@@ -483,7 +483,7 @@ class ServoDeviceFinder:
           ServoDeviceFinderError: some device is served by another servod instance.
         """
         has_error = False
-        for servod_instance in self._scratch.GetAllEntries():
+        for servod_instance in self._scratch.get_all_entries():
             for dev in devs:
                 if dev.serial in servod_instance[scratch.SERIAL_KEY]:
                     has_error = True

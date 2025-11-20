@@ -66,7 +66,9 @@ def wait_for_usb_disconnect(
         found_pids = []
         for p in pids:
             try:
-                paths = usb_hierarchy.Hierarchy.GetAllUsbDeviceSysfsPaths([(vid, p)])
+                paths = usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths(
+                    [(vid, p)]
+                )
                 if paths:
                     # This means the device is still around. Queue it again.
                     found_pids.append(p)
@@ -139,7 +141,9 @@ def wait_for_usb_device(
     while True:
         for p in pids:
             try:
-                devs = usb_hierarchy.Hierarchy.GetAllUsbDeviceSysfsPaths([(vid, p)])
+                devs = usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths(
+                    [(vid, p)]
+                )
             except usb_hierarchy.HierarchyError as e:
                 # Sometimes the device cannot be found as we are in the middle of
                 # plugging and unplugging. This means we cannot get a clean signal.

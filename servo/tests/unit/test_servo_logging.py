@@ -71,7 +71,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         for attr, val in self.module_defaults.items():
             setattr(servo_logging, attr, val)
 
-    def _GenerateSortedFilesFromTags(self, tags):
+    def _generate_sorted_files_from_tags(self, tags):
         """Helper sub-test that given a tag list generates sorted log-files.
         Args:
           tags: list of tags to generate (fake) log file names for
@@ -102,28 +102,28 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         assert shuffled_files != files
         return (files, shuffled_files)
 
-    def test_TagSorting(self):
+    def test_tag_sorting(self):
         """Test the tag sorting function."""
         # Only one tag as we want to test sorting within one tag.
         tags = ["test-tag"]
-        files, shuffled_files = self._GenerateSortedFilesFromTags(tags)
+        files, shuffled_files = self._generate_sorted_files_from_tags(tags)
         shuffled_files.sort(key=servo_logging._sortLogTagFn)
         # Assert the order is the same again.
         assert shuffled_files == files
 
-    def test_LogfileSorting(self):
+    def test_logfile_sorting(self):
         """Testing sorting by tags as well as by the index within a tag."""
         # The tag in the real implementation is a time-stamp. Therefore, the
         # first element should always be "higher" element after sorting, the
         # newer timestamp. Simulate here with a z instead of a t.
         tags = ["test-zag", "test-tag"]
         loglevel_str = logging.getLevelName(self.loglevel)
-        files, shuffled_files = self._GenerateSortedFilesFromTags(tags)
+        files, shuffled_files = self._generate_sorted_files_from_tags(tags)
         shuffled_files = servo_logging._sortLogs(shuffled_files, loglevel_str)
         # Assert the order is the same again.
         assert shuffled_files == files
 
-    def test_LoggerLogsToFile(self):
+    def test_logger_logs_to_file(self):
         """Basic testing that content is being output to the file."""
         test_str = "This is a test string to make sure there is logging."
         handler = servo_logging.ServodRotatingFileHandler(
@@ -134,7 +134,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         with open(handler.baseFilename, "r", encoding="utf-8") as log:
             assert log.read().strip() == test_str
 
-    def test_RotationOccursWhenFileGrowsTooLarge(self):
+    def test_rotation_occurs_when_file_grows_too_large(self):
         """Growing log-file beyond limit causes a rotation."""
         test_max_log_bytes = 40
         setattr(servo_logging, "MAX_LOG_BYTES", test_max_log_bytes)
@@ -153,7 +153,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         self.test_logger.info(log2)
         assert os.path.exists(get_rolled_fn(handler.baseFilename, 1))
 
-    def test_DeleteMultiplePastBackupCount(self):
+    def test_delete_multiple_past_backup_count(self):
         """No more than backup count logs are kept."""
         # Set the backup count to only be 3 compressed for this test.
         new_count = servo_logging.LOG_BACKUP_COUNT + 3
@@ -172,7 +172,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
             )
         handler.close()
 
-    def test_DeleteMultipleInstancesPastBackupCount(self):
+    def test_delete_multiple_instances_past_backup_count(self):
         """No more than backup count logs are kept across instances.
 
         Additionally, this test validates that the oldest get deleted.
@@ -219,7 +219,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         assert not any(self.ts in f for f in os.listdir(handler.logdir))
         handler.close()
 
-    def test_SortLogsOneInstance(self):
+    def test_sort_logs_one_instance(self):
         """Verify log-sorting is per instance in order of newest first."""
         loglevel = logging.getLevelName(self.loglevel)
         # Generate fake logfile names.
@@ -243,7 +243,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         allegedly_sorted_logfiles = servo_logging._sortLogs(logfiles, loglevel)
         assert allegedly_sorted_logfiles == sorted_logfiles
 
-    def test_SortLogsAcrossInstances(self):
+    def test_sort_logs_across_instances(self):
         """Verify log-sorting is across instances newest first."""
         loglevel = logging.getLevelName(self.loglevel)
         # Generate fake logfile names.
@@ -279,7 +279,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         allegedly_sorted_logfiles = servo_logging._sortLogs(logfiles, loglevel)
         self.assertEqual(allegedly_sorted_logfiles, sorted_logfiles)
 
-    def test_RotationMovesFilesAlong(self):
+    def test_rotation_moves_files_along(self):
         """Rotation moves the same logfile's sequence number forward."""
         # Number of times this test will rotate out the log file after its first
         # compression.
@@ -306,7 +306,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
             assert md5sum == get_file_md5sum(rolled_fn)
         handler.close()
 
-    def test_HandleExistingLogDir(self):
+    def test_handle_existing_log_dir(self):
         """The output directory for a specific port already existing is fine."""
         output_dir = servo_logging._buildLogdirName(self.logdir, 9998)
         os.makedirs(output_dir)

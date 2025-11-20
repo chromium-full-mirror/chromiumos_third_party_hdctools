@@ -14,7 +14,7 @@ CC_FLIP_RE = r"CC Flip: (\w+)\]"
 DUT_VOLTAGE_RE = r"PPVAR_VBUS_DUT: (\d+)mV"
 
 
-class fluffy(pty_driver.ptyDriver):
+class fluffy(pty_driver.PtyDriver):
     """Object to control fluffy debug board"""
 
     def _Get_active_chg_port(self):

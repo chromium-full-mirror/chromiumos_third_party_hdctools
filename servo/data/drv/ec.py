@@ -36,11 +36,11 @@ TC_FLAGS_TS_DTS_PARTNER = 1 << 1
 TC_FLAGS_PARTNER_PD_CAPABLE = 1 << 12
 
 
-class ecError(pty_driver.ptyError):
+class ecError(pty_driver.PtyError):
     """Exception class for ec."""
 
 
-class ec(pty_driver.ptyDriver):
+class ec(pty_driver.PtyDriver):
     """Object to access drv=ec controls.
 
     Note, instances of this object get dispatched via base class,
@@ -259,7 +259,7 @@ class ec(pty_driver.ptyDriver):
             )[0][1]
             if "S0" in result or "S3" in result:
                 return 1
-        except pty_driver.ptyError:
+        except pty_driver.PtyError:
             # If EC UART has no respond, treat it as warm_reset on.
             pass
         finally:
@@ -324,7 +324,7 @@ class ec(pty_driver.ptyDriver):
                 )
                 self._restore_channel()
                 break
-            except pty_driver.ptyError as e:
+            except pty_driver.PtyError as e:
                 if retries <= 0:
                     raise
                 logging.warning("Battery cmd failed, retrying: %s", e)
@@ -357,7 +357,7 @@ class ec(pty_driver.ptyDriver):
                     r"0-31: (0x[0-9a-f]{8})\s*32-63: (0x[0-9a-f]{8})"
                 ],
             )
-        except pty_driver.ptyError:
+        except pty_driver.PtyError:
             raise ecError("Cannot retrieve the feature flags on EC console.")
         finally:
             self._restore_channel()
@@ -498,7 +498,7 @@ class ec(pty_driver.ptyDriver):
 
         try:
             self._issue_cmd(cmd)
-        except pty_driver.ptyError as e:
+        except pty_driver.PtyError as e:
             raise ecError(
                 f"Cannot run `{cmd}`. Is this a DUT with PDC-driven CCD? "
                 "(CONFIG_USBC_PDC_DRIVEN_CCD)"
@@ -517,7 +517,7 @@ class ec(pty_driver.ptyDriver):
             results = self._issue_cmd_get_results(
                 cmd, [r"CCD Port: C\d+, Mode: (\w+) \(\d+\)"]
             )
-        except pty_driver.ptyError as e:
+        except pty_driver.PtyError as e:
             raise ecError(
                 f"Cannot run `{cmd}`. Is this a DUT with PDC-driven CCD? "
                 "(CONFIG_USBC_PDC_DRIVEN_CCD)"

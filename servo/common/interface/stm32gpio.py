@@ -62,7 +62,7 @@ class Sgpio(gpio_interface.GpioInterface):
         self._logger.debug("Set up stm32 gpio")
 
     @staticmethod
-    def Build(vid, pid, sid, interface_data, **_kwargs):
+    def build(vid, pid, sid, interface_data, **_kwargs):
         """Factory method to implement the interface."""
         c.build_logger.info("Sgpio: interface: %s", interface_data)
         return Sgpio(

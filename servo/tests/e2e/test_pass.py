@@ -3,5 +3,5 @@
 # found in the LICENSE file.
 
 
-def test_Pass():
+def test_pass():
     assert True

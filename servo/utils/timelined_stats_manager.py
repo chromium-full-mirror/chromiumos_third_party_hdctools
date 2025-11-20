@@ -67,16 +67,16 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         self._hide_domains.append(self._tkey)
         self._hide_domains.append(self._tlkey)
 
-    def CalculateStats(self):
-        """Generate relative timeline before calling StatsManager CalculateStats."""
+    def calculate_stats(self):
+        """Generate relative timeline before calling StatsManager calculate_stats."""
         if self._tkey in self._data:
             # |tkey| might have been removed during trimming.
             timeline = self._data[self._tkey]
             timeline = [entry - timeline[0] for entry in timeline]
             self._data[self._tlkey] = timeline
-        super(TimelinedStatsManager, self).CalculateStats()
+        super(TimelinedStatsManager, self).calculate_stats()
 
-    def AddSample(self, domain, sample):
+    def add_sample(self, domain, sample):
         """NotImplemented.
 
         In order to preserve the balanced timeline adding individual samples is
@@ -84,10 +84,10 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         in need of this function, please implement it/raise a bug.
         """
         raise stats_manager.StatsManagerError(
-            "TimelinedStatsManager does not support AddSample. Use AddSamples."
+            "TimelinedStatsManager does not support add_sample. Use add_samples."
         )
 
-    def AddSamples(self, samples, timestamp=None):
+    def add_samples(self, samples, timestamp=None):
         """Record a list of domains and samples.
 
         Record each (domain, sample) pair and the timestamp when the
@@ -120,9 +120,9 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         ]
         samples.extend(known_domains_missing_nans)
         for domain, sample in samples:
-            super(TimelinedStatsManager, self).AddSample(domain, sample)
+            super(TimelinedStatsManager, self).add_sample(domain, sample)
 
-    def FunctionallyEmpty(self):
+    def functionally_empty(self):
         """Whether the stats manager is devoid of meaningful data.
 
         Returns:
@@ -140,10 +140,10 @@ class TimelinedStatsManager(stats_manager.StatsManager):
 
         return all(k in [TIME_KEY, TLINE_KEY] for k in self._data.keys())
 
-    def TrimmedCopy(self, tag="", tstart=None, tend=None, offset=0):
+    def trimmed_copy(self, tag="", tstart=None, tend=None, offset=0):
         """Return a (trimmed) copy of this stats manager.
 
-        If |tstart| and |tend| are provided, it will behave like |TrimSamples()|
+        If |tstart| and |tend| are provided, it will behave like |trim_samples()|
         below, and return trimmed to [tstart + offset, tend + offset]
 
         |tag| usage note: the |smid| of the stats manager is usually its source e.g.
@@ -173,8 +173,8 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         trimmed_sm._logger = logging.getLogger(type(self).__name__)
         self._logger = old_logger
         # Restore the logger, and make sure that |trimmed_sm| also has a logger.
-        trimmed_sm.TrimSamples(tstart, tend, offset)
-        if trimmed_sm.FunctionallyEmpty():
+        trimmed_sm.trim_samples(tstart, tend, offset)
+        if trimmed_sm.functionally_empty():
             # Trimming resulted in an empty stats manager. Just return None.
             return None
         if tag:
@@ -182,10 +182,10 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         # Lastly, before returning, let's recalculate the stats to have the right
         # values for the trimmed data. This overwrites any previous 'stats' (e.g.
         # 'mean' values for a domain).
-        trimmed_sm.CalculateStats()
+        trimmed_sm.calculate_stats()
         return trimmed_sm
 
-    def TrimSamples(self, tstart=None, tend=None, offset=0):
+    def trim_samples(self, tstart=None, tend=None, offset=0):
         """Trim raw data to [tstart + offset, tend + offset].
 
         Args:

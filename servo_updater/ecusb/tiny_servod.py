@@ -36,7 +36,7 @@ class TinyServod:
             debuglog=self._debug,
         )
         self.suart.run()
-        self.pty = pty_driver.ptyDriver(self.suart, [])
+        self.pty = pty_driver.PtyDriver(self.suart, [])
 
     def reinitialize(self):
         """Reinitialize the connect after a reset/disconnect/etc."""

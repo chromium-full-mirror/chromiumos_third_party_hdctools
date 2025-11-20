@@ -76,15 +76,15 @@ def mock_servo_host(
                 self.hierarchy = {}
                 self.sysfs = {}
                 class_mocker.patch(
-                    "servo.utils.usb_hierarchy.Hierarchy._RefreshHierarchy",
+                    "servo.utils.usb_hierarchy.Hierarchy._refresh_hierarchy",
                     return_value=self.hierarchy,
                 )
                 class_mocker.patch(
-                    "servo.utils.usb_hierarchy.Hierarchy._ReadFromSysfs",
-                    side_effect=self.MockReadFromSysfs,
+                    "servo.utils.usb_hierarchy.Hierarchy._read_from_sysfs",
+                    side_effect=self.mock_read_from_sysfs,
                 )
 
-            def MockReadFromSysfs(self, sysfs_path, dev_file, cast=str):
+            def mock_read_from_sysfs(self, sysfs_path, dev_file, cast=str):
                 return self.sysfs[sysfs_path][dev_file]
 
             def add_device(self, servo_type, bus, address, dd):

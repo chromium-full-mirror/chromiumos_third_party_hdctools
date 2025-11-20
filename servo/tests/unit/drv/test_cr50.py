@@ -11,7 +11,7 @@ from servo.data.drv import cr50
 from servo.data.drv import pty_driver
 
 
-@mock.patch("servo.data.drv.pty_driver.ptyDriver._issue_cmd_get_results")
+@mock.patch("servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results")
 class TestPromptDetection(unittest.TestCase):
     class cr50(cr50.cr50):
         def __init__(self):
@@ -32,7 +32,7 @@ class TestPromptDetection(unittest.TestCase):
             if issueCmdMock.call_count >= cr50.cr50.PROMPT_DETECTION_TRIES:
                 return "value"
             else:
-                raise pty_driver.ptyError("error")
+                raise pty_driver.PtyError("error")
 
         issueCmdMock.side_effect = fakeIssueCmd
         uut = self.cr50()
@@ -44,8 +44,8 @@ class TestPromptDetection(unittest.TestCase):
         self.assertEqual(cr50.cr50.PROMPT_DETECTION_TRIES + 1, issueCmdMock.call_count)
 
     def test_no_prompt(self, issueCmdMock):
-        issueCmdMock.side_effect = pty_driver.ptyError("error")
+        issueCmdMock.side_effect = pty_driver.PtyError("error")
         uut = self.cr50()
-        with self.assertRaises(pty_driver.ptyError):
+        with self.assertRaises(pty_driver.PtyError):
             uut._issue_cmd_get_results("cmd\n", [])
         self.assertEqual(cr50.cr50.PROMPT_DETECTION_TRIES, issueCmdMock.call_count)

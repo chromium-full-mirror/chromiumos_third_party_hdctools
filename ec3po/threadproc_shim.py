@@ -43,11 +43,11 @@ from threading import Thread as ThreadOrProcess
 USING_SUBPROCS = False
 
 
-def _DoNothing():
-    """Do-nothing function for use as a callback with DoIf()."""
+def _do_nothing():
+    """Do-nothing function for use as a callback with do_if()."""
 
 
-def DoIf(subprocs=_DoNothing, threads=_DoNothing):
+def do_if(subprocs=_do_nothing, threads=_do_nothing):
     """Return a callback or not based on ec3po use of subprocesses or threads.
 
     Args:
@@ -64,5 +64,5 @@ def DoIf(subprocs=_DoNothing, threads=_DoNothing):
     return subprocs if USING_SUBPROCS else threads
 
 
-def Value(ctype, *args):
+def value(ctype, *args):
     return ctype(*args)

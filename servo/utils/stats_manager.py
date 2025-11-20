@@ -59,17 +59,17 @@ class StatsManager:
     Example usage:
 
       >>> stats = StatsManager(title='Title Banner')
-      >>> stats.AddSample(TIME_KEY, 50.0)
-      >>> stats.AddSample(TIME_KEY, 25.0)
-      >>> stats.AddSample(TIME_KEY, 40.0)
-      >>> stats.AddSample(TIME_KEY, 10.0)
-      >>> stats.AddSample(TIME_KEY, 10.0)
-      >>> stats.AddSample('frobnicate', 11.5)
-      >>> stats.AddSample('frobnicate', 9.0)
-      >>> stats.AddSample('foobar', 11111.0)
-      >>> stats.AddSample('foobar', 22222.0)
-      >>> stats.CalculateStats()
-      >>> print(stats.SummaryToString())
+      >>> stats.add_sample(TIME_KEY, 50.0)
+      >>> stats.add_sample(TIME_KEY, 25.0)
+      >>> stats.add_sample(TIME_KEY, 40.0)
+      >>> stats.add_sample(TIME_KEY, 10.0)
+      >>> stats.add_sample(TIME_KEY, 10.0)
+      >>> stats.add_sample('frobnicate', 11.5)
+      >>> stats.add_sample('frobnicate', 9.0)
+      >>> stats.add_sample('foobar', 11111.0)
+      >>> stats.add_sample('foobar', 22222.0)
+      >>> stats.calculate_stats()
+      >>> print(stats.summary_to_string())
     ` @@--------------------------------------------------------------
     ` @@                        Title Banner
       @@--------------------------------------------------------------
@@ -97,8 +97,8 @@ class StatsManager:
       _rate: frequency that the data is sampled at (in seconds)
 
     Note:
-      _summary is empty until CalculateStats() is called, and is updated when
-      CalculateStats() is called.
+      _summary is empty until calculate_stats() is called, and is updated when
+      calculate_stats() is called.
     """
 
     # pylint: disable=W0102
@@ -118,7 +118,7 @@ class StatsManager:
         self._summary = {}
         self._logger = logging.getLogger(type(self).__name__)
 
-    def AddSample(self, domain, sample):
+    def add_sample(self, domain, sample):
         """Add one sample for a domain.
 
         Args:
@@ -142,7 +142,7 @@ class StatsManager:
         if math.isnan(sample):
             self._nan_domains.add(domain)
 
-    def SetUnit(self, domain, unit):
+    def set_unit(self, domain, unit):
         """Set the unit for a domain.
 
         There can be only one unit for each domain. Setting unit twice will
@@ -161,7 +161,7 @@ class StatsManager:
             )
         self._unit[domain] = unit
 
-    def CalculateStats(self):
+    def calculate_stats(self):
         """Calculate stats for all domain-data pairs.
 
         First erases all previous stats, then calculate stats for all data.
@@ -177,16 +177,16 @@ class StatsManager:
             }
 
     @property
-    def DomainsToDisplay(self):
+    def domains_to_display(self):
         """List of domains that the manager will output in summaries."""
         return set(self._summary.keys()) - set(self._hide_domains)
 
     @property
-    def NanInOutput(self):
+    def nan_in_output(self):
         """Return whether any of the domains to display have NaN values."""
-        return bool(len(set(self._nan_domains) & self.DomainsToDisplay))
+        return bool(len(set(self._nan_domains) & self.domains_to_display))
 
-    def _SummaryTable(self):
+    def _summary_table(self):
         """Generate the matrix to output as a summary.
 
         Returns:
@@ -198,7 +198,7 @@ class StatsManager:
         headers = ("NAME", "COUNT", "MEAN", "STDDEV", "MAX", "MIN")
         table = [headers]
         # determine what domains to display & and the order
-        domains_to_display = self.DomainsToDisplay
+        domains_to_display = self.domains_to_display
         display_order = [key for key in self._order if key in domains_to_display]
         domains_to_display -= set(display_order)
         display_order.extend(sorted(domains_to_display))
@@ -215,7 +215,7 @@ class StatsManager:
             table.append(row)
         return table
 
-    def SummaryToMarkdownString(self):
+    def summary_to_markdown_string(self):
         """Format the summary into a b/ compatible markdown table string.
 
         This requires this sort of output format
@@ -232,7 +232,7 @@ class StatsManager:
         """
         # All we need to do before processing is insert a row of '-' between
         # the headers, and the data
-        table = self._SummaryTable()
+        table = self._summary_table()
         columns = len(table[0])
         # Using '-:' to allow the numbers to be right aligned
         sep_row = ["-"] + ["-:"] * (columns - 1)
@@ -245,7 +245,7 @@ class StatsManager:
         # Make sure that the body is terminated with a newline.
         return body + "\n"
 
-    def SummaryToString(self, prefix=STATS_PREFIX):
+    def summary_to_string(self, prefix=STATS_PREFIX):
         """Format summary into a string, ready for pretty print.
 
         See class description for format example.
@@ -256,7 +256,7 @@ class StatsManager:
         Returns:
           formatted summary string.
         """
-        table = self._SummaryTable()
+        table = self._summary_table()
         max_col_width = []
         for col_idx in range(len(table[0])):
             col_item_widths = [len(row[col_idx]) for row in table]
@@ -268,7 +268,7 @@ class StatsManager:
             for i in range(len(row)):
                 formatted_row += row[i].rjust(max_col_width[i] + 2)
             formatted_lines.append(formatted_row)
-        if self.NanInOutput:
+        if self.nan_in_output:
             formatted_lines.append("%s %s" % (prefix, NAN_DESCRIPTION))
 
         line_length = len(formatted_lines[0])
@@ -294,11 +294,11 @@ class StatsManager:
         formatted_output = "\n".join(formatted_lines)
         return formatted_output
 
-    def GetSummary(self):
+    def get_summary(self):
         """Getter for summary."""
         return self._summary
 
-    def _MakeUniqueFName(self, fname):
+    def _make_unique_fname(self, fname):
         """prepend |_smid| to fname & rotate fname to ensure uniqueness.
 
         Before saving a file through the StatsManager, make sure that the filename
@@ -343,7 +343,7 @@ class StatsManager:
             tag += 1
         return unique_fname
 
-    def SaveSummary(self, directory, fname="summary.txt", prefix=STATS_PREFIX):
+    def save_summary(self, directory, fname="summary.txt", prefix=STATS_PREFIX):
         """Save summary to file.
 
         Args:
@@ -354,10 +354,10 @@ class StatsManager:
         Returns:
           full path of summary save location
         """
-        summary_str = self.SummaryToString(prefix=prefix) + "\n"
-        return self._SaveSummary(summary_str, directory, fname)
+        summary_str = self.summary_to_string(prefix=prefix) + "\n"
+        return self._save_summary(summary_str, directory, fname)
 
-    def SaveSummaryJSON(self, directory, fname="summary.json"):
+    def save_summary_json(self, directory, fname="summary.json"):
         """Save summary (only MEAN) into a JSON file.
 
         Args:
@@ -373,9 +373,9 @@ class StatsManager:
             data_entry = {"mean": self._summary[domain]["mean"], "unit": unit}
             data[domain] = data_entry
         summary_str = json.dumps(data, indent=2)
-        return self._SaveSummary(summary_str, directory, fname)
+        return self._save_summary(summary_str, directory, fname)
 
-    def SaveSummaryMD(self, directory, fname="summary.md"):
+    def save_summary_md(self, directory, fname="summary.md"):
         """Save summary into a MD file to paste into b/.
 
         Args:
@@ -385,10 +385,10 @@ class StatsManager:
         Returns:
           full path of summary save location
         """
-        summary_str = self.SummaryToMarkdownString()
-        return self._SaveSummary(summary_str, directory, fname)
+        summary_str = self.summary_to_markdown_string()
+        return self._save_summary(summary_str, directory, fname)
 
-    def _SaveSummary(self, output_str, directory, fname):
+    def _save_summary(self, output_str, directory, fname):
         """Wrote |output_str| to |fname|.
 
         Args:
@@ -401,16 +401,16 @@ class StatsManager:
         """
         if not os.path.exists(directory):
             os.makedirs(directory)
-        fname = self._MakeUniqueFName(os.path.join(directory, fname))
+        fname = self._make_unique_fname(os.path.join(directory, fname))
         with open(fname, "w", encoding="utf-8") as f:
             f.write(output_str)
         return fname
 
-    def GetRawData(self):
+    def get_raw_data(self):
         """Getter for all raw_data."""
         return self._data
 
-    def SaveRawData(self, directory, dirname="raw_data"):
+    def save_raw_data(self, directory, dirname="raw_data"):
         """Save raw data to file.
 
         Args:
@@ -429,7 +429,7 @@ class StatsManager:
         for domain, data in self._data.items():
             if not domain.endswith(self._unit[domain]):
                 domain = "%s_%s" % (domain, self._unit[domain])
-            fname = self._MakeUniqueFName(os.path.join(dirname, "%s.txt" % domain))
+            fname = self._make_unique_fname(os.path.join(dirname, "%s.txt" % domain))
             with open(fname, "w", encoding="utf-8") as f:
                 f.write("\n".join("%.2f" % sample for sample in data) + "\n")
             fnames.append(fname)

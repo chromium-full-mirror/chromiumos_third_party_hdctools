@@ -67,7 +67,7 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         """Let the handler to be callable"""
         super().__init__(*args, **kwargs)
 
-    def do_POST(self):
+    def do_post(self):
         """This function passes the message to the html which connect to the server"""
         power_data = self._data_sampler.get_data_sample()
         self.send_response(200)

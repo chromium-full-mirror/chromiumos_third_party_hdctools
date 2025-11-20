@@ -483,7 +483,7 @@ class AutoUpdatingDetokenizerTest(unittest.TestCase):
         db = database.load_token_database(io.BytesIO(ELF_WITH_TOKENIZER_SECTIONS))
         self.assertEqual(len(db), ALL_DOMAIN_TOKENS)
 
-        PREFIX = b"`"
+        prefix = b"`"
         the_time = [100]
 
         def move_back_time_if_file_exists(path) -> int:
@@ -501,7 +501,7 @@ class AutoUpdatingDetokenizerTest(unittest.TestCase):
 
                 pool = ManualPoolExecutor()
                 detok = detokenize.AutoUpdatingDetokenizer(
-                    file.name, min_poll_period_s=0, pool=pool, prefix=PREFIX
+                    file.name, min_poll_period_s=0, pool=pool, prefix=prefix
                 )
                 self.assertFalse(detok.detokenize(JELLO_WORLD_TOKEN).ok())
 
@@ -515,9 +515,9 @@ class AutoUpdatingDetokenizerTest(unittest.TestCase):
                 # After the pool is allowed to process, it should.
                 pool.process()
                 self.assertTrue(detok.detokenize(JELLO_WORLD_TOKEN).ok())
-                JELLO = PREFIX + base64.b64encode(JELLO_WORLD_TOKEN)
+                jello = prefix + base64.b64encode(JELLO_WORLD_TOKEN)
                 self.assertEqual(
-                    detok.detokenize_text(JELLO),
+                    detok.detokenize_text(jello),
                     b"Jello, world!",
                 )
             finally:
@@ -825,40 +825,40 @@ class DetokenizeNested(unittest.TestCase):
 class DetokenizeBase64(unittest.TestCase):
     """Tests detokenizing Base64 messages."""
 
-    PREFIX = b"`"
-    JELLO = PREFIX + base64.b64encode(JELLO_WORLD_TOKEN)
+    prefix = b"`"
+    jello = prefix + base64.b64encode(JELLO_WORLD_TOKEN)
 
-    RECURSION_STRING = f'The secret message is "{JELLO.decode()}"'
-    RECURSION = PREFIX + base64.b64encode(
+    RECURSION_STRING = f'The secret message is "{jello.decode()}"'
+    RECURSION = prefix + base64.b64encode(
         struct.pack("I", tokens.c_hash(RECURSION_STRING))
     )
 
     RECURSION_STRING_2 = f"'{RECURSION.decode()}', said the spy."
-    RECURSION_2 = PREFIX + base64.b64encode(
+    RECURSION_2 = prefix + base64.b64encode(
         struct.pack("I", tokens.c_hash(RECURSION_STRING_2))
     )
 
     TEST_CASES = (
         (b"", b""),
         (b"nothing here", b"nothing here"),
-        (JELLO, b"Jello, world!"),
-        (JELLO + b"a", b"Jello, world!a"),
-        (JELLO + b"abc", b"Jello, world!abc"),
-        (JELLO + b"abc=", b"Jello, world!abc="),
-        (PREFIX + b"a" + JELLO + b"a", PREFIX + b"aJello, world!a"),
-        (b"Hello " + JELLO + b"?", b"Hello Jello, world!?"),
-        (PREFIX + JELLO, PREFIX + b"Jello, world!"),
-        (JELLO + JELLO, b"Jello, world!Jello, world!"),
-        (JELLO + PREFIX + JELLO, b"Jello, world!" + PREFIX + b"Jello, world!"),
+        (jello, b"Jello, world!"),
+        (jello + b"a", b"Jello, world!a"),
+        (jello + b"abc", b"Jello, world!abc"),
+        (jello + b"abc=", b"Jello, world!abc="),
+        (prefix + b"a" + jello + b"a", prefix + b"aJello, world!a"),
+        (b"Hello " + jello + b"?", b"Hello Jello, world!?"),
+        (prefix + jello, prefix + b"Jello, world!"),
+        (jello + jello, b"Jello, world!Jello, world!"),
+        (jello + prefix + jello, b"Jello, world!" + prefix + b"Jello, world!"),
         (
-            JELLO + PREFIX + b"a" + JELLO + b"bcd",
-            b"Jello, world!" + PREFIX + b"aJello, world!bcd",
+            jello + prefix + b"a" + jello + b"bcd",
+            b"Jello, world!" + prefix + b"aJello, world!bcd",
         ),
-        (PREFIX + b"3141", PREFIX + b"3141"),
-        (JELLO + PREFIX + b"3141", b"Jello, world!" + PREFIX + b"3141"),
+        (prefix + b"3141", prefix + b"3141"),
+        (jello + prefix + b"3141", b"Jello, world!" + prefix + b"3141"),
         (
-            JELLO + PREFIX + b"a" + JELLO + b"b" + JELLO + b"c",
-            b"Jello, world!" + PREFIX + b"aJello, world!bJello, world!c",
+            jello + prefix + b"a" + jello + b"b" + jello + b"c",
+            b"Jello, world!" + prefix + b"aJello, world!bJello, world!c",
         ),
         (RECURSION, b'The secret message is "Jello, world!"'),
         (
@@ -874,7 +874,7 @@ class DetokenizeBase64(unittest.TestCase):
             tokens.TokenizedStringEntry(tokens.c_hash(s), s)
             for s in [self.RECURSION_STRING, self.RECURSION_STRING_2]
         )
-        self.detok = detokenize.Detokenizer(db, prefix=self.PREFIX)
+        self.detok = detokenize.Detokenizer(db, prefix=self.prefix)
 
     def test_detokenize_text_live(self) -> None:
         for data, expected in self.TEST_CASES:
