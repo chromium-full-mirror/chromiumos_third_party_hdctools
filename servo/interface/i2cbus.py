@@ -5,6 +5,7 @@
 
 import fcntl
 import io
+from typing import Any, List, Optional
 
 from servo.interface import i2c_base
 
@@ -22,21 +23,38 @@ class I2CBus(i2c_base.BaseI2CBus):
 
     _I2C_WORKER_FORCE = 0x0706
 
-    def __init__(self, interface):
+    def __init__(self, interface: str) -> None:
         i2c_base.BaseI2CBus.__init__(self)
-        self._interface = interface
+        self._interface_path = interface
+        self._interface = io.open(self._interface_path, mode="r+b", buffering=0)
+
+    def close(self) -> None:
+        """Closes the I2C bus file."""
+        if self._interface:
+            self._interface.close()
+            self._interface = None
+        super(I2CBus, self).close()
+
+    def __del__(self) -> None:
+        self.close()
 
     @staticmethod
-    def build(interface_data, **_kwargs):
+    def build(interface_data: Any, **_kwargs: Any) -> "I2CBus":
         """Factory method to implement the interface."""
         return I2CBus("/dev/i2c-%d" % interface_data["bus_num"])
 
     @staticmethod
-    def name():
+    def name() -> str:
         """Name to request interface by in interface config maps."""
         return "dev_i2c"
 
-    def _raw_wr_rd(self, child_address, write_list, read_count=None, auto_release=True):
+    def _raw_wr_rd(
+        self,
+        child_address: int,
+        write_list: Optional[List[int]],
+        read_count: Optional[int] = None,
+        auto_release: bool = True,
+    ) -> Optional[List[int]]:
         """Implements hdctools wr_rd() interface.
 
         This function writes byte values list to I2C device, then reads
@@ -49,10 +67,10 @@ class I2CBus(i2c_base.BaseI2CBus):
           auto_release: Ignored for compatibility with Si2cBus.
         """
         del auto_release
-        bus = io.open(self._interface, mode="r+b", buffering=0)
-        fcntl.ioctl(bus.fileno(), self._I2C_WORKER_FORCE, child_address)
+        fcntl.ioctl(self._interface.fileno(), self._I2C_WORKER_FORCE, child_address)
         if write_list:
-            output_buf = "".join(chr(byte_value) for byte_value in write_list)
-            bus.write(output_buf)
+            output_buf = bytes(write_list)
+            self._interface.write(output_buf)
         if read_count:
-            return [ord(byte) for byte in bus.read(read_count)]
+            return list(bytearray(self._interface.read(read_count)))
+        return None

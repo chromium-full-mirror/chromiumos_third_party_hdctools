@@ -123,6 +123,7 @@ class Fuart(uart.Uart):
 
         err = self._lib.fuart_init(ctypes.byref(self._fuartc), ctypes.byref(self._fc))
         if err:
+            self._flib.ftdi_deinit(ctypes.byref(self._fc))
             raise FuartError("doing fuart_init", err)
 
     @staticmethod
