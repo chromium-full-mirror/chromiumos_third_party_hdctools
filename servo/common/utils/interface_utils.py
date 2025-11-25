@@ -108,7 +108,7 @@ class InterfaceUtils:
                 raise TypeError("Illegal interface data type %s" % type(interface_data))
             InterfaceUtils._logger.info("Initializing interface %d to %s", i, name)
             try:
-                result = _interface.Build(
+                result = _interface.build(
                     name=name,
                     index=i,
                     vid=vid,
