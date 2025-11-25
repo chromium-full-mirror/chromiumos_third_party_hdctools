@@ -11,6 +11,7 @@ import backoff
 import usb
 
 from servo.common.interface import common as c
+from servo.common.interface import interface
 from servo.utils import usb_hierarchy
 
 
@@ -23,7 +24,7 @@ class SusbError(c.InterfaceError):
     """Class for exceptions of Susb."""
 
 
-class Susb:
+class Susb(interface.Interface):
     """Provide stm32 USB functionality.
 
     Instance Variables:
@@ -62,7 +63,12 @@ class Susb:
     REINIT_DONE_EVENTS = collections.defaultdict(threading.Event)
 
     def __init__(
-        self, vendor=0x18D1, product=0x500F, interface=1, serialname=None, logger=None
+        self,
+        vendor=0x18D1,
+        product=0x500F,
+        interface_id=1,
+        serialname=None,
+        logger=None,
     ):
         """Susb constructor.
 
@@ -71,15 +77,15 @@ class Susb:
         Args:
           vendor    : usb vendor id of stm32 device
           product   : usb product id of stm32 device
-          interface : interface number ( 1 - 4 ) of stm32 device to use
+          interface_id : interface number ( 1 - 4 ) of stm32 device to use
           serialname: string of device serialname.
 
         Raises:
           SusbError: An error accessing Susb object
         """
-        if not logger:
-            raise SusbError("No logger defined")
-        self._logger = logger
+        super(Susb, self).__init__(logger_name=type(self).__name__)
+        if logger:
+            self._logger = logger
 
         # Setting up the read and write locks. These are per instance, as each
         # instance represents one interface.
@@ -89,7 +95,7 @@ class Susb:
 
         self._vendor = vendor
         self._product = product
-        self._interface = interface
+        self._interface = interface_id
         self._serialname = serialname
         self._dev = None
 
@@ -320,7 +326,12 @@ class Susb:
         )
         return True
 
-    def __del__(self):
-        """Sgpio destructor."""
+    def close(self):
+        """Stm32usb release."""
         if self._dev:
             usb.util.dispose_resources(self._dev)
+            self._dev = None
+
+    def __del__(self):
+        """Sgpio destructor."""
+        self.close()

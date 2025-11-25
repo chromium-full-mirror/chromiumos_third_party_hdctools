@@ -402,7 +402,7 @@ class TestDutPower(unittest.TestCase):
     def test_measure_power_visualization(self):
         """Test _measure_power()."""
         dp = dut_power.DutPower()
-        dp.visualization_server = http_server.HttpRequestHandler(None)
+        dp.visualization_server = unittest.mock.MagicMock()
         dp.visualization_server.server_close = unittest.mock.MagicMock()
         dp.visualization_server.shutdown = unittest.mock.MagicMock()
         args = argparse.Namespace()
@@ -460,7 +460,7 @@ class TestDutPower(unittest.TestCase):
         dp = dut_power.DutPower()
         dp.pm_logger = logging.getLogger("")
         dp.tmplogfile = tempfile.NamedTemporaryFile(mode="w+")
-        dp.http_server_handler = http_server.HttpRequestHandler(None)
+        dp.http_server_handler = unittest.mock.MagicMock()
         args = argparse.Namespace()
         args.save_summary = True
         args.save_raw_data = True

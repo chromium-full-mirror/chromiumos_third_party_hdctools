@@ -427,7 +427,7 @@ class PtyDriver(hw_driver.HwDriver):
         """
         return 1 if self._interface._uart_state["uart_flush"] else 0
 
-    def _set_uart_timeout(self, timeout):
+    def _Set_uart_timeout(self, timeout):
         """Set timeout value for waiting for the device response.
 
         Args:
@@ -435,7 +435,7 @@ class PtyDriver(hw_driver.HwDriver):
         """
         self._interface._uart_state["uart_timeout"] = timeout
 
-    def _get_uart_timeout(self):
+    def _Get_uart_timeout(self):
         """Get timeout value for waiting for the device response.
 
         Returns:

@@ -59,7 +59,7 @@ class Si2cBus(i2c_base.BaseI2CBus):
         self._susb = stm32usb.Susb(
             vendor=vendor,
             product=product,
-            interface=interface,
+            interface_id=interface,
             serialname=serialname,
             logger=self._logger,
         )

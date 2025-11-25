@@ -49,23 +49,12 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
         socketserver.TCPServer.__init__(self, server_address, RequestHandlerClass)
 
 
-class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
-    """The handler can pass the data, check for the availability of the port"""
+class _ActualHttpRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """The actual handler that processes requests."""
 
-    def __init__(self, data_sampler):
-        """Initialize the HttpRequestHandler
-
-        Args:
-          _data_sampler: A data sampler of generating the sample data for
-            the visualization UI
-          _logger: Http Server handler log
-        """
+    def __init__(self, request, client_address, server, data_sampler):
         self._data_sampler = data_sampler
-        self._logger = logging.getLogger(type(self).__name__)
-
-    def __call__(self, *args, **kwargs):
-        """Let the handler to be callable"""
-        super().__init__(*args, **kwargs)
+        super().__init__(request, client_address, server)
 
     def do_post(self):
         """This function passes the message to the html which connect to the server"""
@@ -91,6 +80,30 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(bytes(message, "utf8"))
         # clearing the input bufer
         self.wfile.flush()
+
+    def log_request(self, code="-", size="-"):
+        """This function helps avoid showing the http.server's logging on the console"""
+
+
+class HttpRequestHandler:
+    """The handler can pass the data, check for the availability of the port"""
+
+    def __init__(self, data_sampler):
+        """Initialize the HttpRequestHandler
+
+        Args:
+          _data_sampler: A data sampler of generating the sample data for
+            the visualization UI
+          _logger: Http Server handler log
+        """
+        self._data_sampler = data_sampler
+        self._logger = logging.getLogger(type(self).__name__)
+
+    def __call__(self, request, client_address, server):
+        """Let the handler to be callable"""
+        return _ActualHttpRequestHandler(
+            request, client_address, server, self._data_sampler
+        )
 
     def is_port_used(self, port):
         """A boolean function to check if the specific port is not been used
@@ -163,6 +176,3 @@ class HttpRequestHandler(http.server.SimpleHTTPRequestHandler):
         self._logger.info("Save the release.html in %s", save_html_path)
         save_html_reader.close()
         html_reader.close()
-
-    def log_request(self, code="-", size="-"):
-        """This function helps avoid showing the http.server's logging on the console"""
