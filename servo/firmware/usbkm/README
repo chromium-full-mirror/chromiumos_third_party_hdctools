@@ -40,8 +40,16 @@ cd ~/chromiumos/src/third_party/hdctools/usbkm232
 USBKM232_UART_DEVICE=/dev/pts/31 python ./space.py
 
 
+New way to build:
 
-To build:
+In this directory run:
+
+docker build --output "." --target copytohost .
+
+A new Keyboard.hex will be generated in this directory
+
+Original way To build:
+
 Install the AVR toolchain (outside chroot):
 sudo apt-get install gcc-avr binutils-avr gdb-avr avr-libc avrdude
 
