@@ -609,7 +609,7 @@ def main(cmdline=sys.argv[1:]):
 
     args = parser.parse_args(cmdline)
 
-    servo_parsing.ServodRCParser.PostProcessRCElements(
+    servo_parsing.ServodRCParser.post_process_rc_elements(
         options=args, rcpath=servo_parsing.DEFAULT_RC_FILE, logger=logging
     )
 
