@@ -3,6 +3,9 @@
     <name>ti50.xml</name>
   </include>
   <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
     <name>x86_ec_common.xml</name>
   </include>
   <include>
