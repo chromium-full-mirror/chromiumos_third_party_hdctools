@@ -114,13 +114,14 @@ RUN tar cvf libs.tar /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
 FROM libftdi as pigweed-builder
+ARG PIGWEED_URL=https://chromium.googlesource.com/chromiumos/third_party/pigweed/pigweed
+ARG PIGWEED_BRANCH=main
 
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/pigweed/pigweed
+RUN git clone ${PIGWEED_URL}
 
 WORKDIR /pigweed
-# TODO(b/371018012): Once pigweed downstreaming is enabled follow
-# upstream pigweed
-RUN git checkout upstream/main
+RUN git fetch ${PIGWEED_URL} ${PIGWEED_BRANCH}
+RUN git checkout ${PIGWEED_BRANCH}
 COPY servo/dockerfiles/setup_pigweed.py .
 RUN python3 setup_pigweed.py bdist_wheel
 
