@@ -1,0 +1,19 @@
+<root>
+  <include>
+    <name>servo_volteer_overlay.xml</name>
+  </include>
+  <!-- Copano miswired the LID_OPEN and TABLET_MODE_L lines. b/178953622
+  Servo micro calls TABLET_MODE_L GOOG_DUT_REC_MODE.
+  -->
+  <control>
+    <name>servo_micro_lid_open</name>
+    <doc>lid open GPIO</doc>
+    <params clobber_ok="patch" offset="0" map="yesno_i"></params>
+  </control>
+  <!-- This doesn't technically matter, since this control is only used for chromeboxes. -->
+  <control>
+    <name>rec_mode</name>
+    <doc>Google recovery mode</doc>
+    <params clobber_ok="patch" offset="4" map="onoff"></params>
+  </control>
+</root>

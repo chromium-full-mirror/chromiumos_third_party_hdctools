@@ -260,7 +260,8 @@
     offset="3" map="onoff_i" init="off"></params>
   </control>
   <control>
-    <name>lid_open</name>
+    <name>servo_micro_lid_open</name>
+    <alias>lid_open</alias>
     <doc>lid open GPIO</doc>
     <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
     offset="4" map="yesno" init="yes"></params>
