@@ -5,12 +5,12 @@
 import unittest
 from unittest import mock
 
-from servo.interface import ftdiuart
+from servo.common.interface import ftdiuart
 
 
 class TestFuartInit(unittest.TestCase):
     def setUp(self):
-        self.patcher = mock.patch("servo.interface.ftdi_utils.load_libs")
+        self.patcher = mock.patch("servo.common.interface.ftdi_utils.load_libs")
         self.mock_load_libs = self.patcher.start()
         self.mock_flib = mock.Mock()
         self.mock_lib = mock.Mock()

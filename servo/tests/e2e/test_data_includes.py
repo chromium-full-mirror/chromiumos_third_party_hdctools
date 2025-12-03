@@ -9,7 +9,7 @@ import os
 import unittest
 import xml.etree.ElementTree as ET
 
-from servo import servod
+from servo.core import servod
 
 
 SERVO_DATA_DIR = "data"

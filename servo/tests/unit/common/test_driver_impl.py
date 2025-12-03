@@ -9,18 +9,18 @@ from servo.common.utils.interface_utils import InterfaceUtils
 from servo.core import servo_dev_templates as tmpl
 from servo.core import servo_interfaces
 from servo.data.drv import na
-from servo.data.impl.driver_impl import _drv_dict
+from servo.data.impl.driver_impl import _drv_dict_all
 from servo.data.impl.driver_impl import DriverImpl
 from servo.data.impl.system_config_service import get_system_config
 
 
 class TestDriverImpl(unittest.TestCase):
     @unittest.mock.patch(
-        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.common.interface.build", unittest.mock.MagicMock(return_value=None)
     )
     def setUp(self):
-        self.servo_v4_vid = tmpl.GetVID("servo_v4")
-        self.servo_v4_pid = tmpl.GetPID("servo_v4")
+        self.servo_v4_vid = tmpl.get_id("servo_v4")[0]
+        self.servo_v4_pid = tmpl.get_id("servo_v4")[1]
         self.servo_v4_serial = "servo_v4_serial"
         servo_v4_interfaces = servo_interfaces.INTERFACE_DEFAULTS[self.servo_v4_vid][
             self.servo_v4_pid
@@ -65,8 +65,8 @@ class TestDriverImpl(unittest.TestCase):
             "clobber_ok": "",
         }
         map_params = {"deasserted", "asserted"}
-        driver_impl = DriverImpl()
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid)
+        driver_impl = DriverImpl("test_core_addr", "test_data_addr")
+        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
         syscfg.lookup_control_params = unittest.mock.MagicMock(
             return_value=(set_params, get_params)
         )
@@ -110,8 +110,8 @@ class TestDriverImpl(unittest.TestCase):
             "clobber_ok": "",
         }
         map_params = {"0", "1"}
-        driver_impl = DriverImpl()
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid)
+        driver_impl = DriverImpl("test_core_addr", "test_data_addr")
+        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
         syscfg.lookup_control_params = unittest.mock.MagicMock(
             return_value=(set_params, get_params)
         )
@@ -130,12 +130,12 @@ class TestDriverImpl(unittest.TestCase):
 
     def test_get_param_drv_get_cache(self):
         """Test _get_param_drv()."""
-        _drv_dict["test_get"] = {"get": ["testing"]}
-        driver_impl = DriverImpl()
         interface_key = InterfaceUtils.get_interface_key(
             self.servo_v4_vid, self.servo_v4_pid, self.servo_v4_serial
         )
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid)
+        _drv_dict_all[interface_key] = {"test_get": {"get": ["testing"]}}
+        driver_impl = DriverImpl("test_core_addr", "test_data_addr")
+        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
         drv = driver_impl._get_param_drv(
             control_name="test_get",
             device_type="servo_v4p1",
@@ -147,12 +147,12 @@ class TestDriverImpl(unittest.TestCase):
 
     def test_get_param_drv_set_cache(self):
         """Test _get_param_drv()."""
-        _drv_dict["test_set"] = {"set": ["testing"]}
-        driver_impl = DriverImpl()
         interface_key = InterfaceUtils.get_interface_key(
             self.servo_v4_vid, self.servo_v4_pid, self.servo_v4_serial
         )
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid)
+        _drv_dict_all[interface_key] = {"test_set": {"set": ["testing"]}}
+        driver_impl = DriverImpl("test_core_addr", "test_data_addr")
+        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
         drv = driver_impl._get_param_drv(
             control_name="test_set",
             device_type="servo_v4p1",
@@ -165,7 +165,7 @@ class TestDriverImpl(unittest.TestCase):
     def test_get(self):
         """Test get()."""
         na_drv = unittest.mock.MagicMock(spec=na.na)
-        driver_impl = DriverImpl()
+        driver_impl = DriverImpl("test_core_addr", "test_data_addr")
         driver_impl._get_param_drv = unittest.mock.MagicMock(
             return_value=({}, na_drv, None)
         )
@@ -184,7 +184,7 @@ class TestDriverImpl(unittest.TestCase):
     def test_set(self):
         """Test set()."""
         na_drv = unittest.mock.MagicMock(spec=na.na)
-        driver_impl = DriverImpl()
+        driver_impl = DriverImpl("test_core_addr", "test_data_addr")
         driver_impl._get_param_drv = unittest.mock.MagicMock(
             return_value=({}, na_drv, None)
         )

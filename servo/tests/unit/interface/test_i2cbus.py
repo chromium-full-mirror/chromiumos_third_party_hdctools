@@ -5,7 +5,7 @@
 import unittest
 from unittest import mock
 
-from servo.interface import i2cbus
+from servo.common.interface import i2cbus
 
 
 class TestI2CBus(unittest.TestCase):

@@ -6,7 +6,7 @@
 
 import unittest
 
-from servo.interface import ftdi_utils
+from servo.common.interface import ftdi_utils
 
 
 class TestFTDILoadLibs(unittest.TestCase):

@@ -5,7 +5,7 @@
 
 import unittest
 
-from servo.core import tools
+from servo import tools
 from servo.tools import device
 from servo.tools import instance
 from servo.tools import logs
