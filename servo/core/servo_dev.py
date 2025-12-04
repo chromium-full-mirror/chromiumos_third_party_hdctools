@@ -20,7 +20,6 @@ from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
-from servo.common.interface import common as interface_common
 from servo.core import servo_dev_templates
 from servo.core import servo_interfaces
 import servo.utils.usb_hierarchy as usb_hierarchy
@@ -97,12 +96,7 @@ class ServoDevice:
 
     # Exceptions to count as known or ordinary.  Any errors that aren't instances
     # of these (or their subclasses) will be logged with "Please take a look."
-    KNOWN_EXCEPTIONS = (
-        AttributeError,
-        NameError,
-        HwDriverError,
-        interface_common.InterfaceError,
-    )
+    KNOWN_EXCEPTIONS = (AttributeError, NameError, HwDriverError)
 
     # Timeout to wait for interfaces to become available again if reinitialization
     # is taking place. In seconds. This is supposed to recover from brief resets.
@@ -133,7 +127,6 @@ class ServoDevice:
         self._logger = logging.getLogger(
             "ServoDevice %s - %s" % (self.template.TYPE, logger_prefix)
         )
-        self._lock = threading.RLock()
         vendor = self.template.VID
         product = self.template.PID
         self._serial = dev_entry.serial
@@ -270,15 +263,14 @@ class ServoDevice:
         """
         Init interfaces for servo device
         """
-        with self._lock:
-            self._driver_client.InitInterface(
-                vid=self.template.VID,
-                pid=self.template.PID,
-                serial=self._serial,
-                interface_template=json.dumps(self._interfaces),
-                fault_tolerant=fault_tolerant,
-                token_db=self._token_db,
-            )
+        self._driver_client.InitInterface(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            interface_template=json.dumps(self._interfaces),
+            fault_tolerant=fault_tolerant,
+            token_db=self._token_db,
+        )
 
     def set_board_and_model(self, board, model=None):
         """Set the board and model (if applicable) for this servo device.
@@ -294,58 +286,57 @@ class ServoDevice:
         Returns:
           True if configuration file found for board/model False otherwise
         """
-        with self._lock:
-            if not self._manual_interfaces:
-                # Only if interfaces were determined, and not set manually, try to
-                # get new interfaces from the board, otherwise, leave them be.
-                try:
-                    interfaces = servo_interfaces.INTERFACE_BOARDS[board][
-                        self.template.VID
-                    ][self.template.PID]
-                    for i, interface_data in enumerate(interfaces):
-                        if self._interfaces[i] != interface_data:
-                            # If an interface is overwritten ensure that it's marked as not
-                            # initialized regardless of previous status.
-                            self._driver_client.ResetInterface(
-                                vid=self.template.VID,
-                                pid=self.template.PID,
-                                serial=self._serial,
-                                interface_index=i,
-                            )
-                        self._interfaces[i] = interface_data
-                    self._sync_interface_lists()
-                except KeyError:
-                    # Likely adding a new board does not change interfaces. This is not
-                    # a fatal error.
-                    self._logger.debug(
-                        "Cannot find interfaces for board %s."
-                        " Skip resetting the interfaces",
-                        board,
-                    )
-            cfg, board_id = self.syscfg.get_board_model_config(board, model)
-            if cfg:
-                self.syscfg.set_board_cfg(cfg)
-            # |board_id| might include the |model| or not depending on whether it was used
-            # to determine the board config.
-            self.board = board_id
-            if model and board_id and board_id.endswith(model):
-                self.model = model
-            if cfg:
-                try:
-                    # Load systemConfig using the gRPC server
-                    response = self._system_config_client.AddCfgFile(
-                        prefix=self.prefixes[0],
-                        filename=cfg,
-                        vid=self.template.VID,
-                        pid=self.template.PID,
-                        serial=self._serial,
-                    )
-                    self.set_system_config(response.systemConfig)
-                except grpc.RpcError as e:
-                    # Handle gRPC errors, such as network issues and exit system
-                    self._logger.error("gRPC error in: {}".format(e))
-                return True
-            return False
+        if not self._manual_interfaces:
+            # Only if interfaces were determined, and not set manually, try to
+            # get new interfaces from the board, otherwise, leave them be.
+            try:
+                interfaces = servo_interfaces.INTERFACE_BOARDS[board][
+                    self.template.VID
+                ][self.template.PID]
+                for i, interface_data in enumerate(interfaces):
+                    if self._interfaces[i] != interface_data:
+                        # If an interface is overwritten ensure that it's marked as not
+                        # initialized regardless of previous status.
+                        self._driver_client.ResetInterface(
+                            vid=self.template.VID,
+                            pid=self.template.PID,
+                            serial=self._serial,
+                            interface_index=i,
+                        )
+                    self._interfaces[i] = interface_data
+                self._sync_interface_lists()
+            except KeyError:
+                # Likely adding a new board does not change interfaces. This is not
+                # a fatal error.
+                self._logger.debug(
+                    "Cannot find interfaces for board %s."
+                    " Skip resetting the interfaces",
+                    board,
+                )
+        cfg, board_id = self.syscfg.get_board_model_config(board, model)
+        if cfg:
+            self.syscfg.set_board_cfg(cfg)
+        # |board_id| might include the |model| or not depending on whether it was used
+        # to determine the board config.
+        self.board = board_id
+        if model and board_id and board_id.endswith(model):
+            self.model = model
+        if cfg:
+            try:
+                # Load systemConfig using the gRPC server
+                response = self._system_config_client.AddCfgFile(
+                    prefix=self.prefixes[0],
+                    filename=cfg,
+                    vid=self.template.VID,
+                    pid=self.template.PID,
+                    serial=self._serial,
+                )
+                self.set_system_config(response.systemConfig)
+            except grpc.RpcError as e:
+                # Handle gRPC errors, such as network issues and exit system
+                self._logger.error("gRPC error in: {}".format(e))
+            return True
+        return False
 
     def set_system_config(self, system_config):
         # Extract and process the received system configuration data(
@@ -378,17 +369,15 @@ class ServoDevice:
 
     def reinitialize(self):
         """Reinitialize all interfaces that support reinitialization"""
-        with self._lock:
-            self._driver_client.ReinitializeInterfaces()
-            # Indicate interfaces are safe to use again.
-            self.connect()
+        self._driver_client.ReinitializeInterfaces()
+        # Indicate interfaces are safe to use again.
+        self.connect()
 
     def close(self):
         """Servo device turn down logic."""
-        with self._lock:
-            self._driver_client.CloseInterface(
-                vid=self.template.VID, pid=self.template.PID, serial=self._serial
-            )
+        self._driver_client.CloseInterface(
+            vid=self.template.VID, pid=self.template.PID, serial=self._serial
+        )
 
     def get(self, name):
         """Get control value.
@@ -404,15 +393,14 @@ class ServoDevice:
           HwDriverError: Error occurred while using drv
           ServoDeviceError: if interfaces are not available within timeout period
         """
-        with self._lock:
-            with servo_logging.WrapGetCall(
-                name, known_exceptions=self.KNOWN_EXCEPTIONS
-            ) as wrapper:
-                drv = self._get_param_drv(name)
-                params = json.loads(drv.value)
-                rd_val = self.syscfg.reformat_val(params, params["response"])
-                wrapper.got_result(rd_val)
-                return rd_val
+        with servo_logging.WrapGetCall(
+            name, known_exceptions=self.KNOWN_EXCEPTIONS
+        ) as wrapper:
+            drv = self._get_param_drv(name)
+            params = json.loads(drv.value)
+            rd_val = self.syscfg.reformat_val(params, params["response"])
+            wrapper.got_result(rd_val)
+            return rd_val
 
     def set(self, name, wr_val_str):
         """Set control.
@@ -453,19 +441,18 @@ class ServoDevice:
             drv: instance object of driver for particular control
             device_info: servo device information
         """
-        with self._lock:
-            if set_value is not None:
-                set_value = str(set_value)
+        if set_value is not None:
+            set_value = str(set_value)
 
-            return self._driver_client.CallDriver(
-                vid=self.template.VID,
-                pid=self.template.PID,
-                serial=self._serial,
-                interface_template=str(self._interfaces),
-                control_name=control_name,
-                device_type=self.template.TYPE,
-                value=set_value,
-            )
+        return self._driver_client.CallDriver(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            interface_template=str(self._interfaces),
+            control_name=control_name,
+            device_type=self.template.TYPE,
+            value=set_value,
+        )
 
     def clear_cached_drv(self):
         """Clear the cached drivers.
@@ -474,8 +461,7 @@ class ServoDevice:
         When the servo interfaces are relocated, the cached values may become wrong.
         Should call this method to clear the cached values.
         """
-        with self._lock:
-            self._drv_dict = {}
+        self._drv_dict = {}
 
     def doc_all(self):
         """Return all documentations for controls.
