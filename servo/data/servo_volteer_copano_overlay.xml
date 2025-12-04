@@ -8,12 +8,15 @@
   <control>
     <name>servo_micro_lid_open</name>
     <doc>lid open GPIO</doc>
-    <params clobber_ok="patch" offset="0" map="yesno_i"></params>
+    <params clobber_ok="patch" offset="0" map="yesno"></params>
   </control>
-  <!-- This doesn't technically matter, since this control is only used for chromeboxes. -->
+  <!-- This doesn't technically matter, since this control is only used for chromeboxes.
+  Also, it doesn't appear to affect the tablet mode state, so perhaps it is not connected.
+  But at least it is configured to the correct GPIO if it were connected.
+  -->
   <control>
     <name>rec_mode</name>
     <doc>Google recovery mode</doc>
-    <params clobber_ok="patch" offset="4" map="onoff"></params>
+    <params clobber_ok="patch" offset="4" map="onoff_i"></params>
   </control>
 </root>
