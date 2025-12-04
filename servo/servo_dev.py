@@ -18,7 +18,6 @@ from servo import interface as _interface
 from servo import servo_dev_templates
 from servo import servo_interfaces
 from servo import servo_logging
-from servo.interface import common as interface_common
 from servo.utils import string_utils
 import servo.utils.usb_hierarchy as usb_hierarchy
 
@@ -97,12 +96,7 @@ class ServoDevice:
 
     # Exceptions to count as known or ordinary.  Any errors that aren't instances
     # of these (or their subclasses) will be logged with "Please take a look."
-    KNOWN_EXCEPTIONS = (
-        AttributeError,
-        NameError,
-        HwDriverError,
-        interface_common.InterfaceError,
-    )
+    KNOWN_EXCEPTIONS = (AttributeError, NameError, HwDriverError)
 
     # Timeout to wait for interfaces to become available again if reinitialization
     # is taking place. In seconds. This is supposed to recover from brief resets.
@@ -132,7 +126,6 @@ class ServoDevice:
         self._logger = logging.getLogger(
             "ServoDevice %s - %s" % (self.template.TYPE, logger_prefix)
         )
-        self._lock = threading.RLock()
         vendor = self.template.VID
         product = self.template.PID
         self._serial = dev_entry.serial
@@ -271,53 +264,52 @@ class ServoDevice:
         Raises:
           ServoDeviceError: if unable to locate init method for particular interface.
         """
-        with self._lock:
-            self.clear_cached_drv()
-            for i, interface_data in enumerate(self._interfaces):
-                if self._interface_init[i]:
-                    # Ensure initialized interfaces are not reinitialized
+        self.clear_cached_drv()
+        for i, interface_data in enumerate(self._interfaces):
+            if self._interface_init[i]:
+                # Ensure initialized interfaces are not reinitialized
+                continue
+            if isinstance(interface_data, dict):
+                name = interface_data["name"]
+                # Store interface index for those that care about it.
+                interface_data["index"] = i
+            elif isinstance(interface_data, str):
+                if interface_data in ["empty", "ftdi_empty"]:
+                    # 'empty' reserves the interface for future use.  Typically the
+                    # interface will be managed by external third-party tools like
+                    # openOCD for JTAG or flashrom for SPI.  In the case of servo V4,
+                    # it serves as a placeholder for servo micro interfaces.
                     continue
-                if isinstance(interface_data, dict):
-                    name = interface_data["name"]
-                    # Store interface index for those that care about it.
-                    interface_data["index"] = i
-                elif isinstance(interface_data, str):
-                    if interface_data in ["empty", "ftdi_empty"]:
-                        # 'empty' reserves the interface for future use.  Typically the
-                        # interface will be managed by external third-party tools like
-                        # openOCD for JTAG or flashrom for SPI.  In the case of servo
-                        # V4, it serves as a placeholder for servo micro interfaces.
-                        continue
-                    name = interface_data
-                else:
-                    raise ServoDeviceError(
-                        "Illegal interface data type %s" % type(interface_data)
-                    )
+                name = interface_data
+            else:
+                raise ServoDeviceError(
+                    "Illegal interface data type %s" % type(interface_data)
+                )
 
-                self._logger.info("Initializing interface %d to %s", i, name)
-                try:
-                    result = _interface.build(
-                        name=name,
-                        index=i,
-                        vid=self.template.VID,
-                        pid=self.template.PID,
-                        sid=self._serial,
-                        interface_data=interface_data,
-                        servo_device=self,
-                        token_db=self._token_db,
+            self._logger.info("Initializing interface %d to %s", i, name)
+            try:
+                result = _interface.build(
+                    name=name,
+                    index=i,
+                    vid=self.template.VID,
+                    pid=self.template.PID,
+                    sid=self._serial,
+                    interface_data=interface_data,
+                    servo_device=self,
+                    token_db=self._token_db,
+                )
+            except Exception:
+                if fault_tolerant:
+                    self._logger.warning(
+                        "Failure trying to initialize interface %s (%s) "
+                        "in fault tolerant mode, so this will not crash servod.",
+                        i,
+                        name,
                     )
-                except Exception:
-                    if fault_tolerant:
-                        self._logger.warning(
-                            "Failure trying to initialize interface %s (%s) "
-                            "in fault tolerant mode, so this will not crash servod.",
-                            i,
-                            name,
-                        )
-                        continue
-                    raise
-                self._interface_list[i] = result
-                self._interface_init[i] = True
+                    continue
+                raise
+            self._interface_list[i] = result
+            self._interface_init[i] = True
 
     def set_board_and_model(self, board, model=None):
         """Set the board and model (if applicable) for this servo device.
@@ -333,41 +325,40 @@ class ServoDevice:
         Returns:
           True if configuration file found for board/model False otherwise
         """
-        with self._lock:
-            if not self._manual_interfaces:
-                # Only if interfaces were determined, and not set manually, try to
-                # get new interfaces from the board, otherwise, leave them be.
-                try:
-                    interfaces = servo_interfaces.INTERFACE_BOARDS[board][
-                        self.template.VID
-                    ][self.template.PID]
-                    for i, interface_data in enumerate(interfaces):
-                        if self._interfaces[i] != interface_data:
-                            # If an interface is overwritten ensure that it's marked as
-                            # not initialized regardless of previous status.
-                            self._interface_init[i] = False
-                        self._interfaces[i] = interface_data
-                    self._sync_interface_lists()
-                except KeyError:
-                    # Likely adding a new board does not change interfaces. This is not
-                    # a fatal error.
-                    self._logger.debug(
-                        "Cannot find interfaces for board %s."
-                        " Skip resetting the interfaces",
-                        board,
-                    )
-            cfg, board_id = self.syscfg.get_board_model_config(board, model)
-            if cfg:
-                self.syscfg.set_board_cfg(cfg)
-            # |board_id| might include the |model| or not depending on whether it was
-            # used to determine the board config.
-            self.board = board_id
-            if model and board_id and board_id.endswith(model):
-                self.model = model
-            if cfg:
-                self.syscfg.add_cfg_file(self.prefixes[0], cfg)
-                return True
-            return False
+        if not self._manual_interfaces:
+            # Only if interfaces were determined, and not set manually, try to
+            # get new interfaces from the board, otherwise, leave them be.
+            try:
+                interfaces = servo_interfaces.INTERFACE_BOARDS[board][
+                    self.template.VID
+                ][self.template.PID]
+                for i, interface_data in enumerate(interfaces):
+                    if self._interfaces[i] != interface_data:
+                        # If an interface is overwritten ensure that it's marked as not
+                        # initialized regardless of previous status.
+                        self._interface_init[i] = False
+                    self._interfaces[i] = interface_data
+                self._sync_interface_lists()
+            except KeyError:
+                # Likely adding a new board does not change interfaces. This is not
+                # a fatal error.
+                self._logger.debug(
+                    "Cannot find interfaces for board %s."
+                    " Skip resetting the interfaces",
+                    board,
+                )
+        cfg, board_id = self.syscfg.get_board_model_config(board, model)
+        if cfg:
+            self.syscfg.set_board_cfg(cfg)
+        # |board_id| might include the |model| or not depending on whether it was used
+        # to determine the board config.
+        self.board = board_id
+        if model and board_id and board_id.endswith(model):
+            self.model = model
+        if cfg:
+            self.syscfg.add_cfg_file(self.prefixes[0], cfg)
+            return True
+        return False
 
     def _sync_interface_lists(self):
         """Ensure when interfaces are changed, bookkeeping is kept in sync."""
@@ -390,30 +381,27 @@ class ServoDevice:
 
     def reinitialize(self):
         """Reinitialize all interfaces that support reinitialization"""
-        with self._lock:
-            for _unused, interface in enumerate(self._interface_list):
-                interface.reinitialize()
-            # Indicate interfaces are safe to use again.
-            self.connect()
+        for _unused, interface in enumerate(self._interface_list):
+            interface.reinitialize()
+        # Indicate interfaces are safe to use again.
+        self.connect()
 
     def close(self):
         """Servo device turn down logic."""
-        with self._lock:
-            # Close ec3po interfaces first to remove all wrappers/pointers on the raw
-            # pty
-            for i, interface in enumerate(self._interface_list):
-                if isinstance(interface, _interface.ec3po_interface.EC3PO):
-                    self._logger.info("Turning down interface %d", i)
-                    interface.close()
+        # Close ec3po interfaces first to remove all wrappers/pointers on the raw pty
+        for i, interface in enumerate(self._interface_list):
+            if isinstance(interface, _interface.ec3po_interface.EC3PO):
+                self._logger.info("Turning down interface %d", i)
+                interface.close()
 
-            # Close all the other non-placeholder interfaces
-            for i, interface in enumerate(self._interface_list):
-                if not isinstance(interface, _interface.empty.Empty) and not isinstance(
-                    interface, _interface.ec3po_interface.EC3PO
-                ):
-                    # Only print this on real interfaces and not place holders.
-                    self._logger.info("Turning down interface %d", i)
-                    interface.close()
+        # Close all the other non-placeholder interfaces
+        for i, interface in enumerate(self._interface_list):
+            if not isinstance(interface, _interface.empty.Empty) and not isinstance(
+                interface, _interface.ec3po_interface.EC3PO
+            ):
+                # Only print this on real interfaces and not place holders.
+                self._logger.info("Turning down interface %d", i)
+                interface.close()
 
     def get(self, name):
         """Get control value.
@@ -429,20 +417,17 @@ class ServoDevice:
           HwDriverError: Error occurred while using drv
           ServoDeviceError: if interfaces are not available within timeout period
         """
-        with self._lock:
-            with servo_logging.WrapGetCall(
-                name, known_exceptions=self.KNOWN_EXCEPTIONS
-            ) as wrapper:
-                (params, drv, device) = self._get_param_drv(name)
-                if device in self._servod._devices:
-                    self._servod._devices[device].wait(
-                        self.INTERFACE_AVAILABILITY_TIMEOUT
-                    )
+        with servo_logging.WrapGetCall(
+            name, known_exceptions=self.KNOWN_EXCEPTIONS
+        ) as wrapper:
+            (params, drv, device) = self._get_param_drv(name)
+            if device in self._servod._devices:
+                self._servod._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
 
-                val = drv.get()
-                rd_val = self.syscfg.reformat_val(params, val)
-                wrapper.got_result(rd_val)
-                return rd_val
+            val = drv.get()
+            rd_val = self.syscfg.reformat_val(params, val)
+            wrapper.got_result(rd_val)
+            return rd_val
 
     def set(self, name, wr_val_str):
         """Set control.
@@ -456,18 +441,15 @@ class ServoDevice:
           HwDriverError: Error occurred while using driver
           ServoDeviceError: if interfaces are not available within timeout period
         """
-        with self._lock:
-            with servo_logging.WrapSetCall(
-                name, wr_val_str, known_exceptions=self.KNOWN_EXCEPTIONS
-            ):
-                (params, drv, device) = self._get_param_drv(name, False)
-                if device in self._servod._devices:
-                    self._servod._devices[device].wait(
-                        self.INTERFACE_AVAILABILITY_TIMEOUT
-                    )
-                wr_val = self.syscfg.resolve_val(params, wr_val_str)
+        with servo_logging.WrapSetCall(
+            name, wr_val_str, known_exceptions=self.KNOWN_EXCEPTIONS
+        ):
+            (params, drv, device) = self._get_param_drv(name, False)
+            if device in self._servod._devices:
+                self._servod._devices[device].wait(self.INTERFACE_AVAILABILITY_TIMEOUT)
+            wr_val = self.syscfg.resolve_val(params, wr_val_str)
 
-                drv.set(wr_val)
+            drv.set(wr_val)
 
         # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
         # xmlrpc server & client I still have to return something to appease the
@@ -494,92 +476,91 @@ class ServoDevice:
         Raises:
           ServoDeviceError: Error occurred while examining params dict
         """
-        with self._lock:
-            # if already setup just return tuple from driver dict
-            if control_name in self._drv_dict:
-                if is_get and ("get" in self._drv_dict[control_name]):
-                    return self._drv_dict[control_name]["get"]
-                if not is_get and ("set" in self._drv_dict[control_name]):
-                    return self._drv_dict[control_name]["set"]
+        # if already setup just return tuple from driver dict
+        if control_name in self._drv_dict:
+            if is_get and ("get" in self._drv_dict[control_name]):
+                return self._drv_dict[control_name]["get"]
+            if not is_get and ("set" in self._drv_dict[control_name]):
+                return self._drv_dict[control_name]["set"]
 
-            self._logger.debug(
-                "Did not find cached drvs for %r. Will generate both set and get drvs.",
-                control_name,
-            )
+        self._logger.debug(
+            "Did not find cached drvs for %r. Will generate both set and get drvs.",
+            control_name,
+        )
 
-            set_params, get_params = self.syscfg.lookup_control_params(control_name)
+        set_params, get_params = self.syscfg.lookup_control_params(control_name)
 
-            for params in [get_params, set_params]:
-                # |cmd| is guaranteed to be in each params.
-                mode = params["cmd"]
-                drv_prefix = params.get("drv")
-                if drv_prefix == "na":
-                    # 'na' drv can be used to selectively turn controls into noops for
-                    # a given servo hardware. Ensure that there is an interface.
-                    params.setdefault("interface", "servo")
-                    self._logger.debug(
-                        "Setting interface to default to %r for %r unless "
-                        " defined  in params, as drv is %r.",
-                        "servo",
-                        control_name,
-                        "na",
-                    )
-                    # Setting input_type to str allows all inputs through enabling a
-                    # true noop
-                    params.update({"input_type": "str"})
-
-                interface_id = params.get("interface")
-                if None in [drv_prefix, interface_id]:
-                    raise ServoDeviceError(
-                        "No drv/interface for control %r found" % control_name
-                    )
-                # Store map params in params
-                map_name = params.get("map")
-                if map_name is not None:
-                    map_params = self.syscfg.lookup_map_params(map_name)
-                    params["map_params"] = map_params
-
-                # Store this device name in params (necessary to scope control names
-                # when querying controls from a non-main servo device)
-                # TODO(b/275723447): remove this parameter once prefix string is no
-                # longer necessary in drivers
-                params["device_type"] = self.template.TYPE
-
-                # this control only needs cross-servo-device communication and does
-                # not need hardware interface for low-level communication
-                if interface_id == "servo":
-                    interface = None
-                    servod = self._servod
-                # this control only needs hardware interface for low-level communication
-                # and does not need cross-servo-device communication
-                else:
-                    index = int(interface_id)
-                    interface = self._interface_list[index]
-                    servod = None
-
-                device_info = None
-                if hasattr(interface, "get_device_info"):
-                    device_info = interface.get_device_info()
-                drv_module = getattr(servo_drv, drv_prefix)
-                drv_class = getattr(drv_module, string_utils.snake_to_camel(drv_prefix))
-                drv = (
-                    drv_class(interface, params, servod)
-                    if servod
-                    else drv_class(interface, params)
+        for params in [get_params, set_params]:
+            # |cmd| is guaranteed to be in each params.
+            mode = params["cmd"]
+            drv_prefix = params.get("drv")
+            if drv_prefix == "na":
+                # 'na' drv can be used to selectively turn controls into noops for
+                # a given servo hardware. Ensure that there is an interface.
+                params.setdefault("interface", "servo")
+                self._logger.debug(
+                    "Setting interface to default to %r for %r unless "
+                    " defined  in params, as drv is %r.",
+                    "servo",
+                    control_name,
+                    "na",
                 )
-                if control_name not in self._drv_dict:
-                    self._drv_dict[control_name] = {}
-                # Store the information in the right mode.
-                self._drv_dict[control_name][mode] = (params, drv, device_info)
-            # At this point, both 'set' and 'get' have been generated. The last thing
-            # left to do is to pass each one of them a weak reference to the other.
-            # This ensures that if a control needs to do read/modify/write for
-            # instance it can do so without much overhead.
-            _unused, set_drv, _unused = self._drv_dict[control_name]["set"]
-            _unused, get_drv, _unused = self._drv_dict[control_name]["get"]
-            set_drv.set_complement(get_drv)
-            # Run the method again, as it will find the entries now in the cache.
-            return self._get_param_drv(control_name, is_get)
+                # Setting input_type to str allows all inputs through enabling a true
+                # noop
+                params.update({"input_type": "str"})
+
+            interface_id = params.get("interface")
+            if None in [drv_prefix, interface_id]:
+                raise ServoDeviceError(
+                    "No drv/interface for control %r found" % control_name
+                )
+            # Store map params in params
+            map_name = params.get("map")
+            if map_name is not None:
+                map_params = self.syscfg.lookup_map_params(map_name)
+                params["map_params"] = map_params
+
+            # Store this device name in params (necessary to scope control names when
+            # querying controls from a non-main servo device)
+            # TODO(b/275723447): remove this parameter once prefix string is no longer
+            # necessary in drivers
+            params["device_type"] = self.template.TYPE
+
+            # this control only needs cross-servo-device communication and does not
+            # need hardware interface for low-level communication
+            if interface_id == "servo":
+                interface = None
+                servod = self._servod
+            # this control only needs hardware interface for low-level communication
+            # and does not need cross-servo-device communication
+            else:
+                index = int(interface_id)
+                interface = self._interface_list[index]
+                servod = None
+
+            device_info = None
+            if hasattr(interface, "get_device_info"):
+                device_info = interface.get_device_info()
+            drv_module = getattr(servo_drv, drv_prefix)
+            drv_class = getattr(drv_module, string_utils.snake_to_camel(drv_prefix))
+            drv = (
+                drv_class(interface, params, servod)
+                if servod
+                else drv_class(interface, params)
+            )
+            if control_name not in self._drv_dict:
+                self._drv_dict[control_name] = {}
+            # Store the information in the right mode.
+            self._drv_dict[control_name][mode] = (params, drv, device_info)
+        # At this point, both 'set' and 'get' have been generated. The last thing
+        # left to do is to pass each one of them a weak reference to the other.
+        # This ensures that if a control needs to do read/modify/write for
+        # instance it can do so without much overhead.
+        _unused, set_drv, _unused = self._drv_dict[control_name]["set"]
+        _unused, get_drv, _unused = self._drv_dict[control_name]["get"]
+        set_drv.set_complement(get_drv)
+        # Run the method again, as it will find the entries now in the cache.
+        return self._get_param_drv(control_name, is_get)
 
     def clear_cached_drv(self):
         """Clear the cached drivers.
@@ -588,8 +569,7 @@ class ServoDevice:
         When the servo interfaces are relocated, the cached values may become wrong.
         Should call this method to clear the cached values.
         """
-        with self._lock:
-            self._drv_dict = {}
+        self._drv_dict = {}
 
     def doc_all(self):
         """Return all documentations for controls.

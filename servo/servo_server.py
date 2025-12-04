@@ -7,7 +7,6 @@
 import collections
 import logging
 import sys
-import threading
 
 from servo import recovery
 from servo import servo_dev_templates
@@ -44,7 +43,6 @@ class Servod:
         self._usbkm232 = usbkm232
         self._keyboard = None
         self._usb_keyboard = None
-        self._lock = threading.RLock()
         # A map of device serialname strings keyed by the device's name/prefix.
         self._serialnames = collections.defaultdict(lambda: None)
         # A map of ServoDevices keyed by their name/prefix.
@@ -65,35 +63,34 @@ class Servod:
           prefix: prefix of the ServoDevice recognized by Servod
         """
         self._logger.debug("Adding ServoDevice %s to instance.", device)
-        with self._lock:
-            if prefix in self._devices:
-                if device != self._devices[prefix]:
-                    raise ServodError(
-                        (
-                            "ServoDevice prefix %s already represents device %s and "
-                            "cannot be added as %s."
-                        )
-                        % (prefix, self._devices[prefix], device)
+        if prefix in self._devices:
+            if device != self._devices[prefix]:
+                raise ServodError(
+                    (
+                        "ServoDevice prefix %s already represents device %s and "
+                        "cannot be added as %s."
                     )
-                self._logger.debug(
-                    "ServoDevice prefix %s is already added as %s.",
-                    prefix,
-                    self._devices[prefix],
+                    % (prefix, self._devices[prefix], device)
                 )
-                return
+            self._logger.debug(
+                "ServoDevice prefix %s is already added as %s.",
+                prefix,
+                self._devices[prefix],
+            )
+            return
 
-            self._unique_devices[device.get_id()] = device
-            self._devices[prefix] = device
-            self.add_serial_number(prefix, device._serial)
-            # ensure the device records all its alias prefixes
-            device.add_prefix(prefix)
-            if prefix == servo_dev_templates.MAIN_DEV_PREFIX:
-                # This is the main device as the prefix is empty. Add prefix alias here
-                # for the main device.
-                self._devices[servo_dev_templates.MAIN_DEV_PREFIX_ALIAS] = device
-                self.add_serial_number(
-                    servo_dev_templates.MAIN_DEV_PREFIX_ALIAS, device._serial
-                )
+        self._unique_devices[device.get_id()] = device
+        self._devices[prefix] = device
+        self.add_serial_number(prefix, device._serial)
+        # ensure the device records all its alias prefixes
+        device.add_prefix(prefix)
+        if prefix == servo_dev_templates.MAIN_DEV_PREFIX:
+            # This is the main device as the prefix is empty. Add prefix alias here
+            # for the main device.
+            self._devices[servo_dev_templates.MAIN_DEV_PREFIX_ALIAS] = device
+            self.add_serial_number(
+                servo_dev_templates.MAIN_DEV_PREFIX_ALIAS, device._serial
+            )
 
     def reinitialize(self):
         """Reinitialize all devices that support reinitialization"""
@@ -117,8 +114,7 @@ class Servod:
 
     def get_devices(self):
         """Get all devices connected to this servod instance."""
-        with self._lock:
-            return list(self._unique_devices.values())
+        return list(self._unique_devices.values())
 
     @staticmethod
     def _get_control_prefix_and_name(name):
@@ -173,53 +169,47 @@ class Servod:
           NameError: if |name| not a known control on its servo dev.
         """
         prefix, processed_name = Servod._get_control_prefix_and_name(name)
-        with self._lock:
-            if prefix not in self._devices:
-                error_msg = (
-                    "No control named '%s' registered. "
-                    "No servo device registered for prefix %s."
-                ) % (name, prefix)
-                raise ServodError(error_msg)
-            dev = self._devices[prefix]
+        if prefix not in self._devices:
+            error_msg = (
+                "No control named '%s' registered. "
+                "No servo device registered for prefix %s."
+            ) % (name, prefix)
+            raise ServodError(error_msg)
+        dev = self._devices[prefix]
 
-            # Controls routed to main that are not covered by main are covered by their
-            # root hub device.
-            if not dev.syscfg.is_control(processed_name):
-                if (
-                    self._is_main_dev_prefix(prefix)
-                    and self.get_root_device() is not None
-                ):
-                    dev = self.get_root_device()
+        # Controls routed to main that are not covered by main are covered by their
+        # root hub device.
+        if not dev.syscfg.is_control(processed_name):
+            if self._is_main_dev_prefix(prefix) and self.get_root_device() is not None:
+                dev = self.get_root_device()
 
-            if not dev.syscfg.is_control(processed_name):
-                error_msg = (
-                    "No control named '%s' registered with any connected servo "
-                    "device.\n"
-                    "Servo device %s (prefix: %s) is picked as the target device "
-                    "for the control.\n"
-                ) % (name, dev, dev.get_prefixes())
-                candidates = [ctrl for ctrl in self._controls if name in ctrl]
-                if candidates:
-                    error_msg += "Do you mean %s?\n" % candidates
-                error_msg += (
-                    "You can check all servod controls with "
-                    "'dut-control -- all_controls'."
-                )
-                raise ServodError(error_msg)
-
-            # Watchdog controls query the device states. Don't wait for the device.
-            if "watchdog" not in name:
-                # Wait until the device is connected. CCD is the only device that's ok
-                # to disconnect. This will wait for CCD devices to reconnect before
-                # trying to get/set the control.
-                dev.wait()
-            self._logger.debug(
-                "Using servo device %s for control %s (device %sconnected)",
-                dev,
-                name,
-                "" if dev.is_connected() else "dis",
+        if not dev.syscfg.is_control(processed_name):
+            error_msg = (
+                "No control named '%s' registered with any connected servo device.\n"
+                "Servo device %s (prefix: %s) is picked as the target device for "
+                "the control.\n"
+            ) % (name, dev, dev.get_prefixes())
+            candidates = [ctrl for ctrl in self._controls if name in ctrl]
+            if candidates:
+                error_msg += "Do you mean %s?\n" % candidates
+            error_msg += (
+                "You can check all servod controls with 'dut-control -- all_controls'."
             )
-            return (dev, processed_name)
+            raise ServodError(error_msg)
+
+        # Watchdog controls query the device states. Don't wait for the device.
+        if "watchdog" not in name:
+            # Wait until the device is connected. CCD is the only device that's ok
+            # to disconnect. This will wait for CCD devices to reconnect before
+            # trying to get/set the control.
+            dev.wait()
+        self._logger.debug(
+            "Using servo device %s for control %s (device %sconnected)",
+            dev,
+            name,
+            "" if dev.is_connected() else "dis",
+        )
+        return (dev, processed_name)
 
     def hwinit(self, verbose=True, step_init=False):
         """Initialize controls for servo devices."""
@@ -291,19 +281,13 @@ class Servod:
             dev_type = dev_type.split("_for_")[0]
 
         candidates = set()
-        with self._lock:
-            for _unused, dev in self._unique_devices.items():
-                if dev_type not in dev.template.TYPE:
-                    continue
-                if not board_model:
-                    candidates.add(dev)
-                elif board_model in [
-                    dev.board,
-                    dev.model,
-                    main_dev.board,
-                    main_dev.model,
-                ]:
-                    candidates.add(dev)
+        for _unused, dev in self._unique_devices.items():
+            if dev_type not in dev.template.TYPE:
+                continue
+            if not board_model:
+                candidates.add(dev)
+            elif board_model in [dev.board, dev.model, main_dev.board, main_dev.model]:
+                candidates.add(dev)
 
         if len(candidates) == 0:
             self._logger.info("'%s' not found!", control_name)
@@ -337,20 +321,19 @@ class Servod:
 
     def update_known_ctrls(self):
         """Helper to generate a list of all accessible controls in servod."""
-        with self._lock:
-            known_ctrls = set()
-            for prefix, dev in self._devices.items():
-                dev_ctrls = dev.syscfg.get_all_controls()
-                # controls for root and main dev does not need to have prefixes
-                new_ctrls = (
-                    set("%s.%s" % (prefix, ctrl) for ctrl in dev_ctrls)
-                    if prefix
-                    else dev_ctrls
-                )
-                if prefix == servo_dev_templates.ROOT_DEV_PREFIX:
-                    new_ctrls |= dev_ctrls
-                known_ctrls |= new_ctrls
-            self._controls = sorted(list(known_ctrls))
+        known_ctrls = set()
+        for prefix, dev in self._devices.items():
+            dev_ctrls = dev.syscfg.get_all_controls()
+            # controls for root and main dev does not need to have prefixes
+            new_ctrls = (
+                set("%s.%s" % (prefix, ctrl) for ctrl in dev_ctrls)
+                if prefix
+                else dev_ctrls
+            )
+            if prefix == servo_dev_templates.ROOT_DEV_PREFIX:
+                new_ctrls |= dev_ctrls
+            known_ctrls |= new_ctrls
+        self._controls = sorted(list(known_ctrls))
 
     def has_control(self, control):
         """Returns True if control is available in servod."""
@@ -476,8 +459,7 @@ class Servod:
         Each call to this function returns a new dict.  The returned dict may be
         mutated without affecting any other state.
         """
-        with self._lock:
-            return dict(self._serialnames)
+        return dict(self._serialnames)
 
     def add_serial_number(self, key, serial_number):
         """Adds the serial number to the _serialnames dictionary.
@@ -486,21 +468,18 @@ class Servod:
           key: A string which is the key into the _serialnames dictionary.
           serial_number: A string which is the key into the _serialnames dictionary.
         """
-        with self._lock:
-            self._serialnames[key] = serial_number
-            self._logger.debug("Added %s %s to serialnames.", key, serial_number)
+        self._serialnames[key] = serial_number
+        self._logger.debug("Added %s %s to serialnames.", key, serial_number)
 
     def get_main_device(self):
         """Gets the main servo device."""
-        with self._lock:
-            return self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
+        return self._devices[servo_dev_templates.MAIN_DEV_PREFIX]
 
     def get_root_device(self):
         """Gets the root servo device."""
-        with self._lock:
-            if servo_dev_templates.ROOT_DEV_PREFIX not in self._devices:
-                return None
-            return self._devices[servo_dev_templates.ROOT_DEV_PREFIX]
+        if servo_dev_templates.ROOT_DEV_PREFIX not in self._devices:
+            return None
+        return self._devices[servo_dev_templates.ROOT_DEV_PREFIX]
 
     def get_controls_for_tag(self, tag):
         """Get list of controls for a given tag.
@@ -513,15 +492,12 @@ class Servod:
           controls under that tag
         """
         controls = set()
-        with self._lock:
-            no_prefix_devs = [self.get_main_device(), self.get_root_device()]
-            for prefix, dev in self._devices.items():
-                # controls for root and main dev does not need to have prefixes
-                no_prefix = dev in no_prefix_devs
-                for dev_ctrl in dev.syscfg.get_controls_for_tag(tag):
-                    controls.add(
-                        dev_ctrl if no_prefix else "%s.%s" % (prefix, dev_ctrl)
-                    )
+        no_prefix_devs = [self.get_main_device(), self.get_root_device()]
+        for prefix, dev in self._devices.items():
+            # controls for root and main dev does not need to have prefixes
+            no_prefix = dev in no_prefix_devs
+            for dev_ctrl in dev.syscfg.get_controls_for_tag(tag):
+                controls.add(dev_ctrl if no_prefix else "%s.%s" % (prefix, dev_ctrl))
         return sorted(list(controls))
 
     def get_config_files(self):
