@@ -1218,13 +1218,17 @@ class TestPowerMeasurement(unittest.TestCase):
         stats_manager2 = stats_manager.StatsManager()
         stats_manager1.save_summary = unittest.mock.MagicMock(return_value="file1.txt")
         stats_manager2.save_summary = unittest.mock.MagicMock(return_value="file2.txt")
-        stats_manager1.SaveSummaryMD = unittest.mock.MagicMock(return_value="file1.md")
-        stats_manager2.SaveSummaryMD = unittest.mock.MagicMock(return_value="file2.md")
+        stats_manager1.save_summary_md = unittest.mock.MagicMock(
+            return_value="file1.md"
+        )
+        stats_manager2.save_summary_md = unittest.mock.MagicMock(
+            return_value="file2.md"
+        )
 
         res = pm._save_summary([stats_manager1, stats_manager2])
 
-        stats_manager1.SaveSummaryMD.assert_called_once_with(pm._outdir)
-        stats_manager2.SaveSummaryMD.assert_called_once_with(pm._outdir)
+        stats_manager1.save_summary_md.assert_called_once_with(pm._outdir)
+        stats_manager2.save_summary_md.assert_called_once_with(pm._outdir)
         self.assertEqual(res, ["file1.txt", "file2.txt"])
 
     def test_get_summary(self):
