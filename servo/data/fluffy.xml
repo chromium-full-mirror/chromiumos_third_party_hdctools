@@ -3,6 +3,9 @@
   <include>
     <name>common.xml</name>
   </include>
+  <include>
+    <name>power_tools.xml</name>
+  </include>
   <control>
     <name>fluffy_uart_pty</name>
     <doc>Fluffy's stm32 console UART</doc>

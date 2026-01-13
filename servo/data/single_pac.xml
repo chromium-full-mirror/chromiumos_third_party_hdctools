@@ -6,6 +6,9 @@
   <include>
     <name>common.xml</name>
   </include>
+  <include>
+    <name>power_tools.xml</name>
+  </include>
   <control>
     <name>CPD_VBAT_mv</name>
     <doc>Bus Voltage of 'CPD_VBAT' rail in millivolts</doc>

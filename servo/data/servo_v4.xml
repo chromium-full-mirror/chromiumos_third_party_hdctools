@@ -4,6 +4,9 @@
     <name>common.xml</name>
   </include>
   <include>
+    <name>power_tools.xml</name>
+  </include>
+  <include>
     <name>servo_v4_inas.xml</name>
   </include>
   <include>
