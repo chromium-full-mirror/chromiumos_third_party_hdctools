@@ -1,0 +1,12 @@
+<root>
+  <include>
+    <name>servo_atria_overlay.xml</name>
+  </include>
+  <!-- The Microchip EC (UART for flashing). -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="mchp_int_uart"/>
+  </control>
+</root>

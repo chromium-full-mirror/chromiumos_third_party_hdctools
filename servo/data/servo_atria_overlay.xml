@@ -1,0 +1,92 @@
+<root>
+  <include>
+    <name>ti50.xml</name>
+  </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
+    <name>x86_ec_common.xml</name>
+  </include>
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok=""
+    shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
+    warm_reset_can_hold_ap="no"/>
+  </control>
+  <map>
+    <name>ec_chip_map</name>
+    <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
+    <params npcx_uut="npcx9m7f" ite_uart="it82102" mchp_int_uart="MEC172X"></params>
+  </map>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="" cmd="get" interface="10" drv="simple_ec" uart_cmd="version"
+      regex="Chip:\s+\S+\s+(npcx9m7f|it82102|MEC172X)\S*\s" group="1" map="ec_chip_map"/>
+  </control>
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>gsc_ec_reset:on</item>
+            <item>ap_flash_select:on</item>
+          </item>
+          <item key="0">
+            <item>ap_flash_select:off</item>
+            <item>gsc_ec_reset:off</item>
+            <!-- Additional reset pulse as a workaround to bring the dut back on. -->
+            <item>sleep:2</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <doc>Enable SPI access for flashing CPU firmware over Servo Micro</doc>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>gsc_ec_reset:on</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi_hold:off</item>
+          </item>
+          <item key="0">
+            <item>spi2_buf_en:off</item>
+            <item>gsc_ec_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <!-- fw_wp_vref and spi2_vref share the same voltage rail on the servo
+    device. Disable the SPI2_VREF output load switch to avoid pushing power
+    into the DUT. -->
+    <params clobber_ok="patch" fw_wp_vref="off" />
+  </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="patch" pdc="yes" />
+  </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeMatrix30"
+      clobber_ok="full"></params>
+  </control>
+</root>

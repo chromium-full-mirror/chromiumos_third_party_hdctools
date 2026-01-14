@@ -1,0 +1,12 @@
+<root>
+  <include>
+    <name>servo_atria_overlay.xml</name>
+  </include>
+  <!-- The ITE EC add-in card (UART for flashing). -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="ite_uart" />
+  </control>
+</root>
