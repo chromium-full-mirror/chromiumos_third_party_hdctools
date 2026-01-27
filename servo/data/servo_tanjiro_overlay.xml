@@ -24,6 +24,9 @@
   <include>
     <name>detachable.xml</name>
   </include>
+  <include>
+    <name>usb_kb_main_kb.xml</name>
+  </include>
   <!-- ******** Maps ******** -->
 
   <!-- ******** Controls ******** -->
