@@ -22,6 +22,9 @@
     <name>pdc_ccd_keepalive.xml</name>
   </include>
   <include>
+    <name>usb_kb_main_kb.xml</name>
+  </include>
+  <include>
     <name>detachable.xml</name>
   </include>
   <!-- ******** Maps ******** -->
