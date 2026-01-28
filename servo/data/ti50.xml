@@ -16,7 +16,9 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Use GSC CCD to control WP</doc>
-    <params drv="fw_wp_gsc_flex" interface="servo" clobber_ok="patch" />
+    <params drv="fw_wp_gsc_flex" interface="servo" init="force_off"
+    clobber_ok="patch"
+    ></params>
   </control>
   <control>
     <name>ti50_aprv_latch_state</name>

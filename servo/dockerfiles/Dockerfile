@@ -143,13 +143,14 @@ RUN tar cvf libs.tar /usr/lib/libfmap.so* /usr/lib/libftdi*
 
 ######################################################################
 FROM libftdi as pigweed-builder
+ARG PIGWEED_URL=https://chromium.googlesource.com/chromiumos/third_party/pigweed/pigweed
+ARG PIGWEED_BRANCH=main
 
-RUN git clone https://chromium.googlesource.com/chromiumos/third_party/pigweed/pigweed
+RUN git clone ${PIGWEED_URL}
 
 WORKDIR /pigweed
-# TODO(b/371018012): Once pigweed downstreaming is enabled follow
-# upstream pigweed
-RUN git checkout upstream/main
+RUN git fetch ${PIGWEED_URL} ${PIGWEED_BRANCH}
+RUN git checkout ${PIGWEED_BRANCH}
 COPY servo/dockerfiles/setup_pigweed.py .
 RUN python3 setup_pigweed.py bdist_wheel
 
@@ -289,13 +290,65 @@ RUN cd /coreboot/util/ifdtool && make
 RUN strip /coreboot/util/ifdtool/ifdtool
 
 ######################################################################
+FROM libftdi as fwupd-builder
+
+RUN apt update
+RUN apt install -y xz-utils wget build-essential dh-make devscripts
+RUN wget https://github.com/fwupd/fwupd/releases/download/2.0.19/fwupd-2.0.19.tar.xz
+RUN tar xvf fwupd-2.0.19.tar.xz
+
+WORKDIR fwupd-2.0.19
+
+RUN python3 ./contrib/ci/fwupd_setup_helpers.py install-dependencies -y --os debian -y
+ENV DEBEMAIL="your-email@example.com"
+ENV DEBFULLNAME="Your Name"
+ENV DEB_BUILD_OPTIONS=nostrip=no
+
+RUN dh_make -s -n -f "../fwupd-2.0.19.tar.xz" -y
+
+RUN printf "\n\noverride_dh_auto_configure:\n\tdh_auto_configure -- \
+    -Dauto_features=enabled \
+    -Dbluez=disabled \
+    -Dcbor=disabled \
+    -Ddocs=disabled \
+    -Dintrospection=disabled \
+    -Dlibarchive=disabled \
+    -Dlibdrm=disabled \
+    -Dlibmnl=disabled \
+    -Dpassim=disabled \
+    -Dplugin_flashrom=disabled \
+    -Dplugin_modem_manager=disabled \
+    -Dpolkit=disabled \
+    -Dprotobuf=disabled \
+    -Dsystemd=disabled \
+    -Dtests=false \
+    -Dumockdev_tests=disabled \
+    -Dvalgrind=disabled \
+    -Dvalgrind=disabled \
+    -Dbash_completion=false \
+    -Dblkid=disabled \
+    -Dbuild=standalone \
+    -Dfirmware-packager=false \
+    -Dfish_completion=false \
+    -Dgnutls=disabled \
+    -Dhsi=disabled \
+    -Dlvfs=disabled \
+    -Dman=false \
+    -Dqubes=false \
+    -Dreadline=disabled \
+    -Dplugin_uefi_capsule_splash=false" >> debian/rules
+
+RUN printf "\noverride_dh_shlibdeps:\n\t-dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info\n" >> debian/rules
+
+RUN debuild -b -j$(nproc) -us -uc
+######################################################################
+
 FROM debian:trixie-slim as base
 
 COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
 
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
-    fwupd \
     iptables \
     lsof \
     procps \
@@ -313,6 +366,10 @@ RUN apt-get update --no-install-recommends \
     sudo \
     usbutils \
     wget \
+    usb.ids \
+    libcurl3t64-gnutls \
+    libxmlb2 \
+    libjcat1 \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
@@ -345,6 +402,11 @@ COPY --link --from=chromiumos_overlays \
 RUN mkdir -p /usr/local/genesys
 RUN wget https://storage.googleapis.com/fwupd-cache/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab \
     -O /usr/local/genesys/GenesysLogic_GL3590_64.17.cab
+RUN wget https://storage.googleapis.com/fwupd-cache/GenesysLogic_Google_Servo_GL3590_64.18.cab \
+    -O /usr/local/genesys/GenesysLogic_GL3590_64.18.cab
+COPY --link --from=fwupd-builder /fwupd_*_amd64.deb .
+RUN apt install ./fwupd_*_amd64.deb
+RUN rm *.deb
 
 # Install ec tools
 COPY --link --from=ec-builder \

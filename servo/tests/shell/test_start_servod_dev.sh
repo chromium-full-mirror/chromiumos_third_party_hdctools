@@ -129,7 +129,7 @@ prepare_script() {
     # Modify path to fwupdtool to use the one in PATH (our mock)
     sed -i "s|/usr/bin/fwupdtool|fwupdtool|g" "${SCRIPT_UNDER_TEST_COPY}"
     # Modify path to the .cab file for fwupdtool
-    sed -i "s|/usr/local/genesys/GenesysLogic_GL3590_64.17.cab|${MOCK_FWUPDTOOL_CAB_FILE}|g" "${SCRIPT_UNDER_TEST_COPY}"
+    sed -i "s|/usr/local/genesys/GenesysLogic_GL3590_64.18.cab|${MOCK_FWUPDTOOL_CAB_FILE}|g" "${SCRIPT_UNDER_TEST_COPY}"
 }
 
 # Reset mocks and sysfs for each test

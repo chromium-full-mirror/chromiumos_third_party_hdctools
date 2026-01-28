@@ -2,12 +2,14 @@
   <include>
     <name>servo_ocelot_overlay.xml</name>
   </include>
-  <!-- The Realtek EC add-in card (UART for flashing).
-       This is for the RVP, not form-factor designs. -->
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="rtk_uart" />
+      drv="cros_chip" chip="rtk_uart" />
+  </control>
+  <control>
+    <name>fw_up</name>
+    <params clobber_ok="patch" od="PP" map="onoff" init="off"></params>
   </control>
 </root>

@@ -925,7 +925,7 @@ class PowerMeasurement:
                 with open(fname, "a", encoding="utf-8") as f:
                     f.write("\n%s\n" % message)
         # Also, output a markdown version of each summary
-        md_outfiles = [stat.SaveSummaryMD(outdir) for stat in stats_managers]
+        md_outfiles = [stat.save_summary_md(outdir) for stat in stats_managers]
         self._logger.info("Storing summaries at:\n%s", "\n".join(outfiles))
         self._logger.info("Storing .md summaries at:\n%s", "\n".join(md_outfiles))
         return outfiles

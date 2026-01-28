@@ -13,7 +13,7 @@ for dev in /sys/bus/usb/devices/[0-9]*; do
 done
 if [ "${found_updatable}" -eq 1 ]; then
   /usr/bin/fwupdtool install --plugins genesys --filter="updatable" \
-  /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d "?"
+  /usr/local/genesys/GenesysLogic_GL3590_64.18.cab | tr -d "?"
 fi
 
 echo "DEV: starting grpc server ...................."

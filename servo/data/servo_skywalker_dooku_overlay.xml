@@ -1,6 +1,6 @@
 <root>
   <include>
-    <name>servo_jedi_overlay.xml</name>
+    <name>servo_skywalker_overlay.xml</name>
   </include>
   <control>
     <name>dut_pd_data_role</name>

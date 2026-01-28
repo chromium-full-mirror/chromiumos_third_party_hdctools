@@ -5,6 +5,9 @@
     <name>common.xml</name>
   </include>
   <include>
+    <name>power_tools.xml</name>
+  </include>
+  <include>
     <name>keyboard.xml</name>
   </include>
   <include>

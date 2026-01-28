@@ -24,6 +24,9 @@
   <include>
     <name>detachable.xml</name>
   </include>
+  <include>
+    <name>usb_kb_main_kb.xml</name>
+  </include>
   <!-- ******** Maps ******** -->
 
   <!-- ******** Controls ******** -->
@@ -77,5 +80,9 @@
     <alias>servo_spi_programming</alias>
     <doc>Controls a mux on Tanjiro that switches between AP or GSC+Servo access to AP SPI flash.</doc>
     <params clobber_ok="patch" od="PP" map="onoff" init="off" />
+  </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="patch" pdc="yes" />
   </control>
 </root>
