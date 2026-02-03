@@ -433,7 +433,7 @@ RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/n
 
 RUN mkdir -p /usr/share/cros_ec/tokens
 # Fetch EC Token Database from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/tokens/chromeos-ec-token-historical.bin \
     -O /usr/share/cros_ec/tokens/historical.bin
 
 # Install flashrom
