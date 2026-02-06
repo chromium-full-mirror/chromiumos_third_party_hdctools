@@ -72,6 +72,7 @@ ignored-modules=
     exceptions,
     google,
     input,
+    measurement_tools,
     mock,
     numpy,
     pexpect,

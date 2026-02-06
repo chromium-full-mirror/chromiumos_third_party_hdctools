@@ -7,8 +7,8 @@ import io
 import unittest
 import unittest.mock
 
-from servo.core import dut_power_data
-from servo.core import http_server
+from measurement_tools import dut_power_data
+from measurement_tools import http_server
 
 
 class TestHttpRequestHandler(unittest.TestCase):

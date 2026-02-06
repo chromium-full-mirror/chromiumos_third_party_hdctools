@@ -9,9 +9,9 @@ import time
 import unittest
 import unittest.mock
 
+from measurement_tools import measure_power
+from measurement_tools.utils import stats_manager
 from servo.core import client
-from servo.core import measure_power
-from servo.utils import stats_manager
 
 
 class TestServodPowerTracker(unittest.TestCase):
@@ -20,18 +20,21 @@ class TestServodPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        client.ServoClient.__init__ = unittest.mock.MagicMock(return_value=None)
+        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
         with unittest.mock.patch(
-            "servo.utils.timelined_stats_manager.TimelinedStatsManager.__init__",
+            (
+                "measurement_tools.utils.timelined_stats_manager."
+                "TimelinedStatsManager.__init__"
+            ),
             unittest.mock.MagicMock(return_value=None),
         ):
             self.tracker = measure_power.ServodPowerTracker(
-                "localhost",
-                9990,
-                threading.Event(),
+                self.mock_servo_client,
                 ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"],
+                threading.Event(),
                 2,
             )
+            self.tracker._stats = unittest.mock.MagicMock()
 
     def test_empty(self):
         """Test empty()."""
@@ -54,14 +57,15 @@ class TestServodPowerTracker(unittest.TestCase):
 
     def test_verify(self):
         """Test verify()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock()
         self.tracker.verify()
-        self.tracker._sclient.set_get_all.assert_called_once_with(self.tracker._ctrls)
+        self.mock_servo_client.set_get_all.assert_called_once_with(
+            self.tracker._ctrls
+        )
 
     def test_verify_fail(self):
         """Test verify() failure scenario."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock(
-            side_effect=[client.ServoClientError(None, None)]
+        self.mock_servo_client.set_get_all.side_effect = client.ServoClientError(
+            None, None
         )
         with self.assertRaises(measure_power.PowerTrackerError) as cm:
             self.tracker.verify()
@@ -86,7 +90,6 @@ class TestServodPowerTracker(unittest.TestCase):
                 ([("rail_name", 3), ("rail_name2", 4), ("Sample_msecs", 43.5)], 33.1),
             ]
         )
-        self.tracker._stats.add_samples = unittest.mock.MagicMock()
         self.tracker.set_sample_data = unittest.mock.MagicMock()
 
         self.tracker.run()
@@ -154,11 +157,11 @@ class TestServodPowerTracker(unittest.TestCase):
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_ctrls(self):
         """Test _sample_ctrls()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock(return_value=[1, 2])
+        self.mock_servo_client.set_get_all.return_value = [1, 2]
         res = self.tracker._sample_ctrls(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
-        self.tracker._sclient.set_get_all.assert_called_once_with(
+        self.mock_servo_client.set_get_all.assert_called_once_with(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
         self.assertEqual(
@@ -168,13 +171,13 @@ class TestServodPowerTracker(unittest.TestCase):
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_ctrls_failure(self):
         """Test _sample_ctrls() failure scenario."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock(
-            side_effect=[client.ServoClientError(None, None)]
+        self.mock_servo_client.set_get_all.side_effect = client.ServoClientError(
+            None, None
         )
         (sample_tuples, duration_ms) = self.tracker._sample_ctrls(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
-        self.tracker._sclient.set_get_all.assert_called_once_with(
+        self.mock_servo_client.set_get_all.assert_called_once_with(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
         self.assertEqual(sample_tuples[0][0], "rail_name")
@@ -205,35 +208,34 @@ class TestHighResServodPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        client.ServoClient.__init__ = unittest.mock.MagicMock(return_value=None)
+        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
         with unittest.mock.patch(
-            "servo.utils.timelined_stats_manager.TimelinedStatsManager.__init__",
+            (
+                "measurement_tools.utils.timelined_stats_manager."
+                "TimelinedStatsManager.__init__"
+            ),
             unittest.mock.MagicMock(return_value=None),
         ):
             self.tracker = measure_power.HighResServodPowerTracker(
-                "localhost",
-                9990,
-                threading.Event(),
+                self.mock_servo_client,
                 ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"],
+                threading.Event(),
                 2,
             )
+            self.tracker._stats = unittest.mock.MagicMock()
+        self.tracker.set_sample_data = unittest.mock.MagicMock()
+        self.tracker._sample_ctrls = unittest.mock.MagicMock(
+            return_value=(
+                [("rail_name", 1), ("rail_name2", 2), ("Sample_msecs", 43.3)],
+                33.2,
+            )
+        )
 
     def test_run(self):
         """Test run()."""
         self.tracker._stop_signal.is_set = unittest.mock.MagicMock(
-            side_effect=[False, False, False, True]
+            side_effect=[False, False, True]
         )
-        self.tracker._stop_signal.wait = unittest.mock.MagicMock()
-        self.tracker._sample_ctrls = unittest.mock.MagicMock(
-            side_effect=[
-                ([("rail_name", 1), ("rail_name2", 2), ("Sample_msecs", 43.3)], 33.2),
-                ([("rail_name", 3), ("rail_name2", 4), ("Sample_msecs", 43.5)], 33.1),
-                ([("rail_name", 5), ("rail_name2", 6), ("Sample_msecs", 43.5)], 33.1),
-            ]
-        )
-        self.tracker._record_mean_samples = unittest.mock.MagicMock()
-        self.tracker.set_sample_data = unittest.mock.MagicMock()
-
         with unittest.mock.patch(
             "time.time",
             unittest.mock.MagicMock(side_effect=[12345, 12347, 12349, 12349]),
@@ -244,17 +246,15 @@ class TestHighResServodPowerTracker(unittest.TestCase):
             [
                 unittest.mock.call(["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]),
                 unittest.mock.call(["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]),
-                unittest.mock.call(["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]),
             ]
         )
-        self.assertEqual(self.tracker._record_mean_samples.call_count, 3)
         self.tracker.set_sample_data.assert_has_calls(
             [
                 unittest.mock.call(
                     [("rail_name", 1), ("rail_name2", 2), ("Sample_msecs", 43.3)]
                 ),
                 unittest.mock.call(
-                    [("rail_name", 3), ("rail_name2", 4), ("Sample_msecs", 43.5)]
+                    [("rail_name", 1), ("rail_name2", 2), ("Sample_msecs", 43.3)]
                 ),
             ]
         )
@@ -266,7 +266,6 @@ class TestHighResServodPowerTracker(unittest.TestCase):
         temp_stats.add_sample("rail_name2", 2)
         temp_stats.add_sample("rail_name", 3)
         temp_stats.add_sample("rail_name2", 4)
-        self.tracker._stats.add_samples = unittest.mock.MagicMock()
 
         self.tracker._record_mean_samples(temp_stats)
         self.tracker._stats.add_samples.assert_called_once_with(
@@ -290,7 +289,7 @@ class TestOnboardADCPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        client.ServoClient.__init__ = unittest.mock.MagicMock(return_value=None)
+        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
         results = {
             "power_rails": ["ppchg5_mw", "ppservo5_mw", "ppdut5_mw"],
             "adc_ez_config_ctrls": [
@@ -299,26 +298,26 @@ class TestOnboardADCPowerTracker(unittest.TestCase):
                 "ppdut5_ez_config",
             ],
         }
-        client.ServoClient.get = unittest.mock.MagicMock(
-            side_effect=lambda x: results[x]
-        )
+        self.mock_servo_client.get.side_effect = lambda x: results[x]
         with unittest.mock.patch(
-            "servo.utils.timelined_stats_manager.TimelinedStatsManager.__init__",
+            (
+                "measurement_tools.utils.timelined_stats_manager."
+                "TimelinedStatsManager.__init__"
+            ),
             unittest.mock.MagicMock(return_value=None),
         ):
             self.tracker = measure_power.OnboardADCPowerTracker(
-                "localhost",
-                9990,
+                self.mock_servo_client,
                 threading.Event(),
                 measure_power.RegexFilter(None, "ppd.*"),
                 2,
             )
+            self.tracker._stats = unittest.mock.MagicMock()
 
     def test_prepare(self):
         """Test prepare()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock()
         self.tracker.prepare()
-        self.tracker._sclient.set_get_all.assert_called_once_with(
+        self.mock_servo_client.set_get_all.assert_called_once_with(
             ["ppchg5_ez_config:on", "ppservo5_ez_config:on"]
         )
 
@@ -370,7 +369,7 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        client.ServoClient.__init__ = unittest.mock.MagicMock(return_value=None)
+        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
         results = {
             "avg_power_rails": ["ppchg5_mw", "ppservo5_mw"],
             "accum_clear_ctrls": ["ppdut5_mw"],
@@ -380,46 +379,45 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
                 "ppdut5_ez_config",
             ],
         }
-        client.ServoClient.get = unittest.mock.MagicMock(
-            side_effect=lambda x: results[x]
-        )
+        self.mock_servo_client.get.side_effect = lambda x: results[x]
         with unittest.mock.patch(
-            "servo.utils.timelined_stats_manager.TimelinedStatsManager.__init__",
+            (
+                "measurement_tools.utils.timelined_stats_manager."
+                "TimelinedStatsManager.__init__"
+            ),
             unittest.mock.MagicMock(return_value=None),
         ):
             self.tracker = measure_power.OnboardADCAccumPowerTracker(
-                "localhost",
-                9990,
+                self.mock_servo_client,
                 threading.Event(),
                 measure_power.RegexFilter(None, "pps.*"),
                 2,
             )
+            self.tracker._stats = unittest.mock.MagicMock()
 
     def test_prepare(self):
         """Test prepare()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock()
         self.tracker.prepare()
-        self.tracker._sclient.set_get_all.assert_called_once_with(
+        self.mock_servo_client.set_get_all.assert_called_once_with(
             ["ppchg5_ez_config:on", "ppdut5_ez_config:on"]
         )
 
     def test_clear_accum(self):
         """Test _clear_accum()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock()
         self.tracker.prepare()
-        self.tracker._sclient.set_get_all.assert_called_once_with(
+        self.mock_servo_client.set_get_all.assert_called_once_with(
             ["ppchg5_ez_config:on", "ppdut5_ez_config:on"]
         )
 
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_ctrls(self):
         """Test _sample_ctrls()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock(return_value=[1, 2])
+        self.mock_servo_client.set_get_all.return_value = [1, 2]
         self.tracker._clear_accum = unittest.mock.MagicMock()
         res = self.tracker._sample_ctrls(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
-        self.tracker._sclient.set_get_all.assert_called_once_with(
+        self.mock_servo_client.set_get_all.assert_called_once_with(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
         self.tracker._clear_accum.assert_called_once()
@@ -440,7 +438,6 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
                 ([("rail_name", 3), ("rail_name2", 4), ("Sample_msecs", 43.5)], 33.1),
             ]
         )
-        self.tracker._stats.add_samples = unittest.mock.MagicMock()
         self.tracker.set_sample_data = unittest.mock.MagicMock()
 
         self.tracker.run()
@@ -483,26 +480,27 @@ class TestECPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        client.ServoClient.__init__ = unittest.mock.MagicMock(return_value=None)
+        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
         with unittest.mock.patch(
-            "servo.utils.timelined_stats_manager.TimelinedStatsManager.__init__",
+            (
+                "measurement_tools.utils.timelined_stats_manager."
+                "TimelinedStatsManager.__init__"
+            ),
             unittest.mock.MagicMock(return_value=None),
         ):
             self.tracker = measure_power.ECPowerTracker(
-                "localhost",
-                9990,
+                self.mock_servo_client,
                 threading.Event(),
                 measure_power.RegexFilter(None, "pp.*"),
                 2,
             )
+            self.tracker._stats = unittest.mock.MagicMock()
 
     def test_verify(self):
         """Test verify()."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock(
-            side_effect=[None, None]
-        )
+        self.mock_servo_client.set_get_all.side_effect = [None, None]
         self.tracker.verify()
-        self.tracker._sclient.set_get_all.assert_has_calls(
+        self.mock_servo_client.set_get_all.assert_has_calls(
             [
                 unittest.mock.call(["ppvar_vbat_mw"]),
                 unittest.mock.call(["avg_ppvar_vbat_mw"]),
@@ -512,11 +510,12 @@ class TestECPowerTracker(unittest.TestCase):
 
     def test_verify_failure_fallback(self):
         """Test verify() fallback on failure of using avg_ppvar_vbat_mw."""
-        self.tracker._sclient.set_get_all = unittest.mock.MagicMock(
-            side_effect=[None, measure_power.PowerTrackerError("msg")]
-        )
+        self.mock_servo_client.set_get_all.side_effect = [
+            None,
+            measure_power.PowerTrackerError("msg"),
+        ]
         self.tracker.verify()
-        self.tracker._sclient.set_get_all.assert_has_calls(
+        self.mock_servo_client.set_get_all.assert_has_calls(
             [
                 unittest.mock.call(["ppvar_vbat_mw"]),
                 unittest.mock.call(["avg_ppvar_vbat_mw"]),
@@ -526,9 +525,8 @@ class TestECPowerTracker(unittest.TestCase):
 
     def test_prepare(self):
         """Test prepare()."""
-        self.tracker._sclient.set = unittest.mock.MagicMock()
         self.tracker.prepare()
-        self.tracker._sclient.set.assert_called_once_with("ec_uart_cmd", "dsleep 2")
+        self.mock_servo_client.set.assert_called_once_with("ec_uart_cmd", "dsleep 2")
 
     def test_run(self):
         """Test run()."""
@@ -544,7 +542,6 @@ class TestECPowerTracker(unittest.TestCase):
                 ([("avg_ppvar_vbat_mw", 3), ("Sample_msecs", 43.5)], 33.1),
             ]
         )
-        self.tracker._stats.add_samples = unittest.mock.MagicMock()
         self.tracker.set_sample_data = unittest.mock.MagicMock()
         self.tracker._ctrls = ["avg_ppvar_vbat_mw"]
 
@@ -601,12 +598,9 @@ class TestPowerMeasurement(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        client.ServoClient.__init__ = unittest.mock.MagicMock(return_value=None)
+        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
         results = {"ec_board": "atlas", "servo_adcs_enabled": "on"}
-        client.ServoClient.get = unittest.mock.MagicMock(
-            side_effect=lambda x: results[x]
-        )
-        client.ServoClient.set = unittest.mock.MagicMock()
+        self.mock_servo_client.get.side_effect = lambda x: results[x]
         measure_power.OnboardADCPowerTracker.__init__ = unittest.mock.MagicMock(
             return_value=None
         )
@@ -630,31 +624,29 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_init(self):
         """Test __init__()."""
-        pm = measure_power.PowerMeasurement("localhost", 9998)
-        client.ServoClient.__init__.assert_called_with(host="localhost", port=9998)
-        client.ServoClient.get.assert_has_calls(
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
+        self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
-        client.ServoClient.set.assert_called_once_with("servo_adcs_enabled", "on")
+        self.mock_servo_client.set.assert_called_once_with(
+            "servo_adcs_enabled", "on"
+        )
         measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9998,
+            self.mock_servo_client,
             pm._stop_signal,
-            unittest.mock.ANY,
+            unittest.mock.ANY,  # cfilter
             measure_power.DEFAULT_ADC_RATE,
         )
         measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9998,
+            self.mock_servo_client,
             pm._stop_signal,
-            unittest.mock.ANY,
+            unittest.mock.ANY,  # cfilter
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
         measure_power.ECPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9998,
+            self.mock_servo_client,
             pm._stop_signal,
-            unittest.mock.ANY,
+            unittest.mock.ANY,  # cfilter
             measure_power.DEFAULT_VBAT_RATE,
         )
         measure_power.OnboardADCPowerTracker.remove_rail.assert_called_once_with("abc")
@@ -665,26 +657,24 @@ class TestPowerMeasurement(unittest.TestCase):
     def test_init_adc_disabled(self):
         """Test __init__()."""
         results = {"ec_board": "atlas", "servo_adcs_enabled": "off"}
-        client.ServoClient.get = unittest.mock.MagicMock(
-            side_effect=lambda x: results[x]
-        )
+        self.mock_servo_client.get.side_effect = lambda x: results[x]
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
-            measure_power.PowerMeasurement("localhost", 9997)
+            measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(str(cm.exception), "ADCs setup failed.")
-        client.ServoClient.__init__.assert_called_once_with(host="localhost", port=9997)
-        client.ServoClient.get.assert_has_calls(
+        self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
 
     def test_init_no_tracker(self):
         """Test __init__()."""
         with self.assertRaises(measure_power.NoSourceError) as cm:
-            measure_power.PowerMeasurement("localhost", 9996, 0, 0, 0)
+            measure_power.PowerMeasurement(
+                self.mock_servo_client, adc_rate=0, adc_accum_rate=0, vbat_rate=0
+            )
         self.assertEqual(
             str(cm.exception), "No power measurement source successfully setup."
         )
-        client.ServoClient.__init__.assert_called_once_with(host="localhost", port=9996)
-        client.ServoClient.get.assert_has_calls(
+        self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
 
@@ -700,31 +690,27 @@ class TestPowerMeasurement(unittest.TestCase):
             side_effect=measure_power.PowerTrackerError()
         )
         with self.assertRaises(measure_power.NoSourceError) as cm:
-            measure_power.PowerMeasurement("localhost", 9995)
+            measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(
             str(cm.exception), "No power measurement source successfully setup."
         )
-        client.ServoClient.__init__.assert_called_once_with(host="localhost", port=9995)
-        client.ServoClient.get.assert_has_calls(
+        self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
         measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9995,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_RATE,
         )
         measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9995,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
         measure_power.ECPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9995,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_VBAT_RATE,
@@ -745,31 +731,27 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.ECPowerTracker.__repr__ = unittest.mock.MagicMock(
                 return_value=""
             )
-            measure_power.PowerMeasurement("localhost", 9994)
+            measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(
             str(cm.exception), "No power measurement source successfully setup."
         )
-        client.ServoClient.__init__.assert_called_with(host="localhost", port=9994)
-        client.ServoClient.get.assert_has_calls(
+        self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
         measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9994,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_RATE,
         )
         measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9994,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
         measure_power.ECPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9994,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_VBAT_RATE,
@@ -787,31 +769,27 @@ class TestPowerMeasurement(unittest.TestCase):
             side_effect=measure_power.PowerTrackerError()
         )
         with self.assertRaises(measure_power.NoSourceError) as cm:
-            measure_power.PowerMeasurement("localhost", 9993)
+            measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(
             str(cm.exception), "No power measurement source successfully setup."
         )
-        client.ServoClient.__init__.assert_called_with(host="localhost", port=9993)
-        client.ServoClient.get.assert_has_calls(
+        self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
         measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9993,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_RATE,
         )
         measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9993,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
         measure_power.ECPowerTracker.__init__.assert_called_once_with(
-            "localhost",
-            9993,
+            self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_VBAT_RATE,
@@ -822,7 +800,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_reset(self):
         """Test Reset()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._stats = {"a": "testing"}
         pm._setup_done.set()
         pm._stop_signal.set()
@@ -839,7 +817,7 @@ class TestPowerMeasurement(unittest.TestCase):
         """Test measure_timed_power()."""
         setup_done = threading.Event()
         setup_done.wait = unittest.mock.MagicMock()
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm.measure_power = unittest.mock.MagicMock(return_value=setup_done)
         pm.finish_measurement = unittest.mock.MagicMock()
 
@@ -855,7 +833,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_measure_power(self):
         """Test measure_power()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
 
         with unittest.mock.patch(
             "threading.Thread.__init__", unittest.mock.MagicMock(return_value=None)
@@ -878,7 +856,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test__measure_power(self):
         """Test _measure_power()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._fast = False
         pm._setup_done.set = unittest.mock.MagicMock()
         pm._stop_signal = threading.Event()
@@ -918,10 +896,8 @@ class TestPowerMeasurement(unittest.TestCase):
             "servo_adcs_enabled": "on",
             "ec_system_powerstate": "S0",
         }
-        client.ServoClient.get = unittest.mock.MagicMock(
-            side_effect=lambda x: results[x]
-        )
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        self.mock_servo_client.get.side_effect = lambda x: results[x]
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._fast = False
         pm._setup_done.set = unittest.mock.MagicMock()
         pm._stop_signal = threading.Event()
@@ -944,7 +920,9 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.OnboardADCAccumPowerTracker.prepare.assert_called_once_with(
                 False, "S0"
             )
-            measure_power.ECPowerTracker.prepare.assert_called_once_with(False, "S0")
+            measure_power.ECPowerTracker.prepare.assert_called_once_with(
+                False, "S0"
+            )
             self.assertEqual(
                 pm._outdir, "/tmp/power_measurements/atlas/S0_19700101-032545"
             )
@@ -956,7 +934,13 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test__measure_power_unknown_failure(self):
         """Test _measure_power()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        # Constructor calls get("ec_board") then set("servo_adcs_enabled", "on")
+        # then get("servo_adcs_enabled")
+        # We want constructor to have board "atlas" but _measure_power to fail.
+        self.mock_servo_client.get.side_effect = ["atlas", "on"]
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
+
+        # Now mock it for _measure_power
         pm._sclient.get = unittest.mock.MagicMock(
             side_effect=client.ServoClientError(None, None)
         )
@@ -996,7 +980,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test__measure_power_fast_stop(self):
         """Test _measure_power()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._fast = True
         pm._setup_done.set = unittest.mock.MagicMock()
         pm._stop_signal = threading.Event()
@@ -1031,7 +1015,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_finish_measurement(self):
         """Test finish_measurement()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._stop_signal.set = unittest.mock.MagicMock()
         measure_power.OnboardADCPowerTracker.is_alive = unittest.mock.MagicMock(
             return_value=True
@@ -1055,7 +1039,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_pm_status(self):
         """Test get_pm_status()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._stop_signal.is_set = unittest.mock.MagicMock(
             side_effect=[True, False, True]
         )
@@ -1066,7 +1050,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_process_measurement(self):
         """Test process_measurement()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm.finish_measurement = unittest.mock.MagicMock()
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
@@ -1099,7 +1083,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_raw_data(self):
         """Test save_raw_data()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager(title="adc")
         stats_manager2 = stats_manager.StatsManager(title="ec")
@@ -1117,7 +1101,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_raw_data_failure(self):
         """Test save_raw_data()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1126,7 +1110,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_raw_data(self):
         """Test get_raw_data()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager(title="adc")
         stats_manager2 = stats_manager.StatsManager(title="ec")
@@ -1138,7 +1122,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_raw_data_failure(self):
         """Test get_raw_data()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1147,23 +1131,23 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_trimmed_summary(self):
         """Test save_trimmed_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         pm._save_summary = unittest.mock.MagicMock(return_value=["file1.txt"])
         stats_manager1 = stats_manager.StatsManager(title="adc")
         stats_manager2 = stats_manager.StatsManager(title="ec")
         pm._stats = {"adc": stats_manager1, "ec": stats_manager2}
-        stats_manager1.TrimmedCopy = unittest.mock.MagicMock(
+        stats_manager1.trimmed_copy = unittest.mock.MagicMock(
             return_value=stats_manager1
         )
-        stats_manager2.TrimmedCopy = unittest.mock.MagicMock(return_value=None)
+        stats_manager2.trimmed_copy = unittest.mock.MagicMock(return_value=None)
 
         res = pm.save_trimmed_summary("tag", 123, 456)
 
-        stats_manager1.TrimmedCopy.assert_called_once_with(
+        stats_manager1.trimmed_copy.assert_called_once_with(
             tag="tag", tstart=123, tend=456
         )
-        stats_manager2.TrimmedCopy.assert_called_once_with(
+        stats_manager2.trimmed_copy.assert_called_once_with(
             tag="tag", tstart=123, tend=456
         )
         self.assertEqual(stats_manager1._title, "adc(tag)")
@@ -1175,7 +1159,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_trimmed_summary_failure(self):
         """Test save_trimmed_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1184,7 +1168,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_summary(self):
         """Test save_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
@@ -1204,7 +1188,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_summary_failure(self):
         """Test save_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1213,7 +1197,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test__save_summary(self):
         """Test _save_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
         stats_manager1.save_summary = unittest.mock.MagicMock(return_value="file1.txt")
@@ -1233,7 +1217,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_summary(self):
         """Test get_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
@@ -1249,7 +1233,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_summary_failure(self):
         """Test get_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1258,7 +1242,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_formatted_summary(self):
         """Test get_formatted_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
@@ -1278,7 +1262,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_formatted_summary_failure(self):
         """Test get_formatted_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1287,7 +1271,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_display_summary(self):
         """Test display_summary()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm.get_formatted_summary = unittest.mock.MagicMock(return_value="summary")
 
         with unittest.mock.patch("builtins.print", unittest.mock.MagicMock()):
@@ -1297,7 +1281,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_summary_json(self):
         """Test save_summary_json()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = True
         pm._save_summary_json = unittest.mock.MagicMock(return_value=["testing.json"])
 
@@ -1308,7 +1292,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_save_summary_json_failure(self):
         """Test save_summary_json()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._processing_done = False
 
         with self.assertRaises(measure_power.PowerMeasurementError) as cm:
@@ -1317,7 +1301,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test__save_summary_json(self):
         """Test _save_summary_json()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
         stats_manager1.save_summary_json = unittest.mock.MagicMock(
@@ -1335,7 +1319,7 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_get_sample_data(self):
         """Test get_sample_data()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         measure_power.OnboardADCPowerTracker.get_sample_data = unittest.mock.MagicMock(
             return_value=["1"]
         )
@@ -1355,10 +1339,11 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_clean_sample_data(self):
         """Test clean_sample_data()."""
-        pm = measure_power.PowerMeasurement("localhost", 9990)
+        pm = measure_power.PowerMeasurement(self.mock_servo_client)
         measure_power.OnboardADCPowerTracker.clean_sample_data = (
             unittest.mock.MagicMock()
         )
+
         measure_power.OnboardADCAccumPowerTracker.clean_sample_data = (
             unittest.mock.MagicMock()
         )

@@ -15,12 +15,11 @@ import sys
 import tempfile
 import threading
 
-# This module is just a wrapper around measure_power functionality
+from measurement_tools import dut_power_data
+from measurement_tools import http_server
+from measurement_tools import measure_power
+from measurement_tools import servo_parsing
 from servo.core import client
-from servo.core import dut_power_data
-from servo.core import http_server
-from servo.core import measure_power
-from servo.core import servo_parsing
 
 
 class ProgressPrinter(threading.Thread):
@@ -109,7 +108,9 @@ class DutPower:
         """
         description = "Measure power using servod."
         # BaseServodParser provides port, host, debug arguments
-        parser = servo_parsing.ServodClientParser(description=description)
+        parser = servo_parsing.ServodClientParser(
+            description=description
+        )
         # overwriting/providing measurement information so the servo device
         # does not need to query for it.
         parser.add_argument(
@@ -464,9 +465,9 @@ class DutPower:
         self._setup_logging(args)
 
         try:
+            servo_client = client.ServoClient(host=args.host, port=args.port)
             pm = measure_power.PowerMeasurement(
-                host=args.host,
-                port=args.port,
+                servo_client=servo_client,
                 adc_rate=args.adc_rate,
                 adc_accum_rate=args.adc_accum_rate,
                 vbat_rate=args.vbat_rate,

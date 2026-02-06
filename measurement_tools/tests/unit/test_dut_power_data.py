@@ -6,8 +6,8 @@
 import unittest
 import unittest.mock
 
-from servo.core import dut_power_data
-from servo.core import measure_power
+from measurement_tools import dut_power_data
+from measurement_tools import measure_power
 
 
 class TestDataSampler(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestDataSampler(unittest.TestCase):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
         with unittest.mock.patch(
-            "servo.measure_power.PowerMeasurement.__init__",
+            "measurement_tools.measure_power.PowerMeasurement.__init__",
             unittest.mock.MagicMock(return_value=None),
         ):
             pm = measure_power.PowerMeasurement(None, None)

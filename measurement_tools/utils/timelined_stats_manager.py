@@ -9,7 +9,7 @@ import copy
 import logging
 import time
 
-from servo.utils import stats_manager
+from measurement_tools.utils import stats_manager
 
 
 TIME_KEY = "time"

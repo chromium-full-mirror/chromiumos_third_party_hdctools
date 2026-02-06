@@ -9,9 +9,9 @@ import re
 import threading
 import time
 
+from measurement_tools.utils import stats_manager
+from measurement_tools.utils import timelined_stats_manager
 from servo.core import client
-from servo.utils import stats_manager
-from servo.utils import timelined_stats_manager
 
 
 SAMPLE_TIME_KEY = "Sample_msecs"
@@ -67,10 +67,9 @@ class ServodPowerTracker(threading.Thread):
 
     def __init__(
         self,
-        host,
-        port,
-        stop_signal,
+        servo_client,
         ctrls,
+        stop_signal,
         sample_rate,
         tag="",
         title="unnamed",
@@ -79,19 +78,18 @@ class ServodPowerTracker(threading.Thread):
         """Initialize ServodPowerTracker by making servod proxy & storing ctrls.
 
         Args:
-          host: servod host name
-          port: servod port number
-          stop_signal: Event object to flag when to stop measuring power
+          servo_client: ServoClient instance
           ctrls: list of servod ctrls to collect power numbers
+          stop_signal: Event object to flag when to stop measuring power
           sample_rate: rate for collecting samples for |ctrls|
           tag: string to prepend to summary & raw rail file names
           title: human-readable title of the PowerTracker
           suffix: what metric is being measured (mw, ma, mv)
         """
         super(ServodPowerTracker, self).__init__()
-        self._sclient = client.ServoClient(host=host, port=port)
-        self._stop_signal = stop_signal
+        self._sclient = servo_client
         self._ctrls = ctrls
+        self._stop_signal = stop_signal
         self._rate = sample_rate
         if not title.endswith(suffix):
             title = "%s (%s)" % (title, suffix)
@@ -271,7 +269,8 @@ class HighResServodPowerTracker(ServodPowerTracker):
             # Discarding the duration_ms since the difference between the current
             # time and the start time are being used.
             sample_tuples, _unused = self._sample_ctrls(self._ctrls)
-            temp_stats = stats_manager.StatsManager()
+            if temp_stats is None:
+                temp_stats = stats_manager.StatsManager()
             temp_sample_data = []
 
             for domain, sample in sample_tuples:
@@ -284,8 +283,9 @@ class HighResServodPowerTracker(ServodPowerTracker):
             current_row = int((time.time() - start_time) / self._rate)
             if last_row != current_row:
                 last_row = current_row
-                self._record_mean_samples(temp_stats)
-                temp_stats = None
+                if temp_stats is not None:
+                    self._record_mean_samples(temp_stats)
+                    temp_stats = None
         # Record the last row of data
         if temp_stats is not None:
             self._record_mean_samples(temp_stats)
@@ -331,13 +331,14 @@ class HighResServodPowerTracker(ServodPowerTracker):
 class OnboardADCPowerTracker(HighResServodPowerTracker):
     """Off-the-shelf PowerTracker to measure onboard ADCs through servod."""
 
-    def __init__(self, host, port, stop_signal, cfilter, sample_rate=DEFAULT_ADC_RATE):
+    def __init__(
+        self, servo_client, stop_signal, cfilter, sample_rate=DEFAULT_ADC_RATE
+    ):
         """Init by finding onboard ADC ctrls."""
         super(OnboardADCPowerTracker, self).__init__(
-            host=host,
-            port=port,
-            stop_signal=stop_signal,
+            servo_client=servo_client,
             ctrls=[],
+            stop_signal=stop_signal,
             sample_rate=sample_rate,
             tag="onboard",
             title="Onboard ADC",
@@ -364,15 +365,14 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
     """Off-the-shelf PowerTracker to measure onboard ADCs with accumulator."""
 
     def __init__(
-        self, host, port, stop_signal, cfilter, sample_rate=DEFAULT_ADC_ACCUM_RATE
+        self, servo_client, stop_signal, cfilter, sample_rate=DEFAULT_ADC_ACCUM_RATE
     ):
         """Init by finding onboard ADC accum ctrls."""
         title = "Onboard ADC (w/ accum)"
         super(OnboardADCAccumPowerTracker, self).__init__(
-            host=host,
-            port=port,
-            stop_signal=stop_signal,
+            servo_client=servo_client,
             ctrls=[],
+            stop_signal=stop_signal,
             sample_rate=sample_rate,
             tag="onboard.accum",
             title=title,
@@ -418,16 +418,17 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
 class ECPowerTracker(ServodPowerTracker):
     """Off-the-shelf PowerTracker to measure power-draw as seen by the EC."""
 
-    def __init__(self, host, port, stop_signal, cfilter, sample_rate=DEFAULT_VBAT_RATE):
+    def __init__(
+        self, servo_client, stop_signal, cfilter, sample_rate=DEFAULT_VBAT_RATE
+    ):
         """Init EC power measurement by setting up ec 'vbat' servod control."""
         self._ec_cmd = "ppvar_vbat_mw"
         self._avg_ec_cmd = "avg_ppvar_vbat_mw"
         self._cfilter = cfilter
         super(ECPowerTracker, self).__init__(
-            host=host,
-            port=port,
-            stop_signal=stop_signal,
+            servo_client=servo_client,
             ctrls=[self._ec_cmd],
+            stop_signal=stop_signal,
             sample_rate=sample_rate,
             tag="ec",
             title="EC",
@@ -562,8 +563,7 @@ class PowerMeasurement:
 
     def __init__(
         self,
-        host,
-        port,
+        servo_client,
         adc_rate=DEFAULT_ADC_RATE,
         adc_accum_rate=DEFAULT_ADC_ACCUM_RATE,
         vbat_rate=DEFAULT_VBAT_RATE,
@@ -596,7 +596,7 @@ class PowerMeasurement:
         self._fast = fast
         self._logger = logging.getLogger(type(self).__name__)
         self._outdir = None
-        self._sclient = client.ServoClient(host=host, port=port)
+        self._sclient = servo_client
         self._board = board
         if not fast and self._board == DEFAULT_BOARD:
             try:
@@ -624,14 +624,14 @@ class PowerMeasurement:
         if adc_rate > 0:
             try:
                 adc_tracker = OnboardADCPowerTracker(
-                    host, port, self._stop_signal, cfilter, adc_rate
+                    self._sclient, self._stop_signal, cfilter, adc_rate
                 )
             except PowerTrackerError:
                 self._logger.warning("Onboard ADC tracker setup failed.")
         if adc_accum_rate > 0:
             try:
                 adc_accum_tracker = OnboardADCAccumPowerTracker(
-                    host, port, self._stop_signal, cfilter, adc_accum_rate
+                    self._sclient, self._stop_signal, cfilter, adc_accum_rate
                 )
             except PowerTrackerError:
                 self._logger.debug(
@@ -641,7 +641,7 @@ class PowerMeasurement:
         if vbat_rate > 0:
             try:
                 ec_tracker = ECPowerTracker(
-                    host, port, self._stop_signal, cfilter, vbat_rate
+                    self._sclient, self._stop_signal, cfilter, vbat_rate
                 )
             except PowerTrackerError:
                 self._logger.warning("EC Power tracker setup failed.")
@@ -868,11 +868,11 @@ class PowerMeasurement:
         if not self._processing_done:
             raise PowerMeasurementError(self.PREMATURE_RETRIEVAL_MSG)
         stats_managers = [
-            s.TrimmedCopy(tag=tag, tstart=tstart, tend=tend)
+            s.trimmed_copy(tag=tag, tstart=tstart, tend=tend)
             for s in self._stats.values()
         ]
         # If trimming produces an 'empty' stats manager i.e. a stats manager with
-        # no data in it, |TrimmedCopy| will return None, so we need to filter
+        # no data in it, |trimmed_copy| will return None, so we need to filter
         # those out.
         stats_managers = [s for s in stats_managers if s is not None]
         # Lastly, we want to modify the titles. This is simply to make sure

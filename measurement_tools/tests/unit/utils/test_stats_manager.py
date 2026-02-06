@@ -12,7 +12,7 @@ import shutil
 import tempfile
 import unittest
 
-from servo.utils import stats_manager
+from measurement_tools.utils import stats_manager
 
 
 class TestStatsManager(unittest.TestCase):

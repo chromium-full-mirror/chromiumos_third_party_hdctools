@@ -11,13 +11,12 @@ import sys
 import tempfile
 import threading
 import unittest
-import unittest.mock
 
-from servo.core import dut_power
-from servo.core import dut_power_data
-from servo.core import http_server
-from servo.core import measure_power
-from servo.core import servo_parsing
+from measurement_tools import dut_power
+from measurement_tools import dut_power_data
+from measurement_tools import http_server
+from measurement_tools import measure_power
+from measurement_tools import servo_parsing
 
 
 class TestProgressPrinter(unittest.TestCase):
@@ -117,7 +116,9 @@ class TestDutPower(unittest.TestCase):
         """Test _build_parser()."""
         dp = dut_power.DutPower()
         parser = dp._build_parser()
-        self.assertTrue(isinstance(parser, servo_parsing.ServodClientParser))
+        self.assertTrue(
+            isinstance(parser, servo_parsing.ServodClientParser)
+        )
 
     def test_parse_cmdline(self):
         """Test _parse_cmdline()."""
@@ -259,19 +260,19 @@ class TestDutPower(unittest.TestCase):
         self.assertEqual(dp.tmplogfile, tmplogfile)
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.http_server.ThreadedTCPServer.__init__",
+        "measurement_tools.http_server.ThreadedTCPServer.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.is_port_used",
+        "measurement_tools.http_server.HttpRequestHandler.is_port_used",
         unittest.mock.MagicMock(return_value=False),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.get_visualization_html_exist",
+        "measurement_tools.http_server.HttpRequestHandler.get_visualization_html_exist",
         unittest.mock.MagicMock(return_value="path"),
     )
     @unittest.mock.patch(
@@ -307,11 +308,11 @@ class TestDutPower(unittest.TestCase):
         threading.Thread.start.assert_called_once()
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.is_port_used",
+        "measurement_tools.http_server.HttpRequestHandler.is_port_used",
         unittest.mock.MagicMock(return_value=True),
     )
     def test_setup_visualization_port_used(self):
@@ -327,15 +328,15 @@ class TestDutPower(unittest.TestCase):
         self.assertEqual(exc.exception.code, 1)
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.is_port_used",
+        "measurement_tools.http_server.HttpRequestHandler.is_port_used",
         unittest.mock.MagicMock(return_value=False),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.get_visualization_html_exist",
+        "measurement_tools.http_server.HttpRequestHandler.get_visualization_html_exist",
         unittest.mock.MagicMock(return_value=None),
     )
     def test_setup_visualization_no_visualization_file(self):
@@ -351,19 +352,19 @@ class TestDutPower(unittest.TestCase):
         self.assertEqual(exc.exception.code, 1)
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.http_server.ThreadedTCPServer.__init__",
+        "measurement_tools.http_server.ThreadedTCPServer.__init__",
         unittest.mock.MagicMock(side_effect=NotImplementedError()),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.is_port_used",
+        "measurement_tools.http_server.HttpRequestHandler.is_port_used",
         unittest.mock.MagicMock(return_value=False),
     )
     @unittest.mock.patch(
-        "servo.http_server.HttpRequestHandler.get_visualization_html_exist",
+        "measurement_tools.http_server.HttpRequestHandler.get_visualization_html_exist",
         unittest.mock.MagicMock(return_value="path"),
     )
     def test_setup_visualization_server_failure(self):
@@ -379,14 +380,14 @@ class TestDutPower(unittest.TestCase):
         self.assertEqual(exc.exception.code, 1)
 
     @unittest.mock.patch(
-        "servo.dut_power.ProgressPrinter.__init__",
+        "measurement_tools.dut_power.ProgressPrinter.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.dut_power.ProgressPrinter.start", unittest.mock.MagicMock()
+        "measurement_tools.dut_power.ProgressPrinter.start", unittest.mock.MagicMock()
     )
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
@@ -452,7 +453,7 @@ class TestDutPower(unittest.TestCase):
         )
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     def test_save_results(self):
@@ -494,15 +495,15 @@ class TestDutPower(unittest.TestCase):
                     )
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.process_measurement",
+        "measurement_tools.measure_power.PowerMeasurement.process_measurement",
         unittest.mock.MagicMock(),
     )
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.display_summary",
+        "measurement_tools.measure_power.PowerMeasurement.display_summary",
         unittest.mock.MagicMock(),
     )
     def test_main(self):
@@ -528,7 +529,7 @@ class TestDutPower(unittest.TestCase):
         dp._save_results.assert_called_once()
 
     @unittest.mock.patch(
-        "servo.measure_power.PowerMeasurement.__init__",
+        "measurement_tools.measure_power.PowerMeasurement.__init__",
         unittest.mock.MagicMock(side_effect=measure_power.NoSourceError()),
     )
     def test_main_failure(self):
