@@ -110,6 +110,7 @@ class TestDevice(unittest.TestCase):
     )
     @unittest.mock.patch(
         "servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results",
+    )
     @unittest.mock.patch(
         "servo.common.interface.stm32uart.Suart.__init__",
         unittest.mock.MagicMock(return_value=None),

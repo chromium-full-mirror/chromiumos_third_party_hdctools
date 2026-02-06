@@ -49,7 +49,7 @@ class TestAp(unittest.TestCase):
 
     @patch(
         "servo.data.drv.pty_driver.ptyDriver._issue_cmd_get_results",
-        side_effect=pty_driver.ptyError("Mocked error"),
+        side_effect=pty_driver.PtyError("Mocked error"),
     )
     def test_get_login_error(self, mock_issue_cmd):
         # Test _Get_login method error handling
