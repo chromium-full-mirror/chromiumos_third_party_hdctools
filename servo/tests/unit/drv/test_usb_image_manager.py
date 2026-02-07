@@ -40,8 +40,9 @@ class TestUsbImageManager(unittest.TestCase):
             "map": "usb_key",
             "map_params": {"dut_sees_usbkey": "0", "servo_sees_usbkey": "1"},
         }
-        hw_drv = hw_driver.HwDriver(intfc, params)
-        self.usb_mgr = usb_image_manager.usbImageManager(hw_drv, params)
+        self.usb_mgr = usb_image_manager.usbImageManager(
+            ("localhost", 9999), ("localhost", 9999), intfc, params
+        )
 
     @staticmethod
     def get_usb_to_servo_calls(usbkey_mux, usbkey_pwr):

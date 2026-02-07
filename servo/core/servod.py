@@ -193,6 +193,7 @@ class ServodStarter:
         self._logger.info("Connecting to gRPC")
         while True:
             try:
+                self._servod.clear()
                 self._setup_servos(
                     dev_entries,
                     main_dev_entry,
@@ -379,19 +380,19 @@ class ServodStarter:
         server_pars.add_argument(
             "--grpc-core-port",
             type=int,
-            required=True,
+            default=int(os.environ.get("SERVOD_GRPC_CORE_PORT", 9991)),
             help="gRPC port that Core service will listen on",
         )
         server_pars.add_argument(
             "--grpc-data-host",
             type=str,
-            required=True,
+            default=os.environ.get("SERVOD_GRPC_DATA_HOST", "localhost"),
             help="gRPC Data service host to connect to",
         )
         server_pars.add_argument(
             "--grpc-data-port",
             type=int,
-            required=True,
+            default=int(os.environ.get("SERVOD_GRPC_DATA_PORT", 9992)),
             help="gRPC Data service port to connect to",
         )
         # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
@@ -608,28 +609,24 @@ class ServodStarter:
 
         # Create an instance of the SystemConfig
         scfg = SystemConfig()
-        try:
-            # Load systemConfig using the gRPC server
-            # using the 'GetFileContent' system_config_stub
-            response = system_config_client.GetFileContent(
-                VID=dev_entry.vid,
-                PID=dev_entry.pid,
-                serial=dev_entry.serial,
-            )
+        # Load systemConfig using the gRPC server
+        # using the 'GetFileContent' system_config_stub
+        response = system_config_client.GetFileContent(
+            VID=dev_entry.vid,
+            PID=dev_entry.pid,
+            serial=dev_entry.serial,
+        )
 
-            # Extract and process the received system configuration data(
-            # SystemConfig ProtoMessage)
-            for config_object in response.systemConfig:
-                # Deserialize JSON data from the gRPC response and assign it to
-                # 'scfg'
-                scfg.hwinit = json.loads(config_object.hwinit)
-                scfg.control_tags = json.loads(config_object.control_tags)
-                scfg.aliases = json.loads(config_object.aliases)
-                scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
-            return scfg
-        except grpc.RpcError as e:
-            # Let caller decide if error should be printed
-            raise
+        # Extract and process the received system configuration data(
+        # SystemConfig ProtoMessage)
+        for config_object in response.systemConfig:
+            # Deserialize JSON data from the gRPC response and assign it to
+            # 'scfg'
+            scfg.hwinit = json.loads(config_object.hwinit)
+            scfg.control_tags = json.loads(config_object.control_tags)
+            scfg.aliases = json.loads(config_object.aliases)
+            scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
+        return scfg
 
     def _setup_servos(self, dev_entries, _main_dev_entry, prober, grpc_data_addr):
         """Setup servo devices for this servod instance.
@@ -731,9 +728,9 @@ class ServodStarter:
 
         Intercepts and handles stop signals so shutdown is handled.
         """
+
         def handler(signum, _unused, starter=self):
             starter.handle_sig(signum)
-
 
         stop_signals = [
             signal.SIGHUP,

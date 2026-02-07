@@ -21,7 +21,12 @@ class TestMacro(unittest.TestCase):
             "get_controls": "subcontrol0 subcontrol2",
             "CONTENT": None,
         }
-        self.instance = macro(interface=self.mock_interface, params=self.params)
+        self.instance = macro(
+            grpc_core_addr=("localhost", 9999),
+            grpc_data_addr=("localhost", 9999),
+            interface=self.mock_interface,
+            params=self.params,
+        )
         response = BoolResponse(value=True)
         self.instance._driver_client.HasControl = unittest.mock.MagicMock(
             return_value=response

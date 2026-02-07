@@ -442,8 +442,9 @@ class ServoDeviceFinder:
                 # TODO: decide whether to unify ccd_cr50 and ccd_ti50 to ccd_gsc
                 if prefix.startswith("ccd_ti50"):
                     gsc_prefix = prefix.replace("ccd_ti50", "ccd_gsc")
-                    dev.devopts.prefix.append(gsc_prefix)
-                    known_prefixes.add(gsc_prefix)
+                    if gsc_prefix not in dev.devopts.prefix:
+                        dev.devopts.prefix.append(gsc_prefix)
+                        known_prefixes.add(gsc_prefix)
                     self._logger.debug(
                         "Device %s is given prefix %s which is automatically generated",
                         dev,
@@ -453,8 +454,9 @@ class ServoDeviceFinder:
                 # Add ccd_gsc as a prefix for ccd_gsc_nt to present consistent prefix
                 if prefix.startswith("ccd_gsc_nt"):
                     gsc_prefix = prefix.replace("ccd_gsc_nt", "ccd_gsc")
-                    dev.devopts.prefix.append(gsc_prefix)
-                    known_prefixes.add(gsc_prefix)
+                    if gsc_prefix not in dev.devopts.prefix:
+                        dev.devopts.prefix.append(gsc_prefix)
+                        known_prefixes.add(gsc_prefix)
                     self._logger.debug(
                         "Device %s is given prefix %s which is automatically generated",
                         dev,
@@ -464,8 +466,9 @@ class ServoDeviceFinder:
                 # Add ccd_gsc as a prefix for ccd_cr50 to present consistent prefix
                 if prefix.startswith("ccd_cr50"):
                     gsc_prefix = prefix.replace("ccd_cr50", "ccd_gsc")
-                    dev.devopts.prefix.append(gsc_prefix)
-                    known_prefixes.add(gsc_prefix)
+                    if gsc_prefix not in dev.devopts.prefix:
+                        dev.devopts.prefix.append(gsc_prefix)
+                        known_prefixes.add(gsc_prefix)
                     self._logger.debug(
                         "Device %s is given prefix %s which is automatically generated",
                         dev,

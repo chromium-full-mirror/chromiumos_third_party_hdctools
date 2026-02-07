@@ -22,5 +22,6 @@ class TestGetSystemConfig(unittest.TestCase):
         pid = "5678"
         file_path_mock = "mock_file_path"
         get_default_config_mock.return_value = file_path_mock
-        get_system_config(vid, pid)
+        serial = "serial"
+        get_system_config(pid, vid, serial)
         get_default_config_mock.assert_called_once()

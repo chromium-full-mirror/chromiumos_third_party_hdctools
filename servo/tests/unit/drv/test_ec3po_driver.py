@@ -18,7 +18,10 @@ class TestEs3poDriver(unittest.TestCase):
         self.mock_interface = MagicMock()
         self.mock_logger = MagicMock()
         self.instance = ec3poDriver(
-            interface=self.mock_interface, params={"cmd": "set"}
+            grpc_core_addr=("localhost", 9999),
+            grpc_data_addr=("localhost", 9999),
+            interface=self.mock_interface,
+            params={"cmd": "set"},
         )
         self.instance._logger = self.mock_logger
 

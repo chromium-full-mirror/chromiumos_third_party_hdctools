@@ -22,14 +22,24 @@ class TestAd5248(unittest.TestCase):
             "cmd": "set",
             "control_name": "test_control_name",
         }
-        self.ad_instance = ad5248(self.interface_mock, params=self.valid_params)
+        self.ad_instance = ad5248(
+            ("localhost", 9999),
+            ("localhost", 9999),
+            self.interface_mock,
+            params=self.valid_params,
+        )
 
     def test_constructor_with_valid_params(self):
         # Test the constructor with valid parameters
         with patch("servo.data.drv.ad5248.ad5248._get_child", return_value=0x34), patch(
             "servo.data.drv.ad5248.ad5248._get_port", return_value=0
         ), patch("servo.data.drv.ad5248.ad5248._get_subtype", return_value="r10k"):
-            ad = ad5248(self.interface_mock, self.valid_params)
+            ad = ad5248(
+                ("localhost", 9999),
+                ("localhost", 9999),
+                self.interface_mock,
+                self.valid_params,
+            )
         self.assertEqual(ad._child, 0x34)
         self.assertEqual(ad._port, 0)
         self.assertEqual(ad._subtype, "r10k")
@@ -39,7 +49,12 @@ class TestAd5248(unittest.TestCase):
         invalid_params = self.valid_params.copy()
         del invalid_params["child"]
         with self.assertRaises(Ad5248Error) as context:
-            ad5248(self.interface_mock, invalid_params)
+            ad5248(
+                ("localhost", 9999),
+                ("localhost", 9999),
+                self.interface_mock,
+                invalid_params,
+            )
         self.assertEqual(str(context.exception), "getting child address")
 
     def test_constructor_invalid_port_value(self):
@@ -47,7 +62,12 @@ class TestAd5248(unittest.TestCase):
         invalid_params = self.valid_params.copy()
         invalid_params["port"] = "2"
         with self.assertRaises(Ad5248Error) as context:
-            ad5248(self.interface_mock, invalid_params)
+            ad5248(
+                ("localhost", 9999),
+                ("localhost", 9999),
+                self.interface_mock,
+                invalid_params,
+            )
         self.assertEqual(str(context.exception), "port value should be 0 | 1")
 
     def test_constructor_missing_subtype_param(self):
@@ -55,7 +75,12 @@ class TestAd5248(unittest.TestCase):
         invalid_params = self.valid_params.copy()
         del invalid_params["subtype"]
         with self.assertRaises(Ad5248Error) as context:
-            ad5248(self.interface_mock, invalid_params)
+            ad5248(
+                ("localhost", 9999),
+                ("localhost", 9999),
+                self.interface_mock,
+                invalid_params,
+            )
         self.assertEqual(str(context.exception), "getting subtype")
 
     def test_set_rdac_with_valid_byte_as_integer(self):

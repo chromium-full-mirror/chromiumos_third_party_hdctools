@@ -39,7 +39,6 @@ class TestServodRotatingFileHandler(unittest.TestCase):
         "MAX_LOG_BYTES",  # Max bytes a log file can grow to.
         "LOG_BACKUP_COUNT",  # Number of rotated logfiles to keep.
         "COMPRESSION_SUFFIX",  # Filetype suffix for compressed logs.
-        "LOG_DIR_PREFIX",  # Servo port log directory prefix.
         "LOG_FILE_PREFIX",  # Log file name.
         "TS_FILE",  # File name to cache the instance's timestamp.
         "TS_FORMAT",
@@ -308,7 +307,7 @@ class TestServodRotatingFileHandler(unittest.TestCase):
 
     def test_handle_existing_log_dir(self):
         """The output directory for a specific port already existing is fine."""
-        output_dir = servo_logging._buildLogdirName(self.logdir, 9998)
+        output_dir = servo_logging._buildLogdirName(self.logdir, "servod", 9998)
         os.makedirs(output_dir)
         handler = servo_logging.ServodRotatingFileHandler(
             logdir=self.logdir, ts=self.ts, fmt=self.fmt, level=self.loglevel

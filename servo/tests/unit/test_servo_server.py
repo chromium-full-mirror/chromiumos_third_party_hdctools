@@ -119,7 +119,7 @@ class TestServod(unittest.TestCase):
         self.assertFalse(servod._is_main_dev_prefix("testing"))
 
     @unittest.mock.patch(
-        "servo.servo_server.Servod._get_control_prefix_and_name",
+        "servo.core.servo_server.Servod._get_control_prefix_and_name",
         unittest.mock.MagicMock(return_value=("", "cold_reset")),
     )
     def test_get_dev_and_name(self):
@@ -136,7 +136,7 @@ class TestServod(unittest.TestCase):
         self.assertEqual(servod._get_dev_and_name("cold_reset"), (dev2, "cold_reset"))
 
     @unittest.mock.patch(
-        "servo.servo_server.Servod._get_control_prefix_and_name",
+        "servo.core.servo_server.Servod._get_control_prefix_and_name",
         unittest.mock.MagicMock(return_value=("testing", "cold_reset")),
     )
     def test_get_dev_and_name_invalid_prefix(self):
@@ -148,7 +148,7 @@ class TestServod(unittest.TestCase):
             servod._get_dev_and_name("ccd_cr50.cold_reset")
 
     @unittest.mock.patch(
-        "servo.servo_server.Servod._get_control_prefix_and_name",
+        "servo.core.servo_server.Servod._get_control_prefix_and_name",
         unittest.mock.MagicMock(return_value=("", "cold_reset")),
     )
     def test_get_dev_and_name_error(self):
@@ -562,7 +562,7 @@ class TestServod(unittest.TestCase):
         )
 
     @unittest.mock.patch(
-        "servo.servod.ServodStarter.__init__",
+        "servo.core.servod.ServodStarter.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     def test_hwinit(self):

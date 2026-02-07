@@ -14,10 +14,14 @@ from mock.mock import Mock
 import pytest
 
 from servo.common.config import system_config
+from servo.common.proto import driver_pb2
+from servo.common.proto import system_config_pb2
 from servo.core import servo_dev
 from servo.core import servo_dev_templates as tmpl
 from servo.core import servo_server
 from servo.core import servod as sd
+from servo.data.impl import driver_impl
+from servo.data.impl import system_config_impl
 from servo.tests.fixtures import common
 from servo.tests.fixtures.mock_pyusb import clear_interfaces
 from servo.tests.fixtures.mock_pyusb import dump_interfaces
@@ -25,6 +29,53 @@ from servo.utils import servo_dev_hierarchy
 
 
 _logger = logging.getLogger("mock_servod")
+
+
+class LocalDriverClient:
+    """A wrapper around DriverImpl that mimics the gRPC client Stub."""
+
+    # pylint: disable=invalid-name
+
+    def __init__(self, channel=None):
+        # We ignore the channel and create a local implementation.
+        # DriverImpl expects grpc_core_addr and grpc_data_addr.
+        # We pass fake addresses to avoid NoneType errors during unpacking.
+        self.impl = driver_impl.DriverImpl(("localhost", 9999), ("localhost", 9999))
+
+    def InitInterface(self, **kwargs):
+        req = driver_pb2.InterfaceRequest(**kwargs)
+        # Service methods take (request, context). We pass None for context.
+        return self.impl.InitInterface(req, None)
+
+    def CallDriver(self, **kwargs):
+        req = driver_pb2.DriverRequest(**kwargs)
+        return self.impl.CallDriver(req, None)
+
+    # Add other methods if needed
+    def CloseInterface(self, **kwargs):
+        req = driver_pb2.InterfaceRequest(**kwargs)
+        return self.impl.CloseInterface(req, None)
+
+    def ReinitializeInterfaces(self, **kwargs):
+        req = driver_pb2.InterfaceRequest(**kwargs)
+        return self.impl.ReinitializeInterfaces(req, None)
+
+
+class LocalSystemConfigClient:
+    """A wrapper around SystemConfigImpl that mimics the gRPC client Stub."""
+
+    # pylint: disable=invalid-name
+
+    def __init__(self, channel=None):
+        self.impl = system_config_impl.SystemConfigImpl()
+
+    def IsControl(self, **kwargs):
+        req = system_config_pb2.IsControlRequest(**kwargs)
+        return self.impl.IsControl(req, None)
+
+    def AddCfgFile(self, **kwargs):
+        req = system_config_pb2.SystemFileRequest(**kwargs)
+        return self.impl.AddCfgFile(req, None)
 
 
 @pytest.fixture(scope="function")
@@ -83,6 +134,23 @@ def mock_servo_host(
                     "servo.utils.usb_hierarchy.Hierarchy._read_from_sysfs",
                     side_effect=self.mock_read_from_sysfs,
                 )
+                class_mocker.patch("servo.core.servod.time.sleep")
+
+                # Patch DriverService to use our local implementation
+                class_mocker.patch(
+                    "servo.common.proto.driver_grpc.DriverService",
+                    side_effect=LocalDriverClient,
+                )
+                # Patch SystemConfig to use our local implementation
+                class_mocker.patch(
+                    "servo.common.proto.system_config_grpc.SystemConfig",
+                    side_effect=LocalSystemConfigClient,
+                )
+
+                # Mock GrpcClient to avoid real connection attempts (prevent timeouts)
+                class_mocker.patch("servo.core.servo_dev.GrpcClient")
+                # Also mock GrpcClient in ec3po_interface which imports it directly
+                class_mocker.patch("servo.common.interface.ec3po_interface.GrpcClient")
 
             def mock_read_from_sysfs(self, sysfs_path, dev_file, cast=str):
                 return self.sysfs[sysfs_path][dev_file]
@@ -161,8 +229,7 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    @patch("servo.servo_dev.ServoDevice")
-    def generate_host(board, model, mock_servo_device):
+    def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -172,24 +239,7 @@ def mock_host_with_4p1_servo_and_ccd(mock_servo_host):
         Yields:
             Mock: mock host device with a servo 4.1, CCD and servod started on it.
         """
-        servod = servo_server.Servod()
-        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v4p1"),
-            tmpl.GetPID("servo_v4p1"),
-            "servo_v4p1_serial",
-            "/sys/bus/usb/devices/-2-1.2",
-        )
-        v4_entry.devopts = argparse.Namespace()
-        v4_entry.devopts.prefix = ["v4"]
-        v4_entry.devopts.board = board
-        v4_entry.devopts.model = model
-        v4_dev = servo_dev.ServoDevice(
-            v4_entry, system_config.SystemConfig(), None, servod
-        )
-
         servo_host = mock_servo_host()
-
-        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         ccd_device = servo_host.add_device("ccd_cr50", 1, 57, "2.3")
@@ -207,8 +257,7 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    @patch("servo.servo_dev.ServoDevice")
-    def generate_host(board, model, mock_servo_device):
+    def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -219,24 +268,7 @@ def mock_host_with_4p1_servo_and_servo_micro(mock_servo_host):
             Mock: mock host device with a servo 4.1, servo micro and servod
                   started on it.
         """
-        servod = servo_server.Servod()
-        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v4p1"),
-            tmpl.GetPID("servo_v4p1"),
-            "servo_v4p1_serial",
-            "/sys/bus/usb/devices/-2-1.2",
-        )
-        v4_entry.devopts = argparse.Namespace()
-        v4_entry.devopts.prefix = ["v4"]
-        v4_entry.devopts.board = board
-        v4_entry.devopts.model = model
-        v4_dev = servo_dev.ServoDevice(
-            v4_entry, system_config.SystemConfig(), None, servod
-        )
-
         servo_host = mock_servo_host()
-
-        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         servo_micro_device = servo_host.add_device("servo_micro", 1, 57, "2.3")
@@ -255,8 +287,7 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    @patch("servo.servo_dev.ServoDevice")
-    def generate_host(board, model, mock_servo_device):
+    def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -267,24 +298,7 @@ def mock_host_with_4p1_servo_and_servo_micro_and_ccd(mock_servo_host):
             Mock: mock host device with a servo 4.1, servo micro and servod
                   started on it.
         """
-        servod = servo_server.Servod()
-        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v4p1"),
-            tmpl.GetPID("servo_v4p1"),
-            "servo_v4p1_serial",
-            "/sys/bus/usb/devices/-2-1.2",
-        )
-        v4_entry.devopts = argparse.Namespace()
-        v4_entry.devopts.prefix = ["v4"]
-        v4_entry.devopts.board = board
-        v4_entry.devopts.model = model
-        v4_dev = servo_dev.ServoDevice(
-            v4_entry, system_config.SystemConfig(), None, servod
-        )
-
         servo_host = mock_servo_host()
-
-        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         servo_micro_device = servo_host.add_device("servo_micro", 1, 57, "2.3")
@@ -365,8 +379,7 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    @patch("servo.servo_dev.ServoDevice")
-    def generate_host(board, model, mock_servo_device):
+    def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -376,24 +389,7 @@ def mock_host_with_4p1_servo_and_c2d2(mock_servo_host):
         Yields:
             Mock: mock host device with a servo 4.1, C2D2 and servod started on it.
         """
-        servod = servo_server.Servod()
-        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v4p1"),
-            tmpl.GetPID("servo_v4p1"),
-            "servo_v4p1_serial",
-            "/sys/bus/usb/devices/-2-1.2",
-        )
-        v4_entry.devopts = argparse.Namespace()
-        v4_entry.devopts.prefix = ["v4"]
-        v4_entry.devopts.board = board
-        v4_entry.devopts.model = model
-        v4_dev = servo_dev.ServoDevice(
-            v4_entry, system_config.SystemConfig(), None, servod
-        )
-
         servo_host = mock_servo_host()
-
-        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         c2d2_device = servo_host.add_device("c2d2", 1, 57, "2.3")
@@ -412,8 +408,7 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         mock_servo_host (Mock): Mock host device
     """
 
-    @patch("servo.servo_dev.ServoDevice")
-    def generate_host(board, model, mock_servo_device):
+    def generate_host(board, model):
         """Generate a mock DUT for the given board/model
 
         Args:
@@ -423,24 +418,7 @@ def mock_host_with_4p1_servo_and_c2d2_and_ccd(mock_servo_host):
         Yields:
             Mock: mock host device with a servo 4.1, C2D2 and servod started on it.
         """
-        servod = servo_server.Servod()
-        v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
-            tmpl.GetVID("servo_v4p1"),
-            tmpl.GetPID("servo_v4p1"),
-            "servo_v4p1_serial",
-            "/sys/bus/usb/devices/-2-1.2",
-        )
-        v4_entry.devopts = argparse.Namespace()
-        v4_entry.devopts.prefix = ["v4"]
-        v4_entry.devopts.board = board
-        v4_entry.devopts.model = model
-        v4_dev = servo_dev.ServoDevice(
-            v4_entry, system_config.SystemConfig(), None, servod
-        )
-
         servo_host = mock_servo_host()
-
-        servo_host._servod = servod
         # Setup
         servo_v4p1_device = servo_host.add_device("servo_v4p1", 1, 56, "2.5")
         c2d2_device = servo_host.add_device("c2d2", 1, 57, "2.3")

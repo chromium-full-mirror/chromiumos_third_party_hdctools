@@ -13,6 +13,8 @@ class TestFwWpServoflex(unittest.TestCase):
         self.mock_interface = MagicMock()
         self.mock_logger = MagicMock()
         self.instance = fwWpServoflex(
+            grpc_core_addr=("localhost", 9999),
+            grpc_data_addr=("localhost", 9999),
             interface=self.mock_interface,
             params={"cmd": "set", "control_name": "test_fw_wp_state"},
         )

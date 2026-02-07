@@ -18,7 +18,7 @@ class TestRunGRPCServer(unittest.TestCase):
         mock_servo_instance = mock_servo_impl.return_value
         mock_grpc_server_instance = mock_grpc_server.return_value
 
-        run_grpc_server(servod_mock)
+        run_grpc_server(servod_mock, 50052)
 
         mock_grpc_server.assert_called_once()
         args = mock_grpc_server.call_args

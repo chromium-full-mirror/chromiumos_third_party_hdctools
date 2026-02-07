@@ -9,8 +9,8 @@ from servo.common.interface.empty import Empty
 
 class TestEmptyInterface(unittest.TestCase):
     def test_build_method(self):
-        # Test the Build method of the Empty class
-        instance = Empty.Build()
+        # Test the build method of the Empty class
+        instance = Empty.build()
         self.assertIsInstance(instance, Empty)
 
     def test_name_method(self):

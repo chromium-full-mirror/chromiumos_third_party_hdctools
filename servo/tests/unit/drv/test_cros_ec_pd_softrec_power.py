@@ -20,9 +20,8 @@ class TestCrosEcPdSoftrecPower(unittest.TestCase):
     def setUp(self):
         intfc = mock.Mock(interface.Interface)
         params = {"cmd": "set"}
-        hw_drv = hw_driver.HwDriver(intfc, params)
         self.cros_ec_pd_softrec_power = cros_ec_pd_softrec_power.crosEcPdSoftrecPower(
-            hw_drv, params
+            ("localhost", 9999), ("localhost", 9999), intfc, params
         )
 
     def test_cold_reset(self):

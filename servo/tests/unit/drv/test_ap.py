@@ -20,7 +20,12 @@ class TestAp(unittest.TestCase):
             "cmd": "set",
             "control_name": "test_control_name",
         }
-        self.ap_instance = ap.ap(self.interface_mock, self.valid_params)
+        self.ap_instance = ap.ap(
+            ("localhost", 9999),
+            ("localhost", 9999),
+            self.interface_mock,
+            self.valid_params,
+        )
 
     def test_get_password(self):
         # Test _Get_password method
@@ -40,7 +45,7 @@ class TestAp(unittest.TestCase):
         self.ap_instance._Set_username("new_username")
         self.assertEqual(self.ap_instance._Get_username(), "new_username")
 
-    @patch("servo.data.drv.pty_driver.ptyDriver._issue_cmd_get_results")
+    @patch("servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results")
     def test_get_login_success(self, mock_issue_cmd):
         # Test _Get_login method success scenario
         mock_issue_cmd.return_value = ["localhost login:"]
@@ -48,7 +53,7 @@ class TestAp(unittest.TestCase):
         self.assertEqual(result, 0)  # Since "localhost login:" is in the match
 
     @patch(
-        "servo.data.drv.pty_driver.ptyDriver._issue_cmd_get_results",
+        "servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results",
         side_effect=pty_driver.PtyError("Mocked error"),
     )
     def test_get_login_error(self, mock_issue_cmd):

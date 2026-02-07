@@ -45,12 +45,12 @@ class TestInterfaceUtils(unittest.TestCase):
         self.assertEqual(_interface_init, [False] * len(interfaces))
 
     @unittest.mock.patch(
-        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.common.interface.build", unittest.mock.MagicMock(return_value=None)
     )
     def test_init_servo_interfaces(self):
         """Test init_servo_interfaces()."""
-        servo_v4_vid = tmpl.GetVID("servo_v4")
-        servo_v4_pid = tmpl.GetPID("servo_v4")
+        servo_v4_vid = tmpl.get_vid("servo_v4")
+        servo_v4_pid = tmpl.get_pid("servo_v4")
         servo_v4_interfaces = servo_interfaces.INTERFACE_DEFAULTS[servo_v4_vid][
             servo_v4_pid
         ]
@@ -79,8 +79,8 @@ class TestInterfaceUtils(unittest.TestCase):
                 self.assertIsNone(interface)
                 self.assertTrue(_interface_init[i])
 
-        servo_micro_vid = tmpl.GetVID("servo_micro")
-        servo_micro_pid = tmpl.GetPID("servo_micro")
+        servo_micro_vid = tmpl.get_vid("servo_micro")
+        servo_micro_pid = tmpl.get_pid("servo_micro")
         servo_micro_interfaces = servo_interfaces.INTERFACE_DEFAULTS[servo_micro_vid][
             servo_micro_pid
         ]
@@ -112,13 +112,13 @@ class TestInterfaceUtils(unittest.TestCase):
                 self.assertTrue(_interface_init[i])
 
     @unittest.mock.patch(
-        "servo.common.interface.ec3po_interface.EC3PO.Build",
+        "servo.common.interface.ec3po_interface.EC3PO.build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.ec3po_interface.EC3PO)
         ),
     )
     @unittest.mock.patch(
-        "servo.common.interface.stm32uart.Suart.Build",
+        "servo.common.interface.stm32uart.Suart.build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.stm32uart.Suart)
         ),
@@ -134,16 +134,16 @@ class TestInterfaceUtils(unittest.TestCase):
         InterfaceUtils._interface_dict = {
             "6365_20500_serial": {
                 "interface_list": [
-                    _interface.ec3po_interface.EC3PO.Build(),
-                    _interface.stm32uart.Suart.Build(),
-                    _interface.empty.Empty.Build(),
-                    _interface.ec3po_interface.EC3PO.Build(),
+                    _interface.ec3po_interface.EC3PO.build(),
+                    _interface.stm32uart.Suart.build(),
+                    _interface.empty.Empty.build(),
+                    _interface.ec3po_interface.EC3PO.build(),
                 ]
             }
         }
 
         InterfaceUtils._logger.info = unittest.mock.MagicMock()
-        InterfaceUtils.close_interfaces()
+        InterfaceUtils.close_interface("6365_20500_serial")
 
         InterfaceUtils._logger.info.assert_has_calls(
             [
@@ -158,13 +158,13 @@ class TestInterfaceUtils(unittest.TestCase):
         unittest.mock.MagicMock(),
     )
     @unittest.mock.patch(
-        "servo.common.interface.ec3po_interface.EC3PO.Build",
+        "servo.common.interface.ec3po_interface.EC3PO.build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.ec3po_interface.EC3PO)
         ),
     )
     @unittest.mock.patch(
-        "servo.common.interface.stm32uart.Suart.Build",
+        "servo.common.interface.stm32uart.Suart.build",
         unittest.mock.MagicMock(
             return_value=unittest.mock.MagicMock(spec=_interface.stm32uart.Suart)
         ),
@@ -175,8 +175,8 @@ class TestInterfaceUtils(unittest.TestCase):
         InterfaceUtils._interface_dict = {
             interface_key: {
                 "interface_list": [
-                    _interface.empty.Empty.Build(),
-                    _interface.empty.Empty.Build(),
+                    _interface.empty.Empty.build(),
+                    _interface.empty.Empty.build(),
                 ]
             }
         }
@@ -188,13 +188,13 @@ class TestInterfaceUtils(unittest.TestCase):
         )
 
     @unittest.mock.patch(
-        "servo.common.interface.Build",
+        "servo.common.interface.build",
         unittest.mock.MagicMock(side_effect=ValueError("valueerr")),
     )
     def test_init_servo_interfaces_fault_tolerant(self):
         """Test init_servo_interfaces()."""
-        servo_v4_vid = tmpl.GetVID("servo_v4")
-        servo_v4_pid = tmpl.GetPID("servo_v4")
+        servo_v4_vid = tmpl.get_vid("servo_v4")
+        servo_v4_pid = tmpl.get_pid("servo_v4")
         servo_v4_serial = "servo_v4_serial"
         servo_v4_interfaces = servo_interfaces.INTERFACE_DEFAULTS[servo_v4_vid][
             servo_v4_pid
@@ -226,12 +226,12 @@ class TestInterfaceUtils(unittest.TestCase):
             self.assertFalse(_interface_init[i])
 
     @unittest.mock.patch(
-        "servo.common.interface.Build", unittest.mock.MagicMock(return_value=None)
+        "servo.common.interface.build", unittest.mock.MagicMock(return_value=None)
     )
     def test_init_servo_interfaces_error(self):
         """Test init_servo_interfaces()."""
-        servo_v4_vid = tmpl.GetVID("servo_v4")
-        servo_v4_pid = tmpl.GetPID("servo_v4")
+        servo_v4_vid = tmpl.get_vid("servo_v4")
+        servo_v4_pid = tmpl.get_pid("servo_v4")
         servo_v4_serial = "servo_v4_serial"
         servo_v4_interfaces = servo_interfaces.INTERFACE_DEFAULTS[servo_v4_vid][
             servo_v4_pid

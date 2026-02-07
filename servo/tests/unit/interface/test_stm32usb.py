@@ -15,57 +15,57 @@ from servo.common.interface.stm32usb import SusbError
 
 
 class TestSusbClass(unittest.TestCase):
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.find_descriptor")
-    def setUp(self, mock_GetUsbDevice, mock_FindDescriptor):
+    def setUp(self, mock_find_descriptor, mock_get_usb_device):
         self.susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )
 
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.find_descriptor")
-    def test_susb_constructor(self, mock_GetUsbDevice, mock_find_descriptor):
+    def test_susb_constructor(self, mock_find_descriptor, mock_get_usb_device):
         susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )
-        mock_GetUsbDevice.assert_called()
+        mock_get_usb_device.assert_called()
         self.assertIsInstance(susb, Susb)
 
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.claim_interface")
     @patch("usb.util.find_descriptor")
     def test_susb_find_device(
-        self, mock_claim_interface, mock_GetUsbDevice, mock_find_descriptor
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
     ):
         susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )
         mock_find_descriptor.return_value = MagicMock()
-        mock_GetUsbDevice.assert_called_once()
+        mock_get_usb_device.assert_called_once()
         mock_claim_interface.assert_called()
 
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.claim_interface")
     @patch("usb.util.find_descriptor")
     def test_susb_find_device_existing_config(
-        self, mock_find_descriptor, mock_claim_interface, mock_GetUsbDevice
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
     ):
         susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )
@@ -73,16 +73,16 @@ class TestSusbClass(unittest.TestCase):
         susb._find_device()
         mock_claim_interface.assert_called()
 
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.claim_interface")
     @patch("usb.util.find_descriptor")
     def test_susb_reset_usb(
-        self, mock_claim_interface, mock_GetUsbDevice, mock_find_descriptor
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
     ):
         susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )
@@ -90,32 +90,32 @@ class TestSusbClass(unittest.TestCase):
         susb.reset_usb()
         susb._find_device.assert_called_once()
 
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.find_descriptor")
     @patch("usb.util.claim_interface")
     def test_susb_get_device_info(
-        self, mock_GetUsbDevice, mock_claim_interface, mock_find_descriptor
+        self, mock_claim_interface, mock_find_descriptor, mock_get_usb_device
     ):
         susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )
         info = susb.get_device_info()
         self.assertEqual(info, DeviceInfo(0x18D1, 0x500F, "SERIAL"))
 
-    @patch("servo.utils.usb_hierarchy.Hierarchy.GetUsbDevice")
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
     @patch("usb.util.find_descriptor")
     @patch("usb.util.claim_interface")
     def test_susb_control(
-        self, mock_claim_interface, mock_find_descriptor, mock_GetUsbDevice
+        self, mock_claim_interface, mock_find_descriptor, mock_get_usb_device
     ):
         susb = Susb(
             vendor=0x18D1,
             product=0x500F,
-            interface=1,
+            interface_id=1,
             serialname="SERIAL",
             logger=MagicMock(),
         )

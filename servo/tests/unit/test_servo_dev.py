@@ -23,6 +23,21 @@ class TestServoDevice(unittest.TestCase):
     def setUp(self):
         """Set up for each test case."""
         unittest.TestCase.setUp(self)
+
+        # Patch GrpcClient to avoid network calls and Side effects
+        patcher = patch("servo.core.servo_dev.GrpcClient")
+        self.mock_grpc_client = patcher.start()
+        self.addCleanup(patcher.stop)
+
+        # Also patch driver_grpc and system_config_grpc to avoid real client creation
+        patcher_driver = patch("servo.core.servo_dev.driver_grpc")
+        self.mock_driver_grpc = patcher_driver.start()
+        self.addCleanup(patcher_driver.stop)
+
+        patcher_syscfg = patch("servo.core.servo_dev.system_config_grpc")
+        self.mock_syscfg_grpc = patcher_syscfg.start()
+        self.addCleanup(patcher_syscfg.stop)
+
         self.servod = servo_server.Servod()
         self.micro_entry = servo_dev_hierarchy.ServoDeviceEntry(
             tmpl.get_vid("servo_micro"),
@@ -36,7 +51,11 @@ class TestServoDevice(unittest.TestCase):
         self.micro_entry.devopts.model = "default"
         self.micro_entry.devopts.token_db = "default"
         self.micro_dev = servo_dev.ServoDevice(
-            self.micro_entry, system_config.SystemConfig(), None, self.servod
+            self.micro_entry,
+            system_config.SystemConfig(),
+            ("localhost", 9999),
+            None,
+            self.servod,
         )
         self.v4_entry = servo_dev_hierarchy.ServoDeviceEntry(
             tmpl.get_vid("servo_v4"),
@@ -50,7 +69,11 @@ class TestServoDevice(unittest.TestCase):
         self.v4_entry.devopts.model = "default"
         self.v4_entry.devopts.token_db = "default"
         self.v4_dev = servo_dev.ServoDevice(
-            self.v4_entry, system_config.SystemConfig(), None, self.servod
+            self.v4_entry,
+            system_config.SystemConfig(),
+            ("localhost", 9999),
+            None,
+            self.servod,
         )
 
     def test_init(self):
@@ -81,7 +104,11 @@ class TestServoDevice(unittest.TestCase):
     def test_init_manual_interfaces(self):
         """Test __init__() with manual interfaces."""
         self.v4_dev = servo_dev.ServoDevice(
-            self.v4_entry, system_config.SystemConfig(), [1], self.servod
+            self.v4_entry,
+            system_config.SystemConfig(),
+            ("localhost", 9999),
+            [1],
+            self.servod,
         )
 
         self.assertTrue(self.v4_dev._manual_interfaces)
@@ -249,6 +276,7 @@ class TestServoDevice(unittest.TestCase):
                 serial=self.v4_dev._serial,
                 interface_template=json.dumps(self.v4_dev._interfaces),
                 fault_tolerant=False,
+                token_db=self.v4_dev._token_db,
             )
 
     def test_set_board_and_model(self):
@@ -265,7 +293,11 @@ class TestServoDevice(unittest.TestCase):
         v2_entry.devopts.model = "default"
         v2_entry.devopts.token_db = "default"
         v2_dev = servo_dev.ServoDevice(
-            v2_entry, system_config.SystemConfig(), None, self.servod
+            v2_entry,
+            system_config.SystemConfig(),
+            ("localhost", 9999),
+            None,
+            self.servod,
         )
         v2_dev._sync_interface_lists = unittest.mock.MagicMock()
         v2_dev.syscfg.get_board_model_config = unittest.mock.MagicMock(
@@ -277,6 +309,9 @@ class TestServoDevice(unittest.TestCase):
         with patch.object(v2_dev, "_driver_client") as mock_driver_client:
             mock_driver_client.ResetInterface = unittest.mock.MagicMock()
             v2_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
+            v2_dev._system_config_client.AddCfgFile.return_value = (
+                unittest.mock.MagicMock(systemConfig=[])
+            )
             res = v2_dev.set_board_and_model("atlas", "default")
 
             self.assertTrue(res)
@@ -288,8 +323,9 @@ class TestServoDevice(unittest.TestCase):
             v2_dev._system_config_client.AddCfgFile.assert_called_once_with(
                 prefix="v2",
                 filename="config",
-                vid=tmpl.GetVID("servo_v2"),
-                pid=tmpl.GetPID("servo_v2"),
+                vid=tmpl.get_vid("servo_v2"),
+                pid=tmpl.get_pid("servo_v2"),
+                serial="servo_v2_serial",
             )
 
     def test_set_board_and_model_keyerror(self):
@@ -300,6 +336,9 @@ class TestServoDevice(unittest.TestCase):
         )
         self.v4_dev.syscfg.set_board_cfg = unittest.mock.MagicMock()
         self.v4_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
+        self.v4_dev._system_config_client.AddCfgFile.return_value = (
+            unittest.mock.MagicMock(systemConfig=[])
+        )
         self.v4_dev._manual_interfaces = False
 
         res = self.v4_dev.set_board_and_model("atlas", "default")
@@ -313,8 +352,9 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev._system_config_client.AddCfgFile.assert_called_once_with(
             prefix="v4",
             filename="config",
-            vid=tmpl.GetVID("servo_v4"),
-            pid=tmpl.GetPID("servo_v4"),
+            vid=tmpl.get_vid("servo_v4"),
+            pid=tmpl.get_pid("servo_v4"),
+            serial="servo_v4_serial",
         )
 
     def test_set_board_and_model_no_config(self):
@@ -370,9 +410,13 @@ class TestServoDevice(unittest.TestCase):
         """Test close()."""
         with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
             mock_close_interface = unittest.mock.MagicMock()
-            mock_driver_client.CloseInterfaces = mock_close_interface
+            mock_driver_client.CloseInterface = mock_close_interface
             self.v4_dev.close()
-            mock_close_interface.assert_called_once()
+            mock_close_interface.assert_called_once_with(
+                vid=self.v4_dev.template.VID,
+                pid=self.v4_dev.template.PID,
+                serial=self.v4_dev._serial,
+            )
 
     def test_clear_cached_drv(self):
         """Test clear_cached_drv()."""

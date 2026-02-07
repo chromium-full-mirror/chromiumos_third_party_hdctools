@@ -26,8 +26,8 @@ class gpio(hw_driver.HwDriver):
         """Driver specific initializer."""
         super(gpio, self)._drv_init()
         # TODO (sbasi/tbroch) crbug.com/241507 - Deprecate chip & muxfile params.
-        self._chip = params.get("chip", None)
-        self._muxfile = params.get("muxfile", None)
+        self._chip = self._params.get("chip", None)
+        self._muxfile = self._params.get("muxfile", None)
 
     def _get(self):
         """Get value for gpio driver

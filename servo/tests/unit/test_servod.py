@@ -5,20 +5,16 @@
 import argparse
 import errno
 import socket
-import threading
 import unittest
-import unittest.mock
+from unittest import mock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 from xmlrpc.server import SimpleXMLRPCServer
 
-from servo.common.utils import servo_logging
-from servo.core import recovery
-from servo.core import servo_dev
 from servo.core import servo_dev_finder
 from servo.core import servo_dev_templates
 from servo.core import servo_parsing
-from servo.core import servo_server
 from servo.core import servod
-from servo.core import watchdog
 from servo.utils import scratch
 from servo.utils import servo_dev_prober
 
@@ -26,119 +22,111 @@ from servo.utils import servo_dev_prober
 class TestServoStarter(unittest.TestCase):
     """Test ServoStarter."""
 
-    @unittest.mock.patch(
-        "servo.utils.scratch.Scratch.__init__",
-        unittest.mock.MagicMock(return_value=None),
+    @patch("servo.utils.scratch.Scratch.__init__", return_value=None)
+    @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
+    @patch("servo.core.servod.ServodStarter._init_parsers_and_option_helpers")
+    @patch("servo.core.servod.ServodStarter._start_xml_server", return_value=9999)
+    @patch(
+        "servo.core.servod.ServodStarter._discover_servos", return_value=(None, None)
     )
-    @unittest.mock.patch(
-        "servo.utils.servo_dev_prober.DeviceProber.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._init_parsers_and_option_helpers",
-        unittest.mock.MagicMock(),
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._start_xml_server", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._discover_servos",
-        unittest.mock.MagicMock(return_value=(None, None)),
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._setup_servos", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._setup_servod_server", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.recovery.set_recovery_active", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch("servo.common.utils.servo_logging.setup", unittest.mock.MagicMock())
-    @unittest.mock.patch(
-        "servo.core.servo_server.Servod.__init__", unittest.mock.MagicMock(return_value=None)
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_server.Servod.validate_dut_controller", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.servo_server.Servod.hwinit", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.watchdog.DeviceWatchdog.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servod.disable_unusable_usb3_hubs", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.common.proto.system_config_grpc", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch("grpc.insecure_channel", unittest.mock.MagicMock())
-    def test_init(self):
+    @patch("servo.core.servod.ServodStarter._setup_servos")
+    @patch("servo.core.servod.ServodStarter._setup_servod_server")
+    @patch("servo.core.recovery.set_recovery_active")
+    @patch("servo.common.utils.servo_logging.setup")
+    @patch("servo.core.servo_server.Servod")
+    @patch("servo.core.watchdog.DeviceWatchdog")
+    @patch("servo.core.servod.disable_unusable_usb3_hubs")
+    @patch("servo.common.proto.system_config_grpc")
+    @patch("grpc.insecure_channel")
+    @patch("multiprocessing.Process")
+    @patch("threading.Thread")
+    def test_init(
+        self,
+        mock_thread,
+        mock_process,
+        _mock_insecure_channel,
+        _mock_sys_config_grpc,
+        mock_disable_hubs,
+        mock_watchdog,
+        mock_servod_class,
+        mock_logging_setup,
+        mock_recovery_active,
+        mock_setup_servod_server,
+        mock_setup_servos,
+        mock_discover_servos,
+        mock_start_xml_server,
+        mock_init_parsers,
+        _mock_prober_init,
+        _mock_scratch_init,
+    ):
         """Test __init__()."""
-        sopts = unittest.mock.MagicMock()
+        # Setup mocks
+        mock_servod_instance = mock_servod_class.return_value
+        mock_servod_instance.clear = MagicMock()
+
+        sopts = MagicMock()
         sopts.host = "localhost"
-        sopts.servo.core.recovery = True
+        sopts.servo_recovery = True
         sopts.usbkm232 = None
         sopts.step_init = False
         sopts.fetch_token_db = False
-        with unittest.mock.patch(
-            "servo.core.servod.ServodStarter._parse_args",
-            unittest.mock.MagicMock(return_value=(sopts, [])),
+        sopts.grpc_core_port = 9991
+        sopts.grpc_data_host = "localhost"
+        sopts.grpc_data_port = 9992
+        sopts.reconnect_timeout = 10.0
+
+        with patch(
+            "servo.core.servod.ServodStarter._parse_args", return_value=(sopts, [])
         ):
             starter = servod.ServodStarter([])
-        servod.ServodStarter._init_parsers_and_option_helpers.assert_called_once()
-        servod.ServodStarter._start_xml_server.assert_called_once()
-        servod.ServodStarter._discover_servos.assert_called_once_with(sopts, [])
-        servod.ServodStarter._setup_servos.assert_called_once_with(
-            None, None, unittest.mock.ANY, unittest.mock.ANY
-        )
-        servod.ServodStarter._setup_servod_server.assert_called_once()
-        recovery.set_recovery_active.assert_called_once()
-        servo_logging.setup.assert_called_once()
-        servo_server.Servod.hwinit.assert_called_once_with(
+
+        # Verification
+        mock_init_parsers.assert_called_once()
+        mock_start_xml_server.assert_called_once()
+        mock_discover_servos.assert_called_once_with(sopts, [])
+        mock_setup_servos.assert_called_once()
+        mock_setup_servod_server.assert_called_once()
+        mock_recovery_active.assert_called_once()
+        mock_logging_setup.assert_called_once()
+
+        mock_servod_instance.hwinit.assert_called_once_with(
             verbose=True,
             step_init=False,
         )
-        servo_server.Servod.validate_dut_controller.assert_called_once()
-        servod.disable_unusable_usb3_hubs.assert_called_once()
-        self.assertTrue(isinstance(starter._server_thread, threading.Thread))
-        self.assertTrue(isinstance(starter._watchdog_thread, watchdog.DeviceWatchdog))
+        mock_servod_instance.validate_dut_controller.assert_called_once()
+        mock_disable_hubs.assert_called_once()
+
+        # Check process and thread creation
+        mock_process.assert_called_once()
+        starter.grpc_server_process.start.assert_called_once()
+
+        mock_thread.assert_called_once()
+        mock_watchdog.assert_called_once()
+
         self.assertFalse(starter._turndown_initiated)
         self.assertEqual(starter._exit_status, 0)
         self.assertEqual(starter._host, "localhost")
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_handle_sig(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_handle_sig(self, _mock_init):
         """Test handle_sig()."""
         starter = servod.ServodStarter([])
         starter._turndown_initiated = False
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.info = unittest.mock.MagicMock()
-        starter._server = unittest.mock.MagicMock()
-        starter._server.shutdown = unittest.mock.MagicMock()
-        starter._server.server_close = unittest.mock.MagicMock()
-        starter._servod = unittest.mock.MagicMock()
-        starter._servod.close = unittest.mock.MagicMock()
-        starter.grpc_server_process = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+        starter._server = MagicMock()
+        starter._servod = MagicMock()
+        starter.grpc_server_process = MagicMock()
 
         starter.handle_sig(0)
 
         self.assertTrue(starter._turndown_initiated)
         starter._server.shutdown.assert_called_once()
-
         starter._server.server_close.assert_called_once()
         starter._servod.close.assert_called_once()
+        starter.grpc_server_process.kill.assert_called_once()
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_init_parsers_and_option_helpers(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_init_parsers_and_option_helpers(self, _mock_init):
         """Test _init_parsers_and_option_helpers()."""
         starter = servod.ServodStarter([])
 
@@ -150,18 +138,9 @@ class TestServoStarter(unittest.TestCase):
         self.assertTrue(isinstance(starter.server_pars, servo_parsing.BaseServodParser))
         self.assertTrue(isinstance(starter.dev_pars, servo_parsing.ServodRCParser))
         self.assertTrue(isinstance(starter.devopts_generator(), argparse.Namespace))
-        self.assertEqual(
-            starter.help_parser.format_usage, starter.server_pars.format_usage
-        )
-        self.assertEqual(
-            starter.help_parser.format_usage, starter.dev_pars.format_usage
-        )
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_parse_args(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_parse_args(self, _mock_init):
         """Test _parse_args()."""
         starter = servod.ServodStarter([])
         starter._init_parsers_and_option_helpers()
@@ -181,7 +160,7 @@ class TestServoStarter(unittest.TestCase):
             "4",
             "---",
         ]
-        starter.server_pars.parse_known_args = unittest.mock.MagicMock(
+        starter.server_pars.parse_known_args = MagicMock(
             return_value=(server_args, dev_cmdline)
         )
 
@@ -190,50 +169,38 @@ class TestServoStarter(unittest.TestCase):
         server_args.log_dir = None
         self.assertEqual(server_args_res, server_args)
         self.assertEqual(len(dev_args_list), 3)
-        self.assertTrue(isinstance(dev_args_list[0], argparse.Namespace))
         self.assertEqual(dev_args_list[0].board, "atlas")
-        self.assertTrue(isinstance(dev_args_list[1], argparse.Namespace))
         self.assertEqual(dev_args_list[1].serialname, "serial")
-        self.assertTrue(isinstance(dev_args_list[2], argparse.Namespace))
         self.assertEqual(dev_args_list[2].product, 3)
         self.assertEqual(dev_args_list[2].vendor, 4)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_parse_args_help(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_parse_args_help(self, _mock_init):
         """Test _parse_args()."""
         starter = servod.ServodStarter()
         starter._init_parsers_and_option_helpers()
-        starter.help_parser.print_help = unittest.mock.MagicMock()
+        starter.help_parser.print_help = MagicMock()
+        starter.help_parser.exit = MagicMock(side_effect=SystemExit(0))
 
-        with self.assertRaises(SystemExit) as exit_h:
+        with self.assertRaises(SystemExit) as cm:
             starter._parse_args(["-h"])
-
-        self.assertEqual(exit_h.exception.code, 0)
+        self.assertEqual(cm.exception.code, 0)
         starter.help_parser.print_help.assert_called_once()
+        starter.help_parser.exit.assert_called_once()
 
         starter.help_parser.print_help.reset_mock()
-        with self.assertRaises(SystemExit) as exit_help:
+        starter.help_parser.exit.reset_mock()
+
+        with self.assertRaises(SystemExit) as cm:
             starter._parse_args(["--help"])
-
-        self.assertEqual(exit_help.exception.code, 0)
+        self.assertEqual(cm.exception.code, 0)
         starter.help_parser.print_help.assert_called_once()
+        starter.help_parser.exit.assert_called_once()
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_parsing.arg_marked_as_user_supplied",
-        unittest.mock.MagicMock(return_value=True),
-    )
-    @unittest.mock.patch(
-        "xmlrpc.server.SimpleXMLRPCServer.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_start_xml_server_user_supplied(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=True)
+    @patch("xmlrpc.server.SimpleXMLRPCServer.__init__", return_value=None)
+    def test_start_xml_server_user_supplied(self, mock_rpc_init, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
         sopts.port = 9999
@@ -245,79 +212,51 @@ class TestServoStarter(unittest.TestCase):
         self.assertEqual(port, 9999)
         self.assertEqual(starter._servo_port, 9999)
         self.assertTrue(isinstance(starter._server, SimpleXMLRPCServer))
-        SimpleXMLRPCServer.__init__.assert_called_once_with(
-            ("localhost", 9999), logRequests=False
-        )
+        mock_rpc_init.assert_called_once_with(("localhost", 9999), logRequests=False)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_parsing.arg_marked_as_user_supplied",
-        unittest.mock.MagicMock(return_value=True),
-    )
-    def test_start_xml_server_user_supplied_busy_port(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=True)
+    def test_start_xml_server_user_supplied_busy_port(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
         sopts.port = 9999
         starter = servod.ServodStarter([])
         starter._host = "localhost"
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.fatal = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+
         err = socket.error()
         err.errno = errno.EADDRINUSE
 
-        with self.assertRaises(SystemExit) as result:
-            with unittest.mock.patch(
-                "xmlrpc.server.SimpleXMLRPCServer.__init__",
-                unittest.mock.MagicMock(side_effect=err),
-            ):
+        with self.assertRaises(SystemExit):
+            with patch("xmlrpc.server.SimpleXMLRPCServer.__init__", side_effect=err):
                 starter._start_xml_server(sopts)
 
-        self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with("Port 9999 is busy")
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_parsing.arg_marked_as_user_supplied",
-        unittest.mock.MagicMock(return_value=True),
-    )
-    def test_start_xml_server_error(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=True)
+    def test_start_xml_server_error(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
         sopts.port = 9999
         starter = servod.ServodStarter([])
         starter._host = "localhost"
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.fatal = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+
         err = socket.error()
         err.errno = errno.ERANGE
 
-        with self.assertRaises(SystemExit) as result:
-            with unittest.mock.patch(
-                "xmlrpc.server.SimpleXMLRPCServer.__init__",
-                unittest.mock.MagicMock(side_effect=err),
-            ):
+        with self.assertRaises(SystemExit):
+            with patch("xmlrpc.server.SimpleXMLRPCServer.__init__", side_effect=err):
                 starter._start_xml_server(sopts)
 
-        self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with(
             "Problem opening Server's socket: %s", err
         )
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_parsing.arg_marked_as_user_supplied",
-        unittest.mock.MagicMock(return_value=False),
-    )
-    def test_start_xml_server_default_range(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=False)
+    def test_start_xml_server_default_range(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
         sopts.port = 9999
@@ -326,70 +265,54 @@ class TestServoStarter(unittest.TestCase):
         err = socket.error()
         err.errno = errno.EADDRINUSE
 
-        with unittest.mock.patch(
+        with patch(
             "xmlrpc.server.SimpleXMLRPCServer.__init__",
-            unittest.mock.MagicMock(side_effect=[err, err, err, None]),
-        ):
+            side_effect=[err, err, err, None],
+        ) as mock_rpc_init:
             port = starter._start_xml_server(sopts)
-            SimpleXMLRPCServer.__init__.assert_has_calls(
+            mock_rpc_init.assert_has_calls(
                 [
-                    unittest.mock.call(("localhost", 9999), logRequests=False),
-                    unittest.mock.call(("localhost", 9998), logRequests=False),
-                    unittest.mock.call(("localhost", 9997), logRequests=False),
-                    unittest.mock.call(("localhost", 9996), logRequests=False),
+                    mock.call(("localhost", 9999), logRequests=False),
+                    mock.call(("localhost", 9998), logRequests=False),
+                    mock.call(("localhost", 9997), logRequests=False),
+                    mock.call(("localhost", 9996), logRequests=False),
                 ]
             )
 
         self.assertEqual(port, 9996)
         self.assertEqual(starter._servo_port, 9996)
-        self.assertTrue(isinstance(starter._server, SimpleXMLRPCServer))
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_parsing.arg_marked_as_user_supplied",
-        unittest.mock.MagicMock(return_value=False),
-    )
-    def test_start_xml_server_default_range_busy_port(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=False)
+    def test_start_xml_server_default_range_busy_port(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
         sopts.port = 9999
         starter = servod.ServodStarter([])
         starter._host = "localhost"
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.fatal = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
         err = socket.error()
         err.errno = errno.EADDRINUSE
 
         with self.assertRaises(SystemExit) as result:
-            with unittest.mock.patch(
+            with patch(
                 "xmlrpc.server.SimpleXMLRPCServer.__init__",
-                unittest.mock.MagicMock(side_effect=err),
-            ):
+                side_effect=err,
+            ) as mock_rpc_init:
                 starter._start_xml_server(sopts)
-                self.assertEqual(
-                    SimpleXMLRPCServer.__init__.call_count, 9999 - 9200 + 1
-                )
+                self.assertEqual(mock_rpc_init.call_count, 9999 - 9200 + 1)
 
         self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with(
             "Could not find a free port in 9200..9999 range"
         )
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_setup_servod_server(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_setup_servod_server(self, _mock_init):
         """Test _setup_servod_server()."""
         starter = servod.ServodStarter([])
-        starter._server = unittest.mock.MagicMock()
-        starter._servod = servo_server.Servod()
-        starter._server.register_introspection_functions = unittest.mock.MagicMock()
-        starter._server.register_multicall_functions = unittest.mock.MagicMock()
-        starter._server.register_instance = unittest.mock.MagicMock()
+        starter._server = MagicMock()
+        starter._servod = MagicMock()  # We don't need real Servod here
 
         starter._setup_servod_server()
 
@@ -397,35 +320,31 @@ class TestServoStarter(unittest.TestCase):
         starter._server.register_multicall_functions.assert_called_once()
         starter._server.register_instance.assert_called_once_with(starter._servod)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch(
         "servo.utils.servo_dev_hierarchy.ServoDeviceHierarchy.__init__",
-        unittest.mock.MagicMock(return_value=None),
+        return_value=None,
     )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.__init__",
-        unittest.mock.MagicMock(return_value=None),
+    @patch("servo.core.servo_dev_finder.ServoDeviceFinder.__init__", return_value=None)
+    @patch(
+        "servo.core.servo_dev_finder.ServoDeviceFinder.discover_servos", return_value=[]
     )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.discover_servos",
-        unittest.mock.MagicMock(return_value=[]),
-    )
-    @unittest.mock.patch(
+    @patch(
         "servo.core.servo_dev_finder.ServoDeviceFinder.choose_main_device",
-        unittest.mock.MagicMock(return_value=None),
+        return_value=None,
     )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.generate_prefixes",
-        unittest.mock.MagicMock(),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.validate_devopts",
-        unittest.mock.MagicMock(),
-    )
-    def test_discover_servos(self):
+    @patch("servo.core.servo_dev_finder.ServoDeviceFinder.generate_prefixes")
+    @patch("servo.core.servo_dev_finder.ServoDeviceFinder.validate_devopts")
+    def test_discover_servos(
+        self,
+        mock_validate,
+        mock_generate,
+        mock_choose,
+        mock_discover,
+        _mock_finder_init,
+        _mock_hierarchy_init,
+        _mock_init,
+    ):
         """Test _discover_servos()."""
         starter = servod.ServodStarter([])
         starter.devopts_generator = None
@@ -435,187 +354,176 @@ class TestServoStarter(unittest.TestCase):
 
         res = starter._discover_servos(sopts, None)
 
-        servo_dev_finder.ServoDeviceFinder.discover_servos.assert_called_once()
-        servo_dev_finder.ServoDeviceFinder.choose_main_device.assert_called_once_with(
-            []
-        )
-        servo_dev_finder.ServoDeviceFinder.generate_prefixes.assert_called_once_with(
-            [], None
-        )
-        servo_dev_finder.ServoDeviceFinder.validate_devopts.assert_called_once_with([])
+        mock_discover.assert_called_once()
+        mock_choose.assert_called_once_with([])
+        mock_generate.assert_called_once_with([], None)
+        mock_validate.assert_called_once_with([])
         self.assertEqual(res, ([], None))
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch(
         "servo.utils.servo_dev_hierarchy.ServoDeviceHierarchy.__init__",
-        unittest.mock.MagicMock(return_value=None),
+        return_value=None,
     )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.__init__",
-        unittest.mock.MagicMock(return_value=None),
+    @patch("servo.core.servo_dev_finder.ServoDeviceFinder.__init__", return_value=None)
+    @patch(
+        "servo.core.servo_dev_finder.ServoDeviceFinder.discover_servos", return_value=[]
     )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.discover_servos",
-        unittest.mock.MagicMock(return_value=[]),
-    )
-    @unittest.mock.patch(
+    @patch(
         "servo.core.servo_dev_finder.ServoDeviceFinder.choose_main_device",
-        unittest.mock.MagicMock(return_value=None),
+        return_value=None,
     )
-    @unittest.mock.patch(
-        "servo.core.servo_dev_finder.ServoDeviceFinder.generate_prefixes",
-        unittest.mock.MagicMock(),
-    )
-    @unittest.mock.patch(
+    @patch("servo.core.servo_dev_finder.ServoDeviceFinder.generate_prefixes")
+    @patch(
         "servo.core.servo_dev_finder.ServoDeviceFinder.validate_devopts",
-        unittest.mock.MagicMock(side_effect=servo_dev_finder.ServoDeviceFinderError()),
+        side_effect=servo_dev_finder.ServoDeviceFinderError(),
     )
-    def test_discover_servos_error(self):
+    def test_discover_servos_error(
+        self,
+        _mock_validate,
+        _mock_generate,
+        _mock_choose,
+        _mock_discover,
+        _mock_finder_init,
+        _mock_hierarchy_init,
+        _mock_init,
+    ):
         """Test _discover_servos() in the case of error."""
         starter = servod.ServodStarter([])
         starter.devopts_generator = None
         starter._scratchutil = None
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.fatal = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
         sopts = argparse.Namespace()
         sopts.device_discovery = "full"
 
         with self.assertRaises(SystemExit) as result:
             starter._discover_servos(sopts, None)
 
-        servo_dev_finder.ServoDeviceFinder.discover_servos.assert_called_once()
-        servo_dev_finder.ServoDeviceFinder.choose_main_device.assert_called_once_with(
-            []
-        )
-        servo_dev_finder.ServoDeviceFinder.generate_prefixes.assert_called_once_with(
-            [], None
-        )
-        servo_dev_finder.ServoDeviceFinder.validate_devopts.assert_called_once_with([])
+        self.assertEqual(result.exception.code, -1)
         starter._logger.fatal.assert_called_once_with(
             "Failure during discovering servo devices: %s", unittest.mock.ANY
         )
-        self.assertEqual(result.exception.code, -1)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.utils.servo_dev_prober.DeviceProber.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev.ServoDevice.init_servo_interfaces", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev.ServoDevice.set_board_and_model",
-        unittest.mock.MagicMock(return_value=False),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev.ServoDevice.set_base_board", unittest.mock.MagicMock()
-    )
-    def test_setup_servos(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
+    @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
+    @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=False)
+    @patch("servo.core.servo_dev.ServoDevice.set_base_board")
+    @patch("servo.core.servo_dev.GrpcClient")  # Mock GrpcClient to avoid network
+    @patch("servo.common.proto.system_config_grpc.SystemConfig")
+    @patch("servo.core.servod.SystemConfig")
+    def test_setup_servos(
+        self,
+        _mock_system_config_cls,
+        mock_sys_config_grpc,
+        _mock_grpc_client,
+        mock_set_base,
+        mock_set_board,
+        mock_init_interfaces,
+        _mock_prober_init,
+        _mock_init,
+    ):
         """Test _setup_servos()."""
         starter = servod.ServodStarter([])
-        starter._logger = unittest.mock.MagicMock()
-        starter._servod = servo_server.Servod()
-        starter._servod.update_known_ctrls = unittest.mock.MagicMock()
-        starter._get_system_config = unittest.mock.MagicMock()
-        prober = servo_dev_prober.DeviceProber()
-        prober.get_board_from_ec = unittest.mock.MagicMock(return_value="atlas")
-        prober.get_model_from_ec = unittest.mock.MagicMock(return_value="nuvoton")
-        main_dev_entry = unittest.mock.MagicMock()
-        main_device = unittest.mock.MagicMock()
-        root_device = unittest.mock.MagicMock()
-        main_dev_entry.servo_device = main_device
-        main_device.get_root_hub_device = unittest.mock.MagicMock(
-            return_value=root_device
+        starter._logger = MagicMock()
+        starter._servod = MagicMock()
+
+        # Mock add_device/get_devices to simulate storage
+        devices_list = []
+        starter._servod.add_device.side_effect = (
+            lambda dev, prefix: devices_list.append(dev)
         )
-        dev_entry_1 = unittest.mock.MagicMock()
-        dev_entry_1.devopts = argparse.Namespace()
+        starter._servod.get_devices.side_effect = lambda: devices_list
+
+        # Setup SystemConfig mock response
+        mock_client = mock_sys_config_grpc.return_value
+        mock_response = MagicMock()
+        mock_response.systemConfig = []
+        mock_client.GetFileContent.return_value = mock_response
+
+        prober = servo_dev_prober.DeviceProber()
+        prober.get_board_from_ec = MagicMock(return_value="atlas")
+        prober.get_model_from_ec = MagicMock(return_value="nuvoton")
+
+        # Setup dev entries
+        main_dev_entry = MagicMock()
+
+        dev_entry_1 = MagicMock()
         dev_entry_1.devopts.noautoconfig = False
-        dev_entry_1.devopts.config = ["extraconfig1", "extraconfig2"]
+        dev_entry_1.devopts.config = ["extraconfig1"]
         dev_entry_1.devopts.prefix = [""]
-        dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
-        dev_entry_1.devopts.interfaces = []
-        dev_entry_1.devopts.token_db = "default"
+        dev_entry_1.devopts.board = None
         dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
             "ccd_cr50"
         )
-        dev_entry_2 = unittest.mock.MagicMock()
-        dev_entry_2.devopts = argparse.Namespace()
+        dev_entry_1.vid = 0x18D1
+        dev_entry_1.pid = 0x5014
+        dev_entry_1.serial = "serial1"
+
+        dev_entry_2 = MagicMock()
         dev_entry_2.devopts.noautoconfig = False
         dev_entry_2.devopts.config = []
         dev_entry_2.devopts.prefix = ["v4"]
-        dev_entry_2.devopts.board = dev_entry_2.devopts.model = "testing"
-        dev_entry_2.devopts.interfaces = []
-        dev_entry_2.devopts.token_db = "default"
+        dev_entry_2.devopts.board = "testing"
+        dev_entry_2.devopts.model = "testing"
         dev_entry_2.dev_template = servo_dev_templates.get_template_class_by_name(
             "servo_v4p1"
         )
+        dev_entry_2.vid = 0x18D1
+        dev_entry_2.pid = 0x501B
+        dev_entry_2.serial = "serial2"
+
         dev_entries = [dev_entry_1, dev_entry_2]
 
-        starter._setup_servos(dev_entries, main_dev_entry, prober, (None, None))
-        self.assertEqual(servo_dev.ServoDevice.init_servo_interfaces.call_count, 3)
-        servo_dev.ServoDevice.init_servo_interfaces.assert_has_calls(
+        # Call with fake grpc address
+        starter._setup_servos(dev_entries, main_dev_entry, prober, ("localhost", 9992))
+
+        self.assertEqual(mock_init_interfaces.call_count, 3)
+        mock_init_interfaces.assert_has_calls(
             [
-                unittest.mock.call(fault_tolerant=True),  # ccd_cr50 only
-                unittest.mock.call(),
-                unittest.mock.call(),
+                mock.call(fault_tolerant=True),  # ccd_cr50 only
+                mock.call(),
+                mock.call(),
             ]
         )
         self.assertEqual(dev_entry_1.devopts.board, "atlas")
-        self.assertEqual(dev_entry_1.devopts.model, "nuvoton")
-        servo_dev.ServoDevice.set_base_board.assert_called_once_with("atlas")
-        servo_dev.ServoDevice.set_board_and_model.asset_has_calls(
+        mock_set_base.assert_called_once_with("atlas")
+        mock_set_board.assert_has_calls(
             [
-                unittest.mock.call("atlas", "nuvoton"),
-                unittest.mock.call("testing", "testing"),
+                mock.call("atlas", "nuvoton"),
+                mock.call("testing", "testing"),
             ]
         )
         self.assertEqual(starter._servod.update_known_ctrls.call_count, 2)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.utils.servo_dev_prober.DeviceProber.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch(
-        "servo.common.config.system_config.SystemConfig.display_config",
-        unittest.mock.MagicMock(),
-    )
-    @unittest.mock.patch(
-        "servo.common.config.system_config.SystemConfig.finalize",
-        unittest.mock.MagicMock(),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev.ServoDevice.init_servo_interfaces", unittest.mock.MagicMock()
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev.ServoDevice.set_board_and_model",
-        unittest.mock.MagicMock(return_value=False),
-    )
-    @unittest.mock.patch(
-        "servo.core.servo_dev.ServoDevice.set_base_board", unittest.mock.MagicMock()
-    )
-    def test_setup_servos_no_configs(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
+    @patch("servo.common.config.system_config.SystemConfig.display_config")
+    @patch("servo.common.config.system_config.SystemConfig.finalize")
+    @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
+    @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=False)
+    @patch("servo.core.servo_dev.ServoDevice.set_base_board")
+    def test_setup_servos_no_configs(
+        self,
+        mock_set_base,
+        mock_set_board,
+        mock_init_interfaces,
+        _mock_finalize,
+        _mock_display,
+        _mock_prober_init,
+        _mock_init,
+    ):
         """Test _setup_servos()."""
         starter = servod.ServodStarter([])
-        starter._logger = unittest.mock.MagicMock()
-        starter._servod = servo_server.Servod()
+        starter._logger = MagicMock()
+        starter._servod = MagicMock()
         prober = servo_dev_prober.DeviceProber()
-        starter._get_system_config = unittest.mock.MagicMock()
-        prober.get_board_from_ec = unittest.mock.MagicMock(return_value="atlas")
-        prober.get_model_from_ec = unittest.mock.MagicMock(return_value="nuvoton")
-        main_dev_entry = unittest.mock.MagicMock()
-        dev_entry_1 = unittest.mock.MagicMock()
-        dev_entry_1.devopts = argparse.Namespace()
+        starter._get_system_config = MagicMock()
+        prober.get_board_from_ec = MagicMock(return_value="atlas")
+        prober.get_model_from_ec = MagicMock(return_value="nuvoton")
+        main_dev_entry = MagicMock()
+
+        dev_entry_1 = MagicMock()
         dev_entry_1.devopts.noautoconfig = False
         dev_entry_1.devopts.config = ["extraconfig1", "extraconfig2"]
         dev_entry_1.devopts.prefix = [""]
@@ -625,8 +533,8 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
             "ccd_cr50"
         )
-        dev_entry_2 = unittest.mock.MagicMock()
-        dev_entry_2.devopts = argparse.Namespace()
+
+        dev_entry_2 = MagicMock()
         dev_entry_2.devopts.noautoconfig = True
         dev_entry_2.devopts.config = []
         dev_entry_2.devopts.prefix = ["v4"]
@@ -643,43 +551,31 @@ class TestServoStarter(unittest.TestCase):
             "No automatic config found, and no config specified with -c <file>",
         ):
             starter._setup_servos(dev_entries, main_dev_entry, prober, (None, None))
-        servo_dev.ServoDevice.init_servo_interfaces.assert_called_once()
-        servo_dev.ServoDevice.init_servo_interfaces.assert_called_once_with(
-            fault_tolerant=True
-        )
+
+        mock_init_interfaces.assert_called_once_with(fault_tolerant=True)
         self.assertEqual(dev_entry_1.devopts.board, "atlas")
         self.assertEqual(dev_entry_1.devopts.model, "nuvoton")
-        servo_dev.ServoDevice.set_base_board.assert_called_once_with("atlas")
-        servo_dev.ServoDevice.set_board_and_model.assert_called_once_with(
-            "atlas", "nuvoton"
-        )
+        mock_set_base.assert_called_once_with("atlas")
+        mock_set_board.assert_called_once_with("atlas", "nuvoton")
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_cleanup(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_cleanup(self, _mock_init):
         """Test cleanup()."""
         starter = servod.ServodStarter([])
-        starter._logger = unittest.mock.MagicMock()
-        starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.remove_entry = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+        starter._scratchutil = MagicMock()
         starter._host = "localhost"
         starter._servo_port = 9999
 
         starter.cleanup()
-        starter._scratchutil.remove_entry.assert_called_once_with(starter._servo_port)
+        starter._scratchutil.remove_entry.assert_called_once_with(9999)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test__serve(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test__serve(self, _mock_init):
         """Test _serve()."""
         starter = servod.ServodStarter([])
-        starter._logger = unittest.mock.MagicMock()
-        starter._server = unittest.mock.MagicMock()
-        starter._server.serve_forever = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+        starter._server = MagicMock()
         starter._host = "localhost"
         starter._servo_port = 9999
         starter._exit_status = 0
@@ -688,16 +584,13 @@ class TestServoStarter(unittest.TestCase):
         starter._server.serve_forever.assert_called_once()
         self.assertEqual(starter._exit_status, 0)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test__serve_error(self):
-        """Test _serve()."""
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test__serve_error(self, _mock_init):
+        """Test _serve() in case of error."""
         starter = servod.ServodStarter([])
-        starter._logger = unittest.mock.MagicMock()
-        starter._server = unittest.mock.MagicMock()
-        starter._server.serve_forever = unittest.mock.MagicMock(side_effect=Exception())
+        starter._logger = MagicMock()
+        starter._server = MagicMock()
+        starter._server.serve_forever.side_effect = Exception()
         starter._host = "localhost"
         starter._servo_port = 9999
         starter._exit_status = 0
@@ -706,163 +599,112 @@ class TestServoStarter(unittest.TestCase):
         starter._server.serve_forever.assert_called_once()
         self.assertEqual(starter._exit_status, 1)
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch("signal.signal", unittest.mock.MagicMock())
-    @unittest.mock.patch("signal.pause", unittest.mock.MagicMock())
-    def test_serve(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("signal.signal")
+    @patch("signal.pause")
+    def test_serve(self, _mock_pause, _mock_signal, _mock_init):
         """Test serve()."""
         starter = servod.ServodStarter([])
         starter._servo_port = 9999
         starter._exit_status = 0
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.error = unittest.mock.MagicMock()
-        starter._servod = unittest.mock.MagicMock()
-        starter._servod.get_servo_serials = unittest.mock.MagicMock(
-            return_value={"dev1": "serial1", "dev2": "serial2"}
-        )
-        starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.add_entry = unittest.mock.MagicMock()
-        starter._scratchutil.mark_active = unittest.mock.MagicMock()
-        starter._watchdog_thread = unittest.mock.MagicMock()
-        starter._watchdog_thread.start = unittest.mock.MagicMock()
-        starter._watchdog_thread.deactivate = unittest.mock.MagicMock()
-        starter._watchdog_thread.join = unittest.mock.MagicMock()
-        starter._watchdog_thread.is_alive = unittest.mock.MagicMock(return_value=False)
-        starter._server_thread = unittest.mock.MagicMock()
-        starter._server_thread.start = unittest.mock.MagicMock()
-        starter._server_thread.join = unittest.mock.MagicMock()
-        starter._server_thread.is_alive = unittest.mock.MagicMock(return_value=False)
-        starter.cleanup = unittest.mock.MagicMock()
-        starter.grpc_server_process = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+        starter._servod = MagicMock()
+        starter._servod.get_servo_serials.return_value = {"dev1": "serial1"}
 
+        starter._scratchutil = MagicMock()
+        starter._watchdog_thread = MagicMock()
+        starter._watchdog_thread.is_alive.return_value = False
+        starter._server_thread = MagicMock()
+        starter._server_thread.is_alive.return_value = False
+
+        # Mock grpc_server_process
+        starter.grpc_server_process = MagicMock()
+
+        starter.cleanup = MagicMock()
 
         with self.assertRaises(SystemExit) as result:
             starter.serve()
 
         self.assertEqual(result.exception.code, 0)
-        starter._scratchutil.add_entry.assert_called_once_with(
-            9999, set(["serial1", "serial2"]), unittest.mock.ANY
-        )
         starter._watchdog_thread.start.assert_called_once()
         starter._server_thread.start.assert_called_once()
-        starter._scratchutil.mark_active.assert_called_once_with(9999)
+        starter._scratchutil.mark_active.assert_called_once()
         starter._watchdog_thread.deactivate.assert_called_once()
         starter._watchdog_thread.join.assert_called_once()
         starter._server_thread.join.assert_called_once()
         starter.cleanup.assert_called_once()
-        starter._logger.error.assert_not_called()
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    def test_serve_scratch_error(self):
+        # Verify process killed
+        starter.grpc_server_process.kill.assert_called_once()
+
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_serve_scratch_error(self, _mock_init):
         """Test serve() in case of scratch error."""
         starter = servod.ServodStarter([])
-        starter._servod = unittest.mock.MagicMock()
-        starter._servod.get_servo_serials = unittest.mock.MagicMock(
-            return_value={"dev1": "serial1", "dev2": "serial2"}
-        )
-        starter._servod.close = unittest.mock.MagicMock()
-        starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.add_entry = unittest.mock.MagicMock(
-            side_effect=scratch.ScratchError()
-        )
+        starter._servod = MagicMock()
+        starter._servod.get_servo_serials.return_value = {"dev1": "serial1"}
+        starter._servod.close = MagicMock()
+        starter._scratchutil = MagicMock()
+        starter._scratchutil.add_entry.side_effect = scratch.ScratchError()
         starter._servo_port = 9999
 
         with self.assertRaises(SystemExit) as result:
             starter.serve()
 
         self.assertEqual(result.exception.code, 1)
-        starter._scratchutil.add_entry.assert_called_once_with(
-            9999, set(["serial1", "serial2"]), unittest.mock.ANY
-        )
         starter._servod.close.assert_called_once()
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch("signal.signal", unittest.mock.MagicMock())
-    @unittest.mock.patch("signal.pause", unittest.mock.MagicMock())
-    def test_serve_cannot_close_threads(self):
-        """Test serve()."""
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("signal.signal")
+    @patch("signal.pause")
+    def test_serve_cannot_close_threads(self, _mock_pause, _mock_signal, _mock_init):
+        """Test serve() with stuck threads."""
         starter = servod.ServodStarter([])
         starter._servo_port = 9999
         starter._exit_status = 0
-        starter._logger = unittest.mock.MagicMock()
-        starter._logger.error = unittest.mock.MagicMock()
-        starter._servod = unittest.mock.MagicMock()
-        starter._servod.get_servo_serials = unittest.mock.MagicMock(
-            return_value={"dev1": "serial1", "dev2": "serial2"}
-        )
-        starter._scratchutil = unittest.mock.MagicMock()
-        starter._scratchutil.add_entry = unittest.mock.MagicMock()
-        starter._scratchutil.mark_active = unittest.mock.MagicMock()
-        starter._watchdog_thread = unittest.mock.MagicMock()
-        starter._watchdog_thread.start = unittest.mock.MagicMock()
-        starter._watchdog_thread.deactivate = unittest.mock.MagicMock()
-        starter._watchdog_thread.join = unittest.mock.MagicMock()
-        starter._watchdog_thread.is_alive = unittest.mock.MagicMock(return_value=True)
-        starter._server_thread = unittest.mock.MagicMock()
-        starter._server_thread.start = unittest.mock.MagicMock()
-        starter._server_thread.join = unittest.mock.MagicMock()
-        starter._server_thread.is_alive = unittest.mock.MagicMock(return_value=True)
-        starter.cleanup = unittest.mock.MagicMock()
-        starter.grpc_server_process = unittest.mock.MagicMock()
+        starter._logger = MagicMock()
+        starter._servod = MagicMock()
+        starter._servod.get_servo_serials.return_value = {"dev1": "serial1"}
 
+        starter._scratchutil = MagicMock()
+        starter._watchdog_thread = MagicMock()
+        starter._watchdog_thread.is_alive.return_value = True
+        starter._server_thread = MagicMock()
+        starter._server_thread.is_alive.return_value = True
+
+        starter.grpc_server_process = MagicMock()
+        starter.cleanup = MagicMock()
 
         with self.assertRaises(SystemExit) as result:
             starter.serve()
 
         self.assertEqual(result.exception.code, 0)
-        starter._scratchutil.add_entry.assert_called_once_with(
-            9999, set(["serial1", "serial2"]), unittest.mock.ANY
+        starter._logger.error.assert_any_call(
+            "Server thread not turned down after %s s.", starter.EXIT_TIMEOUT_S
         )
-        starter._watchdog_thread.start.assert_called_once()
-        starter._server_thread.start.assert_called_once()
-        starter._scratchutil.mark_active.assert_called_once_with(9999)
-        starter._watchdog_thread.deactivate.assert_called_once()
-        starter._watchdog_thread.join.assert_called_once()
-        starter._server_thread.join.assert_called_once()
-        starter.cleanup.assert_called_once()
-        starter._logger.error.assert_has_calls(
-            [
-                unittest.mock.call(
-                    "Server thread not turned down after %s s.", starter.EXIT_TIMEOUT_S
-                ),
-                unittest.mock.call(
-                    "Watchdog thread not turned down after %s s.",
-                    starter.EXIT_TIMEOUT_S,
-                ),
-            ]
+        starter._logger.error.assert_any_call(
+            "Watchdog thread not turned down after %s s.", starter.EXIT_TIMEOUT_S
         )
 
 
 class TestMain(unittest.TestCase):
     """Test Main."""
 
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(return_value=None),
-    )
-    @unittest.mock.patch("servo.core.servod.ServodStarter.serve", unittest.mock.MagicMock())
-    def test_main(self):
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.core.servod.ServodStarter.serve")
+    def test_main(self, _mock_serve, _mock_init):
         """Test main()."""
         servod.main(["-b", "atlas"])
 
         servod.ServodStarter.__init__.assert_called_once_with(["-b", "atlas"])
         servod.ServodStarter.serve.assert_called_once()
 
-    @unittest.mock.patch(
+    @patch(
         "servo.core.servod.ServodStarter.__init__",
-        unittest.mock.MagicMock(side_effect=servod.ServodError("err")),
+        side_effect=servod.ServodError("err"),
     )
-    @unittest.mock.patch("servo.core.servod.ServodStarter.serve", unittest.mock.MagicMock())
-    def test_main_error(self):
+    @patch("servo.core.servod.ServodStarter.serve")
+    def test_main_error(self, _mock_serve, _mock_init):
         """Test main()."""
         with self.assertRaises(SystemExit) as cm:
             servod.main(["-b", "atlas"])

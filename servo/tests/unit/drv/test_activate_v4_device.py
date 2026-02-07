@@ -27,8 +27,12 @@ class TestActivate4Device(unittest.TestCase):
     def setUp(self):
         intfc = mock.Mock(interface.Interface)
         params = {"cmd": "set"}
-        hw_drv = hw_driver.HwDriver(intfc, params)
-        self.active_v4_device = active_v4_device.activeV4Device(hw_drv, params)
+        hw_drv = hw_driver.HwDriver(
+            ("localhost", 9991), ("localhost", 9992), intfc, params
+        )
+        self.active_v4_device = active_v4_device.activeV4Device(
+            ("localhost", 9991), ("localhost", 9992), intfc, params
+        )
         response = BoolResponse(value=True)
         self.active_v4_device._driver_client.IsServoHasAttr = unittest.mock.MagicMock(
             return_value=response

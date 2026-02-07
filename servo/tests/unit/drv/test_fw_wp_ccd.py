@@ -13,7 +13,12 @@ class TestFwWpCcd(unittest.TestCase):
     def setUp(self):
         self.mock_interface = MagicMock()
         self.mock_logger = MagicMock()
-        self.instance = fwWpCcd(interface=self.mock_interface, params={"cmd": "set"})
+        self.instance = fwWpCcd(
+            grpc_core_addr=("localhost", 9999),
+            grpc_data_addr=("localhost", 9999),
+            interface=self.mock_interface,
+            params={"cmd": "set"},
+        )
 
     @patch("servo.data.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
     def test_force_on(self, mock_issue_cmd_get_results):

@@ -19,7 +19,12 @@ class TestGpio(unittest.TestCase):
             "chip": "gpiochip0",
             "muxfile": "/sys/class/gpio/gpiochip0",
         }
-        self.instance = gpio(interface=self.mock_interface, params=self.params)
+        self.instance = gpio(
+            grpc_core_addr=("localhost", 9999),
+            grpc_data_addr=("localhost", 9999),
+            interface=self.mock_interface,
+            params=self.params,
+        )
 
     @patch("servo.data.drv.gpio.gpio._get_common_params")
     def test_get(self, mock_get_common_params):
