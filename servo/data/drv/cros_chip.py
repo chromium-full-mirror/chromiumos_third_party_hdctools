@@ -11,7 +11,7 @@ class crosChip(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(crosChip, self)._drv_init()
+        super()._drv_init()
 
     def _Get_chip(self):
         """Get the EC chip name."""

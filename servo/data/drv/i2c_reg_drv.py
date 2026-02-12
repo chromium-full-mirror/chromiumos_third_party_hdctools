@@ -41,7 +41,7 @@ class i2cRegDrv(hw_driver.HwDriver):
                         cause an error to be thrown when a read is attempted.
                         Default is False
         """
-        super(i2cRegDrv, self)._drv_init()
+        super()._drv_init()
         msb_first = "msb_last" not in self._params
         self._no_read = "no_read" in self._params
         self._read_only = "read_only" in self._params

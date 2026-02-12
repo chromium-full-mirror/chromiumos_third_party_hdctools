@@ -30,7 +30,7 @@ class FuartError(c.InterfaceError):
           msg: string, message describing error in detail
           value: integer, value of error when non-zero status returned.  Default=0
         """
-        super(FuartError, self).__init__(msg, value)
+        super().__init__(msg, value)
         self.msg = msg
         self.value = value
 
@@ -98,7 +98,7 @@ class Fuart(uart.Uart):
         Raises:
           FuartError: If either ftdi or fuart inits fail
         """
-        super(Fuart, self).__init__()
+        super().__init__()
         self._logger = logging.getLogger("Fuart")
 
         (self._flib, self._lib) = ftdi_utils.load_libs("ftdi", "ftdiuart")

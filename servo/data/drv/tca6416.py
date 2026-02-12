@@ -51,7 +51,7 @@ class tca6416(hw_driver.HwDriver):
           port: integer, either 0 || 1
           offset: integer, gpio's bit position from lsb
         """
-        super(tca6416, self)._drv_init()
+        super()._drv_init()
         child = self._get_child()
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

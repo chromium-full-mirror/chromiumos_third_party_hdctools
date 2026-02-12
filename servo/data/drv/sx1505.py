@@ -34,7 +34,7 @@ class sx1505(hw_driver.HwDriver):
           child: integer, 7-bit i2c child address
           offset: integer, gpio's bit position from lsb
         """
-        super(sx1505, self)._drv_init()
+        super()._drv_init()
         child = self._get_child()
         self._i2c_obj = i2c_reg.I2cReg.get_device(
             self._interface,

@@ -25,7 +25,7 @@ class Si2cError(c.InterfaceError):
           msg: string, message describing error in detail
           value: integer, value of error when non-zero status returned.  Default=0
         """
-        super(Si2cError, self).__init__(msg, value)
+        super().__init__(msg, value)
         self.msg = msg
         self.value = value
 
@@ -198,4 +198,4 @@ class Si2cBus(i2c_base.BaseI2CBus):
         """
         self._logger.info("Turning down STM32i2c interface.")
         del self._susb
-        super(Si2cBus, self).close()
+        super().close()

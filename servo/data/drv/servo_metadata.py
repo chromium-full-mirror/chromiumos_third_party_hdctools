@@ -20,7 +20,7 @@ class servoMetadata(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(servoMetadata, self)._drv_init()
+        super()._drv_init()
 
     def _Get_type(self):
         """Gets the type of the servo device setups.

@@ -10,7 +10,7 @@ class fwWpServoflex(fw_wp_state.FwWpStateDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(fwWpServoflex, self)._drv_init()
+        super()._drv_init()
         self._fw_wp_vref = self._params.get("fw_wp_vref", "pp1800")
         self._is_open_drain = self._params.get("open_drain", "no") == "yes"
         # Keep GSC WP in sync with the flex WP. Must define gsc_fw_wp_state

@@ -94,7 +94,7 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
           module_name: name of the template module
           ina_pkg: template loaded as a module
         """
-        super(PowerlogINAConfigGenerator, self).__init__(module_name, ina_pkg)
+        super().__init__(module_name, ina_pkg)
         self._board_content, self._scenario_content = self.DumpADCs(ina_pkg.inas)
 
     def DumpADCs(self, adcs):
@@ -183,7 +183,7 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         Raises:
           INAConfigGeneratorError: if a a non-int interface is defined in |ina_pkg|
         """
-        super(ServoINAConfigGenerator, self).__init__(module_name, ina_pkg)
+        super().__init__(module_name, ina_pkg)
         if not servo_drv_dir:
             servo_drv_dir = os.path.join(servo_data_dir, "drv")
         self._servo_drv_dir = servo_drv_dir

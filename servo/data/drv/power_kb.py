@@ -19,7 +19,7 @@ class powerKb(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(powerKb, self)._drv_init()
+        super()._drv_init()
         # pylint: disable=protected-access
         self._handler = keyboard_handlers._BaseHandler(self.grpc_core_addr)
 

@@ -43,7 +43,7 @@ class PtyDriver(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(PtyDriver, self)._drv_init()
+        super()._drv_init()
         self._child = None
         self._fd = None
         self._cmd_iface = False

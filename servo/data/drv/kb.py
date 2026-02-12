@@ -26,7 +26,7 @@ class kb(hw_driver.HwDriver):
             handler: indicate if default or usb keyboard handler should
                      be used for key press execution.
         """
-        super(kb, self)._drv_init()
+        super()._drv_init()
         # pylint: disable=protected-access
         self._handler = self._params.get("handler", "default")
         if self._handler not in ["default", "usb"]:

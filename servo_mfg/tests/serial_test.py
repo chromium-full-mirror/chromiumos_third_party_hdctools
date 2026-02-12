@@ -22,7 +22,7 @@ class TestMicroSerial(unittest.TestCase):
 
     def setUp(self):
         """Setup by getting the regex from the manager."""
-        super(TestMicroSerial, self).setUp()
+        super().setUp()
         self.re = micro_manager.MicroManager.SERIALNO_RE
 
     def test_standardized(self):
@@ -81,7 +81,7 @@ class TestV4P1Serial(unittest.TestCase):
 
     def setUp(self):
         """Setup by getting the regex from the manager."""
-        super(TestV4P1Serial, self).setUp()
+        super().setUp()
         self.re = v4p1_manager.V4P1Manager.SERIALNO_RE
 
     def test_standardized(self):

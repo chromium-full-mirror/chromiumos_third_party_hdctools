@@ -29,7 +29,7 @@ class ftdii2cCmd(HwDriver):
     def _drv_init(self):
         """Driver specific initializer."""
         # pylint: disable=protected-access
-        super(ftdii2cCmd, self)._drv_init()
+        super()._drv_init()
         # Create a gRPC channel to the specified host and port
         grpc_data_host, grpc_data_port = self.grpc_data_addr
         channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)

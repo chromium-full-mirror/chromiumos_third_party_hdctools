@@ -27,7 +27,7 @@ class crosEcPdSoftrecPower(cros_ec_softrec_power.crosEcSoftrecPower):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(crosEcPdSoftrecPower, self)._drv_init()
+        super()._drv_init()
         self._boot_to_rec_screen_delay = float(
             self._params.get("boot_to_rec_screen_delay", 5.0)
         )

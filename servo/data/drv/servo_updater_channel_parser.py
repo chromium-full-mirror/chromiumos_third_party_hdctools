@@ -24,7 +24,7 @@ class servoUpdaterChannelParser(hw_driver.HwDriver):
         Required params:
             board: the servo board name (*not* DUT board!)
         """
-        super(servoUpdaterChannelParser, self)._drv_init()
+        super()._drv_init()
 
         self._board = self._params["board"]
 

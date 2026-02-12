@@ -19,7 +19,7 @@ class TestScratch(unittest.TestCase):
 
         Prepare a Scratch on a temp directory & prepare a convenience entry.
         """
-        super(TestScratch, self).setUp()
+        super().setUp()
         self._scratchdir = tempfile.mkdtemp()
         self._scratch = scratch.Scratch(self._scratchdir)
         self._dport = 31234
@@ -36,7 +36,7 @@ class TestScratch(unittest.TestCase):
     def tearDown(self):
         """Remove entry directory structure created during the test."""
         shutil.rmtree(self._scratchdir)
-        super(TestScratch, self).tearDown()
+        super().tearDown()
 
     def test_init(self):
         """Verify scratch creates the directory if it doesn't exist."""

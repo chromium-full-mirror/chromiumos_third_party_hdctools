@@ -109,7 +109,7 @@ class tcs3414(hw_driver.HwDriver):
         Required params:
           child: integer, 7-bit i2c child address
         """
-        super(tcs3414, self)._drv_init()
+        super()._drv_init()
 
         device_key = (self._interface, self._get_child())
         if device_key not in tcs3414_devices:

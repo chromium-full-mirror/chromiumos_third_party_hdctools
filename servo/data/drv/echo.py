@@ -13,7 +13,7 @@ class echo(hw_driver.HwDriver):
         """Driver specific initializer."""
         # pylint: disable=invalid-name
         # Class name format needed for drv class routing in servod.
-        super(echo, self)._drv_init()
+        super()._drv_init()
         self._val = self._params.get("value", "unknown")
 
     def _get(self):

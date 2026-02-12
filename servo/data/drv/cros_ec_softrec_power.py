@@ -52,7 +52,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(crosEcSoftrecPower, self)._drv_init()
+        super()._drv_init()
         # Delay to allow boot into recovery before passing back control.
         self._boot_to_rec_screen_delay = float(
             self._params.get("boot_to_rec_screen_delay", 5.0)
@@ -272,4 +272,4 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 self._power_on(self.REC_OFF)
                 time.sleep(self._reset_delay)
 
-        return super(crosEcSoftrecPower, self)._reset_cycle()
+        return super()._reset_cycle()

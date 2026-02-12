@@ -25,7 +25,7 @@ class relaySwitch(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(relaySwitch, self)._drv_init()
+        super()._drv_init()
 
     def _Get_relay_serial_port(self):
         """Returns the url of the serial port connected to the relay (/dev/ttyUSB0).

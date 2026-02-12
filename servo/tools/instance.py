@@ -45,7 +45,7 @@ class Instance(tool.Tool):
 
     def __init__(self):
         """Setup scratch to use."""
-        super(Instance, self).__init__()
+        super().__init__()
         self._scratch = scratch.Scratch()
 
     @property

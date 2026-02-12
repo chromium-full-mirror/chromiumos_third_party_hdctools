@@ -16,7 +16,7 @@ class SusbError(Exception):
           msg: string, message describing error in detail
           value: integer, value of error when non-zero status returned.  Default=0
         """
-        super(SusbError, self).__init__(msg, value)
+        super().__init__(msg, value)
         self.msg = msg
         self.value = value
 

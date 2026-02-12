@@ -30,4 +30,4 @@ class pca9537(tca6416.tca6416):
         """
         self._params = self._params.copy()
         self._params["port"] = "0"
-        super(pca9537, self)._drv_init()
+        super()._drv_init()

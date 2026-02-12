@@ -51,14 +51,14 @@ class TestSystemConfig(unittest.TestCase):
 
     def setUp(self):
         """Set up a SystemConfig object to use. Cache module values."""
-        super(TestSystemConfig, self).setUp()
+        super().setUp()
         self.syscfg = SystemConfig()
         self.ALLOWABLE_INPUT_TYPES = system_config.ALLOWABLE_INPUT_TYPES
 
     def tearDown(self):
         """Restore module values."""
         system_config.ALLOWABLE_INPUT_TYPES = self.ALLOWABLE_INPUT_TYPES
-        super(TestSystemConfig, self).tearDown()
+        super().tearDown()
 
     def _AddMap(self, map_name, params):
         """Helper to add a map to the SystemConfig."""

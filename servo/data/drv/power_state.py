@@ -51,7 +51,7 @@ class PowerStateDriver(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(PowerStateDriver, self)._drv_init()
+        super()._drv_init()
 
         # Create a gRPC channel to the specified host and port
         grpc_data_host, grpc_data_port = self.grpc_data_addr

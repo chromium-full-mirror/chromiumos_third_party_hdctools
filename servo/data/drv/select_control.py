@@ -33,7 +33,7 @@ class selectControl(hw_driver.HwDriver):
         if "map" in self._params:
             del self._params["map"]
 
-        super(selectControl, self)._drv_init()
+        super()._drv_init()
 
         if not json.loads(self._driver_client.GetSelectedControls().response):
             self._driver_client.InitSelectedControls()

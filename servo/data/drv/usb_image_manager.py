@@ -56,7 +56,7 @@ class usbImageManager(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(usbImageManager, self)._drv_init()
+        super()._drv_init()
         # This delay is required to safely switch the usb image mux direction
         self._poweroff_delay = self._params.get("usb_power_off_delay", 0)
         if self._poweroff_delay:

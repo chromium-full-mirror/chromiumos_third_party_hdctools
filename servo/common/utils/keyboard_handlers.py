@@ -114,7 +114,7 @@ class _BaseHandler(_HandlerTemplate):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(_BaseHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self._arb_keys = []
 
     def power_long_press(self):
@@ -325,7 +325,7 @@ class MatrixKeyboardHandler(_BaseHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(MatrixKeyboardHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
     def _press_keys(self, key):
@@ -406,7 +406,7 @@ class StoutHandler(MatrixKeyboardHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(StoutHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -427,7 +427,7 @@ class ParrotHandler(MatrixKeyboardHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ParrotHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -518,7 +518,7 @@ class ChromeECHandler(_BaseHandler):
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         base_board = self._driver_client.GetBaseBoard().response
         if base_board:
             self._ec_uart_regexp = base_board + "_ec_uart_regexp"
@@ -723,7 +723,7 @@ class ChromeECMithraxHandler(ChromeECHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECMithraxHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -811,7 +811,7 @@ class ChromeECFrostflowHandler(ChromeECHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECFrostflowHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -899,7 +899,7 @@ class ChromeECOsirisHandler(ChromeECHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECOsirisHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -990,7 +990,7 @@ class ChromeECBansheeHandler(ChromeECHandler):
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECBansheeHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -1081,7 +1081,7 @@ class ChromeECPujjoloHandler(ChromeECHandler):
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECPujjoloHandler, self).__init__(servo)
+        super().__init__(servo)
         self.open()
 
 
@@ -1169,7 +1169,7 @@ class ChromeECDelbinHandler(ChromeECHandler):
 
     def __init__(self, grpc_core_addr):
         """Sets up the servo communication infrastructure."""
-        super(ChromeECDelbinHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
 
         # Try to query SKU_ID or FW_CONFIG from EC Uart
         self._servod_set("ec_uart_regexp", r'["SKU_ID:\\s+(\\d+)\\s+"]')
@@ -1357,7 +1357,7 @@ class ChromeECGreenbayupocHandler(ChromeECHandler):
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeECGreenbayupocHandler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -1452,7 +1452,7 @@ class ChromeMatrix30Handler(ChromeECHandler):
         @param servo: A Servo object representing
                            the host running servod.
         """
-        super(ChromeMatrix30Handler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         self.open()
 
 
@@ -1599,7 +1599,7 @@ class USBkm232Handler(_BaseHandler):
 
     def __init__(self, grpc_core_addr, serial_device):
         """Constructor for usbkm232 class."""
-        super(USBkm232Handler, self).__init__(grpc_core_addr)
+        super().__init__(grpc_core_addr)
         if serial_device is None:
             raise Exception(
                 "No device specified when initializing usbkm232 keyboard handler"
@@ -1617,14 +1617,14 @@ class USBkm232Handler(_BaseHandler):
         self.serial.interCharTimeout = 0.5
         self.serial.timeout = 0.5
         self.serial.writeTimeout = 0.5
-        super(USBkm232Handler, self).open()
+        super().open()
 
     def close(self):
         """Close usbkm232 device, and assert rst on atmega if necessary."""
         if not self.is_open():
             return
         self.serial.close()
-        super(USBkm232Handler, self).close()
+        super().close()
 
     def _test_atmega(self):
         """Send and receive a key from the atmega to verify it is present.
@@ -1838,7 +1838,7 @@ class ServoUSBkm232Handler(USBkm232Handler):
         serial = self._servod_get("atmega_pty")
         self.legacy = legacy
         # None as grpc address because driver client is already initialized up here
-        super(ServoUSBkm232Handler, self).__init__(None, serial)
+        super().__init__(None, serial)
 
     def _servod_get(self, control):
         """Get the value of the given control with proper prefix."""
@@ -1865,7 +1865,7 @@ class ServoUSBkm232Handler(USBkm232Handler):
             self._servod_set("usb_mux_oe4", "on")
         # Give the board enough time to boot up.
         time.sleep(1)
-        super(ServoUSBkm232Handler, self).open()
+        super().open()
         self._test_atmega()
 
     def close(self):
@@ -1874,4 +1874,4 @@ class ServoUSBkm232Handler(USBkm232Handler):
             return
         # If using the atmega, ensure that the atmega is in reset.
         self._servod_set("atmega_rst", "on")
-        super(ServoUSBkm232Handler, self).close()
+        super().close()

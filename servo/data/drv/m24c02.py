@@ -95,7 +95,7 @@ class m24c02(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(m24c02, self)._drv_init()
+        super()._drv_init()
 
         child = self._get_child()
         if child not in m24c02.SUPPORTED_ADDRESS:

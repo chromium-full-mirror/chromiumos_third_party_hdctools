@@ -33,7 +33,7 @@ class I2CBus(i2c_base.BaseI2CBus):
         if self._interface:
             self._interface.close()
             self._interface = None
-        super(I2CBus, self).close()
+        super().close()
 
     def __del__(self) -> None:
         self.close()

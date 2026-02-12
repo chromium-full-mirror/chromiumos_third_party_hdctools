@@ -62,7 +62,7 @@ class ec3poServo(pty_driver.PtyDriver):
         Raises:
           ec3poServoError: on init failure
         """
-        super(ec3poServo, self)._drv_init()
+        super()._drv_init()
 
         if "console" in self._params:
             if (

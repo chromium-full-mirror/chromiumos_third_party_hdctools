@@ -63,7 +63,7 @@ class basePWRADC(hw_driver.HwDriver):
         Raises:
           BasePWRADCError: if needed params are absent
         """
-        super(basePWRADC, self)._drv_init()
+        super()._drv_init()
         self._base_name = self._params["base_name"]
         # Single channel ADCs can be thought of as running on channel 0.
         # Some ADCs might need this information to find pertinent bits on registers.

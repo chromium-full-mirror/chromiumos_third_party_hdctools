@@ -64,7 +64,7 @@ class cr50(pty_driver.PtyDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(cr50, self)._drv_init()
+        super()._drv_init()
 
         if not hasattr(self._interface, "ccd_uart_bitbang_settings"):
             self._interface.ccd_uart_bitbang_settings = {
@@ -76,12 +76,12 @@ class cr50(pty_driver.PtyDriver):
     @restricted_command
     def _get(self):
         # Explicit call parent class method to apply annotation.
-        return super(cr50, self)._get()
+        return super()._get()
 
     @restricted_command
     def _set(self, value):
         # Explicit call parent class method to apply annotation.
-        return super(cr50, self)._set(value)
+        return super()._set(value)
 
     def _issue_cmd_get_results(
         self, cmds, regex_list, flush=None, timeout=pty_driver.DEFAULT_UART_TIMEOUT
@@ -98,7 +98,7 @@ class cr50(pty_driver.PtyDriver):
             try:
                 # Arrows -> and => in startup text are excluded from counting as the
                 # prompt
-                super(cr50, self)._issue_cmd_get_results(
+                super()._issue_cmd_get_results(
                     "\n\n", [r"([^-=]>|Console is enabled)"]
                 )
                 break
@@ -114,7 +114,7 @@ class cr50(pty_driver.PtyDriver):
                     raise cr50Error("cr50 uart is unresponsive") from e
                 time.sleep(self.PROMPT_DETECTION_INTERVAL)
 
-        return super(cr50, self)._issue_cmd_get_results(
+        return super()._issue_cmd_get_results(
             cmds, regex_list, flush=flush, timeout=timeout
         )
 

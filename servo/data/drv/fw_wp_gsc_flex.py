@@ -10,7 +10,7 @@ class fwWpGscFlex(fw_wp_servoflex.fwWpServoflex):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(fwWpGscFlex, self)._drv_init()
+        super()._drv_init()
         self._sync_gsc_wp = True
         # True if GSC is the only WP driver.
         self._gsc_only = self._params.get("gsc_only", "no") == "yes"
@@ -20,7 +20,7 @@ class fwWpGscFlex(fw_wp_servoflex.fwWpServoflex):
         # If GSC is the only WP driver, there's no main wp signal to reset.
         if self._gsc_only:
             return
-        super(fwWpGscFlex, self)._main_reset()
+        super()._main_reset()
 
     def _force_off(self):
         """Force the firmware to not write-protected through GSC."""

@@ -403,7 +403,7 @@ class FuncNameAligner(logging.Filter):
         Args:
           padding: number of spaces to reserve for function name
         """
-        super(FuncNameAligner, self).__init__()
+        super().__init__()
         self.padding = padding
 
     def filter(self, record):
@@ -567,7 +567,7 @@ class WrapSetCall(_ControlWrapper):
             ...
 
         """
-        super(WrapSetCall, self).__init__(name, known_exceptions)
+        super().__init__(name, known_exceptions)
         self.value = value
 
     def _log_start(self):
@@ -646,7 +646,7 @@ class WrapGetCall(_ControlWrapper):
             result = ...
             wrapper.got_result(result)
         """
-        super(WrapGetCall, self).__init__(name, known_exceptions)
+        super().__init__(name, known_exceptions)
         self.result = None
         self._result_reported = False
 

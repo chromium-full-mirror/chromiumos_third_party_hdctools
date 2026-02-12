@@ -22,7 +22,7 @@ class sflag(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(sflag, self)._drv_init()
+        super()._drv_init()
         # Set the valid input choices for this driver. Choices need to be set
         # to be strings.
         self._choices = re.compile("^(0|1)$")

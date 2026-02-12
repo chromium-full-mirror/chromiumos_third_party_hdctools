@@ -52,7 +52,7 @@ class ecI2cPin(ec.ec):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(ecI2cPin, self)._drv_init()
+        super()._drv_init()
         # Set the valid input choices for this driver.
         # _choices needs to be a compiled regex
         self._choices = re.compile("^(0|1)$")

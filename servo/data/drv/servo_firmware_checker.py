@@ -40,7 +40,7 @@ class servoFirmwareChecker(hw_driver.HwDriver):
         Required params:
             board: the servo board name (*not* DUT board!)
         """
-        super(servoFirmwareChecker, self)._drv_init()
+        super()._drv_init()
 
         # Set can be used by passing 'print' as an argument.
         self._choices = re.compile("^0$")

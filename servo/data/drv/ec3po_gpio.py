@@ -43,7 +43,7 @@ class ec3poGpio(ec3po_servo.ec3poServo):
         Raises:
           ec3poGpioError: on init failure
         """
-        super(ec3poGpio, self)._drv_init()
+        super()._drv_init()
 
         if "name" in self._params:
             self._gpio_name = self._params["name"]

@@ -14,7 +14,7 @@ NO_UART_ERR = "There is no UART on this servo for this specific interface."
 class ec3poDriver(hw_driver.HwDriver):
     def _drv_init(self):
         """Driver specific initializer."""
-        super(ec3poDriver, self)._drv_init()
+        super()._drv_init()
         self._logger = logging.getLogger("EC3PO Driver")
 
     def _Set_interp_connect(self, state):

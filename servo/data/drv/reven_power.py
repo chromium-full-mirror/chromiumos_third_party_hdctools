@@ -28,7 +28,7 @@ class revenPower(power_state.PowerStateDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(revenPower, self)._drv_init()
+        super()._drv_init()
 
     def _Get_power_off_time(self):
         """Get value of power_off_time.

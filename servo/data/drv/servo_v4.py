@@ -30,7 +30,7 @@ class servoV4(hw_driver.HwDriver):
                 automatic USB3-to-DUT choice setting when the current Servo v4 is
                 not present in either the default-enable or default-disable lists.
         """
-        super(servoV4, self)._drv_init()
+        super()._drv_init()
 
         usb_reset_ms = int(self._params["usb_reset_ms"])
         if usb_reset_ms < 0:

@@ -44,7 +44,7 @@ class ProgressPrinter(threading.Thread):
         max_duration=float("inf"),
     ):
         """Initialize constants & prepare thread to run."""
-        super(ProgressPrinter, self).__init__()
+        super().__init__()
         self._marker = marker
         self._rate = rate
         self._remaining_markers = max_duration / rate

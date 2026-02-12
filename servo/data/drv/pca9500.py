@@ -58,7 +58,7 @@ class pca9500(hw_driver.HwDriver):
         Attributes:
           _child: integer value of the 7-bit i2c child address.
         """
-        super(pca9500, self)._drv_init()
+        super()._drv_init()
         if "child" not in self._params:
             raise pca9500Error("getting child address")
         self._child = int(self._params["child"], 0)

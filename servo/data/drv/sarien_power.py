@@ -18,7 +18,7 @@ class sarienPower(power_state.PowerStateDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(sarienPower, self)._drv_init()
+        super()._drv_init()
 
         # Delay to allow boot into recovery before passing back control.
         self._boot_to_rec_screen_delay = float(

@@ -47,7 +47,7 @@ class ltc1663(hw_driver.HwDriver):
           child: integer, 7-bit i2c child address
           i2c_obj: I2cReg object
         """
-        super(ltc1663, self)._drv_init()
+        super()._drv_init()
 
         self._child = int(self._params["child"], 0)
         self._i2c_obj = i2c_reg.I2cReg.get_device(

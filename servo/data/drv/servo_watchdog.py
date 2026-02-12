@@ -16,7 +16,7 @@ class servoWatchdog(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(servoWatchdog, self)._drv_init()
+        super()._drv_init()
 
     def _Get_watchdog(self):
         """Get the connected state of all devices."""

@@ -98,7 +98,7 @@ class macro(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(macro, self)._drv_init()
+        super()._drv_init()
         str_prefix = "set_value_"
 
         self._states = {}

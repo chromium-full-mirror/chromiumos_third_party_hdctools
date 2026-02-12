@@ -39,7 +39,7 @@ class ec3poServoV4(ec3po_servo.ec3poServo):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(ec3poServoV4, self)._drv_init()
+        super()._drv_init()
 
     def batch_set(self, batch, index):
         """Set a batch of values on console gpio.

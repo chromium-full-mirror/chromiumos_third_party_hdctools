@@ -25,7 +25,7 @@ class gscI2c(hw_driver.HwDriver):
         Required params:
             child: integer, 7-bit i2c child address
         """
-        super(gscI2c, self)._drv_init()
+        super()._drv_init()
 
         self._child = int(self._params["child"], 0)
 

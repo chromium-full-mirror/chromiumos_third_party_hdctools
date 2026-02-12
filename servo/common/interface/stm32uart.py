@@ -31,7 +31,7 @@ class SuartError(c.InterfaceError):
           msg: string, message describing error in detail
           value: integer, value of error when non-zero status returned.  Default=0
         """
-        super(SuartError, self).__init__(msg, value)
+        super().__init__(msg, value)
         self.msg = msg
         self.value = value
 
@@ -63,7 +63,7 @@ class Suart(uart.Uart):
         Raises:
           SuartError: If init fails
         """
-        super(Suart, self).__init__()
+        super().__init__()
         self._logger = logging.getLogger("Suart")
 
         self._logger.debug(

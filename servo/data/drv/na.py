@@ -19,7 +19,7 @@ class na(hw_driver.HwDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(na, self)._drv_init()
+        super()._drv_init()
 
     def get(self):
         """Return not_applicable"""

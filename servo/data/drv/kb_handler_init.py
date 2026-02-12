@@ -32,7 +32,7 @@ class kbHandlerInit(hw_driver.HwDriver):
         Optional params:
             handler_type: type of keyboard handler to use
         """
-        super(kbHandlerInit, self)._drv_init()
+        super()._drv_init()
         self._handler_type = self._params.get("handler_type", None)
 
     def _Get_init_usb_keyboard(self):

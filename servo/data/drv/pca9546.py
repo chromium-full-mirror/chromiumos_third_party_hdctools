@@ -22,7 +22,7 @@ class pca9546(hw_driver.HwDriver):
         Required params:
           child: integer, 7-bit i2c child address
         """
-        super(pca9546, self)._drv_init()
+        super()._drv_init()
 
         self._child = int(self._params["child"], 0)
 

@@ -125,7 +125,7 @@ class StoreAndMarkAction(argparse._StoreAction):
     def __call__(self, parser, namespace, values, option_string=None):
         """Extend default __call__ implementation."""
         # This sets the |values| to |self.dest|.
-        super(StoreAndMarkAction, self).__call__(
+        super().__call__(
             parser=parser,
             namespace=namespace,
             values=values,
@@ -201,7 +201,7 @@ class _BaseServodParser(argparse.ArgumentParser):
                 description_lines.append("\n\t".join(example_lines))
         description = "\n".join(description_lines)
         kwargs["description"] = description
-        super(_BaseServodParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class BaseServodParser(_BaseServodParser):
@@ -222,7 +222,7 @@ class BaseServodParser(_BaseServodParser):
         """
         # Remove version from the kwargs and add it yourself.
         v = kwargs.pop("version", VERSION)
-        super(BaseServodParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.add_argument("-v", "--version", action="version", version=v)
         self.add_argument("--sversion", action="version", version=SVERSION)
         self.add_argument(
@@ -279,7 +279,7 @@ class ServodRCParser(_BaseServodParser):
     """
 
     def __init__(self, **kwargs):
-        super(ServodRCParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.add_argument(
             "--rcfile",
             type=str,
@@ -499,7 +499,7 @@ class ServodClientParser(ServodRCParser):
         if "parents" not in kwargs:
             kwargs["parents"] = []
         kwargs["parents"].append(base_parser)
-        super(ServodClientParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         # Add --port to the |_id_group| to ensure exclusion with name and
         # serialname.
         BaseServodParser.add_rc_enabled_port_arg(self._id_group)

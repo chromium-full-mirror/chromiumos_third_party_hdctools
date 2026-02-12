@@ -53,7 +53,7 @@ class ec(pty_driver.PtyDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(ec, self)._drv_init()
+        super()._drv_init()
 
         self._role_swap_delay = float(self._params.get("role_swap_delay", 1.0))
         # Add locals to the values dictionary.

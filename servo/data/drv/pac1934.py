@@ -67,7 +67,7 @@ class pac1934(ina2xx.ina2xx):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(pac1934, self)._drv_init()
+        super()._drv_init()
         # Pre-calculate a few important values.
         # full scale current and power full scale range
         self._fsc = self._pwr_fsr = None
@@ -232,7 +232,7 @@ class pac1934(ina2xx.ina2xx):
         """
         if refresh is not None:
             self._refresh(clear=refresh == "clear")
-        return super(pac1934, self)._read_reg(name)
+        return super()._read_reg(name)
 
     def _write_reg(self, name, value, refresh="v"):
         """Specify whether we need to call refresh (and what kind) after write.
@@ -242,7 +242,7 @@ class pac1934(ina2xx.ina2xx):
           value: int, content to write to register
           refresh: one of 'v', 'clear' or None
         """
-        super(pac1934, self)._write_reg(name, value)
+        super()._write_reg(name, value)
         if refresh is not None:
             self._refresh(clear=refresh == "clear")
 

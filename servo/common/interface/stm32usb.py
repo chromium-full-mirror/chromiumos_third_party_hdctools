@@ -83,7 +83,7 @@ class Susb(interface.Interface):
         Raises:
           SusbError: An error accessing Susb object
         """
-        super(Susb, self).__init__(logger_name=type(self).__name__)
+        super().__init__(logger_name=type(self).__name__)
         if logger:
             self._logger = logger
 

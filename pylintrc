@@ -474,7 +474,6 @@ disable=
     no-member,
     protected-access,
     simplifiable-if-expression,
-    super-with-arguments,
     too-few-public-methods,
     too-many-arguments,
     too-many-branches,

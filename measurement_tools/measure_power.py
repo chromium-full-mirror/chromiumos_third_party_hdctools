@@ -86,7 +86,7 @@ class ServodPowerTracker(threading.Thread):
           title: human-readable title of the PowerTracker
           suffix: what metric is being measured (mw, ma, mv)
         """
-        super(ServodPowerTracker, self).__init__()
+        super().__init__()
         self._sclient = servo_client
         self._ctrls = ctrls
         self._stop_signal = stop_signal
@@ -335,7 +335,7 @@ class OnboardADCPowerTracker(HighResServodPowerTracker):
         self, servo_client, stop_signal, cfilter, sample_rate=DEFAULT_ADC_RATE
     ):
         """Init by finding onboard ADC ctrls."""
-        super(OnboardADCPowerTracker, self).__init__(
+        super().__init__(
             servo_client=servo_client,
             ctrls=[],
             stop_signal=stop_signal,
@@ -369,7 +369,7 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
     ):
         """Init by finding onboard ADC accum ctrls."""
         title = "Onboard ADC (w/ accum)"
-        super(OnboardADCAccumPowerTracker, self).__init__(
+        super().__init__(
             servo_client=servo_client,
             ctrls=[],
             stop_signal=stop_signal,
@@ -410,7 +410,7 @@ class OnboardADCAccumPowerTracker(ServodPowerTracker):
 
     def _sample_ctrls(self, ctrls):
         """Overwrite the base implementation to clear accumulator after reading."""
-        ret = super(OnboardADCAccumPowerTracker, self)._sample_ctrls(ctrls)
+        ret = super()._sample_ctrls(ctrls)
         self._clear_accum()
         return ret
 
@@ -425,7 +425,7 @@ class ECPowerTracker(ServodPowerTracker):
         self._ec_cmd = "ppvar_vbat_mw"
         self._avg_ec_cmd = "avg_ppvar_vbat_mw"
         self._cfilter = cfilter
-        super(ECPowerTracker, self).__init__(
+        super().__init__(
             servo_client=servo_client,
             ctrls=[self._ec_cmd],
             stop_signal=stop_signal,
@@ -437,12 +437,12 @@ class ECPowerTracker(ServodPowerTracker):
     def verify(self):
         """ECPowerTracker verify that also checks if avg_ppvar is available."""
         # First verify the normal ctrl.
-        super(ECPowerTracker, self).verify()
+        super().verify()
         # Then get ambitious and check if the newer avg_ppvar_vbat_mw is also
         # available.
         self._ctrls = self._cfilter([self._avg_ec_cmd])
         try:
-            super(ECPowerTracker, self).verify()
+            super().verify()
             # This means that avg_ppvar_vbat_mw worked fine.
         except PowerTrackerError as e:
             # This means that avg_ppvar_vbat_mw is not supported.
@@ -476,7 +476,7 @@ class ECPowerTracker(ServodPowerTracker):
         self.set_sample_data(temp_sample_data)
         self._stats.add_samples(adjusted_sample_tuples)
         self._stop_signal.wait(max(self._rate - (duration_ms / 1000), 0))
-        super(ECPowerTracker, self).run()
+        super().run()
 
 
 class RegexFilter:

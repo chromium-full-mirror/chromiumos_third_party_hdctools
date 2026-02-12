@@ -30,7 +30,7 @@ class simpleEc(ec.ec):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(simpleEc, self)._drv_init()
+        super()._drv_init()
         self._uart_cmd = self._params["uart_cmd"]
         if self._is_get():
             # These controls are required for |get| but not for |set|.

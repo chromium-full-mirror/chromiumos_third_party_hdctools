@@ -25,7 +25,7 @@ class servoUpdaterReader(hw_driver.HwDriver):
             board: the servo board name (*not* DUT board!)
             channel: the servo firmware channel in question
         """
-        super(servoUpdaterReader, self)._drv_init()
+        super()._drv_init()
         
         self._board = self._params["board"]
         self._channel = self._params["channel"]

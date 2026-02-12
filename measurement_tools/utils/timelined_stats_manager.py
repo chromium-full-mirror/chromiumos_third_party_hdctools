@@ -56,7 +56,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         self._logger = logging.getLogger(type(self).__name__)
         self._tkey = time_key
         self._tlkey = timeline_key
-        super(TimelinedStatsManager, self).__init__(
+        super().__init__(
             title=title,
             smid=smid,
             hide_domains=hide_domains,
@@ -74,7 +74,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
             timeline = self._data[self._tkey]
             timeline = [entry - timeline[0] for entry in timeline]
             self._data[self._tlkey] = timeline
-        super(TimelinedStatsManager, self).calculate_stats()
+        super().calculate_stats()
 
     def add_sample(self, domain, sample):
         """NotImplemented.
@@ -120,7 +120,7 @@ class TimelinedStatsManager(stats_manager.StatsManager):
         ]
         samples.extend(known_domains_missing_nans)
         for domain, sample in samples:
-            super(TimelinedStatsManager, self).add_sample(domain, sample)
+            super().add_sample(domain, sample)
 
     def functionally_empty(self):
         """Whether the stats manager is devoid of meaningful data.

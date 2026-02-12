@@ -96,7 +96,7 @@ class lcm2004(hw_driver.HwDriver):
         Required params:
             child: integer, 7-bit i2c child address
         """
-        super(lcm2004, self)._drv_init()
+        super()._drv_init()
 
         device_key = (self._interface, self._get_child())
         if device_key not in lcm2004_devices:

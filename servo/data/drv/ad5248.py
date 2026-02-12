@@ -48,7 +48,7 @@ class ad5248(hw_driver.HwDriver):
           port: integer, either 0 || 1
           subtype: string, supporting 'rdac', 'r2p5k', 'r10k', 'r50k', and 'r100k'
         """
-        super(ad5248, self)._drv_init()
+        super()._drv_init()
         self._child = self._get_child()
         self._port = self._get_port()
         self._subtype = self._get_subtype()

@@ -17,7 +17,7 @@ class CrosECPower(power_state.PowerStateDriver):
 
     def _drv_init(self):
         """Driver specific initializer."""
-        super(CrosECPower, self)._drv_init()
+        super()._drv_init()
         self._apreset_ec_commands = self._params.get("apreset_ec_commands", "")
         self._shutdown_ec_commands = self._params.get(
             "shutdown_ec_commands", "apshutdown"
@@ -30,7 +30,7 @@ class CrosECPower(power_state.PowerStateDriver):
         """Apply warm reset to the DUT."""
         if not self._apreset_ec_commands:
             # Fallback to the default sequence, which is defined in the superclass
-            super(CrosECPower, self)._warm_reset()
+            super()._warm_reset()
         else:
             self._servod_set("ec_uart_regexp", "None")
             self._servod_set("ec_uart_multicmd", self._apreset_ec_commands)

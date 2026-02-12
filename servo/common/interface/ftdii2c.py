@@ -25,7 +25,7 @@ class Fi2cError(c.InterfaceError):
           msg: string, message describing error in detail
           value: integer, value of error when non-zero status returned.  Default=0
         """
-        super(Fi2cError, self).__init__(msg, value)
+        super().__init__(msg, value)
         self.msg = msg
         self.value = value
 
@@ -122,7 +122,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         """
         if not getattr(self, "_is_closed", True):
             self.close()
-        parent_del = getattr(super(Fi2c, self), "__del__", None)
+        parent_del = getattr(super(), "__del__", None)
         if parent_del is not None:
             parent_del()
 
@@ -147,7 +147,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         if err:
             raise Fi2cError("fi2c_close", err)
         self._is_closed = True
-        super(Fi2c, self).close()
+        super().close()
 
     def init(self):
         """Initialize i2c interface.
