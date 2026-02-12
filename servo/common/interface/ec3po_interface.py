@@ -293,7 +293,7 @@ class EC3PO(uart.Uart):
                 device_type="",
             )
             raw_ec_uart = json.loads(drv.value)
-            ec_tokenized = True if raw_uart_source == "EC" else False
+            ec_tokenized = raw_uart_source == "EC"
             has_token_ctrl = scfg_client.IsControl(
                 vid=vid, pid=pid, serial=sid, control_name=EC_TOKENS_CONTROL
             ).value

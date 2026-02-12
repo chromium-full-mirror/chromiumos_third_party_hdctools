@@ -70,7 +70,7 @@ def bundle(paths):
     Returns:
       path to compressed logs archive
     """
-    single_mode = True if len(paths) == 1 else False
+    single_mode = len(paths) == 1
     if single_mode:
         on = os.path.basename(paths[0])
     else:
