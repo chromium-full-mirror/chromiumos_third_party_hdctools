@@ -731,7 +731,10 @@ class ServodStarter:
 
         Intercepts and handles stop signals so shutdown is handled.
         """
-        handler = lambda signal, unused, starter=self: starter.handle_sig(signal)
+        def handler(signum, _unused, starter=self):
+            starter.handle_sig(signum)
+
+
         stop_signals = [
             signal.SIGHUP,
             signal.SIGINT,

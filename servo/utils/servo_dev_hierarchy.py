@@ -246,9 +246,9 @@ class ServoDeviceHierarchy:
 
         # Collect all servod devices on the system.
         self._dev_by_id = collections.defaultdict(lambda: None)
-        self._dev_by_vid = collections.defaultdict(lambda: set())
-        self._dev_by_pid = collections.defaultdict(lambda: set())
-        self._dev_by_serial = collections.defaultdict(lambda: set())
+        self._dev_by_vid = collections.defaultdict(set)
+        self._dev_by_pid = collections.defaultdict(set)
+        self._dev_by_serial = collections.defaultdict(set)
         self._cluster_root_servos = {}
         self._cluster_non_root_servos = {}
         hub_servos = []

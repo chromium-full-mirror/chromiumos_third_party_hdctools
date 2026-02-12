@@ -485,8 +485,6 @@ disable=
     too-many-public-methods,
     too-many-return-statements,
     too-many-statements,
-    unnecessary-lambda,
-    unnecessary-lambda-assignment,
     too-many-positional-arguments,
     too-many-boolean-expressions,
 
