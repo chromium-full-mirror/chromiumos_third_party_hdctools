@@ -110,6 +110,40 @@ class TestServoStarter(unittest.TestCase):
         "servo.servod.ServodStarter.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
+    def test_check_for_excluded_modules_none(self):
+        """Test _check_for_excluded_modules() when no modules match."""
+        starter = servod.ServodStarter([])
+        starter._logger = unittest.mock.MagicMock()
+        with unittest.mock.patch("os.path.exists", return_value=True):
+            with unittest.mock.patch(
+                "builtins.open",
+                unittest.mock.mock_open(read_data="module1 1234 0\nmodule2 5678 0\n"),
+            ):
+                starter._check_for_excluded_modules()
+        starter._logger.fatal.assert_not_called()
+
+    @unittest.mock.patch(
+        "servo.servod.ServodStarter.__init__",
+        unittest.mock.MagicMock(return_value=None),
+    )
+    def test_check_for_excluded_modules_found(self):
+        """Test _check_for_excluded_modules() when a module matches."""
+        starter = servod.ServodStarter([])
+        starter._logger = unittest.mock.MagicMock()
+        with unittest.mock.patch("os.path.exists", return_value=True):
+            with unittest.mock.patch(
+                "builtins.open",
+                unittest.mock.mock_open(read_data="GobiNet 1234 0\nmodule2 5678 0\n"),
+            ):
+                with self.assertRaises(SystemExit) as cm:
+                    starter._check_for_excluded_modules()
+                self.assertEqual(cm.exception.code, 1)
+        starter._logger.fatal.assert_called()
+
+    @unittest.mock.patch(
+        "servo.servod.ServodStarter.__init__",
+        unittest.mock.MagicMock(return_value=None),
+    )
     def test_handle_sig(self):
         """Test handle_sig()."""
         starter = servod.ServodStarter([])
