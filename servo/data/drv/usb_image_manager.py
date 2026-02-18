@@ -236,7 +236,7 @@ class usbImageManager(hw_driver.HwDriver):
             "usb image dev file candidates: %s", ", ".join(image_location_candidates)
         )
         # Let the device settle first before pushing out any data onto it.
-        subprocess.call(["/bin/udevadm", "settle", "-t", str(self._SETTLE_TIMEOUT_S)])
+        subprocess.call(["udevadm", "settle", "-t", str(self._SETTLE_TIMEOUT_S)])
         self._logger.debug("All udev events have settled.")
         end = time.time() + self._WAIT_TIMEOUT_S
         while image_location_candidates:
