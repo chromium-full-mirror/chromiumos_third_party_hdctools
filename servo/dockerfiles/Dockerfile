@@ -350,6 +350,10 @@ COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
 RUN apt-get update --no-install-recommends \
     && apt-get install -y --no-install-recommends \
     iptables \
+    libcurl3t64-gnutls \
+    libjcat1 \
+    libpci3 \
+    libxmlb2 \
     lsof \
     procps \
     python3 \
@@ -364,12 +368,9 @@ RUN apt-get update --no-install-recommends \
     python3-serial \
     python3-usb \
     sudo \
+    usb.ids \
     usbutils \
     wget \
-    usb.ids \
-    libcurl3t64-gnutls \
-    libxmlb2 \
-    libjcat1 \
     && rm -rf /var/lib/apt/lists/* \
     && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
     && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
@@ -439,7 +440,7 @@ RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/n
 
 RUN mkdir -p /usr/share/cros_ec/tokens
 # Fetch EC Token Database from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/chromeos-ec-token-historical.bin \
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/tokens/chromeos-ec-token-historical.bin \
     -O /usr/share/cros_ec/tokens/historical.bin
 
 # Install flashrom

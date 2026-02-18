@@ -1,0 +1,11 @@
+<root>
+  <include>
+    <name>servo_bluey_overlay.xml</name>
+  </include>
+
+  <control>
+    <name>fw_up</name>
+    <doc>Control SERVO_EC_FLASH_SEL pin.</doc>
+    <params clobber_ok="patch" od="PU" map="onoff_i" init="off"></params>
+  </control>
+</root>

@@ -20,6 +20,7 @@ class ServoImplError(Exception):
 
 
 class ServoImpl(servo_dev_grpc.ServoServiceServicer):
+    # pylint: disable=invalid-name
     def __init__(self, grpc_core_addr, servod):
         self.grpc_core_addr = grpc_core_addr
         self.servod = servod
@@ -29,9 +30,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Get Value from servo core
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         service = servo_dev_pb2.ServiceResponse()
         service.response = self.servod.get(request.control_name)
         return service
@@ -40,9 +39,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Set value on servo core
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         self.servod.set(request.control_name, request.value)
         return empty_pb2.Empty()
 
@@ -50,9 +47,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Get servo version
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         service = servo_dev_pb2.ServiceResponse()
         service.response = self.servod._get_version()
         return service
@@ -61,9 +56,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Init Servo selected controls
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         if not hasattr(self.servod, "selected_controls"):
             self.servod.selected_controls = {}
         return empty_pb2.Empty()
@@ -72,9 +65,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Get servo selected controls
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         if hasattr(self.servod, "selected_controls"):
             selected_controls = self.servod.selected_controls
         else:
@@ -86,9 +77,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Set servo selected controls
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         self.servod.selected_controls[request.control_name] = request.control_value
         return empty_pb2.Empty()
 
@@ -106,9 +95,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def SetInitKeyboard(self, request, context):
         """Initialize the default keyboard on the servo instance."""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         set_keyboard(
             self.grpc_core_addr, self.servod, request.handler_type, request.value
         )
@@ -139,9 +126,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Get device info for V4 servo
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         if not hasattr(self.servod, "v4_device_info"):
             self.InitV4Device(request.servo_type, request.devices_keys)
         devices = self.servod.v4_device_info.get(request.info_type)
@@ -154,18 +139,14 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def IsServoHasAttr(self, request, context):
         """Check if servo instance has attribute"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         has_attr = hasattr(self.servod, request.name) and getattr(
             self.servod, request.name
         )
         return servo_dev_pb2.BoolResponse(value=bool(has_attr))
 
     def GetSerial(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         response = servo_dev_pb2.GetResponse()
         root_dev = self.servod.get_root_device()
         if root_dev is not None:
@@ -175,36 +156,28 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         return response
 
     def HasControl(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         response = servo_dev_pb2.BoolResponse()
         response.value = self.servod.has_control(request.control_name)
         return response
 
     def GetSerials(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         response = servo_dev_pb2.GetResponse()
         response.get_value = json.dumps(self.servod.get_servo_serials())
         return response
 
     def GetAllControls(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         response = servo_dev_pb2.GetResponse()
-        response.get_value = json.dumps(self.servod._controls)
+        response.get_value = json.dumps(list(self.servod._controls))
         return response
 
     def GetInitUsbKeyboard(self, request, context):
         """
         Init usb keyboard
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         if not self.servod._usb_keyboard:
             # Setup the keyboard handler and turn it off.
             self.set_init_usb_keyboard("off", request.value)
@@ -224,17 +197,13 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def SetInitUsbKeyboard(self, request, context):
         """Initialize the default keyboard on the servo instance."""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         self.set_init_usb_keyboard(request.value, request.is_legacy)
         return empty_pb2.Empty()
 
     def GetFileConfig(self, request, context):
         """Get servo files configs"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         file_config = json.dumps(
             self.servod.get_config_files(), sort_keys=True, indent=4
         )
@@ -242,9 +211,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def GetDevices(self, request, context):
         """get servo devices"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         devices_json = []
         for device in self.servod.get_devices():
             devices_json.append(json.loads(device.to_json()))
@@ -253,9 +220,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def GetTaggedControls(self, request, context):
         """Retrieve all controls under a certain tag."""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         params = json.loads(request.name)
         if "tag" not in params:
             raise ServoImplError("tag needs to be specified in params.")
@@ -264,25 +229,19 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def GetBaseBoard(self, request, context):
         """Get Base board name"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         base_board = self.servod.get_base_board()
         return servo_dev_pb2.ServiceResponse(response=base_board)
 
     def SetGetAll(self, request, context):
         """get/set commands"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         response = self.servod.set_get_all(request.request_list)
         return servo_dev_pb2.ListResponse(response_list=response)
 
     def SetKeyboardKey(self, request, context):
         """Set keyboard key duration"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         turn_off_needed = False
         keyboard = get_keyboard(servod=self.servod, handler=request.handler)
         if not keyboard.is_open():
@@ -302,42 +261,32 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def SetArbKeyConfig(self, request, context):
         """Set arb_key"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         get_keyboard(self.servod, request.handler).arb_key_config(request.key)
         return empty_pb2.Empty()
 
     def SetArbKeysConfig(self, request, context):
         """Set arb_key"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         get_keyboard(self.servod, request.handler).arb_keys_config(request.key)
         return empty_pb2.Empty()
 
     def LimitEcDriverChannel(self, request, context):
         """limit chanel for ec driver on main servod device"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
 
         self.servod.get_main_device().LimitEcDriverChannel("ec_gpio")
         return empty_pb2.Empty()
 
     def RestoreEcDriverChannel(self, request, context):
         """restore chanel for ec driver on main servod device"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
 
         self.servod.get_main_device().RestoreEcDriverChannel("ec_gpio")
         return empty_pb2.Empty()
 
     def IssueCmdGetResult(self, request, context):
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
 
         self.servod.get_main_device().IssueCmdGetResults(
             request.cmds,
@@ -349,9 +298,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
 
     def GetWatchdog(self, request, context):
         """Get watchdog devices"""
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         states = [""]
         for device in self.servod.get_devices():
             states.append(get_device_state(device))
@@ -366,9 +313,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         If you know you're going to disconnect a device, you should update let servo
         know.
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         serialnames = self.servod.get_servo_serials()
         devices = self.servod.get_devices()
         if request.name in devices:
@@ -393,9 +338,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Get ccd_state
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         ccd_device = get_device_from_type(self.servod, "ccd")
         state = int(ccd_device.is_connected()) if ccd_device else 0
         return servo_dev_pb2.CcdStateResponse(state=state)
@@ -404,9 +347,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         Get chip of main device
         """
-        self.logger.debug(
-            "Handle request for {}, in context {}".format(request, context)
-        )
+        self.logger.debug("Handle request for %s, in context %s", request, context)
         params = json.loads(request.name)
         default_chip = params.get("chip", "unknown")
         devices = self.servod.get_devices()
@@ -420,7 +361,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         _chip = _chips[default_device]
         return servo_dev_pb2.ServiceResponse(response=_chip)
 
-    def GetUSBHubAddress(self, request, context):
+    def GetUSBHubAddress(self, unused_request, unused_context):
         hub_device = self.servod.get_root_device()
         if not hub_device.template.HUB_SERVO:
             raise ServoImplError("There is no USB hub device connected.")

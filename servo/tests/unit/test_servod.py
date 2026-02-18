@@ -8,6 +8,7 @@ import socket
 import unittest
 from unittest import mock
 from unittest.mock import MagicMock
+from unittest.mock import mock_open
 from unittest.mock import patch
 from xmlrpc.server import SimpleXMLRPCServer
 
@@ -106,6 +107,34 @@ class TestServoStarter(unittest.TestCase):
         self.assertFalse(starter._turndown_initiated)
         self.assertEqual(starter._exit_status, 0)
         self.assertEqual(starter._host, "localhost")
+
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_check_for_excluded_modules_none(self, _mock_init):
+        """Test _check_for_excluded_modules() when no modules match."""
+        starter = servod.ServodStarter([])
+        starter._logger = MagicMock()
+        with patch("os.path.exists", return_value=True):
+            with patch(
+                "builtins.open",
+                mock_open(read_data="module1 1234 0\nmodule2 5678 0\n"),
+            ):
+                starter._check_for_excluded_modules()
+        starter._logger.fatal.assert_not_called()
+
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    def test_check_for_excluded_modules_found(self, _mock_init):
+        """Test _check_for_excluded_modules() when a module matches."""
+        starter = servod.ServodStarter([])
+        starter._logger = MagicMock()
+        with patch("os.path.exists", return_value=True):
+            with patch(
+                "builtins.open",
+                mock_open(read_data="GobiNet 1234 0\nmodule2 5678 0\n"),
+            ):
+                with self.assertRaises(SystemExit) as cm:
+                    starter._check_for_excluded_modules()
+                self.assertEqual(cm.exception.code, 1)
+        starter._logger.fatal.assert_called()
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     def test_handle_sig(self, _mock_init):

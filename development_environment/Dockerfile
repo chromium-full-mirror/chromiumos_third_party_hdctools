@@ -2,10 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
-FROM debian:trixie as base
+FROM debian:trixie AS base
 
 ARG USER
 ARG USERID
@@ -65,17 +62,12 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     python3-pytest \
     python3-setuptools \
     python3-usb \
-    software-properties-common \
     usbutils \
     vim
 
 # Install chrome
-RUN curl https://dl-ssl.google.com/linux/linux_signing_key.pub | \
-    gpg --dearmor | sudo tee /usr/share/keyrings/linux_signing_key.pub > /dev/null
-RUN sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ \
-    stable main" >> /etc/apt/sources.list.d/google.list'
-RUN apt-get -yq update && apt-get install -yq google-chrome-stable
-
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+RUN apt install -y ./google-chrome-stable_current_amd64.deb
 
 WORKDIR /hdctools_source
 

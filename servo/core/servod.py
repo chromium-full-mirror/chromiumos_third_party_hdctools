@@ -51,6 +51,10 @@ DEFAULT_LOG_DIR = "/var/log"
 # port numbers are 4 digits).
 DEFAULT_PORT_RANGE = (9200, 9999)
 
+# Kernel modules that are known to cause issues with servod.
+# If these are detected at startup, servod will exit.
+EXCLUDED_KERNEL_MODULES = frozenset(["GobiNet", "qtiDevInf"])
+
 _GENESYS_USB3_HUB_VID = 0x05E3
 _GENESYS_USB3_HUB_PID = 0x0625
 
@@ -128,6 +132,9 @@ class ServodStarter:
 
         # Running servod in chroot is no longer supported.
         self.exit_if_in_chroot()
+
+        # Check for excluded kernel modules.
+        self._check_for_excluded_modules()
 
         env_vars = sorted(servo_parsing.get_servod_env_vars())
         self._logger.info(
@@ -788,6 +795,29 @@ class ServodStarter:
                 )
             else:
                 sys.exit(2)
+
+    def _check_for_excluded_modules(self):
+        """Check for excluded kernel modules and exit if found."""
+        if not os.path.exists("/proc/modules"):
+            return
+
+        try:
+            with open("/proc/modules", "r", encoding="utf-8") as f:
+                loaded_modules = {line.split()[0] for line in f if line.strip()}
+        except OSError as e:
+            self._logger.warning("Could not read /proc/modules: %s", e)
+            return
+
+        found = EXCLUDED_KERNEL_MODULES & loaded_modules
+        if found:
+            self._logger.fatal(
+                "Problematic kernel modules detected: %s. "
+                "These modules are known to cause issues with servod. "
+                "Please unload them (e.g., 'sudo rmmod <module>') before "
+                "starting servod.",
+                ", ".join(found),
+            )
+            sys.exit(1)
 
 
 # Disable Genesys USB3 hubs that come without serial number: Genesys USB
