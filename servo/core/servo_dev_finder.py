@@ -12,7 +12,7 @@ import pprint
 import select
 import sys
 
-from servo.core import servo_dev_templates
+from servo.common import servo_dev_templates
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 

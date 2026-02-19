@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from google.protobuf import empty_pb2
 
-from servo.common.config import system_config
+from servo.common import servo_dev_templates as tmpl
 from servo.common.proto.servo_dev_pb2 import BoolRequest
 from servo.common.proto.servo_dev_pb2 import GetRequest
 from servo.common.proto.servo_dev_pb2 import IssueCmdOnMainDevRequest
@@ -24,7 +24,6 @@ from servo.common.proto.servo_dev_pb2 import SetUsbRequest
 from servo.common.proto.servo_dev_pb2 import V4DeviceRequest
 from servo.common.proto.servo_dev_pb2 import WatchdogRequest
 from servo.core import servo_dev
-from servo.core import servo_dev_templates as tmpl
 from servo.core import servo_server
 from servo.core.grpc_server.impl.servo_impl import ServoImpl
 from servo.utils import servo_dev_hierarchy
@@ -45,6 +44,12 @@ class TestServoImpl(unittest.TestCase):
         self.mock_syscfg_grpc = patcher_syscfg.start()
         self.addCleanup(patcher_syscfg.stop)
 
+        # Mock GetServoInterfaces return value
+        mock_client = self.mock_syscfg_grpc.SystemConfig.return_value
+        mock_interfaces = unittest.mock.MagicMock()
+        mock_interfaces.interface_list_json = json.dumps(["ftdi_gpio", "ftdi_i2c"])
+        mock_client.GetServoInterfaces.return_value = mock_interfaces
+
         self.grpc_core_addr = ("localhost", 9999)
         self._servod = servo_server.Servod()
         micro_entry = servo_dev_hierarchy.ServoDeviceEntry(
@@ -60,7 +65,6 @@ class TestServoImpl(unittest.TestCase):
         micro_entry.devopts.token_db = "default"
         self._micro_dev = servo_dev.ServoDevice(
             micro_entry,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             None,
             self._servod,
@@ -78,7 +82,6 @@ class TestServoImpl(unittest.TestCase):
         v4_entry.devopts.token_db = "default"
         self._v4_dev = servo_dev.ServoDevice(
             v4_entry,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             None,
             self._servod,
@@ -97,7 +100,6 @@ class TestServoImpl(unittest.TestCase):
         ccd_cr50.devopts.token_db = "default"
         self.ccd_cr50 = servo_dev.ServoDevice(
             ccd_cr50,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             None,
             self._servod,

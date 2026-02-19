@@ -10,9 +10,9 @@ import sys
 
 import grpc
 
+from servo.common import servo_dev_templates
+from servo.common import sversion_util
 from servo.core import recovery
-from servo.core import servo_dev_templates
-from servo.core import sversion_util
 from servo.utils import diagnose
 from servo.utils import usb_hierarchy
 
@@ -193,11 +193,11 @@ class Servod:
 
         # Controls routed to main that are not covered by main are covered by their
         # root hub device.
-        if not dev.syscfg.is_control(processed_name):
+        if not dev.is_control(processed_name):
             if self._is_main_dev_prefix(prefix) and self.get_root_device() is not None:
                 dev = self.get_root_device()
 
-        if not dev.syscfg.is_control(processed_name):
+        if not dev.is_control(processed_name):
             error_msg = (
                 "No control named '%s' registered with any connected servo device.\n"
                 "Servo device %s (prefix: %s) is picked as the target device for "
@@ -231,7 +231,10 @@ class Servod:
             skip_controls = set()
             for dev in servo_device.get_child_devices():
                 skip_controls.update(
-                    set(control_name for control_name, _unused in dev.syscfg.hwinit)
+                    set(
+                        control_name
+                        for control_name, _unused in dev.get_hwinit_controls()
+                    )
                 )
             servo_device.hwinit(
                 verbose=verbose, skip_controls=skip_controls, step_init=step_init
@@ -353,7 +356,7 @@ class Servod:
         """Helper to generate a list of all accessible controls in servod."""
         known_ctrls = set()
         for prefix, dev in self._devices.items():
-            dev_ctrls = dev.syscfg.get_all_controls()
+            dev_ctrls = dev.get_all_controls()
             # controls for root and main dev does not need to have prefixes
             new_ctrls = (
                 set("%s.%s" % (prefix, ctrl) for ctrl in dev_ctrls)
@@ -384,7 +387,7 @@ class Servod:
         rsp = []
         for name in self._controls:
             dev, control = self._get_dev_and_name(name)
-            rsp.append(dev.syscfg.get_control_str(control))
+            rsp.append(dev.get_control_str(control))
         self._logger.debug("rsp %s", rsp)
         return "\n".join(rsp)
 
@@ -526,7 +529,7 @@ class Servod:
         for prefix, dev in self._devices.items():
             # controls for root and main dev does not need to have prefixes
             no_prefix = dev in no_prefix_devs
-            for dev_ctrl in dev.syscfg.get_controls_for_tag(tag):
+            for dev_ctrl in dev.get_controls_for_tag(tag):
                 controls.add(dev_ctrl if no_prefix else "%s.%s" % (prefix, dev_ctrl))
         return sorted(list(controls))
 
@@ -534,9 +537,8 @@ class Servod:
         """Gets the configuration files used for this servo server invocation"""
         config_files = {}
         for dev in self.get_devices():
-            xml_files = dev.syscfg._loaded_xml_files
-            # See system_config.py for schema, but entry[0] is the file name
-            config_files[str(dev)] = [entry[0] for entry in xml_files]
+            xml_files = dev.get_config_files()
+            config_files[dev.prefix] = list(xml_files)
         return config_files
 
     def get_interface_list(self):

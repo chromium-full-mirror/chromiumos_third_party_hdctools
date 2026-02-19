@@ -16,12 +16,11 @@ mkdir -p servod/usr/local/bin
 mkdir servod/DEBIAN
 
 cd development_environment/
-cp start-servod.py \
-    stop-servod.py \
-    servod-ps.py \
-    dut-control.py \
+cp start_servod.py \
+    stop_servod.py \
+    servod_ps.py \
+    dut_control.py \
     servodtool.py \
-    servo_updater.py \
     run_command.py \
     run_instead.py \
     ../servod/usr/local/servod/development_environment/

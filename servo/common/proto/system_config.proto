@@ -66,4 +66,132 @@ service SystemConfig {
     rpc AddCfgFile (SystemFileRequest) returns (SystemConfigResponse);
     // Check if control exists
     rpc IsControl (IsControlRequest) returns (IsControlResponse);
+    // Get doc string for a control
+    rpc GetControlDoc (ControlDocRequest) returns (ControlDocResponse);
+    // Get list of controls for hardware initialization
+    rpc GetInitControls (InitControlsRequest) returns (InitControlsResponse);
+    // Get display config (all controls documentation)
+    rpc GetDisplayConfig (DisplayConfigRequest) returns (DisplayConfigResponse);
+    // Finalize configuration setup
+    rpc Finalize (FinalizeRequest) returns (FinalizeResponse);
+    // Get board/model config file
+    rpc GetBoardModelConfig (BoardModelConfigRequest) returns (BoardModelConfigResponse);
+    // Get all control names
+    rpc GetAllControls (GetAllControlsRequest) returns (GetAllControlsResponse);
+    // Get doc string for a control (formatted)
+    rpc GetControlStr (ControlStrRequest) returns (ControlStrResponse);
+    // Get controls for a tag
+    rpc GetControlsForTag (ControlsForTagRequest) returns (ControlsForTagResponse);
+    // Get loaded config files
+    rpc GetConfigFiles (ConfigFilesRequest) returns (ConfigFilesResponse);
+    // Get servo interfaces
+    rpc GetServoInterfaces (ServoInterfacesRequest) returns (ServoInterfacesResponse);
+}
+
+message ServoInterfacesRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string board = 3;
+}
+
+message ServoInterfacesResponse {
+    // JSON encoded list of interface data
+    string interface_list_json = 1;
+}
+
+message ConfigFilesRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message ConfigFilesResponse {
+    repeated string files = 1;
+}
+
+message ControlsForTagRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string tag = 4;
+}
+
+message ControlsForTagResponse {
+    string controls_json = 1;
+}
+
+message GetAllControlsRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message GetAllControlsResponse {
+    string controls_json = 1;
+}
+
+message ControlStrRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string name = 4;
+}
+
+message ControlStrResponse {
+    string doc = 1;
+}
+
+message BoardModelConfigRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string board = 4;
+    string model = 5;
+}
+
+message BoardModelConfigResponse {
+    string board_config = 1;
+    string board_id = 2;
+}
+
+message FinalizeRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message FinalizeResponse {
+    bool value = 1;
+}
+
+message ControlDocRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string name = 4;
+}
+
+message ControlDocResponse {
+    string doc = 1;
+}
+
+message InitControlsRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message InitControlsResponse {
+    // JSON encoded list of (control_name, value) tuples
+    string hwinit_json = 1;
+}
+
+message DisplayConfigRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message DisplayConfigResponse {
+    string display_config = 1;
 }

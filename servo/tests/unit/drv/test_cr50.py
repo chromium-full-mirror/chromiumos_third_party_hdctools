@@ -56,7 +56,7 @@ class TestClearRollback(unittest.TestCase):
         self.mock_interface = mock.MagicMock()
         params = {"cmd": "set", "control_name": "gsc_clear_rollback"}
         self.drv = cr50.cr50(
-            ("localhost", 9991), ("localhost", 9992), self.mock_interface, params
+            ("localhost", 9999), ("localhost", 9998), self.mock_interface, params
         )
         self.drv._issue_cmd = mock.MagicMock()
         self.drv._issue_cmd_get_results = mock.MagicMock()

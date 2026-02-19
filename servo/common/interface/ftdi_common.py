@@ -4,7 +4,7 @@
 """Defines common structures for use with c libraries related to FTDI devices."""
 import ctypes
 
-from servo.core import servo_dev_templates
+from servo.common import servo_dev_templates
 
 
 MAX_FTDI_INTERFACES_PER_DEVICE = 4

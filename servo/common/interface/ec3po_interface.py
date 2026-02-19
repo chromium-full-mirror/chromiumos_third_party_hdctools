@@ -27,7 +27,7 @@ from servo.common.interface import empty
 from servo.common.interface import uart
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
-from servo.core import servo_interfaces
+from servo.data import servo_interfaces
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))

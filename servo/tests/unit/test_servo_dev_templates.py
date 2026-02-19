@@ -6,7 +6,7 @@
 
 import unittest
 
-from servo.core import servo_dev_templates
+from servo.common import servo_dev_templates
 from servo.tests.data.device_info import SERVO_DEVICE_DATA
 
 

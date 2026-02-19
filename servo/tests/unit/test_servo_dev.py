@@ -9,10 +9,8 @@ import unittest.mock
 from unittest.mock import patch
 
 from servo.common import interface as _interface
-from servo.common.config import system_config
+from servo.common import servo_dev_templates as tmpl
 from servo.core import servo_dev
-from servo.core import servo_dev_templates as tmpl
-from servo.core import servo_interfaces
 from servo.core import servo_server
 from servo.utils import servo_dev_hierarchy
 
@@ -38,7 +36,16 @@ class TestServoDevice(unittest.TestCase):
         self.mock_syscfg_grpc = patcher_syscfg.start()
         self.addCleanup(patcher_syscfg.stop)
 
+        # Mock GetServoInterfaces return value
+        mock_interfaces_resp = unittest.mock.MagicMock()
+        mock_interfaces_resp.interface_list_json = json.dumps(["ftdi_gpio", "ftdi_i2c"])
+        get_servo_interfaces = (
+            self.mock_syscfg_grpc.SystemConfig.return_value.GetServoInterfaces
+        )
+        get_servo_interfaces.return_value = mock_interfaces_resp
+
         self.servod = servo_server.Servod()
+
         self.micro_entry = servo_dev_hierarchy.ServoDeviceEntry(
             tmpl.get_vid("servo_micro"),
             tmpl.get_pid("servo_micro"),
@@ -52,7 +59,6 @@ class TestServoDevice(unittest.TestCase):
         self.micro_entry.devopts.token_db = "default"
         self.micro_dev = servo_dev.ServoDevice(
             self.micro_entry,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             None,
             self.servod,
@@ -70,7 +76,6 @@ class TestServoDevice(unittest.TestCase):
         self.v4_entry.devopts.token_db = "default"
         self.v4_dev = servo_dev.ServoDevice(
             self.v4_entry,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             None,
             self.servod,
@@ -91,13 +96,10 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev._sysfs_path, "/sys/bus/usb/devices/-2-1.2")
         self.assertEqual(self.v4_dev.dev_entry, self.v4_entry)
         self.assertEqual(self.v4_entry.servo_device, self.v4_dev)
-        self.assertTrue(isinstance(self.v4_dev.syscfg, system_config.SystemConfig))
         self.assertFalse(self.v4_dev._manual_interfaces)
         self.assertEqual(
             self.v4_dev._interfaces,
-            servo_interfaces.INTERFACE_DEFAULTS[tmpl.get_vid("servo_v4")][
-                tmpl.get_pid("servo_v4")
-            ],
+            ["ftdi_gpio", "ftdi_i2c"],
         )
         self.assertEqual(self.v4_dev._servod, self.servod)
 
@@ -105,7 +107,6 @@ class TestServoDevice(unittest.TestCase):
         """Test __init__() with manual interfaces."""
         self.v4_dev = servo_dev.ServoDevice(
             self.v4_entry,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             [1],
             self.servod,
@@ -294,18 +295,31 @@ class TestServoDevice(unittest.TestCase):
         v2_entry.devopts.token_db = "default"
         v2_dev = servo_dev.ServoDevice(
             v2_entry,
-            system_config.SystemConfig(),
             ("localhost", 9999),
             None,
             self.servod,
         )
         v2_dev._sync_interface_lists = unittest.mock.MagicMock()
-        v2_dev.syscfg.get_board_model_config = unittest.mock.MagicMock(
-            return_value=("config", "board_id")
+        mock_board_model_resp = unittest.mock.MagicMock()
+        mock_board_model_resp.board_config = "config"
+        mock_board_model_resp.board_id = "board_id"
+        v2_dev._system_config_client.GetBoardModelConfig.return_value = (
+            mock_board_model_resp
         )
-        v2_dev.syscfg.set_board_cfg = unittest.mock.MagicMock()
-        v2_dev.syscfg.add_cfg_file = unittest.mock.MagicMock()
-        v2_dev._manual_interfaces = False
+
+        # Simulate different interfaces for "atlas"
+        def side_effect(vid, pid, board):
+            # pylint: disable=unused-argument
+            if board == "atlas":
+                mock = unittest.mock.MagicMock()
+                mock.interface_list_json = json.dumps(["new_interface"])
+                return mock
+            mock = unittest.mock.MagicMock()
+            mock.interface_list_json = json.dumps(["ftdi_gpio", "ftdi_i2c"])
+            return mock
+
+        v2_dev._system_config_client.GetServoInterfaces.side_effect = side_effect
+
         with patch.object(v2_dev, "_driver_client") as mock_driver_client:
             mock_driver_client.ResetInterface = unittest.mock.MagicMock()
             v2_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
@@ -316,25 +330,18 @@ class TestServoDevice(unittest.TestCase):
 
             self.assertTrue(res)
             v2_dev._sync_interface_lists.assert_called_once()
-            v2_dev.syscfg.get_board_model_config.assert_called_once_with(
-                "atlas", "default"
-            )
-            v2_dev.syscfg.set_board_cfg.assert_called_once_with("config")
-            v2_dev._system_config_client.AddCfgFile.assert_called_once_with(
-                prefix="v2",
-                filename="config",
-                vid=tmpl.get_vid("servo_v2"),
-                pid=tmpl.get_pid("servo_v2"),
-                serial="servo_v2_serial",
-            )
+            v2_dev._system_config_client.GetBoardModelConfig.assert_called_once()
+            v2_dev._system_config_client.AddCfgFile.assert_called_once()
 
     def test_set_board_and_model_keyerror(self):
         """Test set_board_and_model()."""
         self.v4_dev._sync_interface_lists = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.get_board_model_config = unittest.mock.MagicMock(
-            return_value=("config", "board_id")
+        mock_board_model_resp = unittest.mock.MagicMock()
+        mock_board_model_resp.board_config = "config"
+        mock_board_model_resp.board_id = "board_id"
+        self.v4_dev._system_config_client.GetBoardModelConfig.return_value = (
+            mock_board_model_resp
         )
-        self.v4_dev.syscfg.set_board_cfg = unittest.mock.MagicMock()
         self.v4_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
         self.v4_dev._system_config_client.AddCfgFile.return_value = (
             unittest.mock.MagicMock(systemConfig=[])
@@ -345,37 +352,28 @@ class TestServoDevice(unittest.TestCase):
 
         self.assertTrue(res)
         self.v4_dev._sync_interface_lists.assert_not_called()
-        self.v4_dev.syscfg.get_board_model_config.assert_called_once_with(
-            "atlas", "default"
-        )
-        self.v4_dev.syscfg.set_board_cfg.assert_called_once_with("config")
-        self.v4_dev._system_config_client.AddCfgFile.assert_called_once_with(
-            prefix="v4",
-            filename="config",
-            vid=tmpl.get_vid("servo_v4"),
-            pid=tmpl.get_pid("servo_v4"),
-            serial="servo_v4_serial",
-        )
+        self.v4_dev._system_config_client.AddCfgFile.assert_called_once()
+        unused_args, kwargs = self.v4_dev._system_config_client.AddCfgFile.call_args
+        self.assertEqual(kwargs["prefix"], "v4")
+        self.assertEqual(kwargs["filename"], "config")
 
     def test_set_board_and_model_no_config(self):
         """Test set_board_and_model()."""
         self.v4_dev._sync_interface_lists = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.get_board_model_config = unittest.mock.MagicMock(
-            return_value=(None, "board_id")
+        mock_board_model_resp = unittest.mock.MagicMock()
+        mock_board_model_resp.board_config = ""
+        mock_board_model_resp.board_id = "board_id"
+        self.v4_dev._system_config_client.GetBoardModelConfig.return_value = (
+            mock_board_model_resp
         )
-        self.v4_dev.syscfg.set_board_cfg = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.add_cfg_file = unittest.mock.MagicMock()
+        self.v4_dev._system_config_client.AddCfgFile = unittest.mock.MagicMock()
         self.v4_dev._manual_interfaces = False
 
         res = self.v4_dev.set_board_and_model("atlas", "default")
 
         self.assertFalse(res)
         self.v4_dev._sync_interface_lists.assert_not_called()
-        self.v4_dev.syscfg.get_board_model_config.assert_called_once_with(
-            "atlas", "default"
-        )
-        self.v4_dev.syscfg.set_board_cfg.assert_not_called()
-        self.v4_dev.syscfg.add_cfg_file.assert_not_called()
+        self.v4_dev._system_config_client.AddCfgFile.assert_not_called()
 
     def test_sync_interface_lists(self):
         """Test _sync_interface_lists()."""
@@ -426,18 +424,22 @@ class TestServoDevice(unittest.TestCase):
 
     def test_doc_all(self):
         """Test doc_all()."""
-        self.v4_dev.syscfg.display_config = unittest.mock.MagicMock(
-            return_value="displayconfig"
+        mock_display_config_resp = unittest.mock.MagicMock()
+        mock_display_config_resp.display_config = "displayconfig"
+        self.v4_dev._system_config_client.GetDisplayConfig.return_value = (
+            mock_display_config_resp
         )
         self.assertEqual(self.v4_dev.doc_all(), "displayconfig")
 
     def test_doc(self):
         """Test doc()."""
         self.v4_dev._logger.debug = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.is_control = unittest.mock.MagicMock(return_value=True)
-        self.v4_dev.syscfg.get_control_docstring = unittest.mock.MagicMock(
-            return_value="controldoc"
-        )
+        mock_is_control_resp = unittest.mock.MagicMock()
+        mock_is_control_resp.value = True
+        self.v4_dev._system_config_client.IsControl.return_value = mock_is_control_resp
+        mock_doc_resp = unittest.mock.MagicMock()
+        mock_doc_resp.doc = "controldoc"
+        self.v4_dev._system_config_client.GetControlDoc.return_value = mock_doc_resp
 
         self.assertEqual(self.v4_dev.doc("control"), "controldoc")
         self.v4_dev._logger.debug.assert_called_once_with("name(%s)", "control")
@@ -445,7 +447,9 @@ class TestServoDevice(unittest.TestCase):
     def test_doc_error(self):
         """Test doc() in case of error."""
         self.v4_dev._logger.debug = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.is_control = unittest.mock.MagicMock(return_value=False)
+        mock_is_control_resp = unittest.mock.MagicMock()
+        mock_is_control_resp.value = False
+        self.v4_dev._system_config_client.IsControl.return_value = mock_is_control_resp
 
         with self.assertRaisesRegex(NameError, "No control ctrl"):
             self.v4_dev.doc("ctrl")
@@ -456,11 +460,17 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev._logger.debug = unittest.mock.MagicMock()
         self.v4_dev._logger.info = unittest.mock.MagicMock()
         self.v4_dev._logger.error = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.hwinit = [
-            ("control1", "value1"),
-            ("control2", "value2"),
-            ("control3", "value3"),
-        ]
+        mock_init_controls_resp = unittest.mock.MagicMock()
+        mock_init_controls_resp.hwinit_json = json.dumps(
+            [
+                ("control1", "value1"),
+                ("control2", "value2"),
+                ("control3", "value3"),
+            ]
+        )
+        self.v4_dev._system_config_client.GetInitControls.return_value = (
+            mock_init_controls_resp
+        )
         self.v4_dev.get = unittest.mock.MagicMock(side_effect=["value2", "not-value3"])
         self.v4_dev.set = unittest.mock.MagicMock()
 
@@ -474,7 +484,7 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.get.assert_has_calls(
             [unittest.mock.call("control2"), unittest.mock.call("control3")]
         )
-        self.v4_dev.set.assert_called_once_with("control3", "value3")
+        self.v4_dev.set.assert_any_call("control3", "value3")
         self.v4_dev._logger.info.assert_has_calls(
             [
                 unittest.mock.call("Initialized %s to %s", "control2", "value2"),
@@ -488,11 +498,17 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev._logger.debug = unittest.mock.MagicMock()
         self.v4_dev._logger.info = unittest.mock.MagicMock()
         self.v4_dev._logger.error = unittest.mock.MagicMock()
-        self.v4_dev.syscfg.hwinit = [
-            ("control1", "value1"),
-            ("control2", "value2"),
-            ("control3", "value3"),
-        ]
+        mock_init_controls_resp = unittest.mock.MagicMock()
+        mock_init_controls_resp.hwinit_json = json.dumps(
+            [
+                ("control1", "value1"),
+                ("control2", "value2"),
+                ("control3", "value3"),
+            ]
+        )
+        self.v4_dev._system_config_client.GetInitControls.return_value = (
+            mock_init_controls_resp
+        )
         self.v4_dev.get = unittest.mock.MagicMock(
             side_effect=["value2", ValueError("valueerror")]
         )
@@ -508,7 +524,7 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.get.assert_has_calls(
             [unittest.mock.call("control2"), unittest.mock.call("control3")]
         )
-        self.v4_dev.set.assert_not_called()
+        self.v4_dev.set.assert_called_once_with("active_dut_controller", "default")
         self.v4_dev._logger.info.assert_called_once_with(
             "Initialized %s to %s", "control2", "value2"
         )

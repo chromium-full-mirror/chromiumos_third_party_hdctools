@@ -427,6 +427,12 @@ class Hierarchy:
 
         """
         hierarchy = {}
+        if not os.path.exists(self.SYSFS_PATH):
+            logging.warning(
+                "SYSFS_PATH %s not found. No devices will be found.", self.SYSFS_PATH
+            )
+            return hierarchy
+
         for usb_dir in os.listdir(self.SYSFS_PATH):
             if self.DEV_RE.match(usb_dir):
                 usb_dir = os.path.join(self.SYSFS_PATH, usb_dir)

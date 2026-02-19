@@ -4,10 +4,10 @@
 import unittest
 import unittest.mock
 
+from servo.common import servo_dev_templates as tmpl
 from servo.common.proto import driver_pb2
 from servo.common.utils.interface_utils import InterfaceUtils
-from servo.core import servo_dev_templates as tmpl
-from servo.core import servo_interfaces
+from servo.data import servo_interfaces
 from servo.data.drv import na
 from servo.data.impl.driver_impl import _drv_dict_all
 from servo.data.impl.driver_impl import DriverImpl

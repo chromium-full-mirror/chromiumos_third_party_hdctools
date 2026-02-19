@@ -74,7 +74,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             )
             if is_get:
                 get_value = drv.get()
-                params["response"] = get_value
+                params["response"] = syscfg.reformat_val(params, get_value)
                 response.value = json.dumps(params)
             else:
                 wr_val = syscfg.resolve_val(params, driver_request.value)

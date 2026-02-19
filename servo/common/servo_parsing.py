@@ -8,8 +8,8 @@ import logging
 import os
 import textwrap
 
-from servo.core import client
-from servo.core import sversion_util
+from servo.common import defaults
+from servo.common import sversion_util
 from servo.utils import scratch
 
 
@@ -258,7 +258,7 @@ class BaseServodParser(_BaseServodParser):
         """
         # pylint: disable=dangerous-default-value
         # Having the default flags here simplifies the code logic.
-        default = os.environ.get(PORT_ENV_VAR, client.DEFAULT_PORT)
+        default = os.environ.get(PORT_ENV_VAR, defaults.DEFAULT_PORT)
         parser.add_argument(
             *port_flags,
             default=default,
@@ -561,3 +561,81 @@ class ServodClientParser(ServodRCParser):
             # mutual exclusion.
             opts = self._map_sn_to_port(opts)
         return (opts, xtra)
+
+
+def add_device_arguments(parser):
+    """Add device specific arguments to the parser.
+
+    Args:
+        parser: argparse.ArgumentParser to add arguments to.
+    """
+    parser.add_argument(
+        "-b",
+        "--board",
+        default="",
+        type=str,
+        action=StoreAndMarkAction,
+        help="Board configuration to use",
+    )
+    parser.add_argument(
+        "-m",
+        "--model",
+        default="",
+        type=str,
+        action=StoreAndMarkAction,
+        help="Model configuration to use",
+    )
+    parser.add_argument(
+        "-c",
+        "--config",
+        default=None,
+        type=str,
+        action="append",
+        help="Arbitrary config file to load",
+    )
+    parser.add_argument(
+        "--prefix",
+        default=None,
+        type=str,
+        action="append",
+        help="Prefix to use for device controls. If not specified "
+        "automatically detected prefixes (e.g. 'v4') will be used. "
+        "If specified, must be same length as the number of devices.",
+    )
+    parser.add_argument(
+        "-i",
+        "--interfaces",
+        default=None,
+        type=str,
+        action="append",
+        help="Ordered list of interfaces to use. " "Only valid if 1 device is used.",
+    )
+    parser.add_argument(
+        "-u",
+        "--usb",
+        default=None,
+        type=str,
+        action="append",
+        help="path to USB device to use",
+    )
+    parser.add_argument(
+        "--vendor",
+        default=None,
+        type=int,
+        action=StoreAndMarkAction,
+        help="vendor id of device to interface",
+    )
+    parser.add_argument(
+        "--product",
+        default=None,
+        type=int,
+        action=StoreAndMarkAction,
+        help="product id of device to interface",
+    )
+    parser.add_argument(
+        "--serialname",
+        default=None,
+        type=str,
+        action=StoreAndMarkAction,
+        help="serial number of device to interface",
+    )

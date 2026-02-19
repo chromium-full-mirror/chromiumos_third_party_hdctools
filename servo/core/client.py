@@ -7,9 +7,11 @@ import re
 from xmlrpc.client import Fault
 from xmlrpc.client import ServerProxy
 
+from servo.common import defaults
 
-DEFAULT_HOST = "localhost"
-DEFAULT_PORT = 9999
+
+DEFAULT_HOST = defaults.DEFAULT_HOST
+DEFAULT_PORT = defaults.DEFAULT_PORT
 
 
 class ServoClientError(Exception):

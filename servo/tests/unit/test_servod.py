@@ -4,6 +4,7 @@
 
 import argparse
 import errno
+import json
 import socket
 import unittest
 from unittest import mock
@@ -12,9 +13,9 @@ from unittest.mock import mock_open
 from unittest.mock import patch
 from xmlrpc.server import SimpleXMLRPCServer
 
+from servo.common import servo_dev_templates
+from servo.common import servo_parsing
 from servo.core import servo_dev_finder
-from servo.core import servo_dev_templates
-from servo.core import servo_parsing
 from servo.core import servod
 from servo.utils import scratch
 from servo.utils import servo_dev_prober
@@ -226,7 +227,7 @@ class TestServoStarter(unittest.TestCase):
         starter.help_parser.exit.assert_called_once()
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=True)
+    @patch("servo.common.servo_parsing.arg_marked_as_user_supplied", return_value=True)
     @patch("xmlrpc.server.SimpleXMLRPCServer.__init__", return_value=None)
     def test_start_xml_server_user_supplied(self, mock_rpc_init, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
@@ -243,7 +244,7 @@ class TestServoStarter(unittest.TestCase):
         mock_rpc_init.assert_called_once_with(("localhost", 9999), logRequests=False)
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=True)
+    @patch("servo.common.servo_parsing.arg_marked_as_user_supplied", return_value=True)
     def test_start_xml_server_user_supplied_busy_port(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
@@ -262,7 +263,7 @@ class TestServoStarter(unittest.TestCase):
         starter._logger.fatal.assert_called_once_with("Port 9999 is busy")
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=True)
+    @patch("servo.common.servo_parsing.arg_marked_as_user_supplied", return_value=True)
     def test_start_xml_server_error(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
@@ -283,7 +284,7 @@ class TestServoStarter(unittest.TestCase):
         )
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=False)
+    @patch("servo.common.servo_parsing.arg_marked_as_user_supplied", return_value=False)
     def test_start_xml_server_default_range(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
@@ -311,7 +312,7 @@ class TestServoStarter(unittest.TestCase):
         self.assertEqual(starter._servo_port, 9996)
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.core.servo_parsing.arg_marked_as_user_supplied", return_value=False)
+    @patch("servo.common.servo_parsing.arg_marked_as_user_supplied", return_value=False)
     def test_start_xml_server_default_range_busy_port(self, _mock_arg, _mock_init):
         """Test _start_xml_server()."""
         sopts = argparse.Namespace()
@@ -439,10 +440,8 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servo_dev.ServoDevice.set_base_board")
     @patch("servo.core.servo_dev.GrpcClient")  # Mock GrpcClient to avoid network
     @patch("servo.common.proto.system_config_grpc.SystemConfig")
-    @patch("servo.core.servod.SystemConfig")
     def test_setup_servos(
         self,
-        _mock_system_config_cls,
         mock_sys_config_grpc,
         _mock_grpc_client,
         mock_set_base,
@@ -453,6 +452,8 @@ class TestServoStarter(unittest.TestCase):
     ):
         """Test _setup_servos()."""
         starter = servod.ServodStarter([])
+        starter.opts = MagicMock()
+        starter.opts.debug = True
         starter._logger = MagicMock()
         starter._servod = MagicMock()
 
@@ -468,6 +469,12 @@ class TestServoStarter(unittest.TestCase):
         mock_response = MagicMock()
         mock_response.systemConfig = []
         mock_client.GetFileContent.return_value = mock_response
+        mock_client.AddCfgFile.return_value = None
+        mock_client.Finalize.return_value = None
+
+        mock_interfaces = MagicMock()
+        mock_interfaces.interface_list_json = json.dumps(["interface1"])
+        mock_client.GetServoInterfaces.return_value = mock_interfaces
 
         prober = servo_dev_prober.DeviceProber()
         prober.get_board_from_ec = MagicMock(return_value="atlas")
@@ -526,27 +533,28 @@ class TestServoStarter(unittest.TestCase):
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
-    @patch("servo.common.config.system_config.SystemConfig.display_config")
-    @patch("servo.common.config.system_config.SystemConfig.finalize")
     @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
     @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=False)
     @patch("servo.core.servo_dev.ServoDevice.set_base_board")
+    @patch("servo.common.proto.system_config_grpc.SystemConfig")
+    @patch("grpc.insecure_channel")
     def test_setup_servos_no_configs(
         self,
+        _mock_channel,
+        mock_sys_config_grpc,
         mock_set_base,
         mock_set_board,
         mock_init_interfaces,
-        _mock_finalize,
-        _mock_display,
         _mock_prober_init,
         _mock_init,
     ):
         """Test _setup_servos()."""
         starter = servod.ServodStarter([])
+        starter.opts = MagicMock()
+        starter.opts.debug = True
         starter._logger = MagicMock()
         starter._servod = MagicMock()
         prober = servo_dev_prober.DeviceProber()
-        starter._get_system_config = MagicMock()
         prober.get_board_from_ec = MagicMock(return_value="atlas")
         prober.get_model_from_ec = MagicMock(return_value="nuvoton")
         main_dev_entry = MagicMock()
@@ -561,6 +569,9 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
             "ccd_cr50"
         )
+        dev_entry_1.vid = 0
+        dev_entry_1.pid = 0
+        dev_entry_1.serial = ""
 
         dev_entry_2 = MagicMock()
         dev_entry_2.devopts.noautoconfig = True
@@ -572,13 +583,27 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.dev_template = servo_dev_templates.get_template_class_by_name(
             "servo_v4p1"
         )
+        dev_entry_2.vid = 0
+        dev_entry_2.pid = 0
+        dev_entry_2.serial = ""
         dev_entries = [dev_entry_1, dev_entry_2]
+
+        # Setup SystemConfig mock response
+        mock_client = mock_sys_config_grpc.return_value
+        mock_client.AddCfgFile.return_value = None
+        mock_client.Finalize.return_value = None
+
+        mock_interfaces = MagicMock()
+        mock_interfaces.interface_list_json = json.dumps(["interface1"])
+        mock_client.GetServoInterfaces.return_value = mock_interfaces
 
         with self.assertRaisesRegex(
             servod.ServodError,
             "No automatic config found, and no config specified with -c <file>",
         ):
-            starter._setup_servos(dev_entries, main_dev_entry, prober, (None, None))
+            starter._setup_servos(
+                dev_entries, main_dev_entry, prober, ("localhost", 9999)
+            )
 
         mock_init_interfaces.assert_called_once_with(fault_tolerant=True)
         self.assertEqual(dev_entry_1.devopts.board, "atlas")

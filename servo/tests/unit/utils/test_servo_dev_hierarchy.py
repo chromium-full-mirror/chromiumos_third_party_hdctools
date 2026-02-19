@@ -10,7 +10,7 @@ import shutil
 import tempfile
 import unittest
 
-from servo.core import servo_dev_templates as dev_templates
+from servo.common import servo_dev_templates as dev_templates
 from servo.utils import servo_dev_hierarchy
 from servo.utils.servo_dev_hierarchy import ServoDeviceEntry
 from servo.utils.servo_dev_hierarchy import ServoDeviceHierarchy

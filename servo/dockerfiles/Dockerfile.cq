@@ -146,8 +146,7 @@ FROM libftdi as hdctools-builder-base
 RUN apt-get update \
     && apt-get install -y \
     protobuf-compiler \
-    python3-grpc-tools \
-    python3-pytest
+    python3-grpc-tools
 
 ######################################################################
 FROM hdctools-builder-base as hdctools-builder

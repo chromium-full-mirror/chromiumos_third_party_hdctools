@@ -11,8 +11,8 @@ import socket
 import tempfile
 import unittest
 
+from servo.common import servo_parsing
 from servo.core import client
-from servo.core import servo_parsing
 from servo.utils import scratch
 
 

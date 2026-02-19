@@ -10,8 +10,8 @@ import shutil
 import tempfile
 import unittest
 
+from servo.common import servo_dev_templates as dev_templates
 from servo.core import servo_dev_finder as dev_finder
-from servo.core import servo_dev_templates as dev_templates
 from servo.core.servo_dev_finder import ServoDeviceFinderError
 from servo.utils.scratch import Scratch
 from servo.utils.servo_dev_hierarchy import ServoDeviceEntry

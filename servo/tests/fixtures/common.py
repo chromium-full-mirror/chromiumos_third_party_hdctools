@@ -6,7 +6,7 @@ import glob
 import os
 import time
 
-import servo.core.servo_dev_templates as tmpl
+import servo.common.servo_dev_templates as tmpl
 
 
 class TestFixtureError(Exception):

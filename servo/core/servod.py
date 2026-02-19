@@ -11,7 +11,6 @@ from concurrent import futures
 import errno
 import fcntl
 import itertools
-import json
 import logging
 import os
 import signal
@@ -27,14 +26,13 @@ from xmlrpc.server import SimpleXMLRPCServer
 import grpc
 import usb
 
-from servo.common.config.system_config import SystemConfig
+from servo.common import servo_parsing
 from servo.common.proto import servo_dev_grpc
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
 from servo.core import recovery
 from servo.core import servo_dev
 from servo.core import servo_dev_finder
-from servo.core import servo_parsing
 from servo.core import servo_server
 from servo.core import watchdog
 from servo.core.grpc_server.impl import servo_impl
@@ -150,6 +148,7 @@ class ServodStarter:
         self._scratchutil = scratch.Scratch()
         self._init_parsers_and_option_helpers()
         sopts, devopts_list = self._parse_args(cmdline)
+        self.opts = sopts
         self._host = sopts.host
 
         if sopts.disable_host_usb3:
@@ -608,35 +607,6 @@ class ServodStarter:
             sys.exit(-1)
         return (dev_entries, main_dev_entry)
 
-    def _get_system_config(self, dev_entry, grpc_data_addr):
-        # Create a gRPC channel to the specified host and port
-        data_host, data_port = grpc_data_addr
-        channel = grpc.insecure_channel(f"{data_host}:{data_port}")
-
-        # Create a SystemConfig client using the generated stub
-        system_config_client = system_config_grpc.SystemConfig(channel)
-
-        # Create an instance of the SystemConfig
-        scfg = SystemConfig()
-        # Load systemConfig using the gRPC server
-        # using the 'GetFileContent' system_config_stub
-        response = system_config_client.GetFileContent(
-            VID=dev_entry.vid,
-            PID=dev_entry.pid,
-            serial=dev_entry.serial,
-        )
-
-        # Extract and process the received system configuration data(
-        # SystemConfig ProtoMessage)
-        for config_object in response.systemConfig:
-            # Deserialize JSON data from the gRPC response and assign it to
-            # 'scfg'
-            scfg.hwinit = json.loads(config_object.hwinit)
-            scfg.control_tags = json.loads(config_object.control_tags)
-            scfg.aliases = json.loads(config_object.aliases)
-            scfg.syscfg_dict = json.loads(config_object.syscfg_dict)
-        return scfg
-
     def _setup_servos(self, dev_entries, _main_dev_entry, prober, grpc_data_addr):
         """Setup servo devices for this servod instance.
 
@@ -664,11 +634,26 @@ class ServodStarter:
                     "No automatic config found,"
                     " and no config specified with -c <file>"
                 )
-            scfg = self._get_system_config(dev_entry, grpc_data_addr)
+
+            data_host, data_port = grpc_data_addr
+            channel = grpc.insecure_channel(f"{data_host}:{data_port}")
+            system_config_client = system_config_grpc.SystemConfig(channel)
+
+            for config in all_configs:
+                system_config_client.AddCfgFile(
+                    prefix=devopts.prefix[0] if devopts.prefix else "",
+                    filename=config,
+                    vid=dev_entry.vid,
+                    pid=dev_entry.pid,
+                    serial=dev_entry.serial,
+                )
+
+            system_config_client.Finalize(
+                vid=dev_entry.vid, pid=dev_entry.pid, serial=dev_entry.serial
+            )
 
             servo_device = servo_dev.ServoDevice(
                 dev_entry=dev_entry,
-                config=scfg,
                 grpc_data_addr=grpc_data_addr,
                 interfaces=devopts.interfaces,
                 servod=weakref.proxy(self._servod),
@@ -698,12 +683,12 @@ class ServodStarter:
                         devopts.board,
                         servo_device,
                     )
-            if servo_device.syscfg:
-                servo_device.syscfg.finalize()
+
+            if self.opts.debug:
                 self._logger.debug(
                     "System configs for device %s\n%s",
                     dev_entry,
-                    servo_device.syscfg.display_config(),
+                    servo_device.doc_all(),
                 )
 
             for prefix in dev_entry.devopts.prefix:
@@ -840,14 +825,19 @@ class ServodStarter:
 # only affects the host-facing hub.
 def disable_unusable_usb3_hubs():
     # The Product ID matches the USB3 side of the hub.
-    hubs = list(
-        usb.core.find(
-            find_all=True,
-            idVendor=_GENESYS_USB3_HUB_VID,
-            idProduct=_GENESYS_USB3_HUB_PID,
-            serial_number=None,
+    try:
+        hubs = list(
+            usb.core.find(
+                find_all=True,
+                idVendor=_GENESYS_USB3_HUB_VID,
+                idProduct=_GENESYS_USB3_HUB_PID,
+                serial_number=None,
+            )
         )
-    )
+    except usb.core.NoBackendError:
+        logging.warning("No USB backend available. Skipping USB3 hub check.")
+        return
+
     for hub in hubs:
         hub.detach_kernel_driver(0)
         hub.set_configuration()

@@ -5,9 +5,9 @@
 import unittest
 import unittest.mock
 
+from servo.common import servo_dev_templates
 from servo.core import recovery
 from servo.core import servo_dev
-from servo.core import servo_dev_templates
 from servo.core import servo_server
 from servo.utils import diagnose
 
@@ -128,10 +128,8 @@ class TestServod(unittest.TestCase):
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         servod._devices = {"dev": dev, "dev2": dev2, "": dev, "main": dev, "root": dev2}
-        dev.syscfg = unittest.mock.MagicMock()
-        dev2.syscfg = unittest.mock.MagicMock()
-        dev.syscfg.is_control = unittest.mock.MagicMock(return_value=False)
-        dev2.syscfg.is_control = unittest.mock.MagicMock(return_value=True)
+        dev.is_control = unittest.mock.MagicMock(return_value=False)
+        dev2.is_control = unittest.mock.MagicMock(return_value=True)
 
         self.assertEqual(servod._get_dev_and_name("cold_reset"), (dev2, "cold_reset"))
 
@@ -157,10 +155,8 @@ class TestServod(unittest.TestCase):
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         servod._devices = {"dev": dev, "dev2": dev2, "": dev, "main": dev, "root": dev2}
-        dev.syscfg = unittest.mock.MagicMock()
-        dev2.syscfg = unittest.mock.MagicMock()
-        dev.syscfg.is_control = unittest.mock.MagicMock(return_value=False)
-        dev2.syscfg.is_control = unittest.mock.MagicMock(return_value=False)
+        dev.is_control = unittest.mock.MagicMock(return_value=False)
+        dev2.is_control = unittest.mock.MagicMock(return_value=False)
         servod._controls = ["main.cold_reset", "root.cold_reset", "ccd_cr50.cold_reset"]
 
         with self.assertRaisesRegex(
@@ -225,12 +221,10 @@ class TestServod(unittest.TestCase):
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         servod._devices = {"dev": dev, "dev2": dev2, "": dev, "root": dev2}
-        dev.syscfg = unittest.mock.MagicMock()
-        dev2.syscfg = unittest.mock.MagicMock()
-        dev.syscfg.get_all_controls = unittest.mock.MagicMock(
+        dev.get_all_controls = unittest.mock.MagicMock(
             return_value=set(["ctrl1", "ctrl2"])
         )
-        dev2.syscfg.get_all_controls = unittest.mock.MagicMock(
+        dev2.get_all_controls = unittest.mock.MagicMock(
             return_value=set(["ctrl1", "ctrl2"])
         )
 
@@ -276,8 +270,7 @@ class TestServod(unittest.TestCase):
         servod._get_dev_and_name = unittest.mock.MagicMock(
             return_value=(dev, "cold_reset")
         )
-        dev.syscfg = unittest.mock.MagicMock()
-        dev.syscfg.get_control_str = unittest.mock.MagicMock(return_value="ctrl_str")
+        dev.get_control_str = unittest.mock.MagicMock(return_value="ctrl_str")
 
         self.assertEqual(servod.doc_all(), "ctrl_str\nctrl_str\nctrl_str\nctrl_str")
 
@@ -397,12 +390,10 @@ class TestServod(unittest.TestCase):
         servod._devices = {"dev": dev, "dev2": dev2, "": dev}
         servod.get_main_device = unittest.mock.MagicMock(return_value=dev)
         servod.get_root_device = unittest.mock.MagicMock(return_value=dev2)
-        dev.syscfg = unittest.mock.MagicMock()
-        dev2.syscfg = unittest.mock.MagicMock()
-        dev.syscfg.get_controls_for_tag = unittest.mock.MagicMock(
+        dev.get_controls_for_tag = unittest.mock.MagicMock(
             return_value=["ctrl1", "ctrl2"]
         )
-        dev2.syscfg.get_controls_for_tag = unittest.mock.MagicMock(
+        dev2.get_controls_for_tag = unittest.mock.MagicMock(
             return_value=["ctrl1", "ctrl2"]
         )
 
@@ -413,13 +404,11 @@ class TestServod(unittest.TestCase):
         servod = servo_server.Servod()
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
-        dev.__str__ = unittest.mock.MagicMock(return_value="dev-p")
-        dev2.__str__ = unittest.mock.MagicMock(return_value="dev2-p")
-        dev.syscfg = unittest.mock.MagicMock()
-        dev2.syscfg = unittest.mock.MagicMock()
-        dev.syscfg._loaded_xml_files = [("file1", "file-data"), ("file2", "file-data")]
-        dev2.syscfg._loaded_xml_files = [("file3", "file-data")]
-        servod._unique_devices = {"dev": dev, "dev2": dev2}
+        dev.prefix = "dev-p"
+        dev2.prefix = "dev2-p"
+        dev.get_config_files = unittest.mock.MagicMock(return_value=["file1", "file2"])
+        dev2.get_config_files = unittest.mock.MagicMock(return_value=["file3"])
+        servod.get_devices = unittest.mock.MagicMock(return_value=[dev, dev2])
 
         self.assertEqual(
             servod.get_config_files(),
@@ -572,8 +561,10 @@ class TestServod(unittest.TestCase):
         dev2 = unittest.mock.MagicMock()
         dev1.get_child_devices = unittest.mock.MagicMock(return_value=[])
         dev2.get_child_devices = unittest.mock.MagicMock(return_value=[dev1])
-        dev1.syscfg = unittest.mock.MagicMock()
-        dev1.syscfg.hwinit = [("ctr1", "testing"), ("ctr2", "testing")]
+        dev1.get_hwinit_controls = unittest.mock.MagicMock(
+            return_value=[("ctr1", "testing"), ("ctr2", "testing")]
+        )
+        dev2.get_hwinit_controls = unittest.mock.MagicMock(return_value=[])
         dev1.hwinit = unittest.mock.MagicMock()
         dev2.hwinit = unittest.mock.MagicMock()
         servod.get_devices = unittest.mock.MagicMock(return_value=[dev1, dev2])

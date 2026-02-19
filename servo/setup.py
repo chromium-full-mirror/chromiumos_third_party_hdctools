@@ -55,7 +55,8 @@ class ServoBuildPy(build_py.build_py):
         # get package_data files
         # run generate_ina_controls.py over all the files,
         # giving the file an output directory?
-        data_dir = self.get_package_dir(self.packages.pop(1))
+        # servo.data is at index 1
+        data_dir = self.get_package_dir("servo.data")
         module_name = "generate_ina_controls"
         spec = importlib.util.spec_from_file_location(
             module_name, "%s/%s.py" % (data_dir, module_name)
@@ -85,6 +86,8 @@ setup(
     py_modules=["servo.core.servod", "servo.core.dut_control"],
     packages=[
         "servo",
+        "servo.core",
+        "servo.core.grpc_server",
         "servo.data",
         "servo.data.config",
         "servo.data.grpc_server",
@@ -95,10 +98,8 @@ setup(
         "servo.utils",
         "servo.utils.linux",
         "servo.tests",
-        "servo.core.grpc_server",
         "servo.core.grpc_server.impl",
         "servo.scripts",
-        "servo.core",
         "servo.common",
         "servo.common.config",
         "servo.common.proto",

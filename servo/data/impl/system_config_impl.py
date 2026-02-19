@@ -7,6 +7,7 @@ import json
 
 from servo.common.proto import system_config_grpc
 from servo.common.proto import system_config_pb2
+from servo.data import servo_interfaces
 from servo.data.impl.system_config_service import get_system_config
 
 
@@ -82,4 +83,133 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         )
         return system_config_pb2.IsControlResponse(
             value=scfg.is_control(request.control_name)
+        )
+
+    def GetControlDoc(self, request, context):
+        """
+        Get doc string for a control.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        response = system_config_pb2.ControlDocResponse()
+        if scfg.is_control(request.name):
+            response.doc = scfg.get_control_docstring(request.name)
+        return response
+
+    def GetInitControls(self, request, context):
+        """
+        Get list of controls for hardware initialization.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        response = system_config_pb2.InitControlsResponse()
+        response.hwinit_json = json.dumps(scfg.hwinit)
+        return response
+
+    def GetDisplayConfig(self, request, context):
+        """
+        Get display config.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        response = system_config_pb2.DisplayConfigResponse()
+        response.display_config = scfg.display_config()
+        return response
+
+    def Finalize(self, request, context):
+        """
+        Finalize configuration setup.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        scfg.finalize()
+        return system_config_pb2.FinalizeResponse(value=True)
+
+    def GetBoardModelConfig(self, request, context):
+        """
+        Get board/model config file.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        board_config, board_id = scfg.get_board_model_config(
+            board=request.board, model=request.model
+        )
+        return system_config_pb2.BoardModelConfigResponse(
+            board_config=board_config if board_config else "",
+            board_id=board_id if board_id else "",
+        )
+
+    def GetAllControls(self, request, context):
+        """
+        Get all control names.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        # Assuming get_all_controls returns a list of strings
+        controls = scfg.get_all_controls()
+        return system_config_pb2.GetAllControlsResponse(
+            controls_json=json.dumps(list(controls))
+        )
+
+    def GetControlStr(self, request, context):
+        """
+        Get doc string for a control (formatted).
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        # SystemConfig.get_control_str(name)
+        doc = scfg.get_control_str(request.name)
+        return system_config_pb2.ControlStrResponse(doc=doc)
+
+    def GetControlsForTag(self, request, context):
+        """
+        Get controls for a tag.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        controls = scfg.get_controls_for_tag(request.tag)
+        return system_config_pb2.ControlsForTagResponse(
+            controls_json=json.dumps(list(controls))
+        )
+
+    def GetConfigFiles(self, request, context):
+        """
+        Get loaded config files.
+        """
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        return system_config_pb2.ConfigFilesResponse(
+            files=[entry[0] for entry in scfg._loaded_xml_files]
+        )
+
+    def GetServoInterfaces(self, request, context):
+        """
+        Get servo interfaces based on VID/PID/Board.
+        """
+        # Default behavior: look up in INTERFACE_DEFAULTS
+        interfaces = servo_interfaces.INTERFACE_DEFAULTS[request.vid][request.pid]
+
+        # Check for board-specific overrides
+        if request.board:
+            if (
+                request.board in servo_interfaces.INTERFACE_BOARDS
+                and request.vid in servo_interfaces.INTERFACE_BOARDS[request.board]
+                and request.pid
+                in servo_interfaces.INTERFACE_BOARDS[request.board][request.vid]
+            ):
+                interfaces = servo_interfaces.INTERFACE_BOARDS[request.board][
+                    request.vid
+                ][request.pid]
+
+        return system_config_pb2.ServoInterfacesResponse(
+            interface_list_json=json.dumps(interfaces)
         )

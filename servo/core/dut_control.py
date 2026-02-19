@@ -11,8 +11,8 @@ import statistics
 import sys
 import time
 
+from servo.common import servo_parsing
 from servo.core import client
-from servo.core import servo_parsing
 
 
 class ControlError(Exception):

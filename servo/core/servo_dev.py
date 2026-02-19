@@ -15,13 +15,12 @@ import tty
 
 import grpc
 
+from servo.common import servo_dev_templates
 from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
-from servo.core import servo_dev_templates
-from servo.core import servo_interfaces
 import servo.utils.usb_hierarchy as usb_hierarchy
 
 
@@ -105,14 +104,12 @@ class ServoDevice:
     # waiting for the device during an intentional disconnect.
     INTERFACE_AVAILABILITY_TIMEOUT = 5
 
-    def __init__(self, dev_entry, config, grpc_data_addr, interfaces=None, servod=None):
+    def __init__(self, dev_entry, grpc_data_addr, interfaces=None, servod=None):
         """ServoDevice constructor.
 
         Args:
           dev_entry: ServoDeviceEntry that holds USB, device hierarchy, and devopts
                      information for this servo device.
-          config: instance of SystemConfig containing all controls for
-              particular Servod invocation
           grpc_data_addr: tuple of host and port of data grpc service
           interfaces: list of strings of interface types the server will instantiate
           servod: a pointer to access servod to invoke controls targeted at the servod
@@ -145,17 +142,26 @@ class ServoDevice:
         self.dev_entry = dev_entry
         dev_entry.servo_device = self
 
-        self.syscfg = config
         # Dict of Dict to map control name, function name to to tuple (params, drv)
         # Ex) _drv_dict[name]['get'] = (params, drv)
         self._drv_dict = {}
+
+        # Create a gRPC channel to the specified host and port
+        grpc_data_host, grpc_data_port = grpc_data_addr
+        channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)
+        self._logger.debug("Connect to grpc server of data.....")
+        self._driver_client = driver_grpc.DriverService(channel)
+        self._system_config_client = system_config_grpc.SystemConfig(channel)
 
         if interfaces:
             self._manual_interfaces = True
             self._interfaces = interfaces
         else:
             self._manual_interfaces = False
-            self._interfaces = servo_interfaces.INTERFACE_DEFAULTS[vendor][product]
+            self._interfaces = self.get_servo_interfaces(
+                self.template.VID, self.template.PID, ""
+            )
+
         # list of objects (Fi2c, Fgpio) to physical interfaces (gpio, i2c) that ftdi
         # interfaces are mapped to
         self._interface_list = []
@@ -163,12 +169,6 @@ class ServoDevice:
         self._interface_init = []
         self._servod = servod
         self._token_db = dev_entry.devopts.token_db
-        # Create a gRPC channel to the specified host and port
-        grpc_data_host, grpc_data_port = grpc_data_addr
-        channel = GrpcClient.create_grpc_channel(grpc_data_host, grpc_data_port)
-        self._logger.debug("Connect to grpc server of data.....")
-        self._driver_client = driver_grpc.DriverService(channel)
-        self._system_config_client = system_config_grpc.SystemConfig(channel)
 
     def __repr__(self):
         return str(self)
@@ -289,10 +289,10 @@ class ServoDevice:
         if not self._manual_interfaces:
             # Only if interfaces were determined, and not set manually, try to
             # get new interfaces from the board, otherwise, leave them be.
-            try:
-                interfaces = servo_interfaces.INTERFACE_BOARDS[board][
-                    self.template.VID
-                ][self.template.PID]
+            interfaces = self.get_servo_interfaces(
+                self.template.VID, self.template.PID, board
+            )
+            if interfaces != self._interfaces:
                 for i, interface_data in enumerate(interfaces):
                     if self._interfaces[i] != interface_data:
                         # If an interface is overwritten ensure that it's marked as not
@@ -305,17 +305,17 @@ class ServoDevice:
                         )
                     self._interfaces[i] = interface_data
                 self._sync_interface_lists()
-            except KeyError:
-                # Likely adding a new board does not change interfaces. This is not
-                # a fatal error.
-                self._logger.debug(
-                    "Cannot find interfaces for board %s."
-                    " Skip resetting the interfaces",
-                    board,
-                )
-        cfg, board_id = self.syscfg.get_board_model_config(board, model)
-        if cfg:
-            self.syscfg.set_board_cfg(cfg)
+
+        response = self._system_config_client.GetBoardModelConfig(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            board=board,
+            model=model if model else "",
+        )
+        cfg = response.board_config
+        board_id = response.board_id
+
         # |board_id| might include the |model| or not depending on whether it was used
         # to determine the board config.
         self.board = board_id
@@ -324,30 +324,18 @@ class ServoDevice:
         if cfg:
             try:
                 # Load systemConfig using the gRPC server
-                response = self._system_config_client.AddCfgFile(
+                self._system_config_client.AddCfgFile(
                     prefix=self.prefixes[0],
                     filename=cfg,
                     vid=self.template.VID,
                     pid=self.template.PID,
                     serial=self._serial,
                 )
-                self.set_system_config(response.systemConfig)
             except grpc.RpcError as e:
                 # Handle gRPC errors, such as network issues and exit system
                 self._logger.error("gRPC error in: %s", e)
             return True
         return False
-
-    def set_system_config(self, system_config):
-        # Extract and process the received system configuration data(
-        # SystemConfig ProtoMessage)
-        for config_object in system_config:
-            # Deserialize JSON data from the gRPC response and assign it to
-            # 'scfg'
-            self.syscfg.hwinit = json.loads(config_object.hwinit)
-            self.syscfg.control_tags = json.loads(config_object.control_tags)
-            self.syscfg.aliases = json.loads(config_object.aliases)
-            self.syscfg.syscfg_dict = json.loads(config_object.syscfg_dict)
 
     def _sync_interface_lists(self):
         """Ensure when interfaces are changed, bookkeeping is kept in sync."""
@@ -398,7 +386,7 @@ class ServoDevice:
         ) as wrapper:
             drv = self._get_param_drv(name)
             params = json.loads(drv.value)
-            rd_val = self.syscfg.reformat_val(params, params["response"])
+            rd_val = params["response"]
             wrapper.got_result(rd_val)
             return rd_val
 
@@ -474,7 +462,9 @@ class ServoDevice:
           warm_reset             :: Reset the device warmly
           ------------------------> {'interface': '1', 'map': 'onoff_i', ... }
         """
-        return self.syscfg.display_config()
+        return self._system_config_client.GetDisplayConfig(
+            vid=self.template.VID, pid=self.template.PID, serial=self._serial
+        ).display_config
 
     def doc(self, name):
         """Retrieve doc string in system config file for given control name.
@@ -489,8 +479,18 @@ class ServoDevice:
           NameError: if fails to locate control
         """
         self._logger.debug("name(%s)", name)
-        if self.syscfg.is_control(name):
-            return self.syscfg.get_control_docstring(name)
+        if self._system_config_client.IsControl(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            control_name=name,
+        ).value:
+            return self._system_config_client.GetControlDoc(
+                vid=self.template.VID,
+                pid=self.template.PID,
+                serial=self._serial,
+                name=name,
+            ).doc
         raise NameError("No control %s" % name)
 
     def hwinit(self, verbose, skip_controls, step_init=False):
@@ -518,7 +518,12 @@ class ServoDevice:
           something unless transferring 'none' across is allowed. Hence adding a
           mock return value to make things simpler.
         """
-        for control_name, value in self.syscfg.hwinit:
+        hwinit_list = json.loads(
+            self._system_config_client.GetInitControls(
+                vid=self.template.VID, pid=self.template.PID, serial=self._serial
+            ).hwinit_json
+        )
+        for control_name, value in hwinit_list:
             if control_name in skip_controls:
                 self._logger.debug(
                     "Skip initializing control %r because it is already initialized "
@@ -554,12 +559,78 @@ class ServoDevice:
         # If there is the control of 'active_dut_controller',
         # set active_dut_controller to the default device as initialization.
         try:
-            if self.syscfg.is_control("active_dut_controller"):
+            if self._system_config_client.IsControl(
+                vid=self.template.VID,
+                pid=self.template.PID,
+                serial=self._serial,
+                control_name="active_dut_controller",
+            ).value:
                 self.set("active_dut_controller", "default")
         except grpc._channel._InactiveRpcError as error:
             self._logger.debug("Could not set active device: %s", str(error))
 
         return True
+
+    def get_hwinit_controls(self):
+        """Get controls to be initialized."""
+        return json.loads(
+            self._system_config_client.GetInitControls(
+                vid=self.template.VID, pid=self.template.PID, serial=self._serial
+            ).hwinit_json
+        )
+
+    def get_all_controls(self):
+        """Get all controls."""
+        return set(
+            json.loads(
+                self._system_config_client.GetAllControls(
+                    vid=self.template.VID, pid=self.template.PID, serial=self._serial
+                ).controls_json
+            )
+        )
+
+    def get_control_str(self, name):
+        """Get doc string for a control."""
+        return self._system_config_client.GetControlStr(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            name=name,
+        ).doc
+
+    def get_controls_for_tag(self, tag):
+        """Get controls for a tag."""
+        return json.loads(
+            self._system_config_client.GetControlsForTag(
+                vid=self.template.VID,
+                pid=self.template.PID,
+                serial=self._serial,
+                tag=tag,
+            ).controls_json
+        )
+
+    def is_control(self, name):
+        """Check if control exists."""
+        return self._system_config_client.IsControl(
+            vid=self.template.VID,
+            pid=self.template.PID,
+            serial=self._serial,
+            control_name=name,
+        ).value
+
+    def get_config_files(self):
+        """Get loaded config files."""
+        return self._system_config_client.GetConfigFiles(
+            vid=self.template.VID, pid=self.template.PID, serial=self._serial
+        ).files
+
+    def get_servo_interfaces(self, vid, pid, board):
+        """Get servo interfaces."""
+        return json.loads(
+            self._system_config_client.GetServoInterfaces(
+                vid=vid, pid=pid, board=board
+            ).interface_list_json
+        )
 
     def get_root_hub_device(self):
         """Get the root hub device of this device, if it has one.
