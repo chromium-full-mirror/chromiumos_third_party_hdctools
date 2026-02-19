@@ -363,6 +363,7 @@ RUN apt-get update --no-install-recommends \
     python3-serial \
     python3-usb \
     sudo \
+    udev \
     usb.ids \
     usbutils \
     wget \
