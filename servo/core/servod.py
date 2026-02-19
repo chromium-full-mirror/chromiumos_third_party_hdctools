@@ -7,12 +7,12 @@
 
 # pkg_resources is erroneously suggested to be in the 3rd party segment
 
+from concurrent import futures
 import errno
 import fcntl
 import itertools
 import json
 import logging
-import multiprocessing
 import os
 import signal
 import socket
@@ -28,6 +28,7 @@ import grpc
 import usb
 
 from servo.common.config.system_config import SystemConfig
+from servo.common.proto import servo_dev_grpc
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
 from servo.core import recovery
@@ -36,7 +37,7 @@ from servo.core import servo_dev_finder
 from servo.core import servo_parsing
 from servo.core import servo_server
 from servo.core import watchdog
-from servo.core.grpc_server import grpc_server_setup
+from servo.core.grpc_server.impl import servo_impl
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 from servo.utils import servo_dev_prober
@@ -213,12 +214,13 @@ class ServodStarter:
                     raise
                 time.sleep(1)
 
-        self.grpc_server_process = multiprocessing.Process(
-            target=grpc_server_setup.run_grpc_server,
-            args=(self._servod, sopts.grpc_core_port),
-        )
-        # Start the process in the background
-        self.grpc_server_process.start()
+        self._grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        servo = servo_impl.ServoImpl(("localhost", sopts.grpc_core_port), self._servod)
+        servo_dev_grpc.add_ServoServiceServicer_to_server(servo, self._grpc_server)
+        self._grpc_server.add_insecure_port("[::]:{}".format(sopts.grpc_core_port))
+        self._grpc_server.start()
+        self._logger.info("Core Server started....")
+
         # Small timeout to allow interface threads to initialize.
         time.sleep(0.5)
 
@@ -239,7 +241,7 @@ class ServodStarter:
         if not self._turndown_initiated:
             self._turndown_initiated = True
             self._logger.info("Received signal: %d. Attempting to turn off", signum)
-            self.grpc_server_process.kill()
+            self._grpc_server.stop(0)
             self._server.shutdown()
             self._server.server_close()
             self._servod.close()
@@ -768,7 +770,7 @@ class ServodStarter:
                 "Server thread not turned down after %s s.", self.EXIT_TIMEOUT_S
             )
 
-        self.grpc_server_process.kill()
+        self._grpc_server.stop(0)
         self._watchdog_thread.join(self.EXIT_TIMEOUT_S)
         if self._watchdog_thread.is_alive():
             self._logger.error(
