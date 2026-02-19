@@ -135,5 +135,6 @@ steps:
 
 options:
   machineType: 'N1_HIGHCPU_32'
+  diskSizeGb: '500'
 
 timeout: 3600s
