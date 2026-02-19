@@ -116,9 +116,7 @@ class TestDutPower(unittest.TestCase):
         """Test _build_parser()."""
         dp = dut_power.DutPower()
         parser = dp._build_parser()
-        self.assertTrue(
-            isinstance(parser, servo_parsing.ServodClientParser)
-        )
+        self.assertTrue(isinstance(parser, servo_parsing.ServodClientParser))
 
     def test_parse_cmdline(self):
         """Test _parse_cmdline()."""

@@ -108,9 +108,7 @@ class DutPower:
         """
         description = "Measure power using servod."
         # BaseServodParser provides port, host, debug arguments
-        parser = servo_parsing.ServodClientParser(
-            description=description
-        )
+        parser = servo_parsing.ServodClientParser(description=description)
         # overwriting/providing measurement information so the servo device
         # does not need to query for it.
         parser.add_argument(
@@ -384,7 +382,6 @@ class DutPower:
             if args.visualization:
                 self.visualization_server.server_close()
                 self.visualization_server.shutdown()
-
 
         # Ensure that SIGTERM and SIGNINT gracefully stop the measurement
         signal.signal(signal.SIGINT, handler)

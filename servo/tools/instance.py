@@ -163,6 +163,7 @@ class Instance(tool.Tool):
           args: parser namespace that should contain |port|,
                 port is either None or a port number
         """
+
         def known_ports(entries):
             return set(int(entry["port"]) for entry in entries)
 

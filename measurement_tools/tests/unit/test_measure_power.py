@@ -58,9 +58,7 @@ class TestServodPowerTracker(unittest.TestCase):
     def test_verify(self):
         """Test verify()."""
         self.tracker.verify()
-        self.mock_servo_client.set_get_all.assert_called_once_with(
-            self.tracker._ctrls
-        )
+        self.mock_servo_client.set_get_all.assert_called_once_with(self.tracker._ctrls)
 
     def test_verify_fail(self):
         """Test verify() failure scenario."""
@@ -628,9 +626,7 @@ class TestPowerMeasurement(unittest.TestCase):
         self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
-        self.mock_servo_client.set.assert_called_once_with(
-            "servo_adcs_enabled", "on"
-        )
+        self.mock_servo_client.set.assert_called_once_with("servo_adcs_enabled", "on")
         measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
             self.mock_servo_client,
             pm._stop_signal,
@@ -920,9 +916,7 @@ class TestPowerMeasurement(unittest.TestCase):
             measure_power.OnboardADCAccumPowerTracker.prepare.assert_called_once_with(
                 False, "S0"
             )
-            measure_power.ECPowerTracker.prepare.assert_called_once_with(
-                False, "S0"
-            )
+            measure_power.ECPowerTracker.prepare.assert_called_once_with(False, "S0")
             self.assertEqual(
                 pm._outdir, "/tmp/power_measurements/atlas/S0_19700101-032545"
             )

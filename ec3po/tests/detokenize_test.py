@@ -713,7 +713,6 @@ class NestedMessageParserTest(unittest.TestCase):
         def transform(message):
             return message.upper().replace(b"$", b"*")
 
-
         self.assertEqual(self.decoder.transform(b"abc$abcd", transform), b"abc")
         self.assertEqual(self.decoder.transform(b"$", transform), b"*ABCD")
         self.assertEqual(self.decoder.transform(b"$b", transform), b"*")
