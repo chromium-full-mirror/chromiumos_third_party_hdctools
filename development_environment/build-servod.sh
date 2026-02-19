@@ -11,7 +11,7 @@ while [ -L "${SOURCE}" ]; do # resolve $SOURCE until the file is no longer a sym
   DIR=$( cd -P "$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
   SOURCE=$(readlink "${SOURCE}")
 done
-DIR=$( cd -P "${DIR}/$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
+DIR=$( cd -P "${DIR:-.}/$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
 
 if [ "$1" == "multi" ]
 then
