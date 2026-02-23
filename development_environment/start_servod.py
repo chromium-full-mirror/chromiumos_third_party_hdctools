@@ -263,6 +263,8 @@ def start_servod(
         name = "%s-docker_servod" % container_name
         volumes = ["/dev:/dev"]
 
+        if os.path.exists("/proc/modules"):
+            volumes.append("/proc/modules:/host_proc_modules:ro")
         if logs_dir is None:
             logs_volume = "%s_log" % container_name
         else:
