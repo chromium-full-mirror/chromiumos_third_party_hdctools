@@ -14,6 +14,7 @@ from pexpect import fdpexpect
 
 import servo.common.terminal_freezer
 from servo.data.drv import hw_driver
+from servo.utils.sys_interface import sys_interface
 
 
 DEFAULT_UART_TIMEOUT = 3  # 3 seconds is plenty even for slow platforms
@@ -70,7 +71,7 @@ class PtyDriver(hw_driver.HwDriver):
         if self._cmd_iface:
             try:
                 self._interface.get_command_lock()
-                self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+                self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
                 try:
                     self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
                     # pexpect defaults to a 100ms delay before sending characters, to
@@ -88,7 +89,7 @@ class PtyDriver(hw_driver.HwDriver):
             # for the regex matches, it will fail with a 'resource temporarily
             # unavailable' error.
             with servo.terminal_freezer.TerminalFreezer(self._pty_path):
-                self._fd = os.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+                self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
                 try:
                     self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
                     # pexpect defaults to a 100ms delay before sending characters, to
@@ -102,7 +103,7 @@ class PtyDriver(hw_driver.HwDriver):
 
     def _close(self):
         """Close serial device connection."""
-        os.close(self._fd)
+        sys_interface.close(self._fd)
         self._fd = None
         self._child = None
 

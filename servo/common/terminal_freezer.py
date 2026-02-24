@@ -11,6 +11,8 @@ import signal
 import subprocess
 import time
 
+from servo.utils.sys_interface import sys_interface
+
 
 def pid_namespace_used():
     """Checks to see if we are running with PID namespaces."""
@@ -39,7 +41,7 @@ class TerminalFreezer:
     def __enter__(self):
         ret = ""
         try:
-            ret = subprocess.check_output(
+            ret = sys_interface.check_output(
                 ["lsof", "-FR", self._tty], stderr=subprocess.STDOUT, encoding="utf-8"
             )
         except subprocess.CalledProcessError:

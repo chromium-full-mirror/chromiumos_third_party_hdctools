@@ -16,6 +16,7 @@ from requests import head
 from requests.exceptions import Timeout
 
 from servo.data.drv import hw_driver
+from servo.utils.sys_interface import sys_interface
 
 
 # pylint: disable=invalid-name
@@ -130,7 +131,7 @@ class usbDownloader(hw_driver.HwDriver):
 
                     # Get the block size of the device so we can write in
                     # the same chunk size.
-                    bs = os.statvfs(usb_dev).f_bsize
+                    bs = sys_interface.statvfs(usb_dev).f_bsize
                     if bs < 0:
                         bs = 4096
 
@@ -202,9 +203,9 @@ class usbDownloader(hw_driver.HwDriver):
                 self._logger.debug("USB Device is at %s", usb_dev)
                 if usb_dev:
                     self._logger.debug("Calling Sync")
-                    subprocess.call(["sync", usb_dev])
+                    sys_interface.call(["sync", usb_dev])
                     self._logger.debug("Calling blockdev")
-                    subprocess.call(["blockdev", "--rereadpt", usb_dev])
+                    sys_interface.call(["blockdev", "--rereadpt", usb_dev])
         if errormsg:
             self._logger.error(errormsg)
             raise usbDownloaderError(errormsg)

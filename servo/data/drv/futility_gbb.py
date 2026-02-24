@@ -8,6 +8,7 @@ import re
 import subprocess
 
 from servo.data.drv import hw_driver
+from servo.utils.sys_interface import sys_interface
 
 
 class futilityGbbError(hw_driver.HwDriverError):
@@ -78,7 +79,7 @@ class futilityGbb(hw_driver.HwDriver):
     def _run_command(self, command):
         """Run a command on the servo host"""
         self._logger.debug("running %r", command)
-        return subprocess.check_output(command, encoding="utf-8")
+        return sys_interface.check_output(command, encoding="utf-8")
 
     def _run_ccd_futility_gbb_command(self, args):
         """Run the GBB command"""

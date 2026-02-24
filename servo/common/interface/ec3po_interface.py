@@ -11,7 +11,6 @@ import functools
 import json
 import logging
 import os
-import pty
 import stat
 import sys
 import termios
@@ -28,6 +27,7 @@ from servo.common.interface import uart
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
 from servo.data import servo_interfaces
+from servo.utils.sys_interface import sys_interface
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
@@ -49,9 +49,9 @@ def _os_pipe_files():
     Returns: (read_file, write_file) - A two-item tuple of the read and write
         sides of the pipe.
     """
-    rd_fd, wr_fd = os.pipe()
+    rd_fd, wr_fd = sys_interface.pipe()
     try:
-        return os.fdopen(rd_fd, "r"), os.fdopen(wr_fd, "w")
+        return sys_interface.fdopen(rd_fd, "r"), sys_interface.fdopen(wr_fd, "w")
     except OSError as e:
         # Save original exception for re-raising, in case os.close() triggers an
         # exception.  Note that saving exc_traceback here creates a circular
@@ -59,11 +59,11 @@ def _os_pipe_files():
         exc_type, exc_value, exc_traceback = sys.exc_info()
         try:
             try:
-                os.close(rd_fd)
+                sys_interface.close(rd_fd)
             except OSError:
                 pass
             try:
-                os.close(wr_fd)
+                sys_interface.close(wr_fd)
             except OSError:
                 pass
             # Re-raise the original exception.
@@ -87,7 +87,7 @@ def _send_shutdown(pipe_wr):
     try:
         # The write here is purely a signaling mechanism, and thus the content
         # being written does not matter.
-        os.write(pipe_wr.fileno(), b".")
+        sys_interface.write(pipe_wr.fileno(), b".")
     except OSError as error:
         if error.errno != errno.EPIPE:
             raise
@@ -182,19 +182,19 @@ class EC3PO(uart.Uart):
         self._console_loglevel = self._logger.getEffectiveLevel()
 
         # Open a new pseudo-terminal pair.
-        (main_pty, user_pty) = pty.openpty()
-        (interface_pty, control_pty) = pty.openpty()
+        (main_pty, user_pty) = sys_interface.openpty()
+        (interface_pty, control_pty) = sys_interface.openpty()
 
         tty.setraw(main_pty, termios.TCSADRAIN)
         tty.setraw(interface_pty, termios.TCSADRAIN)
 
         # Set the permissions to 660.
-        os.chmod(
-            os.ttyname(user_pty),
+        sys_interface.chmod(
+            sys_interface.ttyname(user_pty),
             (stat.S_IRGRP | stat.S_IWGRP | stat.S_IRUSR | stat.S_IWUSR),
         )
-        os.chmod(
-            os.ttyname(control_pty),
+        sys_interface.chmod(
+            sys_interface.ttyname(control_pty),
             (stat.S_IRGRP | stat.S_IWGRP | stat.S_IRUSR | stat.S_IWUSR),
         )
 
@@ -208,12 +208,12 @@ class EC3PO(uart.Uart):
             gid = int(os.environ.get("SUDO_GID", -1))
         except TypeError:
             gid = -1
-        os.fchown(user_pty, uid, gid)
-        os.fchown(control_pty, uid, gid)
+        sys_interface.fchown(user_pty, uid, gid)
+        sys_interface.fchown(control_pty, uid, gid)
 
         # Close pts to indicate HUP to ec3po.
-        user_pty_name = os.ttyname(user_pty)
-        os.close(user_pty)
+        user_pty_name = sys_interface.ttyname(user_pty)
+        sys_interface.close(user_pty)
 
         # Create a console.
         new_console = console.Console(
@@ -254,9 +254,9 @@ class EC3PO(uart.Uart):
         self._logger.debug("Console: %s", self._console)
 
         self._logger.debug("User console: %s", user_pty_name)
-        self._logger.debug("Control console: %s", os.ttyname(control_pty))
+        self._logger.debug("Control console: %s", sys_interface.ttyname(control_pty))
         self._pty = user_pty_name
-        self._control_pty = os.ttyname(control_pty)
+        self._control_pty = sys_interface.ttyname(control_pty)
         self._cmd_pipe_int = cmd_pipe_interactive
 
         self._logger.info(

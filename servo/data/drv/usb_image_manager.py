@@ -14,6 +14,7 @@ import time
 import usb
 
 from servo.data.drv import hw_driver
+from servo.utils.sys_interface import sys_interface
 import servo.utils.usb_hierarchy as usb_hierarchy
 
 
@@ -236,7 +237,7 @@ class usbImageManager(hw_driver.HwDriver):
             "usb image dev file candidates: %s", ", ".join(image_location_candidates)
         )
         # Let the device settle first before pushing out any data onto it.
-        subprocess.call(["udevadm", "settle", "-t", str(self._SETTLE_TIMEOUT_S)])
+        sys_interface.call(["udevadm", "settle", "-t", str(self._SETTLE_TIMEOUT_S)])
         self._logger.debug("All udev events have settled.")
         end = time.time() + self._WAIT_TIMEOUT_S
         while image_location_candidates:
@@ -336,7 +337,7 @@ class usbImageManager(hw_driver.HwDriver):
             result = False
         else:
             # Mount drive to tmpdir.
-            rc = subprocess.call(["mount", usb_dev_partition, tmpdir])
+            rc = sys_interface.call(["mount", usb_dev_partition, tmpdir])
             if rc == 0:
                 # Create file 'non_interactive'
                 non_interactive_file = os.path.join(tmpdir, "non_interactive")
@@ -358,7 +359,7 @@ class usbImageManager(hw_driver.HwDriver):
                     )
                     result = False
                 # Unmount drive regardless if file creation worked or not.
-                rc = subprocess.call(["umount", usb_dev_partition])
+                rc = sys_interface.call(["umount", usb_dev_partition])
                 if rc != 0:
                     self._logger.error("Failed to unmount USB Device")
                     result = False
@@ -368,7 +369,7 @@ class usbImageManager(hw_driver.HwDriver):
 
             # Delete tmpdir. May throw exception if 'umount' failed.
             try:
-                os.rmdir(tmpdir)
+                sys_interface.rmdir(tmpdir)
             except OSError as e:
                 self._logger.error(
                     "Failed to remove temp directory %s : %s", tmpdir, str(e)
