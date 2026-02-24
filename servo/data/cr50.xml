@@ -343,4 +343,10 @@
     <params subtype="ccd_keepalive_en" interface="9" drv="cr50"
     map="onoff" init="off"></params>
   </control>
+  <control>
+    <name>gsc_clear_rollback</name>
+    <doc>Clear rollback protection on GSC by executing a sequence of CCD commands.</doc>
+    <params cmd="set" subtype="clear_rollback" interface="9" drv="cr50"
+    input_type="str"></params>
+  </control>
 </root>
