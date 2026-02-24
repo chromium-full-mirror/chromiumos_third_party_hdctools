@@ -120,6 +120,7 @@ RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/itecomdbgr BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
+    make build/host/util/rtkupdate BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
@@ -131,7 +132,8 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/stm32mon \
     /ec/build/host/util/uartupdatetool \
     /ec/build/host/util/iteflash \
-    /ec/build/host/util/itecomdbgr
+    /ec/build/host/util/itecomdbgr \
+    /ec/build/host/util/rtkupdate
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
@@ -411,6 +413,7 @@ COPY --link --from=ec-builder \
     /ec/build/host/util/uartupdatetool \
     /ec/build/host/util/iteflash \
     /ec/build/host/util/itecomdbgr \
+    /ec/build/host/util/rtkupdate \
     /ec/util/flash_ec \
     /ec/util/uart_stress_tester.py \
     /usr/sbin/
