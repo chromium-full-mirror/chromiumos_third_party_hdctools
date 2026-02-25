@@ -1170,7 +1170,11 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                     try:
                                         # Handle each character as it arrives.
                                         console.handle_char(i)
-                                    except EOFError:
+                                    except (
+                                        EOFError,
+                                        ConnectionResetError,
+                                        BrokenPipeError,
+                                    ):
                                         console.logger.debug(
                                             "ec3po console received EOF from dbg_pipe "
                                             "in handle_char()"
@@ -1199,7 +1203,11 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                 try:
                                     # Handle each character as it arrives.
                                     console.handle_char(i)
-                                except EOFError:
+                                except (
+                                    EOFError,
+                                    ConnectionResetError,
+                                    BrokenPipeError,
+                                ):
                                     console.logger.debug(
                                         "ec3po console received EOF from dbg_pipe "
                                         "in handle_char()"
@@ -1211,7 +1219,7 @@ def start_loop(console, command_active, shutdown_pipe=None):
                     elif fileno == console.cmd_pipe.fileno():
                         try:
                             data = console.cmd_pipe.recv()
-                        except EOFError:
+                        except (EOFError, ConnectionResetError, BrokenPipeError):
                             console.logger.debug(
                                 "ec3po console received EOF from cmd_pipe"
                             )
@@ -1233,7 +1241,7 @@ def start_loop(console, command_active, shutdown_pipe=None):
                     elif fileno == console.dbg_pipe.fileno():
                         try:
                             data = console.dbg_pipe.recv()
-                        except EOFError:
+                        except (EOFError, ConnectionResetError, BrokenPipeError):
                             console.logger.debug(
                                 "ec3po console received EOF from dbg_pipe"
                             )
