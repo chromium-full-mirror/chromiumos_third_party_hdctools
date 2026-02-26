@@ -330,10 +330,10 @@ class TestServoImpl(unittest.TestCase):
         self._servod.get_main_device = unittest.mock.MagicMock(
             return_value=self._micro_dev
         )
-        self._micro_dev.LimitEcDriverChannel = unittest.mock.MagicMock()
+        self._micro_dev.limit_ec_driver_channel = unittest.mock.MagicMock()
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.LimitEcDriverChannel(request, None)
-        self._micro_dev.LimitEcDriverChannel.assert_called_once_with("ec_gpio")
+        self._micro_dev.limit_ec_driver_channel.assert_called_once_with("ec_gpio")
 
     def test_issue_cmd_get_result(self):
         """Test IssueCmdGetResult."""
@@ -343,10 +343,10 @@ class TestServoImpl(unittest.TestCase):
         self._servod.get_main_device = unittest.mock.MagicMock(
             return_value=self._micro_dev
         )
-        self._micro_dev.IssueCmdGetResults = unittest.mock.MagicMock()
+        self._micro_dev.issue_cmd_get_results = unittest.mock.MagicMock()
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.IssueCmdGetResult(request, None)
-        self._micro_dev.IssueCmdGetResults.assert_called_once_with(
+        self._micro_dev.issue_cmd_get_results.assert_called_once_with(
             "cmd", [], flush=True, timeout=10
         )
 
@@ -356,10 +356,10 @@ class TestServoImpl(unittest.TestCase):
         self._servod.get_main_device = unittest.mock.MagicMock(
             return_value=self._micro_dev
         )
-        self._micro_dev.RestoreEcDriverChannel = unittest.mock.MagicMock()
+        self._micro_dev.restore_ec_driver_channel = unittest.mock.MagicMock()
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.RestoreEcDriverChannel(request, None)
-        self._micro_dev.RestoreEcDriverChannel.assert_called_once_with("ec_gpio")
+        self._micro_dev.restore_ec_driver_channel.assert_called_once_with("ec_gpio")
 
     def test_get_watchdog(self):
         """Test GetWatchdog."""
