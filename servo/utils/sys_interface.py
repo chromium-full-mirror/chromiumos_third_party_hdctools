@@ -4,6 +4,7 @@
 
 """System Interface wrapper for mocking."""
 
+import contextlib
 import os
 import pty
 import subprocess
@@ -11,6 +12,50 @@ import subprocess
 
 class SysInterface:
     """Wrapper class for system calls to facilitate testing."""
+
+    @contextlib.contextmanager
+    def managed_pty(self):
+        """Context manager for a PTY pair."""
+        m_fd, s_fd = self.openpty()
+        try:
+            yield m_fd, s_fd
+        finally:
+            try:
+                self.close(m_fd)
+            except OSError:
+                pass
+            try:
+                self.close(s_fd)
+            except OSError:
+                pass
+
+    @contextlib.contextmanager
+    def managed_pipe(self):
+        """Context manager for a pipe."""
+        r_fd, w_fd = self.pipe()
+        try:
+            yield r_fd, w_fd
+        finally:
+            try:
+                self.close(r_fd)
+            except OSError:
+                pass
+            try:
+                self.close(w_fd)
+            except OSError:
+                pass
+
+    @contextlib.contextmanager
+    def managed_open(self, path, flags, mode=0o777):
+        """Context manager for a file descriptor."""
+        fd = self.open(path, flags, mode)
+        try:
+            yield fd
+        finally:
+            try:
+                self.close(fd)
+            except OSError:
+                pass
 
     def system(self, command):
         return os.system(command)
@@ -38,6 +83,9 @@ class SysInterface:
 
     def chmod(self, path, mode):
         os.chmod(path, mode)
+
+    def fchmod(self, fd, mode):
+        os.fchmod(fd, mode)
 
     def fchown(self, fd, uid, gid):
         os.fchown(fd, uid, gid)

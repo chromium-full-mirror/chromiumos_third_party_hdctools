@@ -173,10 +173,9 @@ def test_jtag(_options):
         return False
 
     fname = "/tmp/servoflex_test_openocd.cfg"
-    fd = sys_interface.open(fname, os.O_WRONLY | os.O_CREAT)
+    with sys_interface.managed_open(fname, os.O_WRONLY | os.O_CREAT) as fd:
+        sys_interface.write(fd, openocd.encode("utf-8"))
 
-    sys_interface.write(fd, openocd.encode("utf-8"))
-    sys_interface.close(fd)
     cmd = "sudo openocd -f %s" % fname
     (retval, openocd, _unused) = do_cmd(cmd, 10, plist=OPENOCD_PASS, flist=OPENOCD_FAIL)
 

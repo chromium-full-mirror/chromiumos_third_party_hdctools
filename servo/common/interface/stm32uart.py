@@ -19,6 +19,7 @@ import usb
 from servo.common.interface import common as c
 from servo.common.interface import stm32usb
 from servo.common.interface import uart
+from servo.utils.sys_interface import sys_interface
 
 
 class SuartError(c.InterfaceError):
@@ -114,7 +115,7 @@ class Suart(uart.Uart):
         for t in [self._rx_thread, self._tx_thread]:
             t.join(timeout=0.2)
         del self._susb
-        os.close(self._ptym)
+        sys_interface.close(self._ptym)
 
     def reinitialize(self):
         """Reinitialize the usb endpoint"""
@@ -136,7 +137,7 @@ class Suart(uart.Uart):
                     try:
                         r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
                         if r:
-                            os.write(self._ptym, r)
+                            sys_interface.write(self._ptym, r)
                     except (OSError, usb.core.USBError):
                         # Expected and forgiven here, just pass
                         pass
@@ -164,7 +165,7 @@ class Suart(uart.Uart):
                 if not events:
                     try:
                         if readp.poll(0.1):
-                            r = os.read(self._ptym, 64)
+                            r = sys_interface.read(self._ptym, 64)
                             # TODO(b/154958780): Remove when the servo
                             # v4/micro console issues are fixed.
                             time.sleep(0.001)
@@ -195,14 +196,14 @@ class Suart(uart.Uart):
     def run(self):
         """Creates pthreads to poll stm32 & PTY for data."""
 
-        m, s = os.openpty()
-        self._ptyname = os.ttyname(s)
+        m, s = sys_interface.openpty()
+        self._ptyname = sys_interface.ttyname(s)
         self._logger.debug("PTY name: %s", self._ptyname)
 
         self._ptym = m
         self._ptys = s
 
-        os.fchmod(s, 0o660)
+        sys_interface.fchmod(s, 0o660)
 
         # Change the owner and group of the PTY to the user who started servod.
         try:
@@ -214,12 +215,12 @@ class Suart(uart.Uart):
             gid = int(os.environ.get("SUDO_GID", -1))
         except TypeError:
             gid = -1
-        os.fchown(s, uid, gid)
+        sys_interface.fchown(s, uid, gid)
 
         tty.setraw(self._ptym, termios.TCSADRAIN)
 
         # Generate a HUP flag on pty child fd.
-        os.fdopen(s).close()
+        sys_interface.fdopen(s).close()
 
         self._logger.debug("stm32 uart pty is %s", self.get_pty())
 
