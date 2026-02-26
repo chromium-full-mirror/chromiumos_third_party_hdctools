@@ -22,6 +22,6 @@ RUN apt-get update --no-install-recommends \
 COPY / /hdctools/
 WORKDIR /hdctools
 RUN python3 servo/setup_tests.py bdist_wheel
-RUN pip3 install dist/*.whl --break-system-packages
+RUN pip3 install dist/*.whl grpcio-testing --break-system-packages
 
 WORKDIR /

@@ -41,7 +41,7 @@ repos:
     hooks:
     - id: pylint
       name: Pylint (Docker)
-      entry: -e 'XDG_CACHE_HOME=/tmp' registry.gitlab.com/pipeline-components/pylint:latest
+      entry: -e 'XDG_CACHE_HOME=/tmp' servod:devtest pylint
       language: docker_image
       types: [python]
       args: [

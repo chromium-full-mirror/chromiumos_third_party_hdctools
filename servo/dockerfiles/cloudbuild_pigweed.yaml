@@ -47,6 +47,7 @@ steps:
   entrypoint: pytest
   env:
     - PYTHONPATH=/workspace/
+    - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
   args:
     - -n=logical
     - --forked
