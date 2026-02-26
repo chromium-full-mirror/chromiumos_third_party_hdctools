@@ -136,4 +136,4 @@ steps:
 options:
   machineType: 'N1_HIGHCPU_32'
 
-timeout: 3600s
+timeout: 5400s
