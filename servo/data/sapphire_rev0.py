@@ -18,8 +18,8 @@ inas = [
     ("pac1934", "0x12:1", "pp1800_tchscr_x", 1.800, 0.01, "rem", True),  # RS949313
     ("pac1934", "0x12:2", "ppvar_mipi_bl_vin", 8.800, 0.02, "rem", True),  # RS24
     ("pac1934", "0x12:3", "pp4200_gpu_in", 4.200, 0.02, "rem", True),  # RS21
-    # pp5000_hub_s3 used for EVT
-    ("pac1934", "0x13:0", "pp5000_hub_s3", 5.000, 0.01, "rem", True),  # RS14
+    # DVT would use pp3300_hub_s3
+    ("pac1934", "0x13:0", "pp3300_hub_s3", 3.300, 0.01, "rem", True),  # RS14
     ("pac1934", "0x13:1", "ppvar_base_x", 3.300, 0.02, "rem", True),  # RS43
     ("pac1934", "0x13:2", "pp3300_ucam_x", 3.300, 0.02, "rem", True),  # RS6
     ("pac1934", "0x13:3", "pp5000_spkl_z1", 5.000, 0.01, "rem", True),  # RS45
