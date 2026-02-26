@@ -201,7 +201,7 @@ class InterfaceUtils:
         interface_dict = InterfaceUtils._interface_dict
 
         if interface_key not in interface_dict:
-            raise Exception("Missing interface: {}".format(interface_key))
+            raise InterfaceUtilsError("Missing interface: {}".format(interface_key))
 
         device = interface_dict[interface_key]
         interface_list = device["interface_list"]
@@ -249,8 +249,10 @@ class InterfaceUtils:
                 raise InterfaceUtilsError("No ftdi_i2c object found.")
         try:
             func = getattr(_ftdii2c, cmd)
-        except AttributeError:
-            raise InterfaceUtilsError("ftdi_i2c object does not have method %r" % cmd)
+        except AttributeError as exc:
+            raise InterfaceUtilsError(
+                "ftdi_i2c object does not have method %r" % cmd
+            ) from exc
         logger.debug("Running %s on ftdii2c interface.", cmd)
         func()
 

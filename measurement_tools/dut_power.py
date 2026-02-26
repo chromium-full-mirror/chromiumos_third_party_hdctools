@@ -375,7 +375,7 @@ class DutPower:
         sleep_sampling = threading.Event()
         setup_done = pm.measure_power(wait=args.wait, powerstate=args.powerstate)
 
-        def handler(signum, _unused, pm=pm, sw=sleep_waiting, ss=sleep_sampling):
+        def handler(unused_signum, _unused, pm=pm, sw=sleep_waiting, ss=sleep_sampling):
             sw.set()
             ss.set()
             pm.finish_measurement()

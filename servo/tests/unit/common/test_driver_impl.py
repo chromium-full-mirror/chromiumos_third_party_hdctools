@@ -66,7 +66,9 @@ class TestDriverImpl(unittest.TestCase):
         }
         map_params = {"deasserted", "asserted"}
         driver_impl = DriverImpl("test_core_addr", "test_data_addr")
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
+        syscfg = get_system_config(
+            vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial
+        )
         syscfg.lookup_control_params = unittest.mock.MagicMock(
             return_value=(set_params, get_params)
         )
@@ -111,7 +113,9 @@ class TestDriverImpl(unittest.TestCase):
         }
         map_params = {"0", "1"}
         driver_impl = DriverImpl("test_core_addr", "test_data_addr")
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
+        syscfg = get_system_config(
+            vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial
+        )
         syscfg.lookup_control_params = unittest.mock.MagicMock(
             return_value=(set_params, get_params)
         )
@@ -135,7 +139,9 @@ class TestDriverImpl(unittest.TestCase):
         )
         _drv_dict_all[interface_key] = {"test_get": {"get": ["testing"]}}
         driver_impl = DriverImpl("test_core_addr", "test_data_addr")
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
+        syscfg = get_system_config(
+            vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial
+        )
         drv = driver_impl._get_param_drv(
             control_name="test_get",
             device_type="servo_v4p1",
@@ -152,7 +158,9 @@ class TestDriverImpl(unittest.TestCase):
         )
         _drv_dict_all[interface_key] = {"test_set": {"set": ["testing"]}}
         driver_impl = DriverImpl("test_core_addr", "test_data_addr")
-        syscfg = get_system_config(vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial)
+        syscfg = get_system_config(
+            vid=self.servo_v4_vid, pid=self.servo_v4_pid, serial=self.servo_v4_serial
+        )
         drv = driver_impl._get_param_drv(
             control_name="test_set",
             device_type="servo_v4p1",

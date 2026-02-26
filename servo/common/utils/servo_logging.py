@@ -106,7 +106,8 @@ def _buildLogdirName(logdir, module, port):
     Returns:
       str, path for directory where servod logs for instance at |port| should go
     """
-    # This ensures when running e2e tests in parallel that each run has its own unique path.
+    # This ensures when running e2e tests in parallel that each run has its own unique
+    # path.
     if "PYTEST_XDIST_TESTRUNUID" in os.environ:
         module += os.environ["PYTEST_XDIST_TESTRUNUID"]
     return os.path.join(logdir, "%s_%s" % (module, str(port)))

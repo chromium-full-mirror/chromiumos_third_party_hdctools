@@ -334,7 +334,7 @@ class ServoDevice:
                 self.set_system_config(response.systemConfig)
             except grpc.RpcError as e:
                 # Handle gRPC errors, such as network issues and exit system
-                self._logger.error("gRPC error in: {}".format(e))
+                self._logger.error("gRPC error in: %s", e)
             return True
         return False
 
@@ -612,7 +612,7 @@ class ServoDevice:
         }
         return json.dumps(data, indent=4)
 
-    def LimitEcDriverChannel(self, control_name):
+    def limit_ec_driver_channel(self, control_name):
         return self._driver_client.LimitEcDriverChannel(
             vid=self.template.VID,
             pid=self.template.PID,
@@ -621,7 +621,7 @@ class ServoDevice:
             control_name=control_name,
         )
 
-    def RestoreEcDriverChannel(self, control_name):
+    def restore_ec_driver_channel(self, control_name):
         return self._driver_client.RestoreEcDriverChannel(
             vid=self.template.VID,
             pid=self.template.PID,
@@ -630,7 +630,7 @@ class ServoDevice:
             control_name=control_name,
         )
 
-    def IssueCmdGetResults(self, cmds, regex_list, flush, timeout):
+    def issue_cmd_get_results(self, cmds, regex_list, flush, timeout):
         return self._driver_client.IssueCmdGetResults(
             vid=self.template.VID,
             pid=self.template.PID,

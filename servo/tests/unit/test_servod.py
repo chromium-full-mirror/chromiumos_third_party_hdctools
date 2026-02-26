@@ -39,12 +39,10 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servod.disable_unusable_usb3_hubs")
     @patch("servo.common.proto.system_config_grpc")
     @patch("grpc.insecure_channel")
-    @patch("multiprocessing.Process")
     @patch("threading.Thread")
     def test_init(
         self,
         mock_thread,
-        mock_process,
         _mock_insecure_channel,
         _mock_sys_config_grpc,
         mock_disable_hubs,
@@ -98,10 +96,9 @@ class TestServoStarter(unittest.TestCase):
         mock_disable_hubs.assert_called_once()
 
         # Check process and thread creation
-        mock_process.assert_called_once()
-        starter.grpc_server_process.start.assert_called_once()
 
-        mock_thread.assert_called_once()
+        mock_thread.assert_called()
+        self.assertGreaterEqual(mock_thread.call_count, 1)
         mock_watchdog.assert_called_once()
 
         self.assertFalse(starter._turndown_initiated)
@@ -142,17 +139,19 @@ class TestServoStarter(unittest.TestCase):
         starter = servod.ServodStarter([])
         starter._turndown_initiated = False
         starter._logger = MagicMock()
-        starter._server = MagicMock()
+        starter._grpc_server = MagicMock()  # Mock the gRPC server attribute
+        starter._server = (
+            MagicMock()
+        )  # Keep this as it's still used for XMLRPC shutdown
         starter._servod = MagicMock()
-        starter.grpc_server_process = MagicMock()
 
         starter.handle_sig(0)
 
         self.assertTrue(starter._turndown_initiated)
+        starter._grpc_server.stop.assert_called_once_with(0)
         starter._server.shutdown.assert_called_once()
         starter._server.server_close.assert_called_once()
         starter._servod.close.assert_called_once()
-        starter.grpc_server_process.kill.assert_called_once()
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     def test_init_parsers_and_option_helpers(self, _mock_init):
@@ -593,6 +592,7 @@ class TestServoStarter(unittest.TestCase):
         starter = servod.ServodStarter([])
         starter._logger = MagicMock()
         starter._scratchutil = MagicMock()
+        starter._grpc_server = MagicMock()
         starter._host = "localhost"
         starter._servo_port = 9999
 
@@ -641,13 +641,13 @@ class TestServoStarter(unittest.TestCase):
         starter._servod.get_servo_serials.return_value = {"dev1": "serial1"}
 
         starter._scratchutil = MagicMock()
+        starter._grpc_server = MagicMock()
         starter._watchdog_thread = MagicMock()
         starter._watchdog_thread.is_alive.return_value = False
         starter._server_thread = MagicMock()
         starter._server_thread.is_alive.return_value = False
 
         # Mock grpc_server_process
-        starter.grpc_server_process = MagicMock()
 
         starter.cleanup = MagicMock()
 
@@ -664,7 +664,6 @@ class TestServoStarter(unittest.TestCase):
         starter.cleanup.assert_called_once()
 
         # Verify process killed
-        starter.grpc_server_process.kill.assert_called_once()
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     def test_serve_scratch_error(self, _mock_init):
@@ -674,6 +673,7 @@ class TestServoStarter(unittest.TestCase):
         starter._servod.get_servo_serials.return_value = {"dev1": "serial1"}
         starter._servod.close = MagicMock()
         starter._scratchutil = MagicMock()
+        starter._grpc_server = MagicMock()
         starter._scratchutil.add_entry.side_effect = scratch.ScratchError()
         starter._servo_port = 9999
 
@@ -696,12 +696,12 @@ class TestServoStarter(unittest.TestCase):
         starter._servod.get_servo_serials.return_value = {"dev1": "serial1"}
 
         starter._scratchutil = MagicMock()
+        starter._grpc_server = MagicMock()
         starter._watchdog_thread = MagicMock()
         starter._watchdog_thread.is_alive.return_value = True
         starter._server_thread = MagicMock()
         starter._server_thread.is_alive.return_value = True
 
-        starter.grpc_server_process = MagicMock()
         starter.cleanup = MagicMock()
 
         with self.assertRaises(SystemExit) as result:

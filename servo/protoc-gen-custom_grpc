@@ -155,7 +155,10 @@ def collect_field(
 
 def collect_message(
     imports: List[str], message: DescriptorProto, local: Optional[FileDescriptorProto]
-) -> Tuple[List[Tuple[str, str, str]], Dict[str, List[Tuple[str, str]]],]:
+) -> Tuple[
+    List[Tuple[str, str, str]],
+    Dict[str, List[Tuple[str, str]]],
+]:
     fields: List[Tuple[str, str, str]] = []
     oneof: Dict[str, List[Tuple[str, str]]] = {}
 

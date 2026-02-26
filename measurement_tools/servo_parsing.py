@@ -74,7 +74,7 @@ class _BaseServodParser(argparse.ArgumentParser):
                 description_lines.append("\n\t".join(example_lines))
         description = "\n".join(description_lines)
         kwargs["description"] = description
-        super(_BaseServodParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)
 
 
 class BaseServodParser(_BaseServodParser):
@@ -93,7 +93,7 @@ class BaseServodParser(_BaseServodParser):
                     or to create mutual exclusion with serialname and name (clients)
           **kwargs: keyword arguments forwarded to _BaseServodParser
         """
-        super(BaseServodParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.add_argument(
             "-d",
             "--debug",
@@ -108,10 +108,10 @@ class BaseServodParser(_BaseServodParser):
             help="hostname of the servod server.",
         )
         if add_port:
-            BaseServodParser.AddRCEnabledPortArg(self)
+            BaseServodParser.add_rc_enabled_port_arg(self)
 
     @staticmethod
-    def AddRCEnabledPortArg(parser, port_flags=None):
+    def add_rc_enabled_port_arg(parser, port_flags=None):
         """Add the port to the argparser.
 
         Set the default to environment variable ENV_PORT_NAME if defined
@@ -143,4 +143,4 @@ class ServodClientParser(BaseServodParser):
 
     def __init__(self, **kwargs):
         """Create a BaseServodParser that has the BaseServodParser args."""
-        super(ServodClientParser, self).__init__(**kwargs)
+        super().__init__(**kwargs)

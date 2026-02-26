@@ -4,4 +4,4 @@
 #
 # See https://chromium.googlesource.com/chromiumos/repohooks/+/HEAD/README.md
 # for more details.
-slave
+slave # nocheck

@@ -275,20 +275,20 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """limit chanel for ec driver on main servod device"""
         self.logger.debug("Handle request for %s, in context %s", request, context)
 
-        self.servod.get_main_device().LimitEcDriverChannel("ec_gpio")
+        self.servod.get_main_device().limit_ec_driver_channel("ec_gpio")
         return empty_pb2.Empty()
 
     def RestoreEcDriverChannel(self, request, context):
         """restore chanel for ec driver on main servod device"""
         self.logger.debug("Handle request for %s, in context %s", request, context)
 
-        self.servod.get_main_device().RestoreEcDriverChannel("ec_gpio")
+        self.servod.get_main_device().restore_ec_driver_channel("ec_gpio")
         return empty_pb2.Empty()
 
     def IssueCmdGetResult(self, request, context):
         self.logger.debug("Handle request for %s, in context %s", request, context)
 
-        self.servod.get_main_device().IssueCmdGetResults(
+        self.servod.get_main_device().issue_cmd_get_results(
             request.cmds,
             request.regex_list,
             flush=request.flush,
