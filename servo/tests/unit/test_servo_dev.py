@@ -308,8 +308,7 @@ class TestServoDevice(unittest.TestCase):
         )
 
         # Simulate different interfaces for "atlas"
-        def side_effect(vid, pid, board):
-            # pylint: disable=unused-argument
+        def side_effect(board, **_kwargs):
             if board == "atlas":
                 mock = unittest.mock.MagicMock()
                 mock.interface_list_json = json.dumps(["new_interface"])
