@@ -241,9 +241,6 @@ class Servod:
             )
 
         # Autotest directly uses this method, so we have to return True
-        # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
-        # xmlrpc server & client I still have to return something to appease the
-        # marshall/unmarshall
         return True
 
     def get(self, name):

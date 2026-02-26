@@ -50,12 +50,6 @@ def _yes_no_input(message):
             # This way we can respond to Y and N keys without making the user
             # type Y/N + Enter for each prompt.
             #
-            # TODO(b/316639135): Instead of using the predefined "raw" mode,
-            # minimally modify the termios settings to disable line buffering
-            # while leaving other settings unchanged, especially input echo and
-            # SIGINT / SIGQUIT from keyboard. Then no need to write the
-            # character back to stdout, nor any need for the non-printable
-            # character sleep().
             tty.setraw(stdin_fd)
             sys.stdout.write("[y/n] ")
             sys.stdout.flush()
@@ -407,9 +401,6 @@ class ServoDevice:
         ):
             self._get_param_drv(name, wr_val_str)
 
-        # TODO(crbug.com/841097) Figure out why despite allow_none=True for both
-        # xmlrpc server & client I still have to return something to appease the
-        # marshall/unmarshall
         return True
 
     def _get_param_drv(self, control_name, set_value=None):
