@@ -123,6 +123,7 @@ RUN make build/host/util/iteflash BOARD=host && \
     make build/host/util/itecomdbgr BOARD=host && \
     make build/host/util/uartupdatetool BOARD=host&& \
     make build/host/util/stm32mon BOARD=host && \
+    make build/host/util/rtkupdate BOARD=host && \
     make -C extra/usb_updater usb_updater2
 
 COPY servo/dockerfiles/setup_ec.py .
@@ -134,7 +135,8 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/stm32mon \
     /ec/build/host/util/uartupdatetool \
     /ec/build/host/util/iteflash \
-    /ec/build/host/util/itecomdbgr
+    /ec/build/host/util/itecomdbgr \
+    /ec/build/host/util/rtkupdate
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
 
@@ -293,7 +295,7 @@ RUN strip /coreboot/util/ifdtool/ifdtool
 FROM libftdi as fwupd-builder
 
 RUN apt update
-RUN apt install -y xz-utils wget build-essential dh-make devscripts
+RUN apt install -y xz-utils wget build-essential dh-make devscripts meson ninja-build libglib2.0-dev libxmlb-dev libjcat-dev libzstd-dev libcurl4-gnutls-dev libarchive-dev libsqlite3-dev libgpgme-dev libgudev-1.0-dev usbutils python3-jinja2
 RUN wget https://github.com/fwupd/fwupd/releases/download/2.0.19/fwupd-2.0.19.tar.xz
 RUN tar xvf fwupd-2.0.19.tar.xz
 
@@ -336,7 +338,8 @@ RUN printf "\n\noverride_dh_auto_configure:\n\tdh_auto_configure -- \
     -Dman=false \
     -Dqubes=false \
     -Dreadline=disabled \
-    -Dplugin_uefi_capsule_splash=false" >> debian/rules
+    -Dplugin_uefi_capsule_splash=false \
+    -Dvendor_ids_dir=/usr/share/misc" >> debian/rules
 
 RUN printf "\noverride_dh_shlibdeps:\n\t-dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info\n" >> debian/rules
 
@@ -406,8 +409,8 @@ RUN wget https://storage.googleapis.com/fwupd-cache/be2c9146ff4cfac5d647376c39ce
     -O /usr/local/genesys/GenesysLogic_GL3590_64.17.cab
 RUN wget https://storage.googleapis.com/fwupd-cache/GenesysLogic_Google_Servo_GL3590_64.18.cab \
     -O /usr/local/genesys/GenesysLogic_GL3590_64.18.cab
-COPY --link --from=fwupd-builder /fwupd_*_amd64.deb .
-RUN apt install ./fwupd_*_amd64.deb
+COPY --link --from=fwupd-builder /fwupd_*.deb .
+RUN apt install ./fwupd_*.deb
 RUN rm *.deb
 
 # Install ec tools
@@ -417,6 +420,7 @@ COPY --link --from=ec-builder \
     /ec/build/host/util/uartupdatetool \
     /ec/build/host/util/iteflash \
     /ec/build/host/util/itecomdbgr \
+    /ec/build/host/util/rtkupdate \
     /ec/util/flash_ec \
     /ec/util/uart_stress_tester.py \
     /usr/sbin/

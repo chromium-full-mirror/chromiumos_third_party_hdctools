@@ -49,3 +49,32 @@ class TestPromptDetection(unittest.TestCase):
         with self.assertRaises(pty_driver.PtyError):
             uut._issue_cmd_get_results("cmd\n", [])
         self.assertEqual(cr50.cr50.PROMPT_DETECTION_TRIES, issueCmdMock.call_count)
+
+
+class TestClearRollback(unittest.TestCase):
+    def setUp(self):
+        self.mock_interface = mock.MagicMock()
+        params = {"cmd": "set", "control_name": "gsc_clear_rollback"}
+        self.drv = cr50.cr50(
+            ("localhost", 9991), ("localhost", 9992), self.mock_interface, params
+        )
+        self.drv._issue_cmd = mock.MagicMock()
+        self.drv._issue_cmd_get_results = mock.MagicMock()
+
+    def test_clear_rollback_sequence(self):
+        self.drv._Set_clear_rollback("unused")
+
+        # Verify the sequence of commands
+        expected_cmds = [
+            mock.call("ccd testlab open"),
+            mock.call("ccd reset factory"),
+            mock.call("ccd set OpenNoTPMWipe ifopened"),
+            mock.call("ccd lock"),
+            mock.call("ccd reset"),
+        ]
+        self.drv._issue_cmd.assert_has_calls(expected_cmds)
+
+        # Verify ccd open specifically with its regex and timeout
+        self.drv._issue_cmd_get_results.assert_called_with(
+            "ccd open", [r"(State: Open|TPM erased)"], timeout=60
+        )

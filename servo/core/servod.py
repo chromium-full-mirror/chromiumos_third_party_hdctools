@@ -800,14 +800,18 @@ class ServodStarter:
 
     def _check_for_excluded_modules(self):
         """Check for excluded kernel modules and exit if found."""
-        if not os.path.exists("/proc/modules"):
+        proc_modules_path = "/host_proc_modules"
+        if not os.path.exists(proc_modules_path):
+            proc_modules_path = "/proc/modules"
+
+        if not os.path.exists(proc_modules_path):
             return
 
         try:
-            with open("/proc/modules", "r", encoding="utf-8") as f:
+            with open(proc_modules_path, "r", encoding="utf-8") as f:
                 loaded_modules = {line.split()[0] for line in f if line.strip()}
         except OSError as e:
-            self._logger.warning("Could not read /proc/modules: %s", e)
+            self._logger.warning("Could not read %s: %s", proc_modules_path, e)
             return
 
         found = EXCLUDED_KERNEL_MODULES & loaded_modules
