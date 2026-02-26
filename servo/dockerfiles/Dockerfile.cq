@@ -191,6 +191,8 @@ RUN apt-get update --no-install-recommends \
     python3-packaging \
     python3-pexpect \
     python3-pip \
+    python3-mypy \
+    pylint \
     python3-protobuf \
     python3-requests \
     python3-serial \
@@ -274,4 +276,6 @@ RUN ln -s /usr/local/share/servo_updater/* /usr/share/servo_updater/
 
 RUN apt-get remove --purge -y \
     python3-pip \
+    python3-mypy \
+    pylint \
     && apt-get autoclean

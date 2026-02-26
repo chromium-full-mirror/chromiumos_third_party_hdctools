@@ -41,7 +41,7 @@ repos:
     hooks:
     - id: pylint
       name: Pylint (Docker)
-      entry: -e 'XDG_CACHE_HOME=/tmp' servod:devtest pylint
+      entry: -e 'XDG_CACHE_HOME=/tmp' servod:devtest python3 -m pylint
       language: docker_image
       types: [python]
       args: [
@@ -79,3 +79,12 @@ repos:
                 PRESUBMIT.cfg|
                 .*json|
             )$
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2
+    hooks:
+    - id: mypy
+      name: mypy (Static Type Checker)
+      args: ["--config-file=pyproject.toml"]
+      additional_dependencies: [types-protobuf]
+      files: ^(servo/utils/sys_interface\.py|servo/common/grpc_client\.py)$

@@ -17,10 +17,12 @@ RUN apt-get update --no-install-recommends \
     python3-mock \
     python3-setuptools \
     python3-wheel \
-    python3-pip
+    python3-pip \
+    pylint
 
 COPY / /hdctools/
 WORKDIR /hdctools
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 RUN python3 servo/setup_tests.py bdist_wheel
 RUN pip3 install dist/*.whl grpcio-testing --break-system-packages
 

@@ -206,7 +206,7 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     def test_parse_args_help(self, _mock_init):
         """Test _parse_args()."""
-        starter = servod.ServodStarter()
+        starter = servod.ServodStarter([])
         starter._init_parsers_and_option_helpers()
         starter.help_parser.print_help = MagicMock()
         starter.help_parser.exit = MagicMock(side_effect=SystemExit(0))

@@ -2,16 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import json
+from typing import Any, Dict
 
 import grpc
 
 
-grpc_channel = {}
+grpc_channel: Dict[str, grpc.Channel] = {}
 
 
 class GrpcClient:
     @staticmethod
-    def create_grpc_channel(server, port):
+    def create_grpc_channel(server: str, port: int) -> grpc.Channel:
         """
         Create grpc channel if it is not created before
 
@@ -26,7 +27,7 @@ class GrpcClient:
         # Define gRPC options for keepalive and retry
         # Keepalive helps detect dead connections faster.
         # Retry policy handles transient network or process issues.
-        options = [
+        options: list[tuple[str, Any]] = [
             ("grpc.keepalive_time_ms", 10000),
             ("grpc.keepalive_timeout_ms", 5000),
             ("grpc.keepalive_permit_without_calls", True),

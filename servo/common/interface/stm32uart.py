@@ -4,6 +4,7 @@
 
 """Allow creation of uart/console interface via stm32 usb endpoint."""
 
+# pylint: disable=abstract-method
 import errno
 import logging
 import os
@@ -90,7 +91,7 @@ class Suart(uart.Uart):
     @staticmethod
     def build(vid, pid, sid, interface_data, **_kwargs):
         """Factory method to implement the interface."""
-        c.build_logger.info("Suart: interface: %s" % interface_data)
+        c.build_logger.info("Suart: interface: %s", interface_data)
         sobj = Suart(
             vendor=vid,
             product=pid,
@@ -100,7 +101,7 @@ class Suart(uart.Uart):
 
         sobj.run()
 
-        c.build_logger.info("%s" % sobj.get_pty())
+        c.build_logger.info("%s", sobj.get_pty())
         return sobj
 
     @staticmethod
