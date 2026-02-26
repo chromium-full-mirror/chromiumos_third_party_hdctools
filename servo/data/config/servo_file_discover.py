@@ -72,6 +72,13 @@ servo_devices = [
         'DUT_CONTROLLER': True
     },
     {
+        'TYPE': 'ccd_gsc_nt',
+        'VID': 0x18d1,
+        'PID': 0x5066,
+        'DEFAULT_CONFIG': 'ccd_ti50.xml',
+        'DUT_CONTROLLER': True
+    },
+    {
         'TYPE': 'sweetberry',
         'VID': 0x18d1,
         'PID': 0x5020,
