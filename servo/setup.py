@@ -126,7 +126,7 @@ setup(
         "console_scripts": [
             "servod = servo.core.servod:main",
             "dut-control = servo.core.dut_control:main",
-            "dut-power = servo.core.dut_power:main",
+            "dut-power = measurement_tools.dut_power:main",
             "servodutil = servo.core.servodtool:servodutil",
             "servodtool = servo.core.servodtool:main",
             "servoflex_test_v2 = servo.scripts.servoflex_test_v2:main",
