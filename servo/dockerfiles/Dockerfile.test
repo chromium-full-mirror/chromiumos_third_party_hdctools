@@ -23,6 +23,7 @@ RUN apt-get update --no-install-recommends \
 COPY / /hdctools/
 WORKDIR /hdctools
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+RUN pip3 install -r development_environment/requirements_test.txt -r development_environment/test_orchestrator/requirements.txt --break-system-packages
 RUN python3 servo/setup_tests.py bdist_wheel
 RUN pip3 install dist/*.whl grpcio-testing --break-system-packages
 

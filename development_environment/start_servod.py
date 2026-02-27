@@ -261,7 +261,7 @@ def start_servod(
             container_name = now.strftime("%s")
 
         name = "%s-docker_servod" % container_name
-        volumes = ["/dev:/dev"]
+        volumes = ["/dev:/dev", "/sys:/sys"]
 
         if os.path.exists("/proc/modules"):
             volumes.append("/proc/modules:/host_proc_modules:ro")

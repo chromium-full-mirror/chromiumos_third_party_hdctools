@@ -1,0 +1,20 @@
+# Copyright 2026 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+# Dockerfile for testing local_agent.py
+
+FROM python:3.13-slim
+
+WORKDIR /test
+
+# Install dependencies
+COPY development_environment/requirements_test.txt .
+RUN pip install --no-cache-dir -r requirements_test.txt
+
+# Copy the agent and test files
+COPY development_environment/local_agent.py .
+COPY development_environment/test_local_agent.py .
+
+ENV PYTHONPATH="."
+
+CMD ["pytest", "test_local_agent.py", "-v"]
