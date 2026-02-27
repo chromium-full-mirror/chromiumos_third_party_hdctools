@@ -10,6 +10,7 @@ import weakref
 from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import servo_dev_grpc
+from servo.utils.retry_util import retry_hardware
 
 
 VALID_IO_TYPES = ["PU", "PP"]
@@ -250,6 +251,7 @@ class HwDriver:
                 "%r not a valid input choice (%r)" % (value, self._choices.pattern)
             )
 
+    @retry_hardware()
     def set(self, logical_value):
         """Set hardware control to a particular value.
 
@@ -301,6 +303,7 @@ class HwDriver:
         """
         raise NotImplementedError("_set should be implemented in subclass.")
 
+    @retry_hardware()
     def get(self):
         """Get hardware control to a particular value.
 

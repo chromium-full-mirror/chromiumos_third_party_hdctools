@@ -13,6 +13,8 @@ import re
 import backoff
 import usb
 
+from servo.utils.retry_util import retry_hardware
+
 
 backoff_logger = logging.getLogger("backoff")
 backoff_logger.removeHandler(backoff_logger.handlers[0])
@@ -203,8 +205,8 @@ class Hierarchy:
 
     @staticmethod
     @backoff.on_predicate(backoff.expo, lambda x: x == [], max_tries=5)
-    @backoff.on_exception(
-        backoff.expo, (HierarchyError, ValueError, usb.core.USBError), max_tries=5
+    @retry_hardware(
+        exceptions=(HierarchyError, ValueError, usb.core.USBError), max_tries=5
     )
     def get_all_usb_devices_with_retry(vid, pid):
         return Hierarchy.get_all_usb_devices([(vid, pid)])

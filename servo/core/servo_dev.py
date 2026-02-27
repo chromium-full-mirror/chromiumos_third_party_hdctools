@@ -12,14 +12,15 @@ import termios
 import threading
 import time
 import tty
+from typing import Any, Dict, List, Optional, Tuple
 
 import grpc
 
 from servo.common import servo_dev_templates
 from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
-from servo.common.proto import driver_grpc
-from servo.common.proto import system_config_grpc
+from servo.common.proto import driver_grpc  # type: ignore
+from servo.common.proto import system_config_grpc  # type: ignore
 from servo.common.utils import servo_logging
 import servo.utils.usb_hierarchy as usb_hierarchy
 
@@ -98,7 +99,13 @@ class ServoDevice:
     # waiting for the device during an intentional disconnect.
     INTERFACE_AVAILABILITY_TIMEOUT = 5
 
-    def __init__(self, dev_entry, grpc_data_addr, interfaces=None, servod=None):
+    def __init__(
+        self,
+        dev_entry: Any,
+        grpc_data_addr: Tuple[str, int],
+        interfaces: Optional[List[str]] = None,
+        servod: Optional[Any] = None,
+    ) -> None:
         """ServoDevice constructor.
 
         Args:
@@ -138,7 +145,7 @@ class ServoDevice:
 
         # Dict of Dict to map control name, function name to to tuple (params, drv)
         # Ex) _drv_dict[name]['get'] = (params, drv)
-        self._drv_dict = {}
+        self._drv_dict: Dict[str, Dict[str, Tuple[Any, Any]]] = {}
 
         # Create a gRPC channel to the specified host and port
         grpc_data_host, grpc_data_port = grpc_data_addr
@@ -158,9 +165,9 @@ class ServoDevice:
 
         # list of objects (Fi2c, Fgpio) to physical interfaces (gpio, i2c) that ftdi
         # interfaces are mapped to
-        self._interface_list = []
+        self._interface_list: List[Any] = []
         # Whether an interface has initialized to be the proper interface
-        self._interface_init = []
+        self._interface_init: List[Any] = []
         self._servod = servod
         self._token_db = dev_entry.devopts.token_db
 
@@ -189,7 +196,7 @@ class ServoDevice:
                 "Timed out waiting for interfaces to become available."
             )
 
-    def connect(self):
+    def connect(self) -> None:
         """The device connected."""
         # Mark that the interfaces are available.
         self._ifaces_available.set()
@@ -651,7 +658,7 @@ class ServoDevice:
           A list of ServoDevice that hangs on this device directly or indirectly.
           If this device is not a root hub device, return an empty list.
         """
-        child_devices = []
+        child_devices: List[Any] = []
         if not self.is_root_hub_device():
             return child_devices
         for member in self.dev_entry.cluster_members:

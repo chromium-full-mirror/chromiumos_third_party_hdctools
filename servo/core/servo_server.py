@@ -7,6 +7,7 @@
 import collections
 import logging
 import sys
+from typing import Any, Dict, List, Optional, Tuple
 
 import grpc
 
@@ -31,7 +32,7 @@ class Servod:
     # Message header from gRPC
     GRPC_EXC_MSG = "Exception calling application: "
 
-    def __init__(self, usbkm232=None):
+    def __init__(self, usbkm232: Optional[str] = None) -> None:
         """Servod constructor.
 
         Args:
@@ -48,24 +49,28 @@ class Servod:
         self._keyboard = None
         self._usb_keyboard = None
         # A map of device serialname strings keyed by the device's name/prefix.
-        self._serialnames = collections.defaultdict(lambda: None)
+        self._serialnames: Dict[str, Optional[str]] = collections.defaultdict(
+            lambda: None
+        )
         # A map of ServoDevices keyed by their name/prefix.
         # A ServoDevice can have multiple name/prefix (e.g. 'main', '')
-        self._devices = collections.defaultdict(lambda: None)
+        self._devices: Dict[str, Any] = collections.defaultdict(lambda: None)
         # A map of ServoDevices keyed by their id (vid, pid, serial)
         # Each ServoDevice has a unique id
-        self._unique_devices = collections.defaultdict(lambda: None)
+        self._unique_devices: Dict[Tuple[int, int, str], Any] = collections.defaultdict(
+            lambda: None
+        )
         # All known controls of this servod instance
-        self._controls = set()
+        self._controls: List[str] = []
 
     def clear(self):
         """Clear all devices and serialnames."""
         self._devices.clear()
         self._unique_devices.clear()
         self._serialnames.clear()
-        self._controls = set()
+        self._controls = []
 
-    def add_device(self, device, prefix):
+    def add_device(self, device: Any, prefix: str) -> None:
         """Add a ServoDevice to Servod.
 
         Args:
@@ -126,7 +131,7 @@ class Servod:
         for dev in self.get_devices():
             dev.close()
 
-    def get_devices(self):
+    def get_devices(self) -> List[Any]:
         """Get all devices connected to this servod instance."""
         return list(self._unique_devices.values())
 

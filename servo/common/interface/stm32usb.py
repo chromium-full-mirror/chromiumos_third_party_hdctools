@@ -7,12 +7,12 @@ import contextlib
 import threading
 import time
 
-import backoff
 import usb
 
 from servo.common.interface import common as c
 from servo.common.interface import interface
 from servo.utils import usb_hierarchy
+from servo.utils.retry_util import retry_hardware
 
 
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
@@ -25,6 +25,7 @@ class SusbError(c.InterfaceError):
 
 
 class Susb(interface.Interface):
+    # pylint: disable=abstract-method
     """Provide stm32 USB functionality.
 
     Instance Variables:
@@ -210,7 +211,7 @@ class Susb(interface.Interface):
         self._dev = dev
         serial = "(%s)" % self._serialname if self._serialname else ""
         self._logger.debug(
-            "Found stm32%s: %04x:%04x" % (serial, self._vendor, self._product)
+            "Found stm32%s: %04x:%04x", serial, self._vendor, self._product
         )
 
         # Get an endpoint instance.
@@ -232,15 +233,15 @@ class Susb(interface.Interface):
 
             intf = usb.util.find_descriptor(cfg, bInterfaceNumber=self._interface)
 
-            self._logger.debug("InterfaceNumber: %s" % intf.bInterfaceNumber)
+            self._logger.debug("InterfaceNumber: %s", intf.bInterfaceNumber)
 
             read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT
             read_ep = usb.util.find_descriptor(intf, bEndpointAddress=read_ep_number)
-            self._logger.debug("Reader endpoint: 0x%x" % read_ep.bEndpointAddress)
+            self._logger.debug("Reader endpoint: 0x%x", read_ep.bEndpointAddress)
 
             write_ep_number = intf.bInterfaceNumber + self.WRITE_ENDPOINT
             write_ep = usb.util.find_descriptor(intf, bEndpointAddress=write_ep_number)
-            self._logger.debug("Writer endpoint: 0x%x" % write_ep.bEndpointAddress)
+            self._logger.debug("Writer endpoint: 0x%x", write_ep.bEndpointAddress)
 
             self.DEV_EP_STORE[devid][self._interface] = EPInfo(
                 read_ep=read_ep, write_ep=write_ep
@@ -294,7 +295,7 @@ class Susb(interface.Interface):
             ep = self._get_ep(write=False)
             return ep.read(*args, **kwargs)
 
-    @backoff.on_exception(backoff.expo, (usb.core.USBTimeoutError), max_tries=3)
+    @retry_hardware(exceptions=(usb.core.USBTimeoutError,))
     def write_ep(self, *args, **kwargs):
         """Thread safe wrapper around writing to the |write_ep|"""
         self.wait_on_reset()

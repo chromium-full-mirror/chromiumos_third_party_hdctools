@@ -87,4 +87,4 @@ repos:
       name: mypy (Static Type Checker)
       args: ["--config-file=pyproject.toml"]
       additional_dependencies: [types-protobuf]
-      files: ^(servo/utils/sys_interface\.py|servo/common/grpc_client\.py)$
+      files: ^(servo/utils/sys_interface\.py|servo/common/grpc_client\.py|servo/core/servo_dev\.py|servo/core/servo_server\.py|servo/core/servod\.py)$

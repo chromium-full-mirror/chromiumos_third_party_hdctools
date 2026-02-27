@@ -18,6 +18,7 @@ import socket
 import sys
 import threading
 import time
+from typing import Any, List, Tuple
 import urllib.request
 import weakref
 from xmlrpc.server import SimpleXMLRPCServer
@@ -27,8 +28,8 @@ import grpc
 import usb
 
 from servo.common import servo_parsing
-from servo.common.proto import servo_dev_grpc
-from servo.common.proto import system_config_grpc
+from servo.common.proto import servo_dev_grpc  # type: ignore
+from servo.common.proto import system_config_grpc  # type: ignore
 from servo.common.utils import servo_logging
 from servo.core import recovery
 from servo.core import servo_dev
@@ -106,7 +107,7 @@ class ServodStarter:
     # needing to clean up.
     EXIT_TIMEOUT_S = 20
 
-    def __init__(self, cmdline):
+    def __init__(self, cmdline: List[str]) -> None:
         """Prepare servod invocation.
 
         Parse cmdline and prompt user for missing information if necessary to start
@@ -479,15 +480,15 @@ class ServodStarter:
         # Both parsers should display the same usage information when an
         # argument is not found. Fix it here by pointing both of their methods
         # to the help_parser.
-        server_pars.format_usage = help_parser.format_usage
-        dev_pars.format_usage = help_parser.format_usage
+        server_pars.format_usage = help_parser.format_usage  # type: ignore
+        dev_pars.format_usage = help_parser.format_usage  # type: ignore
         self.help_parser = help_parser
         self.server_pars = server_pars
         self.dev_pars = dev_pars
         # Generator function for an empty namespace for a servo device.
         self.devopts_generator = lambda: self.dev_pars.parse_args([])
 
-    def _parse_args(self, cmdline):
+    def _parse_args(self, cmdline: List[str]) -> Tuple[Any, List[Any]]:
         """Parse commandline arguments.
 
         Args:

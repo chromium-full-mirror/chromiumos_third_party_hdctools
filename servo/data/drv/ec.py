@@ -18,6 +18,7 @@ import time
 import typing
 
 from servo.data.drv import pty_driver
+from servo.utils.retry_util import retry_hardware
 
 
 KEY_STATE = [0, 1, 1, 1, 1]
@@ -281,6 +282,7 @@ class ec(pty_driver.PtyDriver):
         else:
             self._issue_cmd("power on")
 
+    @retry_hardware(exceptions=pty_driver.PtyError)
     def _Get_milliwatts(self):
         """Retrieves power measurements for the battery.
 
@@ -313,21 +315,12 @@ class ec(pty_driver.PtyDriver):
             mw: battery power in milliwatts
         """
         # The uart often drops some of the output of the battery cmd.
-        retries = 3
-        while retries > 0:
-            retries -= 1
-            try:
-                self._limit_channel()
-                results = self._issue_cmd_get_results(
-                    "battery",
-                    [r"V:[\s0-9a-fx]*= (-*\d+) mV", r"I:[\s0-9a-fx]*= (-*\d+) mA"],
+        self._limit_channel()
+        results = self._issue_cmd_get_results(
+            "battery",
+            [r"V:[\s0-9a-fx]*= (-*\d+) mV", r"I:[\s0-9a-fx]*= (-*\d+) mA"],
                 )
-                self._restore_channel()
-                break
-            except pty_driver.PtyError as e:
-                if retries <= 0:
-                    raise
-                logging.warning("Battery cmd failed, retrying: %s", e)
+        self._restore_channel()
         result = {"mv": int(results[0][1], 0), "ma": int(results[1][1], 0) * -1}
         return result["ma"] * result["mv"] / 1000.0
 
