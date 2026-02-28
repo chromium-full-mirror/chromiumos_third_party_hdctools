@@ -26,7 +26,9 @@ steps:
   args:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - --cache=true
-  - --cache-ttl=96h
+  - --cache-ttl=24h
+  - --build-arg=BUILDER_BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest
+  - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:latest
   - -f=/workspace/servo/dockerfiles/Dockerfile
   waitFor: ['src-prep']
 
@@ -35,7 +37,7 @@ steps:
   args:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servodtest:$COMMIT_SHA
   - --cache=true
-  - --cache-ttl=96h
+  - --cache-ttl=24h
   - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - -f=/workspace/servo/dockerfiles/Dockerfile.test
   waitFor: ['build']
@@ -135,7 +137,7 @@ steps:
   waitFor: ['test-python']
 
 options:
-  machineType: 'N1_HIGHCPU_32'
-  diskSizeGb: '500'
+  pool:
+    name: 'projects/chromeos-hw-tools-dev/locations/us-central1/workerPools/proto-servo-pool'
 
 timeout: 5400s

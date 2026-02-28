@@ -77,7 +77,7 @@ def test_poll_for_job_success(mock_requests):
 
     job = local_agent.poll_for_job("http://fake")
     assert job["job_id"] == "123"
-    mock_requests.get.assert_called_once_with("http://fake/api/jobs/next")
+    mock_requests.get.assert_called_once_with("http://fake/api/jobs/next", timeout=10)
 
 
 def test_poll_for_job_none(mock_requests):
@@ -132,8 +132,8 @@ def test_execute_test_success(
     assert results["test_outputs"]["test"]["stdout"] == "firmware v1"
     assert "log content" in results["log"]
     assert (
-        mock_run_command.call_count == 8
-    )  # pull, tag, start, wait, exec, stop, rm, rmi
+        mock_run_command.call_count == 7
+    )  # tag, start, wait, exec, stop, rm, rmi (pull is commented out)
     assert mock_shutil.rmtree.call_count == 2
     mock_open.assert_called_once()
     mock_glob.assert_called_once()
@@ -148,12 +148,12 @@ def test_execute_test_fail_start(mock_exists, mock_run_command, mock_shutil):
     cpe.stderr = "Failed to start"
 
     # Simulate run_command behavior for each call in execute_test
-    def run_command_side_effect(*args, **kwargs):
+    def run_command_side_effect(cmd, **kwargs):
         del kwargs  # Unused
-        cmd = args[0]
-        if "docker pull" in " ".join(cmd):
+        cmd_str = cmd if isinstance(cmd, str) else " ".join(cmd)
+        if "docker pull" in cmd_str:
             return mock.MagicMock(stdout="", stderr="", returncode=0)
-        if "start-servod" in " ".join(cmd):
+        if "start-servod" in cmd_str:
             raise cpe
         return mock.MagicMock(stdout="", stderr="", returncode=0)  # stop, rm, rmi
 

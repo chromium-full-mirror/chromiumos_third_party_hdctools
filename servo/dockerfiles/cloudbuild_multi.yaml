@@ -27,12 +27,9 @@ steps:
   - 'buildx'
   - 'build'
   - --push
+  - --no-cache
   - --platform
   - linux/amd64,linux/arm64
-  - '--cache-to'
-  - 'type=registry,ref=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi/cache:$_BRANCH_NAME-$_SPIN_NUMBER,mode=max'
-  - '--cache-from'
-  - 'type=registry,ref=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi/cache:$_BRANCH_NAME-$_SPIN_NUMBER'
   - -t=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi:$_BRANCH_NAME-$_SPIN_NUMBER
   - -f=/workspace/servo/dockerfiles/Dockerfile
   - '.'
@@ -40,6 +37,7 @@ steps:
 
 options:
   # Use higher CPU machines so the caching and build steps are faster.
-  machineType: 'N1_HIGHCPU_32'
+  pool:
+    name: 'projects/chromeos-hw-tools-dev/locations/us-central1/workerPools/proto-servo-pool'
 
 timeout: 7200s

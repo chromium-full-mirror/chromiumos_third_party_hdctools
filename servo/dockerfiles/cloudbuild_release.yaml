@@ -8,12 +8,12 @@ steps:
   id: 'build'
   args:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$_BRANCH_NAME-$_SPIN_NUMBER
-  - --cache=true
-  - --cache-ttl=96h
+  - --cache=false
   - -f=/workspace/servo/dockerfiles/Dockerfile
 
 options:
   # Use higher CPU machines so the caching and build steps are faster.
-  machineType: 'N1_HIGHCPU_32'
+  pool:
+    name: 'projects/chromeos-hw-tools-dev/locations/us-central1/workerPools/proto-servo-pool'
 
 timeout: 1800s
