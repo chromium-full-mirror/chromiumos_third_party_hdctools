@@ -1,6 +1,7 @@
 # Copyright 2015 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=abstract-method, logging-format-interpolation, logging-fstring-interpolation, logging-not-lazy, unused-argument
 
 """Servo interface for the EC-3PO console interpreter."""
 
@@ -265,7 +266,7 @@ class EC3PO(uart.Uart):
 
     @staticmethod
     def build(
-        index,  # pylint: disable=unused-argument
+        index,
         vid,
         pid,
         sid,

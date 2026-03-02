@@ -60,7 +60,7 @@ class I2cpIoctlXferReqOutput(ctypes.Structure):
 class I2cpIoctlXferReqArg(ctypes.Structure):
     _fields_ = (
         ("output", I2cpIoctlXferReqOutput),
-        ("msgs", ctypes.POINTER(i2c.i2c_msg)),
+        ("msgs", ctypes.POINTER(i2c.I2cMsg)),
         ("data_buf", ctypes.POINTER(ctypes.c_uint8)),
         ("msgs_len", ctypes.c_uint32),
         ("data_buf_len", ctypes.c_uint32),
@@ -69,7 +69,7 @@ class I2cpIoctlXferReqArg(ctypes.Structure):
 
 class I2cpIoctlXferReplyArg(ctypes.Structure):
     _fields_ = (
-        ("msgs", ctypes.POINTER(i2c.i2c_msg)),
+        ("msgs", ctypes.POINTER(i2c.I2cMsg)),
         ("xfer_id", ctypes.c_uint64),
         ("num_msgs", ctypes.c_uint32),
         ("error", ctypes.c_uint32),
@@ -78,11 +78,11 @@ class I2cpIoctlXferReplyArg(ctypes.Structure):
 
 I2CP_IOCTL_CODE = 0x2C
 
-I2CP_IOCTL_START = ioctl._IOWR(I2CP_IOCTL_CODE, 0, I2cpIoctlStartArg)
-I2CP_IOCTL_XFER_REQ = ioctl._IOWR(I2CP_IOCTL_CODE, 1, I2cpIoctlXferReqArg)
-I2CP_IOCTL_XFER_REPLY = ioctl._IOW(I2CP_IOCTL_CODE, 2, I2cpIoctlXferReplyArg)
-I2CP_IOCTL_GET_COUNTERS = ioctl._IOR(I2CP_IOCTL_CODE, 3, I2cpIoctlXferCounters)
-I2CP_IOCTL_SHUTDOWN = ioctl._IO(I2CP_IOCTL_CODE, 4)
+I2CP_IOCTL_START = ioctl._iowr(I2CP_IOCTL_CODE, 0, I2cpIoctlStartArg)
+I2CP_IOCTL_XFER_REQ = ioctl._iowr(I2CP_IOCTL_CODE, 1, I2cpIoctlXferReqArg)
+I2CP_IOCTL_XFER_REPLY = ioctl._iow(I2CP_IOCTL_CODE, 2, I2cpIoctlXferReplyArg)
+I2CP_IOCTL_GET_COUNTERS = ioctl._ior(I2CP_IOCTL_CODE, 3, I2cpIoctlXferCounters)
+I2CP_IOCTL_SHUTDOWN = ioctl._io(I2CP_IOCTL_CODE, 4)
 
 
 __all__ = [n for n in dir() if n.startswith("I2CP_") or n.startswith("i2cp_")]

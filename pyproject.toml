@@ -28,3 +28,37 @@ follow_imports = "silent"
 check_untyped_defs = true
 explicit_package_bases = true
 mypy_path = "."
+
+[tool.coverage.run]
+omit = [
+    '*pb2.py',
+    '*pb2_grpc.py',
+    '*_grpc_aio.py',
+    '*_grpc.py',
+    '*/protoc-gen-custom_grpc.py',
+    '*/adc_templates.py',
+    '*/generate_ina_controls.py',
+    '*/servo_config_generator.py',
+    '*/_utils.py',
+    '*/tests/fixtures/*',
+    '*/data/drv/*',
+    '*/data/*',
+    '*/data/*.xml'
+]
+
+[tool.coverage.report]
+omit = [
+    '*pb2.py',
+    '*pb2_grpc.py',
+    '*_grpc_aio.py',
+    '*_grpc.py',
+    '*/protoc-gen-custom_grpc.py',
+    '*/adc_templates.py',
+    '*/generate_ina_controls.py',
+    '*/servo_config_generator.py',
+    '*/_utils.py',
+    '*/tests/fixtures/*',
+    '*/data/drv/*',
+    '*/data/*',
+    '*/data/*.xml'
+]

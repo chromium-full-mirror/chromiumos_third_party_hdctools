@@ -23,14 +23,12 @@ class TestUsbImageManager(unittest.TestCase):
     class InterfaceStub(interface.Interface):
         """Interface stub"""
 
-        def __init__(self):
-            pass
+        def __init__(self): ...
 
     class ServodStub(servo_server.Servod):
         """Servod stub"""
 
-        def __init__(self):
-            pass
+        def __init__(self): ...
 
     def setUp(self):
         """Set up for each test case"""

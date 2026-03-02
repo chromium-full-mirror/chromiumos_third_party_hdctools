@@ -15,6 +15,11 @@ from servo.core import dut_control
 class TestDutControl(unittest.TestCase):
     """Test dut_control.py."""
 
+    def setUp(self):
+        """Set up for each unit test."""
+        unittest.TestCase.setUp(self)
+        dut_control._START_TIME = 0
+
     def test_build_parser(self):
         """Test parser is built properly."""
         parser = dut_control._build_parser()

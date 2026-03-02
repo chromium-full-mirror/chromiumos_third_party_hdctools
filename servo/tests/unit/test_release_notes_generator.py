@@ -1,6 +1,7 @@
-# Copyright 2025 The ChromiumOS Authors
+# Copyright 2026 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=unused-argument
 
 from collections import namedtuple
 import html as html_stdlib  # Alias to avoid conflict with pytest's html module
@@ -180,9 +181,7 @@ class TestFindBranches:
             assert len(organized["Chores"]) == 1
             assert organized["Chores"][0].desc == "Chore C"
 
-        def test_invalid_input_retry(
-            self, mocker, capsys
-        ):  # pylint: disable=unused-argument
+        def test_invalid_input_retry(self, mocker, capsys):
             mock_org_help = mocker.patch(
                 "servo.dockerfiles.release_notes_generator.organize_help"
             )

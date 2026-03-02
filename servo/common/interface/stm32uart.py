@@ -1,15 +1,14 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=abstract-method
 
 """Allow creation of uart/console interface via stm32 usb endpoint."""
 
-# pylint: disable=abstract-method
 import errno
 import logging
 import os
 import select
-import sys
 import termios
 import threading
 import time
@@ -306,29 +305,3 @@ class Suart(uart.Uart):
         """
 
         return self._ptyname
-
-
-def test():
-    log_format = "%(asctime)s - %(name)s - %(levelname)s"
-    loglevel = logging.DEBUG
-    log_format += " - %(filename)s:%(lineno)d:%(funcName)s"
-    log_format += " - %(message)s"
-    logging.basicConfig(level=loglevel, format=log_format)
-    logger = logging.getLogger(os.path.basename(sys.argv[0]))
-    logger.info("Start")
-
-    sobj = Suart()
-    sobj.run()
-    logging.info("%s", sobj.get_pty())
-
-    # run() is a thread so just busy wait to mimic server
-    while True:
-        # ours sleeps to eleven!
-        time.sleep(11)
-
-
-if __name__ == "__main__":
-    try:
-        test()
-    except KeyboardInterrupt:
-        sys.exit(0)

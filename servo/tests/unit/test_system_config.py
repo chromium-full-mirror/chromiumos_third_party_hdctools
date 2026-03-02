@@ -1,6 +1,7 @@
 # Copyright 2018 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=invalid-name
 
 """Unit tests for SystemConfig."""
 
@@ -46,7 +47,6 @@ class SystemConfig(system_config.SystemConfig):
 class TestSystemConfig(unittest.TestCase):
     """Unittests for SystemConfig class behavior."""
 
-    # pylint: disable=invalid-name
     # ALLOWABLE_INPUT_TYPES is defined in system_config module
 
     def setUp(self):
@@ -64,8 +64,7 @@ class TestSystemConfig(unittest.TestCase):
         """Helper to add a map to the SystemConfig."""
         self.syscfg.syscfg_dict["map"][map_name] = {"map_params": params}
 
-    def _AddNAControl(self, name, extra_params={}):
-        # pylint: disable=dangerous-default-value
+    def _AddNAControl(self, name, extra_params=None):
         """Helper to add an 'N/A' control to the SystemConfig.
 
         Add control |name| with some default params:
@@ -76,6 +75,8 @@ class TestSystemConfig(unittest.TestCase):
           name: control name
           extra_params: dict of extra parameters to add
         """
+        if extra_params is None:
+            extra_params = {}
         base_params = {"drv": "na", "interface": "na"}
         base_params.update(extra_params)
         control_entry = {

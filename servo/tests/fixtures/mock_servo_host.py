@@ -1,31 +1,20 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-# pylint: disable=redefined-outer-name
-# pylint: disable=unused-argument
-# pylint: disable=unused-variable
-# pylint: disable=unused-import
+# pylint: disable=invalid-name, redefined-outer-name, wrong-import-order
 
-import argparse
 import logging
-from unittest.mock import patch
 
-from mock.mock import Mock
 import pytest
 
-from servo.common import servo_dev_templates as tmpl
-from servo.common.config import system_config
 from servo.common.proto import driver_pb2
 from servo.common.proto import system_config_pb2
-from servo.core import servo_dev
-from servo.core import servo_server
 from servo.core import servod as sd
 from servo.data.impl import driver_impl
 from servo.data.impl import system_config_impl
 from servo.tests.fixtures import common
 from servo.tests.fixtures.mock_pyusb import clear_interfaces
 from servo.tests.fixtures.mock_pyusb import dump_interfaces
-from servo.utils import servo_dev_hierarchy
 
 
 _logger = logging.getLogger("mock_servod")
@@ -34,9 +23,7 @@ _logger = logging.getLogger("mock_servod")
 class LocalDriverClient:
     """A wrapper around DriverImpl that mimics the gRPC client Stub."""
 
-    # pylint: disable=invalid-name
-
-    def __init__(self, channel=None):
+    def __init__(self, unused_channel=None):
         # We ignore the channel and create a local implementation.
         # DriverImpl expects grpc_core_addr and grpc_data_addr.
         # We pass fake addresses to avoid NoneType errors during unpacking.
@@ -64,18 +51,60 @@ class LocalDriverClient:
 class LocalSystemConfigClient:
     """A wrapper around SystemConfigImpl that mimics the gRPC client Stub."""
 
-    # pylint: disable=invalid-name
-
-    def __init__(self, channel=None):
+    def __init__(self, unused_channel=None):
         self.impl = system_config_impl.SystemConfigImpl()
+
+    def GetFileContent(self, **kwargs):
+        req = system_config_pb2.SystemConfigRequest(**kwargs)
+        return self.impl.GetFileContent(req, None)
+
+    def AddCfgFile(self, **kwargs):
+        req = system_config_pb2.SystemFileRequest(**kwargs)
+        return self.impl.AddCfgFile(req, None)
 
     def IsControl(self, **kwargs):
         req = system_config_pb2.IsControlRequest(**kwargs)
         return self.impl.IsControl(req, None)
 
-    def AddCfgFile(self, **kwargs):
-        req = system_config_pb2.SystemFileRequest(**kwargs)
-        return self.impl.AddCfgFile(req, None)
+    def GetControlDoc(self, **kwargs):
+        req = system_config_pb2.ControlDocRequest(**kwargs)
+        return self.impl.GetControlDoc(req, None)
+
+    def GetInitControls(self, **kwargs):
+        req = system_config_pb2.InitControlsRequest(**kwargs)
+        return self.impl.GetInitControls(req, None)
+
+    def GetDisplayConfig(self, **kwargs):
+        req = system_config_pb2.DisplayConfigRequest(**kwargs)
+        return self.impl.GetDisplayConfig(req, None)
+
+    def Finalize(self, **kwargs):
+        req = system_config_pb2.FinalizeRequest(**kwargs)
+        return self.impl.Finalize(req, None)
+
+    def GetBoardModelConfig(self, **kwargs):
+        req = system_config_pb2.BoardModelConfigRequest(**kwargs)
+        return self.impl.GetBoardModelConfig(req, None)
+
+    def GetAllControls(self, **kwargs):
+        req = system_config_pb2.GetAllControlsRequest(**kwargs)
+        return self.impl.GetAllControls(req, None)
+
+    def GetControlStr(self, **kwargs):
+        req = system_config_pb2.ControlStrRequest(**kwargs)
+        return self.impl.GetControlStr(req, None)
+
+    def GetControlsForTag(self, **kwargs):
+        req = system_config_pb2.ControlsForTagRequest(**kwargs)
+        return self.impl.GetControlsForTag(req, None)
+
+    def GetConfigFiles(self, **kwargs):
+        req = system_config_pb2.ConfigFilesRequest(**kwargs)
+        return self.impl.GetConfigFiles(req, None)
+
+    def GetServoInterfaces(self, **kwargs):
+        req = system_config_pb2.ServoInterfacesRequest(**kwargs)
+        return self.impl.GetServoInterfaces(req, None)
 
 
 @pytest.fixture(scope="function")
@@ -152,7 +181,7 @@ def mock_servo_host(
                 # Also mock GrpcClient in ec3po_interface which imports it directly
                 class_mocker.patch("servo.common.interface.ec3po_interface.GrpcClient")
 
-            def mock_read_from_sysfs(self, sysfs_path, dev_file, cast=str):
+            def mock_read_from_sysfs(self, sysfs_path, dev_file, unused_cast=str):
                 return self.sysfs[sysfs_path][dev_file]
 
             def add_device(self, servo_type, bus, address, dd):

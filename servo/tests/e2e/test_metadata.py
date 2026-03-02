@@ -5,9 +5,6 @@
 import json
 import unittest
 
-# pylint: disable=unused-import
-from unittest.mock import patch
-
 import pytest
 
 from servo.common.config import system_config

@@ -410,7 +410,6 @@ def real_main(cmdline):
         iterate(args, options, sclient)
 
 
-# pylint: disable=dangerous-default-value
 # Ability to pass an arbitrary or artificial cmdline for testing is desirable.
 def main(cmdline=sys.argv[1:]):
     """main method exception wrapper."""
@@ -421,7 +420,7 @@ def main(cmdline=sys.argv[1:]):
     except KeyboardInterrupt:
         sys.exit(0)
     except (client.ServoClientError, ControlError) as e:
-        sys.stderr.write(e.message + "\n")
+        sys.stderr.write(str(e) + "\n")
         sys.exit(1)
     except SocketError as e:
         sys.stderr.write(e.strerror + "\n")

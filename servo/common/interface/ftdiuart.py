@@ -1,6 +1,7 @@
 # Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=logging-not-lazy, unbalanced-tuple-unpacking
 """Allow creation of uart interface via libftdiuart library for FTDI devices."""
 import ctypes
 import logging
@@ -254,7 +255,7 @@ class Fuart(uart.Uart):
         return self._fuartc.name.decode(encoding="ascii")
 
 
-def test():
+def test():  # pragma: no cover  # pragma: no cover
     options = ftdi_utils.parse_common_args(interface=3)
 
     log_format = "%(asctime)s - %(name)s - %(levelname)s"
@@ -277,7 +278,7 @@ def test():
         time.sleep(11)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover  # pragma: no cover  # pragma: no cover
     try:
         test()
     except KeyboardInterrupt:

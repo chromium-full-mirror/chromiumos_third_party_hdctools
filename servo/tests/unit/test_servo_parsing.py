@@ -73,7 +73,7 @@ class TestRCFile(unittest.TestCase):
         rcd = servo_parsing.ServodRCParser.parse_rc("/tmp/this-is-a-fake-file")
         # Expected return value is {} so this seems appropriate regardless of python
         # internals
-        assert {} == rcd
+        assert not rcd
 
     def test_rc_file_misconfigured(self):
         """RC file is misconfigured (no commas): return empty runtime config dict."""
@@ -85,7 +85,7 @@ class TestRCFile(unittest.TestCase):
         rcd = servo_parsing.ServodRCParser.parse_rc(self._rc_file)
         # Expected return value is {} so this seems appropriate regardless of python
         # internals
-        assert {} == rcd
+        assert not rcd
 
 
 class TestServodRCParser(unittest.TestCase):

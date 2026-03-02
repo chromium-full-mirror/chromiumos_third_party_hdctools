@@ -30,9 +30,7 @@ def restricted_command(func):
                 "Timeout waiting for response.",
                 "No data was sent from the pty.",
             ]:
-                e.message += "CCD console might be locked. Check and unlock with instructions \
-          https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs\
-          /case_closed_debugging_cr50.md"
+                e.args = (e.args[0] + "CCD console might be locked. Check and unlock with instructions https://chromium.googlesource.com/chromiumos/platform/ec/+/cr50_stab/docs/case_closed_debugging_cr50.md",)
             # Raise the original exception
             raise
 

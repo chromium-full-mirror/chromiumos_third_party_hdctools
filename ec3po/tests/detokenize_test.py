@@ -452,7 +452,6 @@ class ManualPoolExecutor(concurrent.futures.Executor):
         super().__init__()
         self._func = None
 
-    # pylint: disable=arguments-differ
     def submit(self, func, *args, **kwargs):
         """Submits work to the pool, stashing the partial for later use."""
         self._func = functools.partial(func, *args, **kwargs)
@@ -467,7 +466,6 @@ class ManualPoolExecutor(concurrent.futures.Executor):
 class InlinePoolExecutor(concurrent.futures.Executor):
     """A stubbed pool executor that runs work immediately, inline."""
 
-    # pylint: disable=arguments-differ
     def submit(self, func, *args, **kwargs):
         """Submits work to the pool, stashing the partial for later use."""
         func(*args, **kwargs)
@@ -600,7 +598,6 @@ class AutoUpdatingDetokenizerTest(unittest.TestCase):
                 with open(file.name, "wb"):
                     pass
 
-                self.assertTrue(detok.detokenize(JELLO_WORLD_TOKEN).ok())
                 self.assertTrue(detok.detokenize(JELLO_WORLD_TOKEN).ok())
 
                 # Move back time so the now-empty file is reloaded.

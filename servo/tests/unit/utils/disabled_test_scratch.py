@@ -1,6 +1,7 @@
 # Copyright 2020 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=use-implicit-booleaness-not-comparison
 
 import collections
 import json
@@ -234,7 +235,6 @@ class TestScratch(unittest.TestCase):
 
     def test_get_all_entries_empty(self):
         """Verify get_all_entries() doesn't break when there are no entries."""
-        # pylint: disable=use-implicit-booleaness-not-comparison
         assert self._scratch.get_all_entries() == []
 
     def test_get_all_entries(self):

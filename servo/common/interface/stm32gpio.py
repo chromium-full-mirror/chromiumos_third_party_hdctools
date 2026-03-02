@@ -1,9 +1,9 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=abstract-method, implicit-str-concat
 """Allows creation of gpio interface via stm32 usb."""
 
-import logging
 import struct
 
 from servo.common.interface import common as c
@@ -75,7 +75,7 @@ class Sgpio(gpio_interface.GpioInterface):
     @staticmethod
     def name():
         """Name to request interface by in interface config maps."""
-        return "stm32_uart"
+        return "stm32_gpio"
 
     def __del__(self):
         """Sgpio destructor."""
@@ -98,13 +98,16 @@ class Sgpio(gpio_interface.GpioInterface):
           integer value from reading the gpio value ( masked & aligned )
         """
         self._logger.debug(
-            "Sgpio.wr_rd(offset="
-            "%s, width=%s, dir_val=%s, wr_val=%s)" % (offset, width, dir_val, wr_val)
+            "Sgpio.wr_rd(offset=%s, width=%s, dir_val=%s, wr_val=%s)",
+            offset,
+            width,
+            dir_val,
+            wr_val,
         )
         # Read preexisting values for debug output.
         ret = self._susb.read_ep(4, self._susb.TIMEOUT_MS)
         read_mask = struct.unpack("<I", ret)[0]
-        self._logger.debug("Read mask: 0x%08x" % read_mask)
+        self._logger.debug("Read mask: 0x%08x", read_mask)
 
         width_mask = (1 << width) - 1
         set_mask = 0
@@ -128,10 +131,10 @@ class Sgpio(gpio_interface.GpioInterface):
             )
 
         read_mask = struct.unpack("<I", ret)[0]
-        self._logger.debug("Read mask: 0x%08x" % read_mask)
+        self._logger.debug("Read mask: 0x%08x", read_mask)
 
         readvalue = (read_mask >> offset) & width_mask
-        self._logger.debug("Read value: 0x%x" % readvalue)
+        self._logger.debug("Read value: 0x%x", readvalue)
         return readvalue
 
     def reinitialize(self):
@@ -149,40 +152,3 @@ class Sgpio(gpio_interface.GpioInterface):
         end unless we explicitly predelete this instance.
         """
         del self._susb
-
-
-def test():
-    """Test code."""
-    loglevel = logging.DEBUG
-    logging.basicConfig(
-        level=loglevel,
-        format="%(asctime)s - %(name)s - " + "%(levelname)s - %(message)s",
-    )
-
-    logging.debug("Starting")
-    sobj = Sgpio()
-    for _unused in range(1, 2):
-        rd_val = sobj.wr_rd(2, wr_val=0)
-        logging.debug("rd_val = %d after <2> -> 0", (rd_val))
-        if rd_val != 0:
-            logging.error("rd_val = %d != 0", (rd_val))
-
-        rd_val = sobj.wr_rd(2, wr_val=1)
-        logging.debug("rd_val = %d after <2> -> 1", (rd_val))
-        if rd_val != 1:
-            logging.error("rd_val = %d != 1", (rd_val))
-
-        rd_val = sobj.wr_rd(2, 1, wr_val=0)
-        logging.debug("rd_val = %d after <2> -> 0", (rd_val))
-        if rd_val != 0:
-            logging.error("rd_val = %d != 0", (rd_val))
-
-        # release as output
-        rd_val = sobj.wr_rd(2)
-        logging.debug("rd_val = %d after <2> dir released", (rd_val))
-        logging.info("rd_val = %d should match pu/pd", (rd_val))
-    logging.debug("Finished")
-
-
-if __name__ == "__main__":
-    test()

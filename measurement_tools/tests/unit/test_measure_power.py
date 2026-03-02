@@ -1,6 +1,7 @@
 # Copyright 2022 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=line-too-long
 """Test measure_power works as intended."""
 
 import math
@@ -20,7 +21,8 @@ class TestServodPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
+        self.mock_servo_client = unittest.mock.MagicMock()
+        self.mock_servo_client.clone.return_value = self.mock_servo_client
         with unittest.mock.patch(
             (
                 "measurement_tools.utils.timelined_stats_manager."
@@ -58,11 +60,11 @@ class TestServodPowerTracker(unittest.TestCase):
     def test_verify(self):
         """Test verify()."""
         self.tracker.verify()
-        self.mock_servo_client.set_get_all.assert_called_once_with(self.tracker._ctrls)
+        self.tracker._sclient.set_get_all.assert_called_once_with(self.tracker._ctrls)
 
     def test_verify_fail(self):
         """Test verify() failure scenario."""
-        self.mock_servo_client.set_get_all.side_effect = client.ServoClientError(
+        self.tracker._sclient.set_get_all.side_effect = client.ServoClientError(
             None, None
         )
         with self.assertRaises(measure_power.PowerTrackerError) as cm:
@@ -155,11 +157,11 @@ class TestServodPowerTracker(unittest.TestCase):
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_ctrls(self):
         """Test _sample_ctrls()."""
-        self.mock_servo_client.set_get_all.return_value = [1, 2]
+        self.tracker._sclient.set_get_all.return_value = [1, 2]
         res = self.tracker._sample_ctrls(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
-        self.mock_servo_client.set_get_all.assert_called_once_with(
+        self.tracker._sclient.set_get_all.assert_called_once_with(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
         self.assertEqual(
@@ -169,13 +171,13 @@ class TestServodPowerTracker(unittest.TestCase):
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_ctrls_failure(self):
         """Test _sample_ctrls() failure scenario."""
-        self.mock_servo_client.set_get_all.side_effect = client.ServoClientError(
+        self.tracker._sclient.set_get_all.side_effect = client.ServoClientError(
             None, None
         )
         (sample_tuples, duration_ms) = self.tracker._sample_ctrls(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
-        self.mock_servo_client.set_get_all.assert_called_once_with(
+        self.tracker._sclient.set_get_all.assert_called_once_with(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
         self.assertEqual(sample_tuples[0][0], "rail_name")
@@ -206,7 +208,8 @@ class TestHighResServodPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
+        self.mock_servo_client = unittest.mock.MagicMock()
+        self.mock_servo_client.clone.return_value = self.mock_servo_client
         with unittest.mock.patch(
             (
                 "measurement_tools.utils.timelined_stats_manager."
@@ -287,7 +290,8 @@ class TestOnboardADCPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
+        self.mock_servo_client = unittest.mock.MagicMock()
+        self.mock_servo_client.clone.return_value = self.mock_servo_client
         results = {
             "power_rails": ["ppchg5_mw", "ppservo5_mw", "ppdut5_mw"],
             "adc_ez_config_ctrls": [
@@ -315,7 +319,7 @@ class TestOnboardADCPowerTracker(unittest.TestCase):
     def test_prepare(self):
         """Test prepare()."""
         self.tracker.prepare()
-        self.mock_servo_client.set_get_all.assert_called_once_with(
+        self.tracker._sclient.set_get_all.assert_called_once_with(
             ["ppchg5_ez_config:on", "ppservo5_ez_config:on"]
         )
 
@@ -367,7 +371,8 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
+        self.mock_servo_client = unittest.mock.MagicMock()
+        self.mock_servo_client.clone.return_value = self.mock_servo_client
         results = {
             "avg_power_rails": ["ppchg5_mw", "ppservo5_mw"],
             "accum_clear_ctrls": ["ppdut5_mw"],
@@ -396,26 +401,26 @@ class TestOnboardADCAccumPowerTracker(unittest.TestCase):
     def test_prepare(self):
         """Test prepare()."""
         self.tracker.prepare()
-        self.mock_servo_client.set_get_all.assert_called_once_with(
+        self.tracker._sclient.set_get_all.assert_called_once_with(
             ["ppchg5_ez_config:on", "ppdut5_ez_config:on"]
         )
 
     def test_clear_accum(self):
         """Test _clear_accum()."""
         self.tracker.prepare()
-        self.mock_servo_client.set_get_all.assert_called_once_with(
+        self.tracker._sclient.set_get_all.assert_called_once_with(
             ["ppchg5_ez_config:on", "ppdut5_ez_config:on"]
         )
 
     @unittest.mock.patch("time.time", unittest.mock.MagicMock(return_value=12345))
     def test_sample_ctrls(self):
         """Test _sample_ctrls()."""
-        self.mock_servo_client.set_get_all.return_value = [1, 2]
+        self.tracker._sclient.set_get_all.return_value = [1, 2]
         self.tracker._clear_accum = unittest.mock.MagicMock()
         res = self.tracker._sample_ctrls(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
-        self.mock_servo_client.set_get_all.assert_called_once_with(
+        self.tracker._sclient.set_get_all.assert_called_once_with(
             ["avg_rail_name_avg_mw", "avg_rail_name2_avg_mw"]
         )
         self.tracker._clear_accum.assert_called_once()
@@ -478,7 +483,8 @@ class TestECPowerTracker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
+        self.mock_servo_client = unittest.mock.MagicMock()
+        self.mock_servo_client.clone.return_value = self.mock_servo_client
         with unittest.mock.patch(
             (
                 "measurement_tools.utils.timelined_stats_manager."
@@ -496,9 +502,9 @@ class TestECPowerTracker(unittest.TestCase):
 
     def test_verify(self):
         """Test verify()."""
-        self.mock_servo_client.set_get_all.side_effect = [None, None]
+        self.tracker._sclient.set_get_all.side_effect = [None, None]
         self.tracker.verify()
-        self.mock_servo_client.set_get_all.assert_has_calls(
+        self.tracker._sclient.set_get_all.assert_has_calls(
             [
                 unittest.mock.call(["ppvar_vbat_mw"]),
                 unittest.mock.call(["avg_ppvar_vbat_mw"]),
@@ -508,12 +514,12 @@ class TestECPowerTracker(unittest.TestCase):
 
     def test_verify_failure_fallback(self):
         """Test verify() fallback on failure of using avg_ppvar_vbat_mw."""
-        self.mock_servo_client.set_get_all.side_effect = [
+        self.tracker._sclient.set_get_all.side_effect = [
             None,
             measure_power.PowerTrackerError("msg"),
         ]
         self.tracker.verify()
-        self.mock_servo_client.set_get_all.assert_has_calls(
+        self.tracker._sclient.set_get_all.assert_has_calls(
             [
                 unittest.mock.call(["ppvar_vbat_mw"]),
                 unittest.mock.call(["avg_ppvar_vbat_mw"]),
@@ -524,7 +530,7 @@ class TestECPowerTracker(unittest.TestCase):
     def test_prepare(self):
         """Test prepare()."""
         self.tracker.prepare()
-        self.mock_servo_client.set.assert_called_once_with("ec_uart_cmd", "dsleep 2")
+        self.tracker._sclient.set.assert_called_once_with("ec_uart_cmd", "dsleep 2")
 
     def test_run(self):
         """Test run()."""
@@ -596,29 +602,48 @@ class TestPowerMeasurement(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.mock_servo_client = unittest.mock.MagicMock(spec=client.ServoClient)
+        self.mock_servo_client = unittest.mock.MagicMock()
+        self.mock_servo_client.clone.return_value = self.mock_servo_client
         results = {"ec_board": "atlas", "servo_adcs_enabled": "on"}
         self.mock_servo_client.get.side_effect = lambda x: results[x]
-        measure_power.OnboardADCPowerTracker.__init__ = unittest.mock.MagicMock(
-            return_value=None
+
+        # Use patch.object to avoid leaking mocks to other tests.
+        self._adc_patcher = unittest.mock.patch(
+            "measurement_tools.measure_power.OnboardADCPowerTracker"
         )
-        measure_power.OnboardADCPowerTracker.remove_rail = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.verify = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.empty = False
-        measure_power.OnboardADCPowerTracker.title = "onboard"
-        measure_power.OnboardADCAccumPowerTracker.__init__ = unittest.mock.MagicMock(
-            return_value=None
+        self.mock_adc_class = self._adc_patcher.start()
+        self.addCleanup(self._adc_patcher.stop)
+
+        self._adc_accum_patcher = unittest.mock.patch(
+            "measurement_tools.measure_power.OnboardADCAccumPowerTracker"
         )
-        measure_power.OnboardADCAccumPowerTracker.verify = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.rails = ["abc"]
-        measure_power.OnboardADCAccumPowerTracker.empty = False
-        measure_power.OnboardADCAccumPowerTracker.title = "onboard.accum"
-        measure_power.ECPowerTracker.__init__ = unittest.mock.MagicMock(
-            return_value=None
+        self.mock_adc_accum_class = self._adc_accum_patcher.start()
+        self.addCleanup(self._adc_accum_patcher.stop)
+
+        self._ec_patcher = unittest.mock.patch(
+            "measurement_tools.measure_power.ECPowerTracker"
         )
-        measure_power.ECPowerTracker.verify = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.empty = False
-        measure_power.ECPowerTracker.title = "ec"
+        self.mock_ec_class = self._ec_patcher.start()
+        self.addCleanup(self._ec_patcher.stop)
+
+        # Mock tracker instances
+        self.mock_adc_tracker = self.mock_adc_class.return_value
+        self.mock_adc_tracker.empty = False
+        self.mock_adc_tracker.title = "onboard"
+        self.mock_adc_tracker.rails = ["rail1", "rail2"]
+        self.mock_adc_tracker.is_alive.return_value = True
+
+        self.mock_adc_accum_tracker = self.mock_adc_accum_class.return_value
+        self.mock_adc_accum_tracker.empty = False
+        self.mock_adc_accum_tracker.title = "onboard.accum"
+        self.mock_adc_accum_tracker.rails = ["abc"]
+        self.mock_adc_accum_tracker.is_alive.return_value = False
+
+        self.mock_ec_tracker = self.mock_ec_class.return_value
+        self.mock_ec_tracker.empty = False
+        self.mock_ec_tracker.title = "ec"
+        self.mock_ec_tracker.rails = ["vbat"]
+        self.mock_ec_tracker.is_alive.return_value = True
 
     def test_init(self):
         """Test __init__()."""
@@ -626,29 +651,29 @@ class TestPowerMeasurement(unittest.TestCase):
         self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
-        self.mock_servo_client.set.assert_called_once_with("servo_adcs_enabled", "on")
-        measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
+        pm._sclient.set.assert_called_once_with("servo_adcs_enabled", "on")
+        self.mock_adc_class.assert_called_once_with(
             self.mock_servo_client,
             pm._stop_signal,
             unittest.mock.ANY,  # cfilter
             measure_power.DEFAULT_ADC_RATE,
         )
-        measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_accum_class.assert_called_once_with(
             self.mock_servo_client,
             pm._stop_signal,
             unittest.mock.ANY,  # cfilter
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
-        measure_power.ECPowerTracker.__init__.assert_called_once_with(
+        self.mock_ec_class.assert_called_once_with(
             self.mock_servo_client,
             pm._stop_signal,
             unittest.mock.ANY,  # cfilter
             measure_power.DEFAULT_VBAT_RATE,
         )
-        measure_power.OnboardADCPowerTracker.remove_rail.assert_called_once_with("abc")
-        measure_power.OnboardADCPowerTracker.verify.assert_called_once()
-        measure_power.OnboardADCAccumPowerTracker.verify.assert_called_once()
-        measure_power.ECPowerTracker.verify.assert_called_once()
+        self.mock_adc_tracker.remove_rail.assert_called_once_with("abc")
+        self.mock_adc_tracker.verify.assert_called_once()
+        self.mock_adc_accum_tracker.verify.assert_called_once()
+        self.mock_ec_tracker.verify.assert_called_once()
 
     def test_init_adc_disabled(self):
         """Test __init__()."""
@@ -676,15 +701,9 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_init_tracker_error(self):
         """Test __init__()."""
-        measure_power.OnboardADCPowerTracker.__init__ = unittest.mock.MagicMock(
-            side_effect=measure_power.PowerTrackerError()
-        )
-        measure_power.OnboardADCAccumPowerTracker.__init__ = unittest.mock.MagicMock(
-            side_effect=measure_power.PowerTrackerError()
-        )
-        measure_power.ECPowerTracker.__init__ = unittest.mock.MagicMock(
-            side_effect=measure_power.PowerTrackerError()
-        )
+        self.mock_adc_class.side_effect = measure_power.PowerTrackerError()
+        self.mock_adc_accum_class.side_effect = measure_power.PowerTrackerError()
+        self.mock_ec_class.side_effect = measure_power.PowerTrackerError()
         with self.assertRaises(measure_power.NoSourceError) as cm:
             measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(
@@ -693,19 +712,19 @@ class TestPowerMeasurement(unittest.TestCase):
         self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
-        measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_RATE,
         )
-        measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_accum_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
-        measure_power.ECPowerTracker.__init__.assert_called_once_with(
+        self.mock_ec_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
@@ -714,19 +733,10 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_init_tracker_empty(self):
         """Test __init__()."""
-        measure_power.OnboardADCPowerTracker.empty = True
-        measure_power.OnboardADCAccumPowerTracker.empty = True
-        measure_power.ECPowerTracker.empty = True
+        self.mock_adc_tracker.empty = True
+        self.mock_adc_accum_tracker.empty = True
+        self.mock_ec_tracker.empty = True
         with self.assertRaises(measure_power.NoSourceError) as cm:
-            measure_power.OnboardADCPowerTracker.__repr__ = unittest.mock.MagicMock(
-                return_value=""
-            )
-            measure_power.OnboardADCAccumPowerTracker.__repr__ = (
-                unittest.mock.MagicMock(return_value="")
-            )
-            measure_power.ECPowerTracker.__repr__ = unittest.mock.MagicMock(
-                return_value=""
-            )
             measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(
             str(cm.exception), "No power measurement source successfully setup."
@@ -734,19 +744,19 @@ class TestPowerMeasurement(unittest.TestCase):
         self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
-        measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_RATE,
         )
-        measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_accum_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
-        measure_power.ECPowerTracker.__init__.assert_called_once_with(
+        self.mock_ec_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
@@ -755,15 +765,11 @@ class TestPowerMeasurement(unittest.TestCase):
 
     def test_init_fail_verification(self):
         """Test __init__()."""
-        measure_power.OnboardADCPowerTracker.verify = unittest.mock.MagicMock(
-            side_effect=measure_power.PowerTrackerError()
+        self.mock_adc_tracker.verify.side_effect = measure_power.PowerTrackerError()
+        self.mock_adc_accum_tracker.verify.side_effect = (
+            measure_power.PowerTrackerError()
         )
-        measure_power.OnboardADCAccumPowerTracker.verify = unittest.mock.MagicMock(
-            side_effect=measure_power.PowerTrackerError()
-        )
-        measure_power.ECPowerTracker.verify = unittest.mock.MagicMock(
-            side_effect=measure_power.PowerTrackerError()
-        )
+        self.mock_ec_tracker.verify.side_effect = measure_power.PowerTrackerError()
         with self.assertRaises(measure_power.NoSourceError) as cm:
             measure_power.PowerMeasurement(self.mock_servo_client)
         self.assertEqual(
@@ -772,27 +778,27 @@ class TestPowerMeasurement(unittest.TestCase):
         self.mock_servo_client.get.assert_has_calls(
             [unittest.mock.call("ec_board"), unittest.mock.call("servo_adcs_enabled")]
         )
-        measure_power.OnboardADCPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_RATE,
         )
-        measure_power.OnboardADCAccumPowerTracker.__init__.assert_called_once_with(
+        self.mock_adc_accum_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_ADC_ACCUM_RATE,
         )
-        measure_power.ECPowerTracker.__init__.assert_called_once_with(
+        self.mock_ec_class.assert_called_once_with(
             self.mock_servo_client,
             unittest.mock.ANY,
             unittest.mock.ANY,
             measure_power.DEFAULT_VBAT_RATE,
         )
-        measure_power.OnboardADCPowerTracker.verify.assert_called_once()
-        measure_power.OnboardADCAccumPowerTracker.verify.assert_called_once()
-        measure_power.ECPowerTracker.verify.assert_called_once()
+        self.mock_adc_tracker.verify.assert_called_once()
+        self.mock_adc_accum_tracker.verify.assert_called_once()
+        self.mock_ec_tracker.verify.assert_called_once()
 
     def test_reset(self):
         """Test Reset()."""
@@ -858,32 +864,22 @@ class TestPowerMeasurement(unittest.TestCase):
         pm._stop_signal = threading.Event()
         pm._stop_signal.wait = unittest.mock.MagicMock()
         pm._stop_signal.is_set = unittest.mock.MagicMock(return_value=False)
-        measure_power.OnboardADCPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.start = unittest.mock.MagicMock()
 
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
             pm._measure_power(10, "S0")
-            measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
-                False, "S0"
-            )
-            measure_power.OnboardADCAccumPowerTracker.prepare.assert_called_once_with(
-                False, "S0"
-            )
-            measure_power.ECPowerTracker.prepare.assert_called_once_with(False, "S0")
+            self.mock_adc_tracker.prepare.assert_called_once_with(False, "S0")
+            self.mock_adc_accum_tracker.prepare.assert_called_once_with(False, "S0")
+            self.mock_ec_tracker.prepare.assert_called_once_with(False, "S0")
             self.assertEqual(
                 pm._outdir, "/tmp/power_measurements/atlas/S0_19700101-032545"
             )
             pm._setup_done.set.assert_called_once()
             pm._stop_signal.wait.assert_called_once_with(10)
-            measure_power.OnboardADCPowerTracker.start.assert_called_once()
-            measure_power.OnboardADCAccumPowerTracker.start.assert_called_once()
-            measure_power.ECPowerTracker.start.assert_called_once()
+            self.mock_adc_tracker.start.assert_called_once()
+            self.mock_adc_accum_tracker.start.assert_called_once()
+            self.mock_ec_tracker.start.assert_called_once()
 
     def test__measure_power_unknown(self):
         """Test _measure_power()."""
@@ -899,39 +895,29 @@ class TestPowerMeasurement(unittest.TestCase):
         pm._stop_signal = threading.Event()
         pm._stop_signal.wait = unittest.mock.MagicMock()
         pm._stop_signal.is_set = unittest.mock.MagicMock(return_value=False)
-        measure_power.OnboardADCPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.start = unittest.mock.MagicMock()
 
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
             pm._measure_power(10)
-            measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
-                False, "S0"
-            )
-            measure_power.OnboardADCAccumPowerTracker.prepare.assert_called_once_with(
-                False, "S0"
-            )
-            measure_power.ECPowerTracker.prepare.assert_called_once_with(False, "S0")
+            self.mock_adc_tracker.prepare.assert_called_once_with(False, "S0")
+            self.mock_adc_accum_tracker.prepare.assert_called_once_with(False, "S0")
+            self.mock_ec_tracker.prepare.assert_called_once_with(False, "S0")
             self.assertEqual(
                 pm._outdir, "/tmp/power_measurements/atlas/S0_19700101-032545"
             )
             pm._setup_done.set.assert_called_once()
             pm._stop_signal.wait.assert_called_once_with(10)
-            measure_power.OnboardADCPowerTracker.start.assert_called_once()
-            measure_power.OnboardADCAccumPowerTracker.start.assert_called_once()
-            measure_power.ECPowerTracker.start.assert_called_once()
+            self.mock_adc_tracker.start.assert_called_once()
+            self.mock_adc_accum_tracker.start.assert_called_once()
+            self.mock_ec_tracker.start.assert_called_once()
 
     def test__measure_power_unknown_failure(self):
         """Test _measure_power()."""
         # Constructor calls get("ec_board") then set("servo_adcs_enabled", "on")
         # then get("servo_adcs_enabled")
         # We want constructor to have board "atlas" but _measure_power to fail.
-        self.mock_servo_client.get.side_effect = ["atlas", "on"]
+        self.mock_servo_client.get.side_effect = ["atlas", "on", "on"]
         pm = measure_power.PowerMeasurement(self.mock_servo_client)
 
         # Now mock it for _measure_power
@@ -943,24 +929,18 @@ class TestPowerMeasurement(unittest.TestCase):
         pm._stop_signal = threading.Event()
         pm._stop_signal.wait = unittest.mock.MagicMock()
         pm._stop_signal.is_set = unittest.mock.MagicMock(return_value=False)
-        measure_power.OnboardADCPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.start = unittest.mock.MagicMock()
 
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
             pm._measure_power(10)
-            measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
+            self.mock_adc_tracker.prepare.assert_called_once_with(
                 False, measure_power.UNKNOWN_POWERSTATE
             )
-            measure_power.OnboardADCAccumPowerTracker.prepare.assert_called_once_with(
+            self.mock_adc_accum_tracker.prepare.assert_called_once_with(
                 False, measure_power.UNKNOWN_POWERSTATE
             )
-            measure_power.ECPowerTracker.prepare.assert_called_once_with(
+            self.mock_ec_tracker.prepare.assert_called_once_with(
                 False, measure_power.UNKNOWN_POWERSTATE
             )
             self.assertEqual(
@@ -968,9 +948,9 @@ class TestPowerMeasurement(unittest.TestCase):
             )
             pm._setup_done.set.assert_called_once()
             pm._stop_signal.wait.assert_called_once_with(10)
-            measure_power.OnboardADCPowerTracker.start.assert_called_once()
-            measure_power.OnboardADCAccumPowerTracker.start.assert_called_once()
-            measure_power.ECPowerTracker.start.assert_called_once()
+            self.mock_adc_tracker.start.assert_called_once()
+            self.mock_adc_accum_tracker.start.assert_called_once()
+            self.mock_ec_tracker.start.assert_called_once()
 
     def test__measure_power_fast_stop(self):
         """Test _measure_power()."""
@@ -980,56 +960,34 @@ class TestPowerMeasurement(unittest.TestCase):
         pm._stop_signal = threading.Event()
         pm._stop_signal.wait = unittest.mock.MagicMock()
         pm._stop_signal.is_set = unittest.mock.MagicMock(return_value=True)
-        measure_power.OnboardADCPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.prepare = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.start = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.start = unittest.mock.MagicMock()
 
         with unittest.mock.patch(
             "time.strftime", unittest.mock.MagicMock(return_value="19700101-032545")
         ):
             pm._measure_power(10, "S0")
-            measure_power.OnboardADCPowerTracker.prepare.assert_called_once_with(
-                True, "S0"
-            )
-            measure_power.OnboardADCAccumPowerTracker.prepare.assert_called_once_with(
-                True, "S0"
-            )
-            measure_power.ECPowerTracker.prepare.assert_called_once_with(True, "S0")
+            self.mock_adc_tracker.prepare.assert_called_once_with(True, "S0")
+            self.mock_adc_accum_tracker.prepare.assert_called_once_with(True, "S0")
+            self.mock_ec_tracker.prepare.assert_called_once_with(True, "S0")
             self.assertEqual(
                 pm._outdir, "/tmp/power_measurements/atlas/S0_19700101-032545"
             )
             pm._setup_done.set.assert_called_once()
             pm._stop_signal.wait.assert_called_once_with(10)
-            measure_power.OnboardADCPowerTracker.start.assert_not_called()
-            measure_power.OnboardADCAccumPowerTracker.start.assert_not_called()
-            measure_power.ECPowerTracker.start.assert_not_called()
+            self.mock_adc_tracker.start.assert_not_called()
+            self.mock_adc_accum_tracker.start.assert_not_called()
+            self.mock_ec_tracker.start.assert_not_called()
 
     def test_finish_measurement(self):
         """Test finish_measurement()."""
         pm = measure_power.PowerMeasurement(self.mock_servo_client)
         pm._stop_signal.set = unittest.mock.MagicMock()
-        measure_power.OnboardADCPowerTracker.is_alive = unittest.mock.MagicMock(
-            return_value=True
-        )
-        measure_power.OnboardADCAccumPowerTracker.is_alive = unittest.mock.MagicMock(
-            return_value=False
-        )
-        measure_power.ECPowerTracker.is_alive = unittest.mock.MagicMock(
-            return_value=True
-        )
-        measure_power.OnboardADCPowerTracker.join = unittest.mock.MagicMock()
-        measure_power.OnboardADCAccumPowerTracker.join = unittest.mock.MagicMock()
-        measure_power.ECPowerTracker.join = unittest.mock.MagicMock()
 
         pm.finish_measurement()
 
         pm._stop_signal.set.assert_called_once()
-        measure_power.OnboardADCPowerTracker.join.assert_called_once()
-        measure_power.OnboardADCAccumPowerTracker.join.assert_not_called()
-        measure_power.ECPowerTracker.join.assert_called_once()
+        self.mock_adc_tracker.join.assert_called_once()
+        self.mock_adc_accum_tracker.join.assert_not_called()
+        self.mock_ec_tracker.join.assert_called_once()
 
     def test_get_pm_status(self):
         """Test get_pm_status()."""
@@ -1049,27 +1007,17 @@ class TestPowerMeasurement(unittest.TestCase):
         stats_manager1 = stats_manager.StatsManager()
         stats_manager2 = stats_manager.StatsManager()
         stats_manager3 = stats_manager.StatsManager()
-        measure_power.OnboardADCPowerTracker.process_measurement = (
-            unittest.mock.MagicMock(return_value=stats_manager1)
-        )
-        measure_power.OnboardADCAccumPowerTracker.process_measurement = (
-            unittest.mock.MagicMock(return_value=stats_manager2)
-        )
-        measure_power.ECPowerTracker.process_measurement = unittest.mock.MagicMock(
-            return_value=stats_manager3
-        )
+        self.mock_adc_tracker.process_measurement.return_value = stats_manager1
+        self.mock_adc_accum_tracker.process_measurement.return_value = stats_manager2
+        self.mock_ec_tracker.process_measurement.return_value = stats_manager3
 
         pm.process_measurement(123, 456)
 
-        measure_power.OnboardADCPowerTracker.process_measurement.assert_called_once_with(  # pylint: disable=line-too-long
+        self.mock_adc_tracker.process_measurement.assert_called_once_with(123, 456)
+        self.mock_adc_accum_tracker.process_measurement.assert_called_once_with(
             123, 456
         )
-        measure_power.OnboardADCAccumPowerTracker.process_measurement.assert_called_once_with(  # pylint: disable=line-too-long
-            123, 456
-        )
-        measure_power.ECPowerTracker.process_measurement.assert_called_once_with(
-            123, 456
-        )
+        self.mock_ec_tracker.process_measurement.assert_called_once_with(123, 456)
         self.assertEqual(pm._stats["onboard"], stats_manager1)
         self.assertEqual(pm._stats["onboard.accum"], stats_manager2)
         self.assertEqual(pm._stats["ec"], stats_manager3)
@@ -1314,40 +1262,25 @@ class TestPowerMeasurement(unittest.TestCase):
     def test_get_sample_data(self):
         """Test get_sample_data()."""
         pm = measure_power.PowerMeasurement(self.mock_servo_client)
-        measure_power.OnboardADCPowerTracker.get_sample_data = unittest.mock.MagicMock(
-            return_value=["1"]
-        )
-        measure_power.OnboardADCAccumPowerTracker.get_sample_data = (
-            unittest.mock.MagicMock(return_value=[])
-        )
-        measure_power.ECPowerTracker.get_sample_data = unittest.mock.MagicMock(
-            return_value=["3"]
-        )
+        self.mock_adc_tracker.get_sample_data.return_value = ["1"]
+        self.mock_adc_accum_tracker.get_sample_data.return_value = []
+        self.mock_ec_tracker.get_sample_data.return_value = ["3"]
 
         res = pm.get_sample_data()
 
-        measure_power.OnboardADCPowerTracker.get_sample_data.assert_called_once()
-        measure_power.OnboardADCAccumPowerTracker.get_sample_data.assert_called_once()
-        measure_power.ECPowerTracker.get_sample_data.assert_called_once()
+        self.mock_adc_tracker.get_sample_data.assert_called_once()
+        self.mock_adc_accum_tracker.get_sample_data.assert_called_once()
+        self.mock_ec_tracker.get_sample_data.assert_called_once()
         self.assertEqual(res, ["1", "3"])
 
     def test_clean_sample_data(self):
         """Test clean_sample_data()."""
         pm = measure_power.PowerMeasurement(self.mock_servo_client)
-        measure_power.OnboardADCPowerTracker.clean_sample_data = (
-            unittest.mock.MagicMock()
-        )
-
-        measure_power.OnboardADCAccumPowerTracker.clean_sample_data = (
-            unittest.mock.MagicMock()
-        )
-        measure_power.ECPowerTracker.clean_sample_data = unittest.mock.MagicMock()
-
         pm.clean_sample_data()
 
-        measure_power.OnboardADCPowerTracker.clean_sample_data.assert_called_once()
-        measure_power.OnboardADCAccumPowerTracker.clean_sample_data.assert_called_once()
-        measure_power.ECPowerTracker.clean_sample_data.assert_called_once()
+        self.mock_adc_tracker.clean_sample_data.assert_called_once()
+        self.mock_adc_accum_tracker.clean_sample_data.assert_called_once()
+        self.mock_ec_tracker.clean_sample_data.assert_called_once()
 
 
 if __name__ == "__main__":

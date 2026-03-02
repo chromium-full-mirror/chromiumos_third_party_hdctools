@@ -1,6 +1,7 @@
 # Copyright 2026 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=import-outside-toplevel
 
 """Fixtures for mocking SysInterface."""
 
@@ -50,7 +51,6 @@ class MockSysInterface:
                 logging.debug("MockSysInterface failed to close real fd %s: %s", fd, e)
 
     def __getattr__(self, name):
-        # pylint: disable=import-outside-toplevel
         # Fallback to the real os/subprocess methods for unmocked ones
         import servo.utils.sys_interface
 

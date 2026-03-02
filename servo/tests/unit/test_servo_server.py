@@ -6,7 +6,6 @@ import unittest
 import unittest.mock
 
 from servo.common import servo_dev_templates
-from servo.core import recovery
 from servo.core import servo_dev
 from servo.core import servo_server
 from servo.utils import diagnose
@@ -456,7 +455,11 @@ class TestServod(unittest.TestCase):
         servod.get_board = unittest.mock.MagicMock(return_value=None)
         servod.validate_dut_controller()
 
-    def test_validate_dut_controller_recovery(self):
+    @unittest.mock.patch("servo.utils.diagnose.diagnose_ccd")
+    @unittest.mock.patch("servo.core.recovery.is_recovery_active")
+    def test_validate_dut_controller_recovery(
+        self, mock_is_recovery_active, mock_diagnose_ccd
+    ):
         """Test validate_dut_controller() under recovery mode."""
         servod = servo_server.Servod()
         servod._logger.error = unittest.mock.MagicMock()
@@ -468,10 +471,8 @@ class TestServod(unittest.TestCase):
         servod.get = unittest.mock.MagicMock(return_value="type-c")
         servod.set = unittest.mock.MagicMock()
         servod.get_main_device = unittest.mock.MagicMock(return_value=dev)
-        diagnose.diagnose_ccd = unittest.mock.MagicMock(
-            return_value=[diagnose.SBU_VOLTAGE_FLOAT]
-        )
-        recovery.is_recovery_active = unittest.mock.MagicMock(return_value=True)
+        mock_diagnose_ccd.return_value = [diagnose.SBU_VOLTAGE_FLOAT]
+        mock_is_recovery_active.return_value = True
 
         servod.validate_dut_controller()
 
@@ -502,7 +503,11 @@ class TestServod(unittest.TestCase):
             "Will continue startup as recovery mode has been requested"
         )
 
-    def test_validate_dut_controller_erro(self):
+    @unittest.mock.patch("servo.utils.diagnose.diagnose_ccd")
+    @unittest.mock.patch("servo.core.recovery.is_recovery_active")
+    def test_validate_dut_controller_erro(
+        self, mock_is_recovery_active, mock_diagnose_ccd
+    ):
         """Test validate_dut_controller() in case of error not under recovery mode."""
         servod = servo_server.Servod()
         servod._logger.error = unittest.mock.MagicMock()
@@ -514,10 +519,8 @@ class TestServod(unittest.TestCase):
         servod.get = unittest.mock.MagicMock(return_value="type-c")
         servod.set = unittest.mock.MagicMock()
         servod.get_main_device = unittest.mock.MagicMock(return_value=dev)
-        diagnose.diagnose_ccd = unittest.mock.MagicMock(
-            return_value=[diagnose.SBU_VOLTAGE_FLOAT]
-        )
-        recovery.is_recovery_active = unittest.mock.MagicMock(return_value=False)
+        mock_diagnose_ccd.return_value = [diagnose.SBU_VOLTAGE_FLOAT]
+        mock_is_recovery_active.return_value = False
 
         with self.assertRaises(SystemExit) as cm:
             servod.validate_dut_controller()

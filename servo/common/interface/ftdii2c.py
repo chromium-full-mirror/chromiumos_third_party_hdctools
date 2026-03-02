@@ -1,6 +1,7 @@
 # Copyright 2011 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=arguments-renamed, unbalanced-tuple-unpacking
 """Allows creation of i2c interface via libftdii2c (C) library for FTDI devices."""
 
 import ctypes
@@ -266,7 +267,7 @@ class Fi2c(i2c_base.BaseI2CBus):
         return (rd_val.value & self._gpio.mask) >> offset
 
 
-def test():
+def test():  # pragma: no cover
     """Test code.
 
     (TODO) tbroch: enhance and make Googley & pythonic from a unittest perspective
@@ -304,5 +305,5 @@ def test():
     fobj.close()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover  # pragma: no cover
     test()

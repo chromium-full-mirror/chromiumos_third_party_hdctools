@@ -32,6 +32,11 @@ WORKDIR /hdctools/usbkm232
 RUN python3 setup.py bdist_wheel
 
 #####################################################################
+FROM hdctools-builder as hdctools-measurement-tools-builder
+WORKDIR /hdctools/measurement_tools
+RUN python3 setup.py bdist_wheel
+
+#####################################################################
 FROM hdctools-builder as hdctools-ec3po-builder
 WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
@@ -46,6 +51,7 @@ COPY --link --from=hdctools-builder /usr/lib/libftdiuart*.so /usr/lib/
 COPY --link --from=hdctools-builder /usr/lib/libftdigpio*.so /usr/lib/
 COPY --link --from=hdctools-builder /hdctools/servo/dist/* ./
 COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/* ./
+COPY --link --from=hdctools-measurement-tools-builder /hdctools/measurement_tools/dist/* ./
 COPY --link --from=hdctools-ec3po-builder /hdctools/ec3po/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
 RUN pip3  install  *.whl --break-system-packages

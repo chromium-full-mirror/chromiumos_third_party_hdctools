@@ -5,7 +5,7 @@
 
 import os
 
-# pylint: disable=redefined-outer-name,import-error
+# pylint: disable=import-error, redefined-outer-name, wrong-import-position
 import subprocess
 import sys
 from unittest import mock

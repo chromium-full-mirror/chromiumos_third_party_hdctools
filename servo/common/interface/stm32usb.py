@@ -301,7 +301,7 @@ class Susb(interface.Interface):
         self.wait_on_reset()
         with self._hold_lock(self._write_ep_lock):
             ep = self._get_ep(write=True)
-            ep.write(*args, **kwargs)
+            return ep.write(*args, **kwargs)
 
     def control(self, request, value):
         """Send control transfer.

@@ -81,7 +81,7 @@ def diagnose_ccd(servo_dev):
         logger.error("No USB exported from DUT Cr50")
         logger.error("")
         faults.append(SBU_VOLTAGE_LOW)
-    elif (NC_LOW < sbu1 < NC_HIGH) or (NC_LOW < sbu1 < NC_HIGH):
+    elif (NC_LOW < sbu1 < NC_HIGH) or (NC_LOW < sbu2 < NC_HIGH):
         faults.append(SBU_VOLTAGE_FLOAT)
 
     cr50_orientation = None

@@ -12,7 +12,7 @@ import threading
 import time
 import tty
 
-import usb  # pylint:disable=import-error
+import usb
 
 from . import stm32usb
 
@@ -251,5 +251,5 @@ def main():
         sys.exit(0)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
