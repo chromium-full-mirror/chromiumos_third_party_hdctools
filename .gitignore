@@ -32,3 +32,6 @@ scripts/checksum
 blocked_terms.txt
 
 coverage/**
+
+# Ignore generated test reports
+report_*.md

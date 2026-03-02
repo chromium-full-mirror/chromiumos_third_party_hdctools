@@ -83,7 +83,6 @@ ignored-modules=
     servo,
     servo_config_generator,
     servo_dev_templates,
-    servo_mfg,
     servo_updater,
     setuptools,
     sweetberry_preprocessor,

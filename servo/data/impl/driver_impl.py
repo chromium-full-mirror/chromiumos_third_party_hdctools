@@ -7,9 +7,11 @@ import json
 import logging
 
 from google.protobuf import empty_pb2
+from google.protobuf import json_format
 
 from servo.common.proto import driver_grpc
 from servo.common.proto import driver_pb2
+from servo.common.utils import json_utils
 from servo.common.utils import string_utils
 from servo.common.utils.interface_utils import InterfaceUtils
 from servo.data import drv as servo_drv
@@ -49,7 +51,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         """
         logger = logging.getLogger("driverImpl")
         # for get request there is no set value
-        is_get = len(driver_request.value) == 0
+        is_get = driver_request.HasField("set_empty_value")
         response = driver_pb2.DriverResponse()
         try:
             # interface ky for related vid, pid and serial
@@ -75,9 +77,10 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             if is_get:
                 get_value = drv.get()
                 params["response"] = syscfg.reformat_val(params, get_value)
-                response.value = json.dumps(params)
+                response.value = json_utils.dumps(params)
             else:
-                wr_val = syscfg.resolve_val(params, driver_request.value)
+                value = json_format.MessageToDict(driver_request.value)
+                wr_val = syscfg.resolve_val(params, value)
                 drv.set(wr_val)
             return response
         except DriverImplError as e:

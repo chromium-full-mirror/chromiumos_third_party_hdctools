@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 import time
 
+import grpc
+
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc
 from servo.data.drv import hw_driver
@@ -183,7 +185,12 @@ class PowerStateDriver(hw_driver.HwDriver):
         # Attempt to reinitialize the device in case the gsc reenumerated quicker
         # than the polling resolution. By now, if the device did not reenumerate,
         # the Watchdog should be attempting to catch & reinitialize it.
-        self._data_client.ReinitializeInterfaces()
+        try:
+            self._data_client.ReinitializeInterfaces()
+        except grpc.RpcError as e:
+            self._logger.info("Ignoring expected gRPC error during ReinitializeInterfaces after gsc_reboot: %s", e)
+        except Exception as e:
+            self._logger.info("Ignoring expected error during ReinitializeInterfaces after gsc_reboot: %s", e)
 
     def _set(self, statename):
         """Set power state according to `statename`."""

@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import unittest
-import unittest.mock
+
+from google.protobuf.empty_pb2 import Empty
 
 from servo.common import servo_dev_templates as tmpl
 from servo.common.proto import driver_pb2
@@ -178,13 +179,14 @@ class TestDriverImpl(unittest.TestCase):
             return_value=({}, na_drv, None)
         )
         na_drv.get = unittest.mock.MagicMock(return_value="return_value")
+
         request = driver_pb2.DriverRequest(
             control_name="cold_reset",
-            value="",
             vid=self.servo_v4_vid,
             pid=self.servo_v4_pid,
             serial=self.servo_v4_serial,
             device_type="servo_v4p1",
+            set_empty_value=Empty(),
         )
         driver_impl.CallDriver(request, None)
         na_drv.get.assert_called_once()
@@ -199,12 +201,12 @@ class TestDriverImpl(unittest.TestCase):
         na_drv.set = unittest.mock.MagicMock()
         request = driver_pb2.DriverRequest(
             control_name="cold_reset",
-            value="1",
             vid=self.servo_v4_vid,
             pid=self.servo_v4_pid,
             serial=self.servo_v4_serial,
             device_type="servo_v4p1",
         )
+        request.value.string_value = "1"
 
         driver_impl.CallDriver(request, None)
         na_drv.set.assert_called_once_with(1)

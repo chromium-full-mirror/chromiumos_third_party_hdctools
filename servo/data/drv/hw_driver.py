@@ -10,6 +10,7 @@ import weakref
 from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import servo_dev_grpc
+from servo.common.utils import json_utils
 from servo.utils.retry_util import retry_hardware
 
 
@@ -150,7 +151,8 @@ class HwDriver:
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        self._driver_client.SetServo(control_name=control, value=str(value))
+        val_pb = json_utils.wrap_value(value)
+        self._driver_client.SetServo(control_name=control, value=val_pb)
 
     def _servod_has_control(self, control):
         """Check if servod has a control with specified name"""
@@ -362,6 +364,8 @@ class HwDriver:
         """
         (offset, mask) = self._get_offset_mask()
         if offset is not None:
+            # Handle float-represented integers from gRPC/JSON.
+            hw_value = json_utils.ensure_int(hw_value)
             fmt_value = (hw_value & mask) >> offset
         else:
             fmt_value = hw_value
@@ -386,7 +390,9 @@ class HwDriver:
         """
         (offset, mask) = self._get_offset_mask()
         if offset is not None:
-            hw_value = logical_value << offset
+            # Handle float-represented integers from gRPC/JSON.
+            logical_value = json_utils.ensure_int(logical_value)
+            hw_value = (logical_value << offset) & mask
             if hw_value != (hw_value & mask):
                 raise HwDriverError("format value asserts bits outside mask")
         else:

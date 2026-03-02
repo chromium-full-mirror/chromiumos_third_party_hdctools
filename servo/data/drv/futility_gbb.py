@@ -7,6 +7,7 @@
 import re
 import subprocess
 
+from servo.common.utils import json_utils
 from servo.data.drv import hw_driver
 from servo.utils.sys_interface import sys_interface
 
@@ -90,14 +91,16 @@ class futilityGbb(hw_driver.HwDriver):
         try:
             # Enable access to AP SPI flash over CCD
             if cpu_fw_spi:
-                self._driver_client.SetServo(control_name=cpu_fw_spi, value="on")
+                val_pb = json_utils.wrap_value("on")
+                self._driver_client.SetServo(control_name=cpu_fw_spi, value=val_pb)
 
             # Run the futility gbb command
             return self._run_command(command)
         finally:
             # Undo the AP SPI flash setup
             if cpu_fw_spi:
-                self._driver_client.SetServo(control_name=cpu_fw_spi, value="off")
+                val_pb = json_utils.wrap_value("off")
+                self._driver_client.SetServo(control_name=cpu_fw_spi, value=val_pb)
 
     def _Set_ccd_flags(self, value):
         """Set the GBB flags with CCD."""

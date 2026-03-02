@@ -5,9 +5,11 @@ import json
 import logging
 
 from google.protobuf import empty_pb2
+from google.protobuf import json_format
 
 from servo.common.proto import servo_dev_grpc
 from servo.common.proto import servo_dev_pb2
+from servo.common.utils import json_utils
 from servo.utils.keyboard import get_keyboard
 from servo.utils.keyboard import set_keyboard
 from servo.utils.keyboard import set_usb_keyboard
@@ -40,7 +42,8 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         Set value on servo core
         """
         self.logger.debug("Handle request for %s, in context %s", request, context)
-        self.servod.set(request.control_name, request.value)
+        value = json_format.MessageToDict(request.value)
+        self.servod.set(request.control_name, value)
         return empty_pb2.Empty()
 
     def GetVersion(self, request, context):
@@ -70,7 +73,9 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
             selected_controls = self.servod.selected_controls
         else:
             selected_controls = []
-        response = servo_dev_pb2.ServiceResponse(response=json.dumps(selected_controls))
+        response = servo_dev_pb2.ServiceResponse(
+            response=json_utils.dumps(selected_controls)
+        )
         return response
 
     def SetSelectedControls(self, request, context):
@@ -78,7 +83,8 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         Set servo selected controls
         """
         self.logger.debug("Handle request for %s, in context %s", request, context)
-        self.servod.selected_controls[request.control_name] = request.control_value
+        value = json_format.MessageToDict(request.control_value)
+        self.servod.selected_controls[request.control_name] = value
         return empty_pb2.Empty()
 
     def GetInitKeyboard(self, request, context):
@@ -164,13 +170,13 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
     def GetSerials(self, request, context):
         self.logger.debug("Handle request for %s, in context %s", request, context)
         response = servo_dev_pb2.GetResponse()
-        response.get_value = json.dumps(self.servod.get_servo_serials())
+        response.get_value = json_utils.dumps(self.servod.get_servo_serials())
         return response
 
     def GetAllControls(self, request, context):
         self.logger.debug("Handle request for %s, in context %s", request, context)
         response = servo_dev_pb2.GetResponse()
-        response.get_value = json.dumps(list(self.servod._controls))
+        response.get_value = json_utils.dumps(list(self.servod._controls))
         return response
 
     def GetInitUsbKeyboard(self, request, context):
@@ -204,7 +210,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
     def GetFileConfig(self, request, context):
         """Get servo files configs"""
         self.logger.debug("Handle request for %s, in context %s", request, context)
-        file_config = json.dumps(
+        file_config = json_utils.dumps(
             self.servod.get_config_files(), sort_keys=True, indent=4
         )
         return servo_dev_pb2.ServiceResponse(response=file_config)
@@ -215,7 +221,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         devices_json = []
         for device in self.servod.get_devices():
             devices_json.append(json.loads(device.to_json()))
-        devices = json.dumps(devices_json, indent=4)
+        devices = json_utils.dumps(devices_json, indent=4)
         return servo_dev_pb2.ServiceResponse(response=devices)
 
     def GetTaggedControls(self, request, context):
@@ -225,7 +231,7 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         if "tag" not in params:
             raise ServoImplError("tag needs to be specified in params.")
         controls = self.servod.get_controls_for_tag(params["tag"])
-        return servo_dev_pb2.ServiceResponse(response=json.dumps(controls))
+        return servo_dev_pb2.ServiceResponse(response=json_utils.dumps(controls))
 
     def GetBaseBoard(self, request, context):
         """Get Base board name"""
@@ -315,21 +321,34 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """
         self.logger.debug("Handle request for %s, in context %s", request, context)
         serialnames = self.servod.get_servo_serials()
-        devices = self.servod.get_devices()
-        if request.name in devices:
-            device = devices.get(request.name)
-        # If the name isn't a device prefix, then it might be the serialname
+        devices_dict = self.servod._devices
+        unique_devices = self.servod.get_devices()
+
+        device = None
+        # 1. Exact match on prefix (e.g. 'root', 'main', 'ccd_cr50', 'ccd_gsc')
+        if request.name in devices_dict:
+            device = devices_dict[request.name]
+        # 2. Exact match on serialname
         elif request.name in serialnames.values():
-            for dev in devices:
+            for dev in unique_devices:
                 if request.name in dev.get_id():
                     device = dev
                     break
-        # If the name isn't a device prefix or serialname, it could be
-        # just the device type
+        # 3. Exact match on template TYPE
         else:
-            device = get_device_from_type(self.servod, request.name)
-            if device is None:
-                raise ServoImplError("Invalid device %s" % request.name)
+            candidates = []
+            for dev in unique_devices:
+                if dev.template.TYPE == request.name:
+                    candidates.append(dev)
+            if len(candidates) == 1:
+                device = candidates[0]
+            elif len(candidates) > 1:
+                raise ServoImplError(
+                    "Multiple devices matching with type %s" % request.name
+                )
+
+        if device is None:
+            raise ServoImplError("Invalid device %s" % request.name)
 
         device.set_disconnect_ok(request.disconnect_ok)
         return empty_pb2.Empty()

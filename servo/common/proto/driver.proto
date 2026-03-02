@@ -6,6 +6,7 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
 
 /*
     The DriverService provides RPC methods for interacting with drivers and interfaces.
@@ -68,7 +69,7 @@ message DriverRequest {
     // For get, it sent empty
      oneof set_value {
          // set value
-        string value = 7;
+        google.protobuf.Value value = 7;
         google.protobuf.Empty set_empty_value = 8;
     }
 }

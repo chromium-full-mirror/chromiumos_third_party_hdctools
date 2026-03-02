@@ -14,6 +14,7 @@ import time
 import tty
 from typing import Any, Dict, List, Optional, Tuple
 
+from google.protobuf import empty_pb2
 import grpc
 
 from servo.common import servo_dev_templates
@@ -21,6 +22,7 @@ from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc  # type: ignore
 from servo.common.proto import system_config_grpc  # type: ignore
+from servo.common.utils import json_utils
 from servo.common.utils import servo_logging
 import servo.utils.usb_hierarchy as usb_hierarchy
 
@@ -388,6 +390,9 @@ class ServoDevice:
             drv = self._get_param_drv(name)
             params = json.loads(drv.value)
             rd_val = params["response"]
+            # If it's a float that's equivalent to an int, convert it to int.
+            # This is common after gRPC/JSON serialization.
+            rd_val = json_utils.ensure_int(rd_val)
             wrapper.got_result(rd_val)
             return rd_val
 
@@ -427,8 +432,9 @@ class ServoDevice:
             drv: instance object of driver for particular control
             device_info: servo device information
         """
+        val_pb = None
         if set_value is not None:
-            set_value = str(set_value)
+            val_pb = json_utils.wrap_value(set_value)
 
         return self._driver_client.CallDriver(
             vid=self.template.VID,
@@ -437,7 +443,8 @@ class ServoDevice:
             interface_template=str(self._interfaces),
             control_name=control_name,
             device_type=self.template.TYPE,
-            value=set_value,
+            value=val_pb,
+            set_empty_value=None if val_pb else empty_pb2.Empty(),
         )
 
     def clear_cached_drv(self):
@@ -679,7 +686,7 @@ class ServoDevice:
             "root_hub_device": str(root_hub_device) if root_hub_device else None,
             "child_devices": [str(dev) for dev in self.get_child_devices()],
         }
-        return json.dumps(data, indent=4)
+        return json_utils.dumps(data, indent=4)
 
     def limit_ec_driver_channel(self, control_name):
         return self._driver_client.LimitEcDriverChannel(

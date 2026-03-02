@@ -786,6 +786,15 @@ class SystemConfig:
                 self._logger.error("Unrecognized input type.")
         # TODO(tbroch): deprecate below once all controls have input_type params
         try:
+            # If it's a float that's equivalent to an int, convert it to int.
+            # This is common with gRPC Value (number_value is double).
+            fval = float(str(map_vstr))
+            if fval == int(fval):
+                return int(fval)
+            return fval
+        except ValueError:
+            pass
+        try:
             return int(str(map_vstr), 0)
         except ValueError:
             pass

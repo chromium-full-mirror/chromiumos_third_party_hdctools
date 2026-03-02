@@ -26,3 +26,5 @@ filterwarnings = [
 ignore_missing_imports = true
 follow_imports = "silent"
 check_untyped_defs = true
+explicit_package_bases = true
+mypy_path = "."

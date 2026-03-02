@@ -8,6 +8,8 @@ import unittest.mock
 from unittest.mock import patch
 
 from google.protobuf import empty_pb2
+from google.protobuf import json_format
+from google.protobuf import struct_pb2
 
 from servo.common import servo_dev_templates as tmpl
 from servo.common.proto.servo_dev_pb2 import BoolRequest
@@ -116,7 +118,9 @@ class TestServoImpl(unittest.TestCase):
 
     def test_set_servo(self):
         """Test SetServo."""
-        request = SetServoRequest(control_name="control", value="val")
+        val_pb = struct_pb2.Value()
+        json_format.ParseDict("val", val_pb)
+        request = SetServoRequest(control_name="control", value=val_pb)
         self._servod.set = unittest.mock.MagicMock()
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.SetServo(request, None)
@@ -157,7 +161,9 @@ class TestServoImpl(unittest.TestCase):
 
     def test_set_selected_controls(self):
         """Test SetSelectedControls."""
-        request = SetRequest(control_name="control1", control_value="val1")
+        val_pb = struct_pb2.Value()
+        json_format.ParseDict("val1", val_pb)
+        request = SetRequest(control_name="control1", control_value=val_pb)
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         self._servod.selected_controls = {}
         servo_impl.SetSelectedControls(request, None)
@@ -380,8 +386,9 @@ class TestServoImpl(unittest.TestCase):
         request = WatchdogRequest(name="micro", disconnect_ok=True)
         self._servod.get_servo_serials = unittest.mock.MagicMock(return_value={})
         self._servod.get_devices = unittest.mock.MagicMock(
-            return_value={"micro": self._micro_dev}
+            return_value=[self._micro_dev]
         )
+        self._servod._devices = {"micro": self._micro_dev}
         self._micro_dev.set_disconnect_ok = unittest.mock.MagicMock()
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.UpdateDeviceDisconnectOk(request, None)

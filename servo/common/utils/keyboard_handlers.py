@@ -11,11 +11,14 @@ import json
 import logging
 import time
 
+from google.protobuf import json_format
+from google.protobuf import struct_pb2
 import serial
 
 from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import servo_dev_grpc
+from servo.common.utils import json_utils
 
 
 class InvalidJsonConfigError(HwDriverError):
@@ -42,7 +45,8 @@ class _HandlerTemplate:
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        self._driver_client.SetServo(control_name=control, value=str(value))
+        val_pb = json_utils.wrap_value(value)
+        self._driver_client.SetServo(control_name=control, value=val_pb)
 
     def is_open(self):
         """Query whether keyboard handler is open for use."""
@@ -1847,7 +1851,8 @@ class ServoUSBkm232Handler(USBkm232Handler):
 
     def _servod_set(self, control, value):
         """Set the value of the given control with proper prefix."""
-        self._driver_client.SetServo(control_name=control, value=str(value))
+        val_pb = json_utils.wrap_value(value)
+        self._driver_client.SetServo(control_name=control, value=val_pb)
 
     def open(self):
         """Take atmega out of reset, and potentially do legacy setup."""

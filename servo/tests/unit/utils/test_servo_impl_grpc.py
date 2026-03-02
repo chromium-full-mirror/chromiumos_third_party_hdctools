@@ -54,9 +54,8 @@ class TestServoImplGrpc(unittest.TestCase):
 
     def test_set_servo_success(self):
         """Test SetServo with a valid request."""
-        request = servo_dev_pb2.SetServoRequest(
-            control_name="test_control", value="test_value"
-        )
+        request = servo_dev_pb2.SetServoRequest(control_name="test_control")
+        request.value.string_value = "test_value"
 
         rpc = self._test_server.invoke_unary_unary(
             servo_dev_pb2.DESCRIPTOR.services_by_name["ServoService"].methods_by_name[

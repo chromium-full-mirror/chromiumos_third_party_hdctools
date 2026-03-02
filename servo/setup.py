@@ -125,6 +125,7 @@ setup(
     entry_points={
         "console_scripts": [
             "servod = servo.core.servod:main",
+            "servod-fission = servo.core.servod:main",
             "dut-control = servo.core.dut_control:main",
             "dut-power = measurement_tools.dut_power:main",
             "servodutil = servo.core.servodtool:servodutil",
