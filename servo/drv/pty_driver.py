@@ -171,7 +171,7 @@ class PtyDriver(hw_driver.HwDriver):
         flush_end_time = time.time() + FLUSH_UART_TIMEOUT
         while time.time() <= flush_end_time:
             try:
-                self._child.expect(".", timeout=0.01)
+                self._child.expect(r".+", timeout=0.01)
             except (pexpect.TIMEOUT, pexpect.EOF):
                 break
             except OSError as e:

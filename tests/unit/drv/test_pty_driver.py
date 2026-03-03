@@ -2,9 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os
+import pty
+import time
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+import pexpect
+import pexpect.fdpexpect
 import pytest
 
 from servo.drv.pty_driver import PtyDriver
@@ -36,16 +41,67 @@ def test_pty_driver_set_timeout(mock_set, mock_get, pty_driver):
     assert pty_driver._Get_uart_timeout() == 5.0
 
 
-@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
-def test_pty_driver_flush(mock_open, pty_driver):
+def test_pty_driver_flush_sends_newline(pty_driver):
     mock_child = MagicMock()
     mock_child.sendline.return_value = 1
+    mock_child.expect.side_effect = pexpect.TIMEOUT("timeout")
     pty_driver._child = mock_child
 
-    # Test success
     pty_driver._flush()
-    mock_child.sendline.assert_called_with("")
-    mock_child.expect.assert_called()
+
+    pty_driver._child.sendline.assert_called_once_with("")
+
+
+def test_pty_driver_flush_raises_error_on_sendline_fail(pty_driver):
+    mock_child = MagicMock()
+    mock_child.sendline.return_value = 0
+    pty_driver._child = mock_child
+
+    with pytest.raises(PtyError, match="Failed to send newline."):
+        pty_driver._flush()
+
+
+def test_pty_driver_flush_consumes_buffer_until_timeout(pty_driver):
+    mock_child = MagicMock()
+    mock_child.sendline.return_value = 1
+    mock_child.expect.side_effect = [None, None, pexpect.TIMEOUT("timeout")]
+    pty_driver._child = mock_child
+
+    pty_driver._flush()
+
+    assert pty_driver._child.expect.call_count == 3
+    pty_driver._child.expect.assert_called_with(r".+", timeout=0.01)
+
+
+def test_pty_driver_flush_handles_eof(pty_driver):
+    mock_child = MagicMock()
+    mock_child.sendline.return_value = 1
+    mock_child.expect.side_effect = pexpect.EOF("eof")
+    pty_driver._child = mock_child
+
+    pty_driver._flush()
+
+    pty_driver._child.expect.assert_called_once()
+
+
+def test_pty_driver_flush_clears_non_ascii_and_nil_chars(pty_driver):
+    m, s = pty.openpty()
+    child = pexpect.fdpexpect.fdspawn(m, use_poll=True)
+    pty_driver._child = child
+
+    # Write non-ascii, nil (\x00), and newlines
+    os.write(s, b"noise\x00\xff\x00\r\nmore noise\x80\r\n")
+    time.sleep(0.1)
+
+    # Call _flush, which should clear everything and timeout
+    pty_driver._flush()
+
+    # pexpect's internal buffers should be empty
+    assert child.buffer == b""
+    assert child.before == b""
+
+    os.close(s)
+    os.close(m)
 
 
 def test_pty_driver_make_xml_friendly(pty_driver):
