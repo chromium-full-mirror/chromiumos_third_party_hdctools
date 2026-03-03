@@ -51,12 +51,24 @@ steps:
   args:
     - -n=logical
     - --cov-report=lcov
+    - --cov-report=xml
     - --forked
     - --cov=/usr/local/lib/python3.13/dist-packages/servo
     - --cov=/usr/local/lib/python3.13/dist-packages/usbkm232
     - --cov=/usr/local/lib/python3.13/dist-packages/ec3po
     - /workspace/
   waitFor: ['test-build']
+
+- name: 'us-docker.pkg.dev/$PROJECT_ID/servod/servodtest:$COMMIT_SHA'
+  id: 'test-coverage-delta'
+  entrypoint: bash
+  args:
+    - -c
+    - |
+      git fetch origin main
+      sed -i 's#/usr/local/lib/python3.13/dist-packages/##g' /workspace/coverage.xml
+      diff-cover /workspace/coverage.xml --compare-branch=origin/main --fail-under=70
+  waitFor: ['test-python']
 
 
 - name: 'pyfound/black:25.9.0'

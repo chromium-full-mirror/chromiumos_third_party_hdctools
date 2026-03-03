@@ -19,6 +19,19 @@ repos:
   - id: check-merge-conflict
 - repo: local
   hooks:
+  - id: diff-cover
+    name: Check coverage of changed lines
+    entry: diff-cover
+    language: python
+    additional_dependencies: [diff-cover==10.2.0]
+    args:
+    - coverage/coverage.xml
+    - --compare-branch=origin/main
+    - --fail-under=70
+    always_run: true
+    pass_filenames: false
+- repo: local
+  hooks:
   - id: black
     name: Black (Docker)
     entry: pyfound/black:25.9.0 black

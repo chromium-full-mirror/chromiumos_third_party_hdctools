@@ -18,6 +18,7 @@ RUN apt-get update --no-install-recommends \
     python3-setuptools \
     python3-wheel \
     python3-pip \
+    git \
     build-essential \
     pkg-config \
     libftdi1-dev \

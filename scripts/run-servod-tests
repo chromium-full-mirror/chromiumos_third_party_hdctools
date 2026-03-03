@@ -36,10 +36,12 @@ if [ -d ${PWD}/coverage ]; then
         --cov=/usr/local/lib/python3.13/dist-packages/servo_updater \
         --cov=/usr/local/lib/python3.13/dist-packages/ec3po \
         --cov-report=lcov:/coverage/lcov.info \
+        --cov-report=xml:/coverage/coverage.xml \
         --cov-report=html:/coverage/cov.html "
 
     COVERAGE_POST_PROCESS="&& \
         sed -i s#/usr/local/lib/python3.13/dist-packages/##g /coverage/lcov.info && \
+        sed -i s#/usr/local/lib/python3.13/dist-packages/##g /coverage/coverage.xml && \
         chown -R ${CALLER_UID} /coverage/*"
 
     DOCKER_MOUNT="--volume ${PWD}/coverage:/coverage "

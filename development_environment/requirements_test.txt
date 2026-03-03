@@ -4,3 +4,4 @@
 requests==2.32.3
 docker==7.1.0
 flask==3.0.3
+diff-cover==9.2.0

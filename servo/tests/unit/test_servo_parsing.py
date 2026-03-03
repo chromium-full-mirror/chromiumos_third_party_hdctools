@@ -199,7 +199,11 @@ class TestServodClientParser(unittest.TestCase):
                 del os.environ[env_var]
         self._scratchdir = tempfile.mkdtemp()
         self._scratch = scratch.Scratch(self._scratchdir)
-        self._scratchport = 12345
+        self._fakesock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._fakesock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._fakesock.bind(("localhost", 0))
+        self._scratchport = self._fakesock.getsockname()[1]
+
         self._serial = "this-is-a-fake-serial"
         self._invalid_serial = "this-is-an-invalid-fake-serial"
         # PID not stored as a variable as it's not part of the test.
@@ -216,9 +220,6 @@ class TestServodClientParser(unittest.TestCase):
         # Overwrite default file to use the test's rc file
         self._original_rc = servo_parsing.DEFAULT_RC_FILE
         servo_parsing.DEFAULT_RC_FILE = self._rc_file
-        self._fakesock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._fakesock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._fakesock.bind(("localhost", self._scratchport))
 
     def setup_parser(self):
         """Helper to add parser."""
