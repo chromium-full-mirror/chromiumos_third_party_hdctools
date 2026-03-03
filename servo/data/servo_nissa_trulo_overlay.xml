@@ -9,6 +9,9 @@
     <name>x86_ec_common.xml</name>
   </include>
   <include>
+    <name>gsc_chassis_open.xml</name>
+  </include>
+  <include>
     <name>gsc_reset_pch_disable.xml</name>
   </include>
 
@@ -90,14 +93,6 @@
     into the DUT. -->
     <params clobber_ok="patch" init="off" />
   </control>
-
-  <control>
-    <name>chassis_open</name>
-    <doc>Enable ccd unlock without battery disconnect or 5 minute pwr btn press procedure.</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
-    offset="0" map="yesno_i" init="no" clobber_ok="never"></params>
-  </control>
-
   <control>
     <name>dev_mode</name>
     <alias>servo_spi_programming</alias>
