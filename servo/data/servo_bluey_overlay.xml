@@ -12,6 +12,9 @@
     <name>ec_efs2.xml</name>
   </include>
   <include>
+    <name>gsc_chassis_open.xml</name>
+  </include>
+  <include>
     <name>gsc_lid_open.xml</name>
   </include>
   <include>
@@ -99,12 +102,6 @@
         </item>
       </content>
     </params>
-  </control>
-  <control>
-    <name>chassis_open</name>
-    <doc>Enable ccd unlock without battery disconnect or 5 minute pwr btn press procedure.</doc>
-    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
-    offset="0" map="yesno_i" init="no" clobber_ok="never"></params>
   </control>
   <control>
     <name>dut_pd_data_role</name>

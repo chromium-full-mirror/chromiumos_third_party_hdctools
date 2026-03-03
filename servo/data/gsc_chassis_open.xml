@@ -1,0 +1,9 @@
+<root>
+  <!-- Setup chassis_open control -->
+  <control>
+    <name>chassis_open</name>
+    <doc>Enable ccd unlock without battery disconnect or 5 minute pwr btn press procedure.</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="0" map="yesno_i" init="no" clobber_ok="never"></params>
+  </control>
+</root>
