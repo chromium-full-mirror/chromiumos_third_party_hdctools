@@ -9,8 +9,6 @@ import logging
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
-import grpc
-
 from servo.common import servo_dev_templates
 from servo.common import sversion_util
 from servo.core import recovery
@@ -62,6 +60,8 @@ class Servod:
         )
         # All known controls of this servod instance
         self._controls: List[str] = []
+        # Store state for select_control drivers
+        self.selected_controls: Dict[str, Any] = {}
 
     def clear(self):
         """Clear all devices and serialnames."""
@@ -271,13 +271,13 @@ class Servod:
         dev, name = self._get_dev_and_name(name)
         try:
             return dev.get(name)
-        except grpc._channel._InactiveRpcError as e:
-            msg = e.details()
-            if msg.startswith(self.GRPC_EXC_MSG):
-                # pylint: disable=broad-exception-raised
-                raise Exception(msg[len(self.GRPC_EXC_MSG) :]) from e
-            # pylint: disable=broad-exception-raised
-            raise Exception(msg) from e
+        except Exception as e:
+            if hasattr(e, "details"):
+                msg = e.details()
+                if msg.startswith(self.GRPC_EXC_MSG):
+                    # pylint: disable=broad-exception-raised
+                    raise Exception(msg[len(self.GRPC_EXC_MSG) :]) from e
+            raise
 
     def get_legacy_serial_number(self, control_name):
         """Returns the desired serial number of a device.
@@ -346,13 +346,13 @@ class Servod:
         dev, name = self._get_dev_and_name(name)
         try:
             return dev.set(name, wr_val_str)
-        except grpc._channel._InactiveRpcError as e:
-            msg = e.details()
-            if msg.startswith(self.GRPC_EXC_MSG):
-                # pylint: disable=broad-exception-raised
-                raise Exception(msg[len(self.GRPC_EXC_MSG) :]) from e
-            # pylint: disable=broad-exception-raised
-            raise Exception(msg) from e
+        except Exception as e:
+            if hasattr(e, "details"):
+                msg = e.details()
+                if msg.startswith(self.GRPC_EXC_MSG):
+                    # pylint: disable=broad-exception-raised
+                    raise Exception(msg[len(self.GRPC_EXC_MSG) :]) from e
+            raise
 
     def update_known_ctrls(self):
         """Helper to generate a list of all accessible controls in servod."""

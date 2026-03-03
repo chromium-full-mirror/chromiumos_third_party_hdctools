@@ -136,6 +136,9 @@ class InterfaceUtils:
             else:
                 interface_list[i] = result
                 interface_init[i] = True
+            InterfaceUtils._logger.info(
+                "Interface %d initialized: %s", i, interface_list[i]
+            )
 
     @staticmethod
     def get_interface_list(interface_key):

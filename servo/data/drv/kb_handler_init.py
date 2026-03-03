@@ -54,6 +54,6 @@ class kbHandlerInit(hw_driver.HwDriver):
     def _Set_init_default_keyboard(self, value):
         """Initialize the default keyboard on the servo instance."""
         request = servo_dev_pb2.SetKeyboard()
-        request.value = value
+        request.value = str(value)
         request.handler_type = self._handler_type
         self._driver_client.SetInitKeyboard(request)

@@ -18,6 +18,8 @@ import termios
 import time
 import tty
 
+from google.protobuf import empty_pb2
+
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
@@ -292,37 +294,51 @@ class EC3PO(uart.Uart):
                 interface_template=str(servo_interfaces.INTERFACE_DEFAULTS[vid][pid]),
                 control_name=raw_uart_name,
                 device_type="",
+                set_empty_value=empty_pb2.Empty(),
             )
-            raw_ec_uart = json.loads(drv.value)
-            ec_tokenized = raw_uart_source == "EC"
-            has_token_ctrl = scfg_client.IsControl(
-                vid=vid, pid=pid, serial=sid, control_name=EC_TOKENS_CONTROL
-            ).value
-            if has_token_ctrl:
-                ec_tokens_json = driver_client.CallDriver(
-                    vid=vid,
-                    pid=pid,
-                    serial=sid,
-                    interface_template=str(
-                        servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
-                    ),
-                    control_name=EC_TOKENS_CONTROL,
-                    device_type="",
+            if drv.WhichOneof("response") == "value":
+                raw_ec_uart = json.loads(drv.value)
+                ec_tokenized = raw_uart_source == "EC"
+                has_token_ctrl = scfg_client.IsControl(
+                    vid=vid, pid=pid, serial=sid, control_name=EC_TOKENS_CONTROL
                 ).value
-                ec_tokens_val = json.loads(ec_tokens_json)["value"]
-                ec_tokenized = EC_TOKENS_VALUES.get(ec_tokens_val)
-                if ec_tokenized is None:
-                    raise EC3POInterfaceError(
-                        "control {!r} invalid value {!r} is not one of {!r}".format(
-                            EC_TOKENS_CONTROL, ec_tokens_val, sorted(EC_TOKENS_VALUES)
-                        )
+                if has_token_ctrl:
+                    ec_tokens_json = driver_client.CallDriver(
+                        vid=vid,
+                        pid=pid,
+                        serial=sid,
+                        interface_template=str(
+                            servo_interfaces.INTERFACE_DEFAULTS[vid][pid]
+                        ),
+                        control_name=EC_TOKENS_CONTROL,
+                        device_type="",
+                        set_empty_value=empty_pb2.Empty(),
                     )
-            c.build_logger.info(f"Tokenized EC: {ec_tokenized}")
-            return EC3PO(
-                raw_ec_uart["response"],
-                raw_uart_source,
-                device_info,
-                token_db if ec_tokenized else None,
+                    if ec_tokens_json.WhichOneof("response") == "value":
+                        ec_tokens_val = json.loads(ec_tokens_json.value)["value"]
+                        ec_tokenized = EC_TOKENS_VALUES.get(ec_tokens_val)
+                        if ec_tokenized is None:
+                            raise EC3POInterfaceError(
+                                "control {!r} invalid value {!r} "
+                                "is not one of {!r}".format(
+                                    EC_TOKENS_CONTROL,
+                                    ec_tokens_val,
+                                    sorted(EC_TOKENS_VALUES),
+                                )
+                            )
+                    else:
+                        raise EC3POInterfaceError(
+                            f"Failed to get EC_TOKENS_CONTROL: {ec_tokens_json}"
+                        )
+                c.build_logger.info(f"Tokenized EC: {ec_tokenized}")
+                return EC3PO(
+                    raw_ec_uart["response"],
+                    raw_uart_source,
+                    device_info,
+                    token_db if ec_tokenized else None,
+                )
+            raise EC3POInterfaceError(
+                f"CallDriver for {raw_uart_name} did not return a value: {drv}"
             )
         except Exception:
             c.build_logger.info(

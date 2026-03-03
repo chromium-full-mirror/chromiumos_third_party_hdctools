@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import json
-import unittest
 
 import pytest
 
@@ -11,19 +10,12 @@ from servo.common.config import system_config
 from servo.tests.fixtures import common
 
 
-@pytest.mark.skip(
-    reason="Hangs in CI due to ec3po/gRPC interactions in mocked environment"
-)
 class TestMetadata:
     scfg = system_config.SystemConfig()
     scfg.add_cfg_file("", "servo_v4p1.xml")
     scfg.add_cfg_file("", "ccd_cr50.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_cr50(self, mock_host_with_4p1_servo_and_ccd, board, model):
         """Ensure the call
 
@@ -76,10 +68,6 @@ class TestMetadata:
     scfg.add_cfg_file("", "servo_micro.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_servo_micro(
         self, mock_host_with_4p1_servo_and_servo_micro, board, model
     ):
@@ -138,10 +126,6 @@ class TestMetadata:
     scfg.add_cfg_file("", "ccd_cr50.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_servo_micro_cr50(
         self, mock_host_with_4p1_servo_and_servo_micro_and_ccd, board, model
     ):
@@ -199,10 +183,6 @@ class TestMetadata:
     scfg.add_cfg_file("", "ccd_cr50.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_servo_micro_ccd_gsc(
         self, mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd, board, model
     ):
@@ -289,10 +269,6 @@ class TestMetadata:
     scfg.add_cfg_file("", "ccd_cr50.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_servo_micro_ccd_gsc_nt(
         self, mock_host_with_4p1_servo_and_servo_micro_and_gsc_ccd_nt, board, model
     ):
@@ -388,10 +364,6 @@ class TestMetadata:
     scfg.add_cfg_file("", "c2d2.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_c2d2(self, mock_host_with_4p1_servo_and_c2d2, board, model):
         """Ensure the call
 
@@ -442,10 +414,6 @@ class TestMetadata:
     scfg.add_cfg_file("", "ccd_cr50.xml")
 
     @pytest.mark.parametrize("board,model", common.get_board_model_pairs())
-    @unittest.mock.patch(
-        "servo.core.servod.ServodStarter._get_system_config",
-        unittest.mock.MagicMock(return_value=scfg),
-    )
     def test_servo_type_4p1_c2d2_cr50(
         self, mock_host_with_4p1_servo_and_c2d2_and_ccd, board, model
     ):

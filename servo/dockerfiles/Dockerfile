@@ -15,7 +15,7 @@ COPY / hdctools/
 
 WORKDIR /hdctools
 RUN echo 'HOSTOS_CWARN=' >> 'defs/c-Linux.mk'
-RUN make -j$(nproc)
+RUN HDCTOOLS_DIR=/hdctools make -j$(nproc)
 RUN make install
 
 WORKDIR /hdctools/servo

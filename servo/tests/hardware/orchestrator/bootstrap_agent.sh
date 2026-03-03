@@ -20,8 +20,7 @@ echo "[1/4] Establishing SSH Tunnel to $CLOUDTOP_HOST..."
 if pgrep -f "ssh -fN -L 5002:localhost:5000" > /dev/null; then
     echo "  -> Tunnel already active."
 else
-    ssh -fN -L 5002:localhost:5000 "$CLOUDTOP_HOST"
-    if [ $? -eq 0 ]; then
+    if ssh -fN -L 5002:localhost:5000 "$CLOUDTOP_HOST"; then
         echo "  -> Tunnel established on port 5002."
     else
         echo "  -> FAILED to establish tunnel. Are your keys configured?"

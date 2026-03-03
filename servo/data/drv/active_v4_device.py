@@ -80,11 +80,10 @@ class activeV4Device(hw_driver.HwDriver):
         servo_type = self._servod_get("servo_type")
         service = self._driver_client.GetInitV4Device(servo_type=servo_type, devices_keys=self.V4_DEVICES.keys(),
                                                       info_type=info_type)
-        self._logger.debug("Info device {} ".format(service.response))
         # for usable_devices it get as a list
-        if hasattr(service.response, "list"):
-            return service.response.list
-        return service.response
+        if service.WhichOneof("response") == "device_list":
+            return list(service.device_list.list)
+        return service.value
 
     def _Set_device(self, device):
         """Configure cr50 to enable using servo micro or ccd."""

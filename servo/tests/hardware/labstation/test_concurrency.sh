@@ -32,7 +32,7 @@ while IFS=',' read -r board model serial || [ -n "$board" ]; do
     [ "$board" == "board" ] && continue
 
     echo "Queueing: Board=$board, Model=$model, Serial=$serial on PORT=$PORT"
-    PORTS+=($PORT)
+    PORTS+=("$PORT")
     PORT_MAP[$PORT]="$board,$model,$serial"
     PORT=$((PORT - 1))
 done < "$CSV_FILE"

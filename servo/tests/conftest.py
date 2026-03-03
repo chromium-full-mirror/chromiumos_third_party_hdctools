@@ -5,6 +5,7 @@
 # These imports are necessary for pytest dependency injection.
 # pylint: disable=unused-import
 
+import sys
 import unittest.mock
 
 import pytest

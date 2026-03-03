@@ -49,9 +49,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         Raises:
           DriverImplError: Error occurred while using drv
         """
-        logger = logging.getLogger("driverImpl")
-        # for get request there is no set value
-        is_get = driver_request.HasField("set_empty_value")
+        is_get = driver_request.WhichOneof("set_value") != "value"
         response = driver_pb2.DriverResponse()
         try:
             # interface ky for related vid, pid and serial
@@ -83,7 +81,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 wr_val = syscfg.resolve_val(params, value)
                 drv.set(wr_val)
             return response
-        except DriverImplError as e:
+        except Exception as e:
             raise DriverImplError("Error occurred: {}".format(str(e)))
 
     def _get_param_drv(
@@ -138,6 +136,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 raise DriverImplError(
                     "No drv/interface for control %r found" % control_name
                 )
+
             # Store map params in params
             map_name = params.get("map")
             if map_name is not None:

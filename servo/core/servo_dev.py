@@ -571,8 +571,8 @@ class ServoDevice:
                 control_name="active_dut_controller",
             ).value:
                 self.set("active_dut_controller", "default")
-        except grpc._channel._InactiveRpcError as error:
-            self._logger.debug("Could not set active device: %s", str(error))
+        except Exception as error:
+            self._logger.error("Problem setting active_dut_controller: %s", error)
 
         return True
 

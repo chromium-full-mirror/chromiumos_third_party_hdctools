@@ -34,8 +34,10 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         response = system_config_pb2.SystemConfigResponse()
 
         # Populate the response message with data from the retrieved system configuration.
+        # Convert sets to lists for JSON serialization.
+        serializable_tags = {k: list(v) for k, v in scfg.control_tags.items()}
         response.systemConfig.add(
-            control_tags=json.dumps(scfg.control_tags),
+            control_tags=json.dumps(serializable_tags),
             aliases=json.dumps(scfg.aliases),
             syscfg_dict=json.dumps(scfg.syscfg_dict),
             hwinit=json.dumps(scfg.hwinit),
@@ -61,8 +63,10 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         response = system_config_pb2.SystemConfigResponse()
 
         # Populate the response message with data from the retrieved system configuration.
+        # Convert sets to lists for JSON serialization.
+        serializable_tags = {k: list(v) for k, v in scfg.control_tags.items()}
         response.systemConfig.add(
-            control_tags=json.dumps(scfg.control_tags),
+            control_tags=json.dumps(serializable_tags),
             aliases=json.dumps(scfg.aliases),
             syscfg_dict=json.dumps(scfg.syscfg_dict),
             hwinit=json.dumps(scfg.hwinit),

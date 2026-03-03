@@ -209,7 +209,7 @@ class ServodStarter:
                     (sopts.grpc_data_host, sopts.grpc_data_port),
                 )
                 break
-            except grpc._channel._InactiveRpcError as e:
+            except grpc.RpcError as e:
                 if e.code() != grpc.StatusCode.UNAVAILABLE:
                     raise
                 time.sleep(1)

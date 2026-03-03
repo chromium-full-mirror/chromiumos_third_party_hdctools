@@ -25,6 +25,11 @@ TAGS
 # build-time generated version file
 servo/sversion.py
 
+# Generated proto files
+servo/common/proto/*.py
+servo/common/proto/*.pyi
+servo/data/servo_*_inas.xml
+
 # checksum for script bootstrap
 scripts/checksum
 
