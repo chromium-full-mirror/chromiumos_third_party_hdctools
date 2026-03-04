@@ -8,6 +8,12 @@
   <include>
     <name>pdc_ccd_keepalive.xml</name>
   </include>
+  <include>
+    <name>gsc_chassis_open.xml</name>
+  </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
   <!-- ******** Controls ******** -->
   <control>
     <name>power_state</name>
