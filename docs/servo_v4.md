@@ -99,7 +99,8 @@ stuffed.
 
 The Type-C version acts as both a USB hub and PD charger. Servo v4 can also
 control both CC terminations which allows it to act as a debug accessory. It
-should be used on systems with [CCD].
+should be used on systems with [CCD]. In other words if you need the GSC
+console, you need this version.
 
 <!-- mdformat off(b/139308852) -->
 *** note
