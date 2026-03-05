@@ -12,7 +12,7 @@ trigger {
   }
   build_configs {
     file_source {
-      path: "servo/dockerfiles/cloudbuild.yaml"
+      path: "dockerfiles/cloudbuild.yaml"
     }
   }
   result_config {

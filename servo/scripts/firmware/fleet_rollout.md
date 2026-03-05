@@ -23,7 +23,7 @@ working, what channels to use and when to move from a non stable channel back to
 
 The new servo firmware must be in the current labstation release in one of the channels
 other than stable. Assuming you know what firmware channel you are updating to you can
-check this file ([link](https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/servo/dockerfiles/servo_firmware_provision.py#10)) to look for the channel for the right servo device.
+check this file ([link](https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/dockerfiles/servo_firmware_provision.py#10)) to look for the channel for the right servo device.
 
 To run the tools you will need:
 
@@ -137,7 +137,7 @@ string specified in the arguments it will schedule a repair job for that DUT.
 
 You can find the firmware version for the channel you are expecting by looking at this
 file
-[link](https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/servo/dockerfiles/servo_firmware_provision.py#10)
+[link](https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/refs/heads/main/dockerfiles/servo_firmware_provision.py#10)
 
 # Known Issues
 

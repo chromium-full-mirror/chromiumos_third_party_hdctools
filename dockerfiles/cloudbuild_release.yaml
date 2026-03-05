@@ -1,0 +1,19 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+steps:
+
+- name: 'gcr.io/kaniko-project/executor:latest'
+  id: 'build'
+  args:
+  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$_BRANCH_NAME-$_SPIN_NUMBER
+  - --cache=false
+  - -f=/workspace/dockerfiles/Dockerfile
+
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  pool:
+    name: 'projects/chromeos-hw-tools-dev/locations/us-central1/workerPools/proto-servo-pool'
+
+timeout: 1800s

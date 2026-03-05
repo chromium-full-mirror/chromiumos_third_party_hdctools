@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# pylint: disable=logging-fstring-interpolation
 # Copyright 2012 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -15,10 +16,11 @@ import logging
 import os
 import signal
 import socket
+import subprocess
 import sys
 import threading
 import time
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 import urllib.request
 import weakref
 from xmlrpc.server import SimpleXMLRPCServer
@@ -130,9 +132,6 @@ class ServodStarter:
         logging.basicConfig(level=loglevel, handlers=[default_handler])
         self._logger = logging.getLogger(os.path.basename(sys.argv[0]))
 
-        # Running servod in chroot is no longer supported.
-        self.exit_if_in_chroot()
-
         # Check for excluded kernel modules.
         self._check_for_excluded_modules()
 
@@ -161,6 +160,9 @@ class ServodStarter:
 
         servo_port = self._start_xml_server(sopts)
 
+        self._data_service_proc: Optional[subprocess.Popen[bytes]] = None
+        self._resolve_fission_ports(sopts)
+
         servo_logging.setup(
             logdir=sopts.log_dir,
             module="servod",
@@ -168,6 +170,9 @@ class ServodStarter:
             debug_stderr=sopts.debug,
             backup_count=sopts.log_dir_backup_count,
         )
+
+        if self.exit_if_in_chroot():
+            self._spawn_data_service(sopts)
 
         # Log the command line again now that we've configured logging based on
         # a successfully parsed command line.
@@ -389,7 +394,7 @@ class ServodStarter:
         server_pars.add_argument(
             "--grpc-core-port",
             type=int,
-            default=int(os.environ.get("SERVOD_GRPC_CORE_PORT", 9991)),
+            default=None,
             help="gRPC port that Core service will listen on",
         )
         server_pars.add_argument(
@@ -401,7 +406,7 @@ class ServodStarter:
         server_pars.add_argument(
             "--grpc-data-port",
             type=int,
-            default=int(os.environ.get("SERVOD_GRPC_DATA_PORT", 9992)),
+            default=None,
             help="gRPC Data service port to connect to",
         )
         # ServodRCParser adds configs for -name/-rcfile & serialname & parses them.
@@ -702,8 +707,84 @@ class ServodStarter:
             servo_device.init_servo_interfaces()
         self._servod.update_known_ctrls()
 
+    def _resolve_fission_ports(self, sopts):
+        """Resolve gRPC ports for Fission architecture."""
+        if sopts.grpc_core_port is None:
+            sopts.grpc_core_port = int(f"1{self._servo_port}")
+            self._logger.info("Resolved gRPC Core Port: %d", sopts.grpc_core_port)
+        if sopts.grpc_data_port is None:
+            sopts.grpc_data_port = int(f"2{self._servo_port}")
+            self._logger.info("Resolved gRPC Data Port: %d", sopts.grpc_data_port)
+
+    def _spawn_data_service(self, sopts):
+        """Spawn the servod_data subprocess."""
+        # Find the path to grpc_server_setup.py relative to this file
+        # This file is in servo/core/servod.py
+        # Script is in servo/data/grpc_server/grpc_server_setup.py
+
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        data_script = os.path.abspath(
+            os.path.join(
+                current_dir, "..", "data", "grpc_server", "grpc_server_setup.py"
+            )
+        )
+
+        # Base logdir is where servod placed its logs, e.g. /var/log/servod_9999
+        # The data service will write to /var/log/servod_9999/data_29999
+        logdir_base = os.path.join(sopts.log_dir, f"servod_{self._servo_port}")
+        nested_logdir = os.path.join(logdir_base, f"data_{sopts.grpc_data_port}")
+
+        try:
+            os.makedirs(nested_logdir, exist_ok=True)
+        except OSError as e:
+            self._logger.warning(
+                "Failed to create nested data log dir %s: %s", nested_logdir, e
+            )
+
+        cmd = [
+            sys.executable,
+            data_script,
+            "--grpc-core-host",
+            "localhost",
+            "--grpc-core-port",
+            str(sopts.grpc_core_port),
+            "--grpc-data-port",
+            str(sopts.grpc_data_port),
+            "--logs",
+            nested_logdir,
+        ]
+
+        env = os.environ.copy()
+        env["GRPC_POLL_STRATEGY"] = "epoll1"
+
+        self._logger.info(
+            "Cleaning up any orphaned Data Service on port %d...", sopts.grpc_data_port
+        )
+        try:
+            pattern = f"grpc_server_setup.py.*--grpc-data-port {sopts.grpc_data_port}"
+            subprocess.run(
+                ["pkill", "-f", pattern],
+                check=False,
+                stderr=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+            )
+            time.sleep(0.5)
+        except Exception as e:
+            self._logger.debug("Failed to clean up orphaned data service: %s", e)
+
+        self._logger.info("Spawning Data Service: %s", " ".join(cmd))
+        self._data_service_proc = subprocess.Popen(cmd, env=env)
+
     def cleanup(self):
         """Perform any cleanup related work after servod server shut down."""
+        if hasattr(self, "_data_service_proc") and self._data_service_proc:
+            self._logger.info("Terminating Data Service subprocess...")
+            self._data_service_proc.terminate()
+            try:
+                self._data_service_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self._logger.warning("Data Service did not exit, killing it.")
+                self._data_service_proc.kill()
         self._scratchutil.remove_entry(self._servo_port)
         self._logger.info(
             "Server on %s port %s turned down", self._host, self._servo_port
@@ -739,7 +820,8 @@ class ServodStarter:
         serials = set(self._servod.get_servo_serials().values())
         try:
             self._scratchutil.add_entry(self._servo_port, serials, os.getpid())
-        except scratch.ScratchError:
+        except scratch.ScratchError as e:
+            self._logger.error(f"Failed to add scratch entry: {e}")
             self._servod.close()
             sys.exit(1)
         self._watchdog_thread.start()
@@ -766,23 +848,27 @@ class ServodStarter:
         sys.exit(self._exit_status)
 
     def exit_if_in_chroot(self):
+        """Check if we are running in the cros_sdk (chroot).
+
+        Returns:
+            bool: True if in chroot and orchestration is requested, False otherwise.
+        """
         if os.environ.get("CROS_WORKON_SRCROOT"):
-            self._logger.info(
-                "\nRunning servod in the cros_sdk is no longer supported."
-                "\nPlease refer to https://chromium.googlesource.com/"
+            if os.environ.get("I_NEED_SERVO") == "1":
+                self._logger.info(
+                    "Running in cros_sdk with I_NEED_SERVO=1. "
+                    "Orchestrating Fission services."
+                )
+                return True
+
+            self._logger.fatal(
+                "\nRunning servod in the cros_sdk is no longer supported.\n"
+                "Please refer to https://chromium.googlesource.com/"
                 "chromiumos/third_party/hdctools/+/main/docs/"
                 "servod_outside_chroot.md"
             )
-            if os.environ.get("I_NEED_SERVOD"):
-                self._logger.info(
-                    "\n\n*********************************************************\n\n"
-                    "You are running servod in an override mode. "
-                    "\nProceed at your own risk with the understanding this may "
-                    "stop working at any time without notice."
-                    "\n\n*********************************************************\n\n"
-                )
-            else:
-                sys.exit(2)
+            sys.exit(1)
+        return False
 
     def _check_for_excluded_modules(self):
         """Check for excluded kernel modules and exit if found."""

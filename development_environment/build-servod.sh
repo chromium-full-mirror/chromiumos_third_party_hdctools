@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright 2026 The ChromiumOS Authors
+# Copyright 2023 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -24,11 +24,11 @@ docker pull "${BASE_REMOTE}" || true
 # 2. Build/Verify bases locally
 docker build -t servod-builder-base:local --target hdctools-builder-base \
     --cache-from "${BUILDER_BASE_REMOTE}" \
-    -f "${DIR}"/../servo/dockerfiles/Dockerfile.base "${DIR}"/..
+    -f "${DIR}"/../dockerfiles/Dockerfile.base "${DIR}"/..
 
 docker build -t servod-base:local --target base \
     --cache-from "${BASE_REMOTE}" \
-    -f "${DIR}"/../servo/dockerfiles/Dockerfile.base "${DIR}"/..
+    -f "${DIR}"/../dockerfiles/Dockerfile.base "${DIR}"/..
 
 if [ "$1" == "multi" ]
 then
@@ -42,10 +42,10 @@ then
 	    -o type=image \
         --build-arg BUILDER_BASE_IMG=servod-builder-base:local \
         --build-arg BASE_IMG=servod-base:local \
-	    -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
+	    -f "${DIR}"/../dockerfiles/Dockerfile "${DIR}"/..
 else
      docker build -t "${IMAGE}" \
         --build-arg BUILDER_BASE_IMG=servod-builder-base:local \
         --build-arg BASE_IMG=servod-base:local \
-        -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
+        -f "${DIR}"/../dockerfiles/Dockerfile "${DIR}"/..
 fi

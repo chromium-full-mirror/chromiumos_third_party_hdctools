@@ -1,0 +1,232 @@
+# syntax=docker/dockerfile:1.4
+# Copyright 2026 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+######################################################################
+FROM alpine/git as chromiumos_overlays
+WORKDIR /
+RUN git clone --filter=blob:none --no-checkout --depth 1 --sparse https://chromium.googlesource.com/chromiumos/overlays/chromiumos-overlay
+WORKDIR /chromiumos-overlay
+RUN git sparse-checkout init --cone
+RUN git sparse-checkout add dev-embedded/libftdi/files/ dev-embedded/libftdi/files/confs/
+RUN git checkout
+
+######################################################################
+FROM debian:trixie as clang-builder
+
+RUN apt-get update \
+    && apt-get install -y \
+    autoconf \
+    build-essential \
+    equivs \
+    clang \
+    curl \
+    git \
+    libssl-dev \
+    libtool \
+    pkg-config \
+    python3 \
+    python3-setuptools \
+    python3-wheel \
+    python3-grpc-tools \
+    python3-grpcio \
+    uuid-dev \
+    wget
+RUN update-alternatives --auto c++
+RUN update-alternatives --auto cc
+
+ENV CC=clang
+ENV CXX=clang++
+# Required to make the platform/ec makefile not think we are building
+# from portage.
+ENV BUILDCC_PREFIX=
+
+# Override the libraries we build ourselves, and do it early: no need to mess
+# up the library builds by building against distro packages that we don't
+# intend to use.
+COPY dockerfiles/equivs-control .
+RUN equivs-build equivs-control
+RUN apt-get install -y ./hdctools-docker-fake_9999-1_all.deb
+
+######################################################################
+FROM clang-builder as libusb-builder
+
+RUN git clone https://github.com/libusb/libusb
+WORKDIR /libusb
+RUN git checkout "$(git tag -l | egrep '^v[0-9]+\.[0-9]+.[0-9]+$' | sort -V | tail -1)"
+
+# Disable udev to avoid issues of libusb thinking the device is still attached
+# after a software reboot.
+RUN ./bootstrap.sh && ./configure --with-pic --disable-udev && make -j$(nproc) && make install
+
+# Change the package config to have pthread for linking.
+RUN sed -i 's/Libs: -L\${libdir} -lusb-1.0/Libs: -L\${libdir} -lusb-1.0 -lpthread /g' /libusb/libusb-1.0.pc
+
+#####################################################################
+FROM clang-builder as libftdi
+
+RUN wget https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.5.tar.bz2 \
+    && tar xf libftdi1-1.5.tar.bz2 \
+    && rm libftdi1-1.5.tar.bz2
+
+
+COPY --from=chromiumos_overlays \
+    /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
+    /usr/share/libftdi/
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    cmake \
+    libconfuse-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+
+COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+
+WORKDIR /libftdi1-1.5
+
+RUN mkdir build \
+    && cd build \
+    && cmake -DCMAKE_INSTALL_PREFIX="/usr" ../ \
+    && make -j$(nproc) \
+    && make install
+
+WORKDIR /
+
+######################################################################
+FROM libftdi as ec-builder
+
+RUN git clone --depth 1 https://chromium.googlesource.com/chromiumos/platform/ec
+
+WORKDIR /
+
+RUN git clone --depth 1 https://chromium.googlesource.com/chromiumos/third_party/flashmap
+
+WORKDIR /flashmap
+RUN make -j$(nproc) && make install
+
+RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
+
+WORKDIR /
+RUN tar cvf libs.tar /usr/lib/libfmap.so* /usr/lib/libftdi*
+
+######################################################################
+FROM libftdi as pigweed-builder
+ARG PIGWEED_URL=https://chromium.googlesource.com/chromiumos/third_party/pigweed/pigweed
+ARG PIGWEED_BRANCH=main
+
+RUN git clone ${PIGWEED_URL}
+
+WORKDIR /pigweed
+RUN git fetch ${PIGWEED_URL} ${PIGWEED_BRANCH}
+RUN git checkout ${PIGWEED_BRANCH}
+COPY dockerfiles/setup_pigweed.py .
+RUN python3 setup_pigweed.py bdist_wheel
+
+######################################################################
+FROM libftdi as gcstool-builder
+
+RUN git clone --depth 1 https://chromium.googlesource.com/chromiumos/platform/ec
+
+WORKDIR /ec
+
+RUN git fetch origin gsc_utils --depth 1 && git checkout FETCH_HEAD
+RUN find . -type f -name "Makefile*" -exec sed -i 's#-Werror # #'  {} \;
+RUN make -j$(nproc) -C extra/usb_updater gsctool
+
+RUN strip  /ec/extra/usb_updater/gsctool
+
+######################################################################
+FROM libftdi as hdctools-builder-base
+
+RUN apt-get update \
+    && apt-get install -y \
+    protobuf-compiler \
+    python3-grpc-tools
+
+######################################################################
+FROM debian:trixie-slim as base
+
+COPY --from=clang-builder hdctools-docker-fake_9999-1_all.deb /
+
+COPY dockerfiles/requirements_base.txt /tmp/requirements_base.txt
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    fwupd \
+    iptables \
+    lsof \
+    procps \
+    python3 \
+    python3-backoff \
+    python3-packaging \
+    python3-pexpect \
+    python3-pip \
+    python3-mypy \
+    pylint \
+    python3-protobuf \
+    python3-requests \
+    python3-serial \
+    python3-usb \
+    usbutils \
+    python3-grpc-tools \
+    python3-grpcio \
+    wget \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --require-hashes --ignore-installed -r /tmp/requirements_base.txt --break-system-packages \
+    && update-alternatives --set ip6tables /usr/sbin/ip6tables-nft \
+    && apt-get install -y /hdctools-docker-fake_9999-1_all.deb \
+    && rm -f /hdctools-docker-fake_9999-1_all.deb
+
+# Install libusb.
+COPY --link --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
+COPY --link --from=libusb-builder /libusb/*.pc /usr/lib/pkgconfig/
+COPY --link --from=libusb-builder /usr/local/lib/libusb-1.0.so.?.?.? /usr/local/lib/
+COPY --from=libusb-builder /usr/local/lib/libusb-1.0.a /usr/local/lib
+
+WORKDIR /wheels
+COPY --link --from=pigweed-builder /pigweed/dist/*.whl ./
+RUN pip3  install  *.whl --break-system-packages
+WORKDIR /
+RUN rm -rf wheels
+
+# Install servo_firmware.
+RUN mkdir -p /usr/share/servo_updater/firmware/
+
+COPY --link --from=chromiumos_overlays \
+    /chromiumos-overlay/dev-embedded/libftdi/files/confs/*.conf \
+    /usr/share/libftdi/
+
+COPY --link --from=ec-builder libs.tar .
+RUN tar xvf libs.tar
+RUN rm libs.tar
+
+ENV WARN_ONLY_ON_UNKNOWN_ENV="SERVO_FW_ALL_CHANNEL_OK"
+
+COPY /dockerfiles/update_servo_firmware.py \
+    /dockerfiles/start_servod.sh \
+    /dockerfiles/start_servod_dev.sh \
+    /dockerfiles/stop_servod.sh /
+
+# Running sync in the container with no params will crash the host bare metal as all disks
+# are mounted, put a script in the place of sync that checks are lease one argument is passed
+# if no arguments are passed an error is thrown.
+RUN mv /bin/sync /usr/local/bin/real_sync
+COPY /dockerfiles/sync /bin
+RUN chmod 755 /bin/sync
+
+# Try to remove as much as possible to make the container smaller
+RUN apt-get remove --purge -y \
+    wget \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/debconf \
+    && rm -rf /usr/share/doc \
+    && rm -rf /usr/share/zoneinfo/
+
+RUN rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/locale/*
+RUN find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name "en" -exec rm -rf {} +

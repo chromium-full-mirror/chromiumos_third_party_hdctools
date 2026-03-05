@@ -1,0 +1,146 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <map>
+    <name>keypress_duration</name>
+    <doc>short hand configs for keypress durations</doc>
+    <params tab="0.1" short_press="0.2" press="1.2" long_press="8.5"/>
+  </map>
+  <control>
+    <name>power_key</name>
+    <doc>Send power key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" key="power_key" interface="servo" drv="power_kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>imaginary_key</name>
+    <doc>Send non existent key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="imaginary_key" interface="servo"
+    drv="kb" input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_key</name>
+    <doc>Send ctrl either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_key" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_d</name>
+    <doc>Send ctrl d either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_d" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_r</name>
+    <doc>Send ctrl r either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_r" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_u</name>
+    <doc>Send ctrl u either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_u" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_s</name>
+    <doc>Send ctrl s either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_s" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_enter</name>
+    <doc>Send ctrl enter either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_enter" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>alt_f5</name>
+    <doc>Send alt f5 either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="alt_f5" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>alt_f6</name>
+    <doc>Send alt f6 either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="alt_f6" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>arrow_up</name>
+    <doc>Send arrow up key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="arrow_up" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>arrow_down</name>
+    <doc>Send arrow down key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="arrow_down" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>enter_key</name>
+    <doc>Send enter key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="enter_key" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>usb_keyboard_enter_key</name>
+    <doc>Send enter key via USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="enter_key" interface="servo" drv="kb"
+      input_type="float" handler="usb" map="keypress_duration">
+    </params>
+  </control>
+  <control>
+    <name>refresh_key</name>
+    <doc>Send refresh key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="refresh_key" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>ctrl_refresh_key</name>
+    <doc>Send ctrl refresh key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="ctrl_refresh_key" interface="servo"
+    drv="kb" input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>sysrq_x</name>
+    <doc>Send sysrq x either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="sysrq_x" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>sysrq_r</name>
+    <doc>Send sysrq r either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="sysrq_r" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>arb_key</name>
+    <doc>Send an arbitrary key either by servoflex or USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="arb_key" interface="servo" drv="kb"
+    input_type="float" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>usb_arb_key</name>
+    <doc>Send an arbitrary key by USB KB emulation</doc>
+    <params cmd="set" subtype="key" key="arb_key" interface="servo" drv="kb"
+    input_type="float" handler="usb" map="keypress_duration"/>
+  </control>
+  <control>
+    <name>arb_key_config</name>
+    <doc>Set the arbitrary key that arb_key control will send (if USB KB emulation is the default keyboard then this will affect usb_arb_key control too)</doc>
+    <params cmd="set" subtype="arb_key_config" interface="servo" drv="kb"
+    input_type="str" key=""/>
+  </control>
+  <control>
+    <name>usb_arb_key_config</name>
+    <doc>Set the arbitrary key that usb_arb_key control will send</doc>
+    <params cmd="set" subtype="arb_key_config" interface="servo" drv="kb"
+    input_type="str" handler="usb" key=""/>
+  </control>
+</root>

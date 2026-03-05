@@ -36,14 +36,9 @@ omit = [
     '*_grpc_aio.py',
     '*_grpc.py',
     '*/protoc-gen-custom_grpc.py',
-    '*/adc_templates.py',
-    '*/generate_ina_controls.py',
-    '*/servo_config_generator.py',
     '*/_utils.py',
     '*/tests/fixtures/*',
-    '*/data/drv/*',
-    '*/data/*',
-    '*/data/*.xml'
+    '*/data/*'
 ]
 
 [tool.coverage.report]
@@ -53,12 +48,7 @@ omit = [
     '*_grpc_aio.py',
     '*_grpc.py',
     '*/protoc-gen-custom_grpc.py',
-    '*/adc_templates.py',
-    '*/generate_ina_controls.py',
-    '*/servo_config_generator.py',
     '*/_utils.py',
     '*/tests/fixtures/*',
-    '*/data/drv/*',
-    '*/data/*',
-    '*/data/*.xml'
+    '*/data/*'
 ]

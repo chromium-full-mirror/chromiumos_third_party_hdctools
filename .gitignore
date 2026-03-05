@@ -28,6 +28,7 @@ servo/sversion.py
 # Generated proto files
 servo/common/proto/*.py
 servo/common/proto/*.pyi
+!servo/common/proto/__init__.py
 servo/data/servo_*_inas.xml
 
 # checksum for script bootstrap

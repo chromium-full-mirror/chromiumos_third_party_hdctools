@@ -50,7 +50,7 @@ fi
 if [ "${FAST_MODE}" -eq 0 ]; then
     docker build \
         --build-arg=BASE_IMG=servod:devcq \
-        -t "${TEST_IMAGE}" -f servo/dockerfiles/Dockerfile.test .
+        -t "${TEST_IMAGE}" -f dockerfiles/Dockerfile.test .
 fi
 
 docker run -e SERVOD_LIMIT_TEST_DUT=1 \

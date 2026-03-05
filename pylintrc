@@ -53,7 +53,7 @@ ignore=CVS
 ignore-paths=
     .*/data/.*,
     .*/drv/.*,
-    servo/tests/unit/syscfg_atlas.py,
+    .*syscfg_atlas.py,
     development_environment/hooks/banned-words.py,
 
 # Files or directories matching the regular expression patterns are skipped.
@@ -484,6 +484,7 @@ disable=
     too-many-statements,
     too-many-positional-arguments,
     too-many-boolean-expressions,
+    implicit-str-concat,
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

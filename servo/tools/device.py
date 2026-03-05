@@ -76,7 +76,7 @@ class Device(tool.Tool):
     def reboot(self, args):
         """Reboot the device."""
         # First, let's make sure the device exists.
-        e = None
+        reboot_error = None
         dev_path = self._usb_path(args.serial)
         if not dev_path:
             self.error("Device with serial %r not found.", args.serial)
@@ -97,7 +97,7 @@ class Device(tool.Tool):
             # was too quick for the console to send a newline. That's fine.
             if "No data was sent from the pty" not in str(ex):
                 raise
-            e = ex
+            reboot_error = ex
         # Make sure the device comes back with a new devnum before attempting
         # to communicate with it.
         self._check_devnum_reset(dev_path, devnum, "reboot")
@@ -115,13 +115,17 @@ class Device(tool.Tool):
                 ts.pty._issue_cmd_get_results("chan restore", [">"])
                 return
             except Exception as ex:
-                # store the exception in e here so that we have access to it later
-                # if we need to print it.
+                # store the exception in reboot_error here so that we have access to
+                # it later if we need to print it.
                 self._logger.debug(ex)
-                e = ex
+                reboot_error = ex
             time.sleep(self.REBOOT_SLEEP_S)
         self.error(
-            "Device %04x:%04x %s issue after reboot: %s", vid, pid, args.serial, e
+            "Device %04x:%04x %s issue after reboot: %s",
+            vid,
+            pid,
+            args.serial,
+            reboot_error,
         )
 
     def usb_path(self, args):

@@ -1,0 +1,7 @@
+requests==2.32.5
+Flask
+werkzeug
+requests-mock==1.12.1
+gunicorn
+setuptools==75.8.0
+werkzeug==3.1.6
