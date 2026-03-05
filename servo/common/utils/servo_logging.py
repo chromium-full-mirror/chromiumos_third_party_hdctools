@@ -206,6 +206,12 @@ def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUN
     (*) if |logdir| is None, the system will not setup log handlers, but rather
     setup logging using basicConfig()
     """
+    # Suppress gRPC C++ core logs which can be very noisy (e.g. keepalive errors).
+    # This must be set before grpc is initialized in any subprocess/thread.
+    if debug_stderr:
+        os.environ.setdefault("GRPC_VERBOSITY", "DEBUG")
+    else:
+        os.environ.setdefault("GRPC_VERBOSITY", "NONE")
     root_logger = logging.getLogger()
     # Let the root logger process every log message, while the different
     # handlers chose which ones to put out.
