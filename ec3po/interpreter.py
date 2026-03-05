@@ -95,6 +95,7 @@ class Interpreter:
         # Create a unique logger based on the interpreter name
         interpreter_prefix = ("%s - " % (name,)) if name else ""
         logger = logging.getLogger("%sEC3PO.Interpreter" % (interpreter_prefix,))
+        logger.setLevel(logging.INFO)
         self.logger = LoggerAdapter(logger, {"pty": ec_uart_pty})
         # TODO(https://crbug.com/1162189): revisit the 2 TODOs below
         # TODO(https://bugs.python.org/issue27805, python3.7+): revert to ab+

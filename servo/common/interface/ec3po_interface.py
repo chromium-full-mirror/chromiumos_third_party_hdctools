@@ -181,8 +181,14 @@ class EC3PO(uart.Uart):
         # The interpreter starts up in the connected state.
         self._interp_connected = 1
 
-        # The original console loglevel will match the logger level.
-        self._console_loglevel = self._logger.getEffectiveLevel()
+        # The original console loglevel should match the stderr loglevel.
+        # servod's root logger level is always DEBUG. Check the stream handler's
+        # level instead to see what the user requested.
+        self._console_loglevel = logging.INFO
+        for handler in logging.getLogger().handlers:
+            if isinstance(handler, logging.StreamHandler):
+                self._console_loglevel = handler.level
+                break
 
         # Open a new pseudo-terminal pair.
         (main_pty, user_pty) = sys_interface.openpty()
