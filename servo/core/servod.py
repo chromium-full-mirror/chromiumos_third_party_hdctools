@@ -773,7 +773,7 @@ class ServodStarter:
             self._logger.debug("Failed to clean up orphaned data service: %s", e)
 
         self._logger.info("Spawning Data Service: %s", " ".join(cmd))
-        self._data_service_proc = subprocess.Popen(cmd, env=env)
+        self._data_service_proc = subprocess.Popen(cmd, env=env, start_new_session=True)
 
     def cleanup(self):
         """Perform any cleanup related work after servod server shut down."""

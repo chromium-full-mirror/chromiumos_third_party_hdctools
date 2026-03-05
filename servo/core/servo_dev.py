@@ -366,9 +366,12 @@ class ServoDevice:
 
     def close(self):
         """Servo device turn down logic."""
-        self._driver_client.CloseInterface(
-            vid=self.template.VID, pid=self.template.PID, serial=self._serial
-        )
+        try:
+            self._driver_client.CloseInterface(
+                vid=self.template.VID, pid=self.template.PID, serial=self._serial
+            )
+        except grpc.RpcError as e:
+            self._logger.debug("Failed to close interface via grpc: %s", e)
 
     def get(self, name):
         """Get control value.
