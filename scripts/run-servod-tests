@@ -49,7 +49,7 @@ fi
 
 if [ "${FAST_MODE}" -eq 0 ]; then
     docker build \
-        --build-arg=BASE_IMG=servod:devcq \
+        --build-arg=BASE_IMG=servod:dev \
         -t "${TEST_IMAGE}" -f dockerfiles/Dockerfile.test .
 fi
 

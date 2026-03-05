@@ -1,18 +1,17 @@
 # Copyright 2026 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-# pylint: disable=redefined-outer-name
 
-import unittest.mock
+from unittest import mock
 
 import pytest
 
 from servo.utils import diagnose
 
 
-@pytest.fixture
-def mock_servo_dev():
-    dev = unittest.mock.MagicMock()
+@pytest.fixture(name="mock_servo_dev")
+def mock_servo_dev_fixture():
+    dev = mock.MagicMock()
     # Provide default values so it doesn't crash on standard checks
     dev_vars = {
         "servo_dut_sbu1_mv": "0",
@@ -38,7 +37,7 @@ def mock_servo_dev():
 
 
 def test_diagnose_ccd_all_default_zeros(mock_servo_dev):
-    dev, unused_x = mock_servo_dev
+    dev, unused_vars = mock_servo_dev
     faults = diagnose.diagnose_ccd(dev)
 
     # sbu1/2 < NC_LOW means SBU_VOLTAGE_LOW

@@ -656,9 +656,15 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     @patch("signal.signal")
     @patch("signal.pause")
-    def test_serve(self, _mock_pause, _mock_signal, _mock_init):
+    def test_serve(self, mock_pause, _mock_signal, _mock_init):
         """Test serve()."""
+        # Instead of exiting, we simulate that pause was interrupted by a signal,
+        # allowing the rest of the function to execute naturally and clean up.
+        # We also need to mock sys.exit to prevent the actual exit at the end.
+        mock_pause.return_value = None
+
         starter = servod.ServodStarter([])
+        starter.EXIT_TIMEOUT_S = 0.01
         starter._servo_port = 9999
         starter._exit_status = 0
         starter._logger = MagicMock()
@@ -668,7 +674,7 @@ class TestServoStarter(unittest.TestCase):
         starter._scratchutil = MagicMock()
         starter._grpc_server = MagicMock()
         starter._watchdog_thread = MagicMock()
-        starter._watchdog_thread.is_alive.return_value = False
+        starter._watchdog_thread.is_alive.return_value = True
         starter._server_thread = MagicMock()
         starter._server_thread.is_alive.return_value = False
 
@@ -676,10 +682,11 @@ class TestServoStarter(unittest.TestCase):
 
         starter.cleanup = MagicMock()
 
-        with self.assertRaises(SystemExit) as result:
+        with patch("sys.exit") as mock_exit:
             starter.serve()
 
-        self.assertEqual(result.exception.code, 0)
+        mock_exit.assert_called_once_with(0)
+
         starter._watchdog_thread.start.assert_called_once()
         starter._server_thread.start.assert_called_once()
         starter._scratchutil.mark_active.assert_called_once()
@@ -712,9 +719,12 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     @patch("signal.signal")
     @patch("signal.pause")
-    def test_serve_cannot_close_threads(self, _mock_pause, _mock_signal, _mock_init):
+    def test_serve_cannot_close_threads(self, mock_pause, _mock_signal, _mock_init):
         """Test serve() with stuck threads."""
+        mock_pause.return_value = None
+
         starter = servod.ServodStarter([])
+        starter.EXIT_TIMEOUT_S = 0.01
         starter._servo_port = 9999
         starter._exit_status = 0
         starter._logger = MagicMock()
@@ -730,10 +740,10 @@ class TestServoStarter(unittest.TestCase):
 
         starter.cleanup = MagicMock()
 
-        with self.assertRaises(SystemExit) as result:
+        with patch("sys.exit") as mock_exit:
             starter.serve()
 
-        self.assertEqual(result.exception.code, 0)
+        mock_exit.assert_called_once_with(0)
         starter._logger.error.assert_any_call(
             "Server thread not turned down after %s s.", starter.EXIT_TIMEOUT_S
         )
