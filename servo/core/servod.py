@@ -219,7 +219,14 @@ class ServodStarter:
                     raise
                 time.sleep(1)
 
-        self._grpc_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        options = [
+            ("grpc.keepalive_permit_without_calls", True),
+            ("grpc.http2.min_recv_ping_interval_without_data_ms", 5000),
+            ("grpc.http2.max_ping_strikes", 0),
+        ]
+        self._grpc_server = grpc.server(
+            futures.ThreadPoolExecutor(max_workers=10), options=options
+        )
         servo = servo_impl.ServoImpl(("localhost", sopts.grpc_core_port), self._servod)
         servo_dev_grpc.add_ServoServiceServicer_to_server(servo, self._grpc_server)
         self._grpc_server.add_insecure_port("[::]:{}".format(sopts.grpc_core_port))

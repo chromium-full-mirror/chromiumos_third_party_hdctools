@@ -74,7 +74,12 @@ def grpc_server_start():
 
     # Create a gRPC server with a thread pool executor allowing up to 10 concurrent
     # workers
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    options = [
+        ("grpc.keepalive_permit_without_calls", True),
+        ("grpc.http2.min_recv_ping_interval_without_data_ms", 5000),
+        ("grpc.http2.max_ping_strikes", 0),
+    ]
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
 
     # Add the SystemConfigServicer implementation to the gRPC server
     system_config_grpc.add_SystemConfigServicer_to_server(

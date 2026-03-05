@@ -184,6 +184,13 @@ class Suart(uart.Uart):
                                             self._susb._interface,
                                         )
                                         self._susb.release()
+                    except OSError as e:
+                        if e.errno == errno.EIO:
+                            self._logger.debug(
+                                "tx %s: PTY closed (EIO)", self.get_pty()
+                            )
+                        else:
+                            self._logger.exception("tx %s: %s", self.get_pty(), e)
                     except Exception as e:
                         self._logger.exception("tx %s: %s", self.get_pty(), e)
                 else:
