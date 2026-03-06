@@ -84,7 +84,7 @@ def test_poll_for_job_success(mock_requests):
 
     job = local_agent.poll_for_job("http://fake")
     assert job["job_id"] == "123"
-    mock_requests.get.assert_called_once_with("http://fake/api/jobs/next", timeout=10)
+    mock_requests.get.assert_called_once_with("http://fake/api/jobs/next", timeout=60)
 
 
 def test_poll_for_job_none(mock_requests):
