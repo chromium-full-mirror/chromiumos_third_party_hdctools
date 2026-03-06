@@ -82,7 +82,11 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 drv.set(wr_val)
             return response
         except Exception as e:
-            raise DriverImplError("Error occurred: {}".format(str(e)))
+            import traceback
+            error_msg = "Error occurred: {}\\nTraceback:\\n{}\\nRequest: {}".format(
+                str(e), traceback.format_exc(), driver_request
+            )
+            raise DriverImplError(error_msg)
 
     def _get_param_drv(
         self, control_name, device_type, syscfg, interface_key, is_get=True

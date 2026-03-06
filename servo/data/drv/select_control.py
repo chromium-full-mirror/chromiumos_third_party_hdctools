@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 import json
 
+from servo.common.utils import json_utils
 from servo.data.drv import hw_driver
 
 
@@ -53,7 +54,8 @@ class selectControl(hw_driver.HwDriver):
             val = self._params[servo_init]
         control_key = self._get_control_key()
         self._logger.info("%r -> %r", control_key, val)
-        self._driver_client.SetSelectedControls(control_name=control_key, control_value=val)
+        val_pb = json_utils.wrap_value(val)
+        self._driver_client.SetSelectedControls(control_name=control_key, control_value=val_pb)
 
     def _Get_select(self):
         """Get the control value."""
