@@ -245,7 +245,9 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         """get/set commands"""
         self.logger.debug("Handle request for %s, in context %s", request, context)
         response = self.servod.set_get_all(request.request_list)
-        return servo_dev_pb2.ListResponse(response_list=response)
+        # Ensure all elements in the response are strings, as required by the proto.
+        response_list = [str(val) for val in response]
+        return servo_dev_pb2.ListResponse(response_list=response_list)
 
     def SetKeyboardKey(self, request, context):
         """Set keyboard key duration"""

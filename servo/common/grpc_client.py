@@ -33,6 +33,7 @@ class GrpcClient:
             ("grpc.keepalive_permit_without_calls", True),
             ("grpc.http2.max_pings_without_data", 0),
             ("grpc.http2.min_time_between_pings_ms", 10000),
+            ("grpc.max_metadata_size", 64 * 1024),
         ]
 
         service_config = {

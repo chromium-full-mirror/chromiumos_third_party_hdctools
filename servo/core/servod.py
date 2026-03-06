@@ -223,6 +223,7 @@ class ServodStarter:
             ("grpc.keepalive_permit_without_calls", True),
             ("grpc.http2.min_recv_ping_interval_without_data_ms", 5000),
             ("grpc.http2.max_ping_strikes", 0),
+            ("grpc.max_metadata_size", 64 * 1024),
         ]
         self._grpc_server = grpc.server(
             futures.ThreadPoolExecutor(max_workers=10), options=options
