@@ -127,16 +127,22 @@ def get_next_job():
         return jsonify({"job": None}), 200
 
 
-@app.route("/api/jobs/sync", methods=["GET"])
+@app.route("/api/jobs/sync", methods=["POST"])
 def sync_jobs():
-    """Returns all active jobs for the agent to download locally."""
-    with lock:
-        active_jobs = []
-        for job in jobs.values():
-            if job.get("status") not in ["completed", "failed"]:
-                active_jobs.append(job)
+    """Returns new active jobs for the agent to download locally."""
+    data = request.get_json()
+    if not data or "existing_job_ids" not in data:
+        return jsonify({"error": "Missing existing_job_ids"}), 400
 
-        return jsonify({"jobs": active_jobs}), 200
+    existing_ids = set(data["existing_job_ids"])
+    with lock:
+        new_jobs = []
+        for job_id, job in jobs.items():
+            active = job.get("status") not in ["completed", "failed"]
+            if active and job_id not in existing_ids:
+                new_jobs.append(job)
+
+        return jsonify({"jobs": new_jobs}), 200
 
 
 @app.route("/api/jobs", methods=["GET"])

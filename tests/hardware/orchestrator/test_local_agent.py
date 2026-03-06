@@ -10,13 +10,13 @@ import os
 # pylint: disable=import-error, redefined-outer-name, wrong-import-position
 import subprocess
 import sys
+import threading
 from unittest import mock
 
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 import local_agent
 import pytest
-import requests
 
 
 @pytest.fixture(autouse=True)
@@ -154,3 +154,134 @@ def test_execute_test_fail_start(
     assert results["exit_code"] == 1
     assert "Failed to start" in results["error"]
     assert mock_shutil.rmtree.call_count == 2
+
+
+@mock.patch("local_agent.glob.glob")
+@mock.patch("local_agent.os.rename")
+@mock.patch("local_agent.os.makedirs")
+def test_init_storage_recovery(mock_makedirs, mock_rename, mock_glob):
+    mock_glob.return_value = ["/path/to/job1.json.lock"]
+    local_agent.init_storage()
+    mock_makedirs.assert_called()
+    mock_rename.assert_called_once_with("/path/to/job1.json.lock", "/path/to/job1.json")
+
+
+@mock.patch("local_agent.requests.post")
+@mock.patch("local_agent.glob.glob")
+@mock.patch("local_agent.os.path.exists")
+@mock.patch("local_agent.os.remove")
+@mock.patch(
+    "builtins.open", new_callable=mock.mock_open, read_data='{"job_id": "test_job"}'
+)
+def test_sync_with_orchestrator(
+    mock_open, mock_remove, mock_exists, mock_glob, mock_post
+):
+    # Mock job download
+    mock_post.return_value.status_code = 200
+    mock_post.return_value.json.return_value = {"jobs": [{"job_id": "new_job"}]}
+    mock_exists.side_effect = (
+        lambda p: "new_job" not in p
+    )  # Simulate job doesn't exist locally
+
+    # Mock result upload
+    mock_glob.return_value = ["/path/to/results/test_job.json"]
+    mock_post.return_value.status_code = 200
+
+    local_agent.sync_with_orchestrator("http://mock")
+
+    # Verify download
+    mock_post.assert_any_call(
+        "http://mock/api/jobs/sync", json={"existing_job_ids": ["test_job"]}, timeout=30
+    )
+    # open() was called for both writing the new job and reading the result.
+    # The first call is 'w' for the new job.
+    mock_open.assert_any_call(
+        os.path.join(local_agent.JOBS_DIR, "new_job.json"), "w", encoding="utf-8"
+    )
+
+    # Verify upload
+    assert "/api/results/test_job" in mock_post.call_args[0][0]
+
+    # Verify cleanup
+    mock_remove.assert_any_call("/path/to/results/test_job.json")
+
+
+@mock.patch("local_agent.glob.glob")
+@mock.patch("local_agent.execute_test")
+@mock.patch("local_agent.os.rename")
+@mock.patch("local_agent.os.remove")
+@mock.patch("local_agent.os.path.exists")
+@mock.patch(
+    "builtins.open",
+    new_callable=mock.mock_open,
+    read_data='{"job_id": "job1", "servod_args": ["-s", "serial1"]}',
+)
+@mock.patch("local_agent.sync_with_orchestrator")
+def test_worker_logic_claim_and_lock(
+    unused_mock_sync,
+    unused_mock_open,
+    mock_exists,
+    unused_mock_remove,
+    mock_rename,
+    mock_execute,
+    mock_glob,
+):
+    # Setup state
+    local_active_duts = set()
+    dut_lock = threading.Lock()
+
+    # Mock glob to return one job then stop
+    mock_glob.side_effect = [["job1.json"], []]
+    mock_exists.return_value = True
+    mock_execute.return_value = {"exit_code": 0}
+
+    # Run worker once
+    stop_event = threading.Event()
+    local_agent.worker(
+        "http://mock", False, local_active_duts, dut_lock, stop_event=stop_event
+    )
+
+    # Verify job was claimed
+    mock_rename.assert_called_once_with("job1.json", "job1.json.lock")
+    # Verify execute_test was called
+    mock_execute.assert_called_once()
+    # Verify serial1 was added to local_active_duts during execution
+    # (Worker is synchronous in this test, so it is removed by the time we check)
+    assert "serial1" not in local_active_duts
+
+
+@mock.patch("local_agent.glob.glob")
+@mock.patch("local_agent.execute_test")
+@mock.patch("local_agent.os.rename")
+@mock.patch("local_agent.os.path.exists")
+@mock.patch("builtins.open")
+@mock.patch("local_agent.sync_with_orchestrator")
+def test_dut_locking_prevention(
+    unused_mock_sync,
+    mock_open,
+    mock_exists,
+    mock_rename,
+    mock_execute,
+    mock_glob,
+):
+    # Setup state: serial1 is already busy
+    local_active_duts = {"serial1"}
+    dut_lock = threading.Lock()
+
+    # Mock glob to return a job for serial1
+    mock_glob.return_value = ["job_serial1.json"]
+    mock_open.return_value.__enter__.return_value.read.return_value = (
+        '{"job_id": "job2", "servod_args": ["-s", "serial1"]}'
+    )
+    mock_exists.return_value = True
+
+    # Run worker once
+    stop_event = threading.Event()
+    local_agent.worker(
+        "http://mock", False, local_active_duts, dut_lock, stop_event=stop_event
+    )
+
+    # Verify rename (claim) was NOT called because DUT is busy
+    mock_rename.assert_not_called()
+    # Verify execute_test was NOT called
+    mock_execute.assert_not_called()

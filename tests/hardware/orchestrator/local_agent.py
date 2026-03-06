@@ -91,60 +91,85 @@ error_lock = threading.Lock()
 MAX_ERRORS = 60
 
 
+sync_lock = threading.Lock()
+
+
 def sync_with_orchestrator(orchestrator_url):
     """
-    1. Downloads all pending jobs from orchestrator and saves them locally.
+    1. Downloads new pending jobs from orchestrator and saves them locally.
     2. Uploads all locally stored results to the orchestrator.
     """
-    # 1. Download jobs
-    try:
-        response = requests.get(f"{orchestrator_url}/api/jobs/sync", timeout=30)
-        response.raise_for_status()
-        remote_jobs = response.json().get("jobs", [])
-        for job in remote_jobs:
-            job_id = job["job_id"]
-            job_path = os.path.join(JOBS_DIR, f"{job_id}.json")
-            # Only save if we don't already have it
-            if not os.path.exists(job_path):
-                with open(job_path, "w", encoding="utf-8") as f:
-                    json.dump(job, f)
-                logger.info("Synced new job from orchestrator: %s", job_id)
-    except Exception as e:
-        logger.warning("Failed to download jobs during sync: %s", e)
-
-    # 2. Upload results
-    result_files = glob.glob(os.path.join(RESULTS_DIR, "*.json"))
-    for res_path in result_files:
-        job_id = os.path.basename(res_path).replace(".json", "")
+    with sync_lock:
+        # 1. Download jobs
         try:
-            with open(res_path, "r", encoding="utf-8") as f:
-                result_data = json.load(f)
+            # Get list of what we already have to avoid redundant downloads
+            existing_job_files = glob.glob(os.path.join(JOBS_DIR, "*.json"))
+            existing_ids = [
+                os.path.basename(f).replace(".json", "") for f in existing_job_files
+            ]
 
-            logger.info("Uploading results for job %s...", job_id)
+            payload = {"existing_job_ids": existing_ids}
             response = requests.post(
-                f"{orchestrator_url}/api/results/{job_id}", json=result_data, timeout=60
+                f"{orchestrator_url}/api/jobs/sync", json=payload, timeout=30
             )
-            if response.status_code == 200:
-                logger.info(
-                    "Job %s results uploaded successfully. Cleaning up.", job_id
-                )
-                os.remove(res_path)
-                # Also remove the job file if it still exists
-                job_file = os.path.join(JOBS_DIR, f"{job_id}.json")
-                if os.path.exists(job_file):
-                    os.remove(job_file)
-            elif response.status_code == 404:
-                logger.warning(
-                    "Job %s not found on orchestrator (stale?). Deleting local result.",
-                    job_id,
-                )
-                os.remove(res_path)
-            else:
-                logger.error(
-                    "Failed to upload job %s: HTTP %d", job_id, response.status_code
-                )
+            response.raise_for_status()
+            remote_jobs = response.json().get("jobs", [])
+            for job in remote_jobs:
+                job_id = job["job_id"]
+                job_path = os.path.join(JOBS_DIR, f"{job_id}.json")
+                # Only save if we don't already have it
+                if not os.path.exists(job_path):
+                    with open(job_path, "w", encoding="utf-8") as f:
+                        json.dump(job, f)
+                    logger.info("Synced new job from orchestrator: %s", job_id)
         except Exception as e:
-            logger.error("Error uploading result %s: %s", job_id, e)
+            logger.warning("Failed to download jobs during sync: %s", e)
+
+        # 2. Upload results
+        result_files = glob.glob(os.path.join(RESULTS_DIR, "*.json"))
+        for res_path in result_files:
+            job_id = os.path.basename(res_path).replace(".json", "")
+            try:
+                with open(res_path, "r", encoding="utf-8") as f:
+                    result_data = json.load(f)
+
+                logger.info("Uploading results for job %s...", job_id)
+                response = requests.post(
+                    f"{orchestrator_url}/api/results/{job_id}",
+                    json=result_data,
+                    timeout=60,
+                )
+                if response.status_code == 200:
+                    logger.info(
+                        "Job %s results uploaded successfully. Cleaning up.", job_id
+                    )
+                    try:
+                        os.remove(res_path)
+                    except FileNotFoundError:
+                        pass
+                    # Also remove the job file if it still exists
+                    job_file = os.path.join(JOBS_DIR, f"{job_id}.json")
+                    try:
+                        os.remove(job_file)
+                    except FileNotFoundError:
+                        pass
+                elif response.status_code == 404:
+                    logger.warning(
+                        "Job %s not found on orchestrator (stale?). Deleting local result.",
+                        job_id,
+                    )
+                    try:
+                        os.remove(res_path)
+                    except FileNotFoundError:
+                        pass
+                else:
+                    logger.error(
+                        "Failed to upload job %s: HTTP %d", job_id, response.status_code
+                    )
+            except FileNotFoundError:
+                pass  # Already deleted
+            except Exception as e:
+                logger.error("Error uploading result %s: %s", job_id, e)
 
 
 def find_servo_usb_path():
@@ -584,6 +609,122 @@ def _execute_test_internal(job, dry_run=False):
     return results
 
 
+def get_dut_from_job(job_data):
+    """Extracts DUT identifier from job payload."""
+    args = job_data.get("servod_args", [])
+    if "-s" in args:
+        idx = args.index("-s")
+        if idx + 1 < len(args):
+            return args[idx + 1]
+
+    # If no serial is provided, this job cannot be safely locked
+    # against a specific physical DUT. We return a unique string indicating
+    # it's a non-serialized job. This prevents two non-serialized jobs
+    # from colliding on the default "job_id" fallback lock.
+    return f"unserialized_{job_data.get('job_id', 'unknown')}"
+
+
+def claim_job(local_active_duts, dut_lock):
+    """Finds and claims a job for an available DUT.
+
+    Returns:
+        A tuple of (job_data, lock_path, dut_id) or (None, None, None) if no job was claimed.
+    """
+    job_files = glob.glob(os.path.join(JOBS_DIR, "*.json"))
+
+    # First, peek at the jobs to find one for a DUT we aren't currently testing
+    for path in job_files:
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                peek_job = json.load(f)
+            peek_dut = get_dut_from_job(peek_job)
+
+            with dut_lock:
+                if peek_dut in local_active_duts:
+                    continue  # DUT is busy, skip this job for now
+
+                # Basic file-locking: try to rename to .lock to "claim" the job
+                lock_path = path + ".lock"
+                os.rename(path, lock_path)
+
+                # We claimed the file and the DUT
+                local_active_duts.add(peek_dut)
+                return (peek_job, lock_path, peek_dut)
+        except (OSError, json.JSONDecodeError):
+            # Someone else got it, file disappeared, or invalid json
+            continue
+    return (None, None, None)
+
+
+def worker(orchestrator_url, dry_run, local_active_duts, dut_lock, stop_event=None):
+    """Worker loop that processes local jobs."""
+    while True:
+        if stop_event and stop_event.is_set():
+            break
+        try:
+            # 1. Find a job in the local JOBS_DIR
+            job, job_path, dut_id = claim_job(local_active_duts, dut_lock)
+
+            if job:
+                try:
+                    job_id = job["job_id"]
+                    logger.info(
+                        "[Worker %s] Processing local job: %s for DUT %s",
+                        threading.current_thread().name,
+                        job_id,
+                        dut_id,
+                    )
+
+                    # Execute the test
+                    test_results = execute_test(job, dry_run=dry_run)
+
+                    # Store results locally in RESULTS_DIR
+                    submit_data = {
+                        "job_id": job_id,
+                        "exit_code": test_results.get("exit_code"),
+                        "error": test_results.get("error"),
+                        "log": test_results.get("log"),
+                        "executed_start_cmd": test_results.get("executed_start_cmd"),
+                        "test_outputs": test_results.get("test_outputs"),
+                    }
+
+                    result_path = os.path.join(RESULTS_DIR, f"{job_id}.json")
+                    with open(result_path, "w", encoding="utf-8") as f:
+                        json.dump(submit_data, f)
+
+                    logger.info(
+                        "[Worker %s] Result stored locally for job %s",
+                        threading.current_thread().name,
+                        job_id,
+                    )
+
+                    # Clean up the .lock file
+                    try:
+                        os.remove(job_path)
+                    except FileNotFoundError:
+                        pass
+
+                    # Trigger an immediate sync attempt to upload results
+                    sync_with_orchestrator(orchestrator_url)
+                finally:
+                    # Release the DUT lock so other jobs for this DUT can run
+                    with dut_lock:
+                        if dut_id in local_active_duts:
+                            local_active_duts.remove(dut_id)
+            else:
+                # No local jobs available for free DUTs, wait a bit
+                if (
+                    stop_event
+                ):  # In tests, don't sleep forever if we just want to run once
+                    break
+                time.sleep(POLL_INTERVAL)
+        except Exception as e:
+            logger.error("[Worker] Unexpected error: %s", e)
+            if stop_event:
+                break
+            time.sleep(POLL_INTERVAL)
+
+
 def main():
     if "CLOUDSDK_CONTEXT_AWARE_CERTIFICATE_CONFIG_FILE_PATH" in os.environ:
         del os.environ["CLOUDSDK_CONTEXT_AWARE_CERTIFICATE_CONFIG_FILE_PATH"]
@@ -628,108 +769,6 @@ def main():
     local_active_duts = set()
     dut_lock = threading.Lock()
 
-    def get_dut_from_job(job_data):
-        args = job_data.get("servod_args", [])
-        if "-s" in args:
-            idx = args.index("-s")
-            if idx + 1 < len(args):
-                return args[idx + 1]
-
-        # If no serial is provided, this job cannot be safely locked
-        # against a specific physical DUT. We return a unique string indicating
-        # it's a non-serialized job. This prevents two non-serialized jobs
-        # from colliding on the default "job_id" fallback lock.
-        # Alternatively, we could fail it entirely, but some tests might
-        # use mock/virtual servos that don't need -s.
-        return f"unserialized_{job_data.get('job_id', 'unknown')}"
-
-    def worker():
-        while True:
-            try:
-                # 1. Find a job in the local JOBS_DIR
-                job_files = glob.glob(os.path.join(JOBS_DIR, "*.json"))
-                job = None
-                job_path = None
-                dut_id = None
-
-                # First, peek at the jobs to find one for a DUT we aren't currently testing
-                for path in job_files:
-                    try:
-                        with open(path, "r", encoding="utf-8") as f:
-                            peek_job = json.load(f)
-                        peek_dut = get_dut_from_job(peek_job)
-
-                        with dut_lock:
-                            if peek_dut in local_active_duts:
-                                continue  # DUT is busy, skip this job for now
-
-                            # Basic file-locking: try to rename to .lock to "claim" the job
-                            lock_path = path + ".lock"
-                            os.rename(path, lock_path)
-
-                            # We claimed the file and the DUT
-                            job = peek_job
-                            job_path = lock_path
-                            dut_id = peek_dut
-                            local_active_duts.add(dut_id)
-                            break
-                    except (OSError, json.JSONDecodeError):
-                        # Someone else got it, file disappeared, or invalid json
-                        continue
-
-                if job:
-                    try:
-                        job_id = job["job_id"]
-                        logger.info(
-                            "[Worker %s] Processing local job: %s for DUT %s",
-                            threading.current_thread().name,
-                            job_id,
-                            dut_id,
-                        )
-
-                        # Execute the test
-                        test_results = execute_test(job, dry_run=args.dry_run)
-
-                        # Store results locally in RESULTS_DIR
-                        submit_data = {
-                            "job_id": job_id,
-                            "exit_code": test_results.get("exit_code"),
-                            "error": test_results.get("error"),
-                            "log": test_results.get("log"),
-                            "executed_start_cmd": test_results.get(
-                                "executed_start_cmd"
-                            ),
-                            "test_outputs": test_results.get("test_outputs"),
-                        }
-
-                        result_path = os.path.join(RESULTS_DIR, f"{job_id}.json")
-                        with open(result_path, "w", encoding="utf-8") as f:
-                            json.dump(submit_data, f)
-
-                        logger.info(
-                            "[Worker %s] Result stored locally for job %s",
-                            threading.current_thread().name,
-                            job_id,
-                        )
-
-                        # Clean up the .lock file
-                        if os.path.exists(job_path):
-                            os.remove(job_path)
-
-                        # Trigger an immediate sync attempt to upload results
-                        sync_with_orchestrator(args.orchestrator_url)
-                    finally:
-                        # Release the DUT lock so other jobs for this DUT can run
-                        with dut_lock:
-                            if dut_id in local_active_duts:
-                                local_active_duts.remove(dut_id)
-                else:
-                    # No local jobs available for free DUTs, wait a bit
-                    time.sleep(POLL_INTERVAL)
-            except Exception as e:
-                logger.error("[Worker] Unexpected error: %s", e)
-                time.sleep(POLL_INTERVAL)
-
     init_storage()
     logger.info("Storage initialized at %s", AGENT_DATA_DIR)
 
@@ -750,7 +789,12 @@ def main():
     num_workers = 3
     logger.info("Starting %s worker threads...", num_workers)
     for i in range(num_workers):
-        t = threading.Thread(target=worker, name=f"worker-{i}", daemon=True)
+        t = threading.Thread(
+            target=worker,
+            name=f"worker-{i}",
+            args=(args.orchestrator_url, args.dry_run, local_active_duts, dut_lock),
+            daemon=True,
+        )
         t.start()
 
     while True:
