@@ -41,7 +41,7 @@ echo "[2/4] Fetching latest local_agent.py..."
 scp -q -o StrictHostKeyChecking=no "$CLOUDTOP_HOST:$HDCTOOLS_PATH/tests/hardware/orchestrator/local_agent.py" ./local_agent.py
 chmod +x ./local_agent.py
 
-export CLOUDSDK_CONTEXT_AWARE_CERTIFICATE_CONFIG_FILE_PATH=""
+gcloud config unset context_aware/certificate_config_file_path || true
 echo "[3/4] Checking Docker Artifact Registry Auth..."
 if gcloud auth print-access-token &> /dev/null; then
     echo "  -> gcloud is authed."
