@@ -20,7 +20,7 @@ import run_command
 
 
 DEFAULT_IMAGE = "servod:dev"
-ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
+ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod:%s"
 UPDATE_CHECKER_FILE = os.path.join(tempfile.gettempdir(), "start-servod-timestamp")
 
 

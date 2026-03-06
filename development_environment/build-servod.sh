@@ -13,21 +13,11 @@ while [ -L "${SOURCE}" ]; do # resolve $SOURCE until the file is no longer a sym
 done
 DIR=$( cd -P "${DIR:-.}/$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
 
-PROJECT_ID="chromeos-hw-tools"
-BUILDER_BASE_REMOTE="us-docker.pkg.dev/${PROJECT_ID}/servod/servod-builder-base:latest"
-BASE_REMOTE="us-docker.pkg.dev/${PROJECT_ID}/servod/servod-base:latest"
-
-# 1. Attempt to pull nightly bases for faster local caching
-docker pull "${BUILDER_BASE_REMOTE}" || true
-docker pull "${BASE_REMOTE}" || true
-
-# 2. Build/Verify bases locally
+# Build/Verify bases locally without relying on remote registry access
 docker build -t servod-builder-base:local --target hdctools-builder-base \
-    --cache-from "${BUILDER_BASE_REMOTE}" \
     -f "${DIR}"/../dockerfiles/Dockerfile.base "${DIR}"/..
 
 docker build -t servod-base:local --target base \
-    --cache-from "${BASE_REMOTE}" \
     -f "${DIR}"/../dockerfiles/Dockerfile.base "${DIR}"/..
 
 if [ "$1" == "multi" ]
@@ -44,7 +34,7 @@ then
         --build-arg BASE_IMG=servod-base:local \
 	    -f "${DIR}"/../dockerfiles/Dockerfile "${DIR}"/..
 else
-     docker build -t "${IMAGE}" \
+     docker build --no-cache -t "${IMAGE}" \
         --build-arg BUILDER_BASE_IMG=servod-builder-base:local \
         --build-arg BASE_IMG=servod-base:local \
         -f "${DIR}"/../dockerfiles/Dockerfile "${DIR}"/..

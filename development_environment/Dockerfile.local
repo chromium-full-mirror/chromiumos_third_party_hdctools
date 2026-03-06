@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-FROM us-docker.pkg.dev/chromeos-hw-tools/servod/dev_env:latest
+FROM us-docker.pkg.dev/chromeos-hw-tools-dev/servod/dev_env:latest
 
 ARG USER
 ARG USERID

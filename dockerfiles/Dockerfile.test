@@ -30,10 +30,13 @@ WORKDIR /hdctools
 ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
 RUN pip3 install --require-hashes --ignore-installed -r development_environment/requirements_test.txt -r tests/hardware/orchestrator/requirements.txt --break-system-packages
 RUN make -j$(nproc) && make install
-RUN cd servo && python3 setup.py bdist_wheel && pip3 install --force-reinstall dist/*.whl --no-deps --break-system-packages
-RUN cd servo_updater && python3 setup.py bdist_wheel && pip3 install --force-reinstall dist/*.whl --no-deps --break-system-packages
-RUN cd measurement_tools && python3 setup.py bdist_wheel && pip3 install --force-reinstall dist/*.whl --no-deps --break-system-packages
-RUN python3 setup_tests.py bdist_wheel
-RUN pip3 install --force-reinstall dist/*.whl --no-deps --break-system-packages
+RUN mkdir -p /wheels
+RUN cd servo && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd servo_updater && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd measurement_tools && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd usbkm232 && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd ec3po && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN python3 setup_tests.py bdist_wheel && cp dist/*.whl /wheels/
+RUN pip3 install --force-reinstall /wheels/*.whl --break-system-packages
 
 WORKDIR /

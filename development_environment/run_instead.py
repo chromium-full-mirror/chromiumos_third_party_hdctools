@@ -12,7 +12,7 @@ import docker
 
 
 DEFAULT_IMAGE = "servod:dev"
-ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
+ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod:%s"
 
 HELP_DESCRIPTION = """  --
     Everything after the -- is passed to the %(prog)s command in the container.

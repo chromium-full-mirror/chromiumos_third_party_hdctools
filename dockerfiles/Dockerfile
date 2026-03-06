@@ -3,8 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-ARG BUILDER_BASE_IMG=us-docker.pkg.dev/chromeos-hw-tools/servod/servod-builder-base:latest
-ARG BASE_IMG=us-docker.pkg.dev/chromeos-hw-tools/servod/servod-base:latest
+ARG BUILDER_BASE_IMG=us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod-builder-base:latest
+ARG BASE_IMG=us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod-base:latest
 
 FROM ${BUILDER_BASE_IMG} as hdctools-builder
 # For cloud build and for developers copying the local source is correct, if

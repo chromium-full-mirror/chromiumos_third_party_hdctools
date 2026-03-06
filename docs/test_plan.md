@@ -48,7 +48,7 @@ To ensure no regressions, tests should be run against both the current local bui
 
 **Release Channel Images:**
 The "golden" build is typically available in the release channel. You can find the image name in the release pipeline or use the latest stable tag:
-`us-docker.pkg.dev/chromeos-hw-tools/servod/servod:release`
+`us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod:release`
 
 ## 5. Test Areas
 
@@ -98,7 +98,7 @@ To run the full suite:
 ./development_environment/test_orchestrator/submit_test.py \
     --board brya --model banshee \
     --channel release \
-    --image us-docker.pkg.dev/chromeos-hw-tools/servod/servod:release \
+    --image us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod:release \
     --cmds ec_board cold_reset warm_reset ppvar_vbat_mv
 ```
 

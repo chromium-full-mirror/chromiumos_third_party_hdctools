@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.INFO)
 
 @app.before_request
 def log_request_info():
+    app.logger.info("Request: %s %s", request.method, request.path)
     app.logger.info("Headers: %s", request.headers)
     # app.logger.info('Body: %s', request.get_data())
 
@@ -88,8 +89,10 @@ def create_job():
 
 @app.route("/api/jobs/next", methods=["GET"])
 def get_next_job():
+    app.logger.info("Entering get_next_job")
     with lock:
         if not job_queue:
+            app.logger.info("Exiting get_next_job: No jobs in queue")
             return jsonify({"job": None}), 200
 
         # Find which DUTs are currently running
@@ -109,9 +112,11 @@ def get_next_job():
                 job_queue.pop(i)
                 job["status"] = "running"
                 job["last_updated"] = time.time()
+                app.logger.info("Exiting get_next_job: Returning job %s", job_id)
                 return jsonify({"job": job})
 
         # All queued jobs are blocked by running DUTs
+        app.logger.info("Exiting get_next_job: All jobs blocked")
         return jsonify({"job": None}), 200
 
 

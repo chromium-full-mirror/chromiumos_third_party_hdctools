@@ -21,7 +21,7 @@ cd src/third_party/hdctools/development_environment
 ./build_and_push.sh
 cd ../../../../
 ```
-*Note the image name pushed (usually `us-docker.pkg.dev/chromeos-hw-tools-dev/servod-scratch/servod:<username>`). If this build fails due to unresolvable compilation issues (like protobuf mismatches), inform the user and fallback to the stable `us-docker.pkg.dev/chromeos-hw-tools/servod/servod:release` image for the test to ensure the Orchestrator pipeline still runs.*
+*Note the image name pushed (usually `us-docker.pkg.dev/chromeos-hw-tools-dev/servod-scratch/servod:<username>`). If this build fails due to unresolvable compilation issues (like protobuf mismatches), inform the user and fallback to the stable `us-docker.pkg.dev/chromeos-hw-tools-dev/servod/servod:release` image for the test to ensure the Orchestrator pipeline still runs.*
 
 ## 3. Start the Orchestrator on Cloudtop
 Ensure the orchestrator is running on **Port 5002** (the expected tunnel port). You must build its image first:

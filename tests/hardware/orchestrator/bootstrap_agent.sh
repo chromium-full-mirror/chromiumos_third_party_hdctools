@@ -24,13 +24,13 @@ fi
 
 echo "[1/4] Establishing SSH Tunnel to $CLOUDTOP_HOST..."
 # Forcefully kill any existing tunnel on the port to ensure a clean connection
-if pgrep -f "ssh -fN -L 5002:localhost:5002" > /dev/null; then
+if pgrep -f "ssh -fN -L 5002:127.0.0.1:5002" > /dev/null; then
     echo "  -> Found existing tunnel. Stopping it..."
-    pkill -f "ssh -fN -L 5002:localhost:5002"
+    pkill -f "ssh -fN -L 5002:127.0.0.1:5002"
     sleep 1
 fi
 
-if ssh -fN -L 5002:localhost:5002 "$CLOUDTOP_HOST"; then
+if ssh -fN -L 5002:127.0.0.1:5002 "$CLOUDTOP_HOST"; then
     echo "  -> Tunnel established on port 5002."
 else
     echo "  -> FAILED to establish tunnel. Are your keys configured?"

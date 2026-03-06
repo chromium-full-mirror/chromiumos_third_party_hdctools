@@ -143,10 +143,14 @@ RUN strip  /ec/extra/usb_updater/gsctool
 ######################################################################
 FROM libftdi as hdctools-builder-base
 
+COPY dockerfiles/requirements_base.txt /tmp/requirements_base.txt
+
 RUN apt-get update \
-    && apt-get install -y \
-    protobuf-compiler \
-    python3-grpc-tools
+    && apt-get install -y --no-install-recommends \
+    python3-pip \
+    python3-packaging \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install --require-hashes --ignore-installed -r /tmp/requirements_base.txt --break-system-packages
 
 ######################################################################
 FROM debian:trixie-slim as base
@@ -158,6 +162,7 @@ COPY dockerfiles/requirements_base.txt /tmp/requirements_base.txt
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     fwupd \
+    fwupd-tests \
     iptables \
     lsof \
     procps \
