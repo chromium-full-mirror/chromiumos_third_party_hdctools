@@ -417,6 +417,10 @@ COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.02.11.bin \
     -O /usr/share/ec-devutils/npcx_monitor.bin
 
+# Fetch Realtek monitor from GCS
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/rtk_flame/rts5915_flash_upload-2026.03.06.bin \
+    -O /usr/share/ec-devutils/rts5915_flash_upload.bin
+
 RUN mkdir -p /usr/share/cros_ec/tokens
 # Fetch EC Token Database from GCS
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/tokens/chromeos-ec-token-historical.bin \
