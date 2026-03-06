@@ -54,14 +54,31 @@ def run_command(command, shell=False, check=True):
         return e
 
 
+CONSECUTIVE_ERRORS = 0
+error_lock = threading.Lock()
+MAX_ERRORS = 60
+
+
 def poll_for_job(orchestrator_url):
+    global CONSECUTIVE_ERRORS
     try:
-        response = requests.get(f"{orchestrator_url}/api/jobs/next", timeout=10)
+        response = requests.get(f"{orchestrator_url}/api/jobs/next", timeout=60)
         response.raise_for_status()
+        with error_lock:
+            CONSECUTIVE_ERRORS = 0
         data = response.json()
         return data.get("job")
     except Exception as e:  # Broad exception for robustness
+        with error_lock:
+            CONSECUTIVE_ERRORS += 1
+            current_errors = CONSECUTIVE_ERRORS
         logger.warning("Error polling orchestrator: %s", e)
+        if current_errors >= MAX_ERRORS:
+            logger.critical(
+                "Too many consecutive polling errors (%d). Exiting to trigger tunnel restart.",
+                current_errors,
+            )
+            os._exit(2)
         return None
 
 
