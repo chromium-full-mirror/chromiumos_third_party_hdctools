@@ -19,7 +19,7 @@ CLOUDTOP_HOST="$1"
 HDCTOOLS_PATH="$2"
 CLOUDTOP_PORT="${3:-22}"
 
-AGENT_DIR="/usr/local/servod_orchestrator"
+AGENT_DIR="${HOME}/servod_orchestrator"
 CONTROL_SOCK="/tmp/orchestrator_ssh_mux.sock"
 
 # --- Bootstrap ---
@@ -27,13 +27,27 @@ echo "=========================================================="
 echo "    Servod Hardware Test - Local Agent Bootstrap"
 echo "=========================================================="
 
+echo "[0/4] Cleaning up stale local processes and sockets..."
+# Kill any existing agent or tunnel using port 5002
+if lsof -ti:5002 >/dev/null 2>&1; then
+    echo "  -> Port 5002 is in use. Terminating existing process..."
+    lsof -ti:5002 | xargs kill -9 2>/dev/null || true
+fi
+
+# Remove stale multiplexing socket
+rm -f "$CONTROL_SOCK"
+
 mkdir -p "$AGENT_DIR"
 cd "$AGENT_DIR"
 
 echo "[1/4] Starting multiplexed SSH connection to Cloudtop..."
-# Start a master SSH connection in the background
-ssh -o "ControlMaster=yes" -o "ControlPath=$CONTROL_SOCK" -o "ControlPersist=10m" -f -N -q "$CLOUDTOP_HOST" -p "$CLOUDTOP_PORT"
-echo "Multiplexed SSH connection established."
+# Start a master SSH connection in the background (removed -q to see errors)
+if ssh -o "ControlMaster=yes" -o "ControlPath=$CONTROL_SOCK" -o "ControlPersist=10m" -f -N "$CLOUDTOP_HOST" -p "$CLOUDTOP_PORT"; then
+    echo "  -> Master tunnel established."
+else
+    echo "  -> FAILED to establish master connection."
+    exit 1
+fi
 
 # Ensure the socket is cleaned up on exit
 trap 'ssh -O exit -o "ControlPath=$CONTROL_SOCK" "$CLOUDTOP_HOST" 2>/dev/null || true' EXIT
@@ -50,14 +64,9 @@ scp -o "ControlPath=$CONTROL_SOCK" -q -r -o StrictHostKeyChecking=no \
 echo "[3/4] Establishing secure local tunnel (port 5002) via multiplexed connection..."
 # Use the existing multiplexed connection to forward the port
 # We use -L because the agent (on the DUT) connects to the orchestrator (on Cloudtop)
-ssh -o "ControlPath=$CONTROL_SOCK" -q -N -L 5002:localhost:5002 "$CLOUDTOP_HOST" -p "$CLOUDTOP_PORT" &
-TUNNEL_PID=$!
-
-echo "Waiting for tunnel to stabilize..."
-sleep 2
-
-# Check if tunnel process is still running
-if ! kill -0 $TUNNEL_PID 2>/dev/null; then
+if ssh -o "ControlPath=$CONTROL_SOCK" -O forward -L 5002:localhost:5002 "$CLOUDTOP_HOST" -p "$CLOUDTOP_PORT" 2>/dev/null; then
+    echo "  -> Port 5002 forwarded successfully."
+else
     echo "ERROR: Failed to establish local tunnel. Cloudtop might be unreachable or port 5002 is in use."
     exit 1
 fi

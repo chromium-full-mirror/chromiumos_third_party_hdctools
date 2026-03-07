@@ -78,6 +78,7 @@ def create_job():
             "test_commands": data.get("test_commands", ["servo_fw_version"]),
             "start_servod_args": data.get("start_servod_args", ["-c", "local"]),
             "servod_args": data.get("servod_args", []),
+            "script_body": data.get("script_body", None),
             "status": "pending",
             "created_at": time.time(),
             "last_updated": time.time(),

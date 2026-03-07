@@ -51,7 +51,7 @@ def init_storage():
             logger.error("Failed to recover %s: %s", lock_path, e)
 
 
-def run_command(command, shell=False, check=True):
+def run_command(command, shell=False, check=True, timeout=300):
     if isinstance(command, str):
         cmd_str = command
     else:
@@ -66,7 +66,7 @@ def run_command(command, shell=False, check=True):
             check=check,
             capture_output=True,
             text=True,
-            timeout=300,
+            timeout=timeout,
         )
         logger.debug("Output:\n%s", result.stdout)
         if result.stderr:
@@ -210,29 +210,31 @@ def check_dependencies():
 
 
 def get_gsc_type(container_name):
-    """Detects if the GSC is cr50, ti50, or generic gsc."""
-    try:
-        res = subprocess.run(
-            ["docker", "exec", container_name, "dut-control", "devices"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=30,
-        )
-        # Output is like: devices:[{...}, {...}]
-        # Need to strip 'devices:' prefix
-        raw_json = res.stdout.strip().replace("devices:", "", 1)
-        devices = json.loads(raw_json)
-        for dev in devices:
-            prefixes = dev.get("prefix", [])
-            if "ccd_gsc" in prefixes:
-                return "ccd_gsc"
-            if "ccd_cr50" in prefixes:
-                return "ccd_cr50"
-            if "ccd_ti50" in prefixes:
-                return "ccd_ti50"
-    except Exception as e:
-        logger.warning("Failed to auto-detect GSC type: %s", e)
+    """Detects the exact enumerated GSC prefix via the watchdog control."""
+    for attempt in range(5):
+        try:
+            res = subprocess.run(
+                ["docker", "exec", container_name, "dut-control", "watchdog"],
+                capture_output=True,
+                text=True,
+                check=True,
+                timeout=30,
+            )
+            # Output looks like:
+            # watchdog:
+            # , main, servo_micro: connected
+            # root, servo_v4p1: connected
+            # ccd_gsc: connected
+            for line in res.stdout.split("\n"):
+                if "connected" in line:
+                    prefixes = [p.strip() for p in line.split(":")[0].split(",")]
+                    for p in prefixes:
+                        if p in ["ccd_gsc", "ccd_cr50", "ccd_ti50"]:
+                            return p
+            time.sleep(2)
+        except Exception as e:
+            logger.warning("Attempt %d: Failed to query watchdog: %s", attempt + 1, e)
+            time.sleep(2)
     return None
 
 
@@ -417,6 +419,45 @@ def _execute_test_internal(job, dry_run=False):
             finally:
                 # Rebind (simulate plug in)
                 run_command(f"echo -n '{device_name}' > {bind_file}", shell=True)
+
+        # CUSTOM SCRIPT EXECUTION
+        script_body = job.get("script_body")
+        if script_body:
+            logger.info("Executing custom script payload inside container...")
+            script_path = os.path.join(tempfile.gettempdir(), f"script_{job_id}.py")
+            with open(script_path, "w", encoding="utf-8") as f:
+                f.write(script_body)
+
+            try:
+                # Copy into the docker container
+                run_command(
+                    [
+                        "docker",
+                        "cp",
+                        script_path,
+                        f"{container_name}:/tmp/job_script.py",
+                    ]
+                )
+                # Execute it with a 13-hour timeout
+                test_result = run_command(
+                    ["docker", "exec", container_name, "python3", "/tmp/job_script.py"],
+                    timeout=46800,
+                )
+
+                results["test_outputs"]["custom_script"] = {
+                    "stdout": test_result.stdout,
+                    "stderr": test_result.stderr,
+                    "exit_code": test_result.returncode,
+                }
+                logger.info(
+                    "Custom script finished with exit code %s", test_result.returncode
+                )
+            finally:
+                if os.path.exists(script_path):
+                    os.remove(script_path)
+
+            # Skip standard test commands if a custom script was provided
+            return results
 
         logger.info("Running test commands...")
         for command in test_commands:
