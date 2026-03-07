@@ -934,25 +934,32 @@ def disable_unusable_usb3_hubs():
         return
 
     for hub in hubs:
-        hub.detach_kernel_driver(0)
-        hub.set_configuration()
-        # This request resets the hub, leading to new enumeration of the
-        # servo. This won't have detrimental effects on other servod's
-        # servos because they underwent this treatment already and have
-        # no USB3 side that would respond to this.
-        # The setting remains active until servo is powered off (including
-        # the separate USB-C power supply).
-        hub.ctrl_transfer(
-            bmRequestType=usb.util.build_request_type(
-                usb.util.CTRL_OUT,
-                usb.util.CTRL_TYPE_VENDOR,
-                usb.util.CTRL_RECIPIENT_DEVICE,
-            ),
-            bRequest=0x81,
-            wValue=0x5,  # USB2-only. USB2/3 operation is 0x6
-            wIndex=0,
-            data_or_wLength=0,
-        )
+        try:
+            # We don't care if it's already detached.
+            try:
+                hub.detach_kernel_driver(0)
+            except usb.core.USBError:
+                pass
+            hub.set_configuration()
+            # This request resets the hub, leading to new enumeration of the
+            # servo. This won't have detrimental effects on other servod's
+            # servos because they underwent this treatment already and have
+            # no USB3 side that would respond to this.
+            # The setting remains active until servo is powered off (including
+            # the separate USB-C power supply).
+            hub.ctrl_transfer(
+                bmRequestType=usb.util.build_request_type(
+                    usb.util.CTRL_OUT,
+                    usb.util.CTRL_TYPE_VENDOR,
+                    usb.util.CTRL_RECIPIENT_DEVICE,
+                ),
+                bRequest=0x81,
+                wValue=0x5,  # USB2-only. USB2/3 operation is 0x6
+                wIndex=0,
+                data_or_wLength=0,
+            )
+        except usb.core.USBError as e:
+            logging.warning("Failed to disable USB3 hub %s: %s", hub, e)
 
     if len(hubs) > 0:
         time.sleep(3)
