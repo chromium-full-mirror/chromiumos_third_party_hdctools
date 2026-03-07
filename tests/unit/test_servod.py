@@ -468,8 +468,9 @@ class TestServoStarter(unittest.TestCase):
         mock_client = mock_sys_config_grpc.return_value
         mock_response = MagicMock()
         mock_response.systemConfig = []
+        mock_response.loglines = []
         mock_client.GetFileContent.return_value = mock_response
-        mock_client.AddCfgFile.return_value = None
+        mock_client.AddCfgFile.return_value = mock_response
         mock_client.Finalize.return_value = None
 
         mock_interfaces = MagicMock()
@@ -590,7 +591,9 @@ class TestServoStarter(unittest.TestCase):
 
         # Setup SystemConfig mock response
         mock_client = mock_sys_config_grpc.return_value
-        mock_client.AddCfgFile.return_value = None
+        mock_response = MagicMock()
+        mock_response.loglines = []
+        mock_client.AddCfgFile.return_value = mock_response
         mock_client.Finalize.return_value = None
 
         mock_interfaces = MagicMock()

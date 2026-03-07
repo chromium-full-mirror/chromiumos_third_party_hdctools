@@ -26,6 +26,8 @@ message SystemConfigRequest {
 
 message SystemConfigResponse {
     repeated SystemConfigObjectResponse systemConfig = 1;
+    // Log lines captured during the operation
+    repeated string loglines = 2;
 }
 
 message SystemConfigObjectResponse {

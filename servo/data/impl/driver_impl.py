@@ -13,6 +13,7 @@ from servo.common.proto import driver_grpc
 from servo.common.proto import driver_pb2
 from servo.common.utils import json_utils
 from servo.common.utils import string_utils
+from servo.common.utils.grpc_log_capture import LogCaptureContext
 from servo.common.utils.interface_utils import InterfaceUtils
 from servo.data import drv as servo_drv
 from servo.data.impl.system_config_service import get_system_config
@@ -186,7 +187,6 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         return self._get_param_drv(
             control_name, device_type, syscfg, interface_key, is_get
         )
-
     def InitInterface(self, request, context):
         """
         Service to init interfaces list for servo device
@@ -195,26 +195,29 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             request InterfaceRequest
             context
         """
-        try:
-            interfaces = ast.literal_eval(request.interface_template)
-            InterfaceUtils.sync_interface_lists(
-                interfaces=interfaces,
-                vid=request.vid,
-                pid=request.pid,
-                serial=request.serial,
-            )
-            InterfaceUtils.init_servo_interfaces(
-                interfaces,
-                request.vid,
-                request.pid,
-                request.serial,
-                request.fault_tolerant,
-                request.token_db,
-                self.grpc_data_addr,
-            )
-            return driver_pb2.InterfaceResponse(success=True)
-        except Exception as e:
-            raise InterfaceImplError("Error occurred in init interfaces: {}".format(e))
+        with LogCaptureContext() as loglines:
+            try:
+                interfaces = ast.literal_eval(request.interface_template)
+                InterfaceUtils.sync_interface_lists(
+                    interfaces=interfaces,
+                    vid=request.vid,
+                    pid=request.pid,
+                    serial=request.serial,
+                )
+                InterfaceUtils.init_servo_interfaces(
+                    interfaces,
+                    request.vid,
+                    request.pid,
+                    request.serial,
+                    request.fault_tolerant,
+                    request.token_db,
+                    self.grpc_data_addr,
+                )
+                return driver_pb2.InterfaceResponse(success=True, loglines=loglines)
+            except Exception:
+                logging.exception("Failed to initialize interface")
+                # Assuming the interface didn't initialize properly, mark it as failure
+                return driver_pb2.InterfaceResponse(success=False, loglines=loglines)
 
     def ReinitializeInterfaces(self, request, context):
         """

@@ -7,6 +7,7 @@ import json
 
 from servo.common.proto import system_config_grpc
 from servo.common.proto import system_config_pb2
+from servo.common.utils.grpc_log_capture import LogCaptureContext
 from servo.data import servo_interfaces
 from servo.data.impl.system_config_service import get_system_config
 
@@ -53,27 +54,29 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         Returns:
             SystemConfigResponse: A response message containing formatted system configuration data.
         """
-        # Retrieve the system configuration based on the provided message.
-        scfg = get_system_config(
-            vid=request.vid, pid=request.pid, serial=request.serial
-        )
-        scfg.add_cfg_file(name_prefix=request.prefix, filename=request.filename)
+        with LogCaptureContext() as loglines:
+            # Retrieve the system configuration based on the provided message.
+            scfg = get_system_config(
+                vid=request.vid, pid=request.pid, serial=request.serial
+            )
+            scfg.add_cfg_file(name_prefix=request.prefix, filename=request.filename)
 
-        # Create a response message of type SystemConfigResponse.
-        response = system_config_pb2.SystemConfigResponse()
+            # Create a response message of type SystemConfigResponse.
+            response = system_config_pb2.SystemConfigResponse()
 
-        # Populate the response message with data from the retrieved system configuration.
-        # Convert sets to lists for JSON serialization.
-        serializable_tags = {k: list(v) for k, v in scfg.control_tags.items()}
-        response.systemConfig.add(
-            control_tags=json.dumps(serializable_tags),
-            aliases=json.dumps(scfg.aliases),
-            syscfg_dict=json.dumps(scfg.syscfg_dict),
-            hwinit=json.dumps(scfg.hwinit),
-        )
+            # Populate the response message with data from the retrieved system configuration.
+            # Convert sets to lists for JSON serialization.
+            serializable_tags = {k: list(v) for k, v in scfg.control_tags.items()}
+            response.systemConfig.add(
+                control_tags=json.dumps(serializable_tags),
+                aliases=json.dumps(scfg.aliases),
+                syscfg_dict=json.dumps(scfg.syscfg_dict),
+                hwinit=json.dumps(scfg.hwinit),
+            )
+            response.loglines.extend(loglines)
 
-        # Return the populated response message.
-        return response
+            # Return the populated response message.
+            return response
 
     def IsControl(self, request, context):
         """

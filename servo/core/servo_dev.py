@@ -266,7 +266,7 @@ class ServoDevice:
         """
         Init interfaces for servo device
         """
-        self._driver_client.InitInterface(
+        response = self._driver_client.InitInterface(
             vid=self.template.VID,
             pid=self.template.PID,
             serial=self._serial,
@@ -274,6 +274,8 @@ class ServoDevice:
             fault_tolerant=fault_tolerant,
             token_db=self._token_db,
         )
+        for line in response.loglines:
+            self._logger.info(line.strip())
 
     def set_board_and_model(self, board, model=None):
         """Set the board and model (if applicable) for this servo device.
@@ -327,13 +329,15 @@ class ServoDevice:
         if cfg:
             try:
                 # Load systemConfig using the gRPC server
-                self._system_config_client.AddCfgFile(
+                cfg_response = self._system_config_client.AddCfgFile(
                     prefix=self.prefixes[0],
                     filename=cfg,
                     vid=self.template.VID,
                     pid=self.template.PID,
                     serial=self._serial,
                 )
+                for line in cfg_response.loglines:
+                    self._logger.info(line.strip())
             except grpc.RpcError as e:
                 # Handle gRPC errors, such as network issues and exit system
                 self._logger.error("gRPC error in: %s", e)

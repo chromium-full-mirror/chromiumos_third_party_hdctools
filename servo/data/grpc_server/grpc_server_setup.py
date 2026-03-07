@@ -14,6 +14,7 @@ import grpc
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
 from servo.common.utils import servo_logging
+from servo.common.utils.grpc_log_capture import setup_global_capture
 from servo.data.impl import driver_impl
 from servo.data.impl import system_config_impl
 
@@ -71,6 +72,7 @@ def grpc_server_start():
         debug_stderr=True,
         backup_count=1,
     )
+    setup_global_capture()
 
     # Create a gRPC server with a thread pool executor allowing up to 10 concurrent
     # workers

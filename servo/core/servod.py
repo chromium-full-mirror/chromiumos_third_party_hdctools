@@ -654,13 +654,15 @@ class ServodStarter:
             system_config_client = system_config_grpc.SystemConfig(channel)
 
             for config in all_configs:
-                system_config_client.AddCfgFile(
+                response = system_config_client.AddCfgFile(
                     prefix=devopts.prefix[0] if devopts.prefix else "",
                     filename=config,
                     vid=dev_entry.vid,
                     pid=dev_entry.pid,
                     serial=dev_entry.serial,
                 )
+                for line in response.loglines:
+                    self._logger.info(line.strip())
 
             system_config_client.Finalize(
                 vid=dev_entry.vid, pid=dev_entry.pid, serial=dev_entry.serial
