@@ -121,3 +121,27 @@ def test_diagnose_ccd_suzyq_enabled(mock_servo_dev):
 
     faults = diagnose.diagnose_ccd(dev)
     assert diagnose.SBU_VOLTAGE_LOW in faults
+
+
+@mock.patch("servo.utils.diagnose.logging.getLogger")
+def test_diagnose_ccd_latest_fw_fails(mock_get_logger, mock_servo_dev):
+    dev, unused_vars = mock_servo_dev
+    mock_logger = mock.MagicMock()
+    mock_get_logger.return_value = mock_logger
+
+    def get_side_effect(key):
+        if key == "servo_latest_fw_version":
+            raise ValueError("No firmware binary found")
+        if "mv" in key:
+            return "0"
+        return "1.0"
+
+    dev.get.side_effect = get_side_effect
+
+    # Should not crash
+    faults = diagnose.diagnose_ccd(dev)
+    assert faults
+
+    # Verify that we didn't log an obsolete firmware warning
+    for call in mock_logger.error.call_args_list:
+        assert "servo firmware version doesn't match latest." not in str(call)

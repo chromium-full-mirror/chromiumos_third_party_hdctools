@@ -44,7 +44,10 @@ def diagnose_ccd(servo_dev):
     # Check servo info.
     dut_connection_type = servo_dev.get("dut_connection_type")
     servo_fw = servo_dev.get("servo_fw_version")
-    servo_latest_fw = servo_dev.get("servo_latest_fw_version")
+    try:
+        servo_latest_fw = servo_dev.get("servo_latest_fw_version")
+    except Exception:
+        servo_latest_fw = None
 
     logger.error("")
     logger.error("CCD diagnosis info:")
@@ -55,7 +58,7 @@ def diagnose_ccd(servo_dev):
     logger.error("")
 
     # Check for obsolete firmware.
-    if servo_fw != servo_latest_fw:
+    if servo_latest_fw and servo_fw != servo_latest_fw:
         logger.error("servo firmware version doesn't match latest.")
         logger.error("latest available firmware: %s", servo_latest_fw)
         logger.error(
