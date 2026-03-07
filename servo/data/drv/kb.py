@@ -42,7 +42,9 @@ class kb(hw_driver.HwDriver):
         Args:
           duration: seconds to hold the key pressed.
         """
-        self._driver_client.SetKeyboardKey(key=self._key, handler=self._handler, duration=duration)
+        from servo.common.utils import json_utils
+        val_pb = json_utils.wrap_value(duration)
+        self._driver_client.SetKeyboardKey(key=self._key, handler=self._handler, duration=val_pb)
 
     def _Set_arb_key_config(self, key):
         """Set the key to be pressed when arb_key control is called

@@ -95,11 +95,18 @@ def get_next_job():
             app.logger.info("Exiting get_next_job: No jobs in queue")
             return jsonify({"job": None}), 200
 
-        # Find which DUTs are currently running
+        # Find which DUTs are currently running (and not stale)
         running_duts = set()
+        stale_timeout = 60  # seconds
+        now = time.time()
         for j in jobs.values():
             if j.get("status") == "running":
-                running_duts.add(get_dut_key(j))
+                if now - j.get("last_updated", 0) < stale_timeout:
+                    running_duts.add(get_dut_key(j))
+                else:
+                    app.logger.warning(
+                        "Job %s is stale, ignoring for DUT blocking", j.get("job_id")
+                    )
 
         # Find the first job whose DUT is not running
         for i, job_id in enumerate(job_queue):
@@ -118,6 +125,18 @@ def get_next_job():
         # All queued jobs are blocked by running DUTs
         app.logger.info("Exiting get_next_job: All jobs blocked")
         return jsonify({"job": None}), 200
+
+
+@app.route("/api/jobs/sync", methods=["GET"])
+def sync_jobs():
+    """Returns all active jobs for the agent to download locally."""
+    with lock:
+        active_jobs = []
+        for job in jobs.values():
+            if job.get("status") not in ["completed", "failed"]:
+                active_jobs.append(job)
+
+        return jsonify({"jobs": active_jobs}), 200
 
 
 @app.route("/api/jobs", methods=["GET"])

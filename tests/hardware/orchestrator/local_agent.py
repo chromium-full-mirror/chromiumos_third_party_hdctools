@@ -29,6 +29,27 @@ class LocalAgentError(Exception):
 DEFAULT_ORCHESTRATOR_URL = "http://localhost:5002"  # Requires SSH -L tunnel
 POLL_INTERVAL = 10  # Seconds
 
+AGENT_DATA_DIR = os.path.join(os.getcwd(), "agent_data")
+JOBS_DIR = os.path.join(AGENT_DATA_DIR, "jobs")
+RESULTS_DIR = os.path.join(AGENT_DATA_DIR, "results")
+
+
+def init_storage():
+    """Ensure local directories for jobs and results exist and recover from crashes."""
+    os.makedirs(JOBS_DIR, exist_ok=True)
+    os.makedirs(RESULTS_DIR, exist_ok=True)
+
+    # Recovery: If there are .lock files, it means we crashed.
+    # Move them back to .json so they can be retried.
+    lock_files = glob.glob(os.path.join(JOBS_DIR, "*.json.lock"))
+    for lock_path in lock_files:
+        json_path = lock_path.replace(".json.lock", ".json")
+        logger.info("Recovering stale lock file: %s", lock_path)
+        try:
+            os.rename(lock_path, json_path)
+        except Exception as e:
+            logger.error("Failed to recover %s: %s", lock_path, e)
+
 
 def run_command(command, shell=False, check=True):
     if isinstance(command, str):
@@ -38,13 +59,24 @@ def run_command(command, shell=False, check=True):
 
     logger.info("Running: %s", cmd_str)
     try:
+        # Added a 300s (5 min) timeout to all commands to prevent hangs
         result = subprocess.run(
-            command, shell=shell, check=check, capture_output=True, text=True
+            command,
+            shell=shell,
+            check=check,
+            capture_output=True,
+            text=True,
+            timeout=300,
         )
         logger.debug("Output:\n%s", result.stdout)
         if result.stderr:
             logger.debug("Stderr:\n%s", result.stderr)
         return result
+    except subprocess.TimeoutExpired as e:
+        logger.error("Command timed out after 300s: %s", cmd_str)
+        if check:
+            raise
+        return e
     except subprocess.CalledProcessError as e:
         logger.error("Command failed with exit code %d: %s", e.returncode, cmd_str)
         logger.error("Stdout:\n%s", e.stdout)
@@ -59,38 +91,60 @@ error_lock = threading.Lock()
 MAX_ERRORS = 60
 
 
-def poll_for_job(orchestrator_url):
-    global CONSECUTIVE_ERRORS
+def sync_with_orchestrator(orchestrator_url):
+    """
+    1. Downloads all pending jobs from orchestrator and saves them locally.
+    2. Uploads all locally stored results to the orchestrator.
+    """
+    # 1. Download jobs
     try:
-        response = requests.get(f"{orchestrator_url}/api/jobs/next", timeout=60)
+        response = requests.get(f"{orchestrator_url}/api/jobs/sync", timeout=30)
         response.raise_for_status()
-        with error_lock:
-            CONSECUTIVE_ERRORS = 0
-        data = response.json()
-        return data.get("job")
-    except Exception as e:  # Broad exception for robustness
-        with error_lock:
-            CONSECUTIVE_ERRORS += 1
-            current_errors = CONSECUTIVE_ERRORS
-        logger.warning("Error polling orchestrator: %s", e)
-        if current_errors >= MAX_ERRORS:
-            logger.critical(
-                "Too many consecutive polling errors (%d). Exiting to trigger tunnel restart.",
-                current_errors,
+        remote_jobs = response.json().get("jobs", [])
+        for job in remote_jobs:
+            job_id = job["job_id"]
+            job_path = os.path.join(JOBS_DIR, f"{job_id}.json")
+            # Only save if we don't already have it
+            if not os.path.exists(job_path):
+                with open(job_path, "w", encoding="utf-8") as f:
+                    json.dump(job, f)
+                logger.info("Synced new job from orchestrator: %s", job_id)
+    except Exception as e:
+        logger.warning("Failed to download jobs during sync: %s", e)
+
+    # 2. Upload results
+    result_files = glob.glob(os.path.join(RESULTS_DIR, "*.json"))
+    for res_path in result_files:
+        job_id = os.path.basename(res_path).replace(".json", "")
+        try:
+            with open(res_path, "r", encoding="utf-8") as f:
+                result_data = json.load(f)
+
+            logger.info("Uploading results for job %s...", job_id)
+            response = requests.post(
+                f"{orchestrator_url}/api/results/{job_id}", json=result_data, timeout=60
             )
-            os._exit(2)
-        return None
-
-
-def submit_results(orchestrator_url, job_id, result_data):
-    try:
-        response = requests.post(
-            f"{orchestrator_url}/api/results/{job_id}", json=result_data, timeout=60
-        )
-        response.raise_for_status()
-        logger.info("Successfully submitted results for job %s", job_id)
-    except requests.exceptions.RequestException as e:
-        logger.error("Error submitting results for job %s: %s", job_id, e)
+            if response.status_code == 200:
+                logger.info(
+                    "Job %s results uploaded successfully. Cleaning up.", job_id
+                )
+                os.remove(res_path)
+                # Also remove the job file if it still exists
+                job_file = os.path.join(JOBS_DIR, f"{job_id}.json")
+                if os.path.exists(job_file):
+                    os.remove(job_file)
+            elif response.status_code == 404:
+                logger.warning(
+                    "Job %s not found on orchestrator (stale?). Deleting local result.",
+                    job_id,
+                )
+                os.remove(res_path)
+            else:
+                logger.error(
+                    "Failed to upload job %s: HTTP %d", job_id, response.status_code
+                )
+        except Exception as e:
+            logger.error("Error uploading result %s: %s", job_id, e)
 
 
 def find_servo_usb_path():
@@ -131,22 +185,26 @@ def check_dependencies():
 
 
 def get_gsc_type(container_name):
-    """Detects if the GSC is cr50 or ti50."""
+    """Detects if the GSC is cr50, ti50, or generic gsc."""
     try:
         res = subprocess.run(
             ["docker", "exec", container_name, "dut-control", "devices"],
             capture_output=True,
             text=True,
             check=True,
+            timeout=30,
         )
         # Output is like: devices:[{...}, {...}]
         # Need to strip 'devices:' prefix
         raw_json = res.stdout.strip().replace("devices:", "", 1)
         devices = json.loads(raw_json)
         for dev in devices:
-            if "ccd_cr50" in dev.get("prefix", []):
+            prefixes = dev.get("prefix", [])
+            if "ccd_gsc" in prefixes:
+                return "ccd_gsc"
+            if "ccd_cr50" in prefixes:
                 return "ccd_cr50"
-            if "ccd_ti50" in dev.get("prefix", []):
+            if "ccd_ti50" in prefixes:
                 return "ccd_ti50"
     except Exception as e:
         logger.warning("Failed to auto-detect GSC type: %s", e)
@@ -567,35 +625,132 @@ def main():
         logger.critical("Dependency check failed: %s", e)
         return
 
+    local_active_duts = set()
+    dut_lock = threading.Lock()
+
+    def get_dut_from_job(job_data):
+        args = job_data.get("servod_args", [])
+        if "-s" in args:
+            idx = args.index("-s")
+            if idx + 1 < len(args):
+                return args[idx + 1]
+
+        # If no serial is provided, this job cannot be safely locked
+        # against a specific physical DUT. We return a unique string indicating
+        # it's a non-serialized job. This prevents two non-serialized jobs
+        # from colliding on the default "job_id" fallback lock.
+        # Alternatively, we could fail it entirely, but some tests might
+        # use mock/virtual servos that don't need -s.
+        return f"unserialized_{job_data.get('job_id', 'unknown')}"
+
     def worker():
         while True:
             try:
-                job = poll_for_job(args.orchestrator_url)
+                # 1. Find a job in the local JOBS_DIR
+                job_files = glob.glob(os.path.join(JOBS_DIR, "*.json"))
+                job = None
+                job_path = None
+                dut_id = None
+
+                # First, peek at the jobs to find one for a DUT we aren't currently testing
+                for path in job_files:
+                    try:
+                        with open(path, "r", encoding="utf-8") as f:
+                            peek_job = json.load(f)
+                        peek_dut = get_dut_from_job(peek_job)
+
+                        with dut_lock:
+                            if peek_dut in local_active_duts:
+                                continue  # DUT is busy, skip this job for now
+
+                            # Basic file-locking: try to rename to .lock to "claim" the job
+                            lock_path = path + ".lock"
+                            os.rename(path, lock_path)
+
+                            # We claimed the file and the DUT
+                            job = peek_job
+                            job_path = lock_path
+                            dut_id = peek_dut
+                            local_active_duts.add(dut_id)
+                            break
+                    except (OSError, json.JSONDecodeError):
+                        # Someone else got it, file disappeared, or invalid json
+                        continue
+
                 if job:
-                    job_id = job["job_id"]
-                    logger.info("[Worker] Found job: %s", job_id)
-                    test_results = execute_test(job, dry_run=args.dry_run)
-                    submit_data = {
-                        "job_id": job_id,
-                        "exit_code": test_results.get("exit_code"),
-                        "error": test_results.get("error"),
-                        "log": test_results.get("log"),
-                        "executed_start_cmd": test_results.get("executed_start_cmd"),
-                        "test_outputs": test_results.get("test_outputs"),
-                    }
-                    logger.info("[Worker] Submitting results for job %s", job_id)
-                    submit_results(args.orchestrator_url, job_id, submit_data)
+                    try:
+                        job_id = job["job_id"]
+                        logger.info(
+                            "[Worker %s] Processing local job: %s for DUT %s",
+                            threading.current_thread().name,
+                            job_id,
+                            dut_id,
+                        )
+
+                        # Execute the test
+                        test_results = execute_test(job, dry_run=args.dry_run)
+
+                        # Store results locally in RESULTS_DIR
+                        submit_data = {
+                            "job_id": job_id,
+                            "exit_code": test_results.get("exit_code"),
+                            "error": test_results.get("error"),
+                            "log": test_results.get("log"),
+                            "executed_start_cmd": test_results.get(
+                                "executed_start_cmd"
+                            ),
+                            "test_outputs": test_results.get("test_outputs"),
+                        }
+
+                        result_path = os.path.join(RESULTS_DIR, f"{job_id}.json")
+                        with open(result_path, "w", encoding="utf-8") as f:
+                            json.dump(submit_data, f)
+
+                        logger.info(
+                            "[Worker %s] Result stored locally for job %s",
+                            threading.current_thread().name,
+                            job_id,
+                        )
+
+                        # Clean up the .lock file
+                        if os.path.exists(job_path):
+                            os.remove(job_path)
+
+                        # Trigger an immediate sync attempt to upload results
+                        sync_with_orchestrator(args.orchestrator_url)
+                    finally:
+                        # Release the DUT lock so other jobs for this DUT can run
+                        with dut_lock:
+                            if dut_id in local_active_duts:
+                                local_active_duts.remove(dut_id)
                 else:
+                    # No local jobs available for free DUTs, wait a bit
                     time.sleep(POLL_INTERVAL)
             except Exception as e:
                 logger.error("[Worker] Unexpected error: %s", e)
                 time.sleep(POLL_INTERVAL)
 
+    init_storage()
+    logger.info("Storage initialized at %s", AGENT_DATA_DIR)
+
+    # Start the background sync loop
+    def sync_thread():
+        logger.info("Sync thread started.")
+        while True:
+            try:
+                sync_with_orchestrator(args.orchestrator_url)
+            except Exception as e:
+                logger.error("Sync thread error: %s", e)
+            time.sleep(POLL_INTERVAL)
+
+    t_sync = threading.Thread(target=sync_thread, daemon=True)
+    t_sync.start()
+
     # Start a worker per DUT. Since we have 3 DUTs, 3 workers is perfect.
     num_workers = 3
     logger.info("Starting %s worker threads...", num_workers)
-    for _unused in range(num_workers):
-        t = threading.Thread(target=worker, daemon=True)
+    for i in range(num_workers):
+        t = threading.Thread(target=worker, name=f"worker-{i}", daemon=True)
         t.start()
 
     while True:

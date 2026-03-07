@@ -43,8 +43,10 @@ class kbHandlerInit(hw_driver.HwDriver):
         return response.open
 
     def _Set_init_usb_keyboard(self, value):
+        from servo.common.utils import json_utils
         legacy_atmega = "init_atmega_uart" in self._params
-        self._driver_client.SetInitUsbKeyboard(value=value, is_legacy=legacy_atmega)
+        val_pb = json_utils.wrap_value(value)
+        self._driver_client.SetInitUsbKeyboard(value=val_pb, is_legacy=legacy_atmega)
 
     def _Get_init_default_keyboard(self):
         """Return whether the keyboard on the servo instance is initialized."""
@@ -53,7 +55,6 @@ class kbHandlerInit(hw_driver.HwDriver):
 
     def _Set_init_default_keyboard(self, value):
         """Initialize the default keyboard on the servo instance."""
-        request = servo_dev_pb2.SetKeyboard()
-        request.value = str(value)
-        request.handler_type = self._handler_type
-        self._driver_client.SetInitKeyboard(request)
+        from servo.common.utils import json_utils
+        val_pb = json_utils.wrap_value(value)
+        self._driver_client.SetInitKeyboard(handler_type=self._handler_type, value=val_pb)

@@ -51,9 +51,11 @@ while true; do
         exit 1
     fi
 
-    echo "[3/4] Fetching latest local_agent.py..."
+    echo "[3/4] Fetching latest local_agent.py and scripts..."
     scp -q -o StrictHostKeyChecking=no "$CLOUDTOP_HOST:$HDCTOOLS_PATH/tests/hardware/orchestrator/local_agent.py" ./local_agent.py
     chmod +x ./local_agent.py
+    # Also sync scripts directory if it exists on cloudtop
+    scp -q -r -o StrictHostKeyChecking=no "$CLOUDTOP_HOST:$HDCTOOLS_PATH/scripts" ./ 2>/dev/null || true
 
     echo "[4/4] Starting Local Agent..."
     echo "=========================================================="

@@ -77,44 +77,6 @@ def test_run_command_fail(mock_subprocess):
     assert result.stderr == "Error"
 
 
-def test_poll_for_job_success(mock_requests):
-    mock_response = mock.MagicMock()
-    mock_response.json.return_value = {"job": {"job_id": "123", "image_name": "test"}}
-    mock_requests.get.return_value = mock_response
-
-    job = local_agent.poll_for_job("http://fake")
-    assert job["job_id"] == "123"
-    mock_requests.get.assert_called_once_with("http://fake/api/jobs/next", timeout=60)
-
-
-def test_poll_for_job_none(mock_requests):
-    mock_response = mock.MagicMock()
-    mock_response.json.return_value = {"job": None}
-    mock_requests.get.return_value = mock_response
-
-    job = local_agent.poll_for_job("http://fake")
-    assert job is None
-
-
-def test_poll_for_job_error(mock_requests):
-    mock_requests.get.side_effect = requests.exceptions.ConnectionError(
-        "Test Connection Error"
-    )
-    # The try/except in the main code should handle this.
-    job = local_agent.poll_for_job("http://fake")
-    assert job is None
-    mock_requests.get.assert_called_once()
-
-
-def test_submit_results_success(mock_requests):
-    mock_response = mock.MagicMock()
-    mock_requests.post.return_value = mock_response
-    local_agent.submit_results("http://fake", "123", {"data": "ok"})
-    mock_requests.post.assert_called_once_with(
-        "http://fake/api/results/123", json={"data": "ok"}, timeout=60
-    )
-
-
 @mock.patch("local_agent.run_command")
 @mock.patch(
     "builtins.open",

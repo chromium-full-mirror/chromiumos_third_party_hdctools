@@ -102,9 +102,8 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
     def SetInitKeyboard(self, request, context):
         """Initialize the default keyboard on the servo instance."""
         self.logger.debug("Handle request for %s, in context %s", request, context)
-        set_keyboard(
-            self.grpc_core_addr, self.servod, request.handler_type, request.value
-        )
+        value = json_format.MessageToDict(request.value)
+        set_keyboard(self.grpc_core_addr, self.servod, request.handler_type, value)
         return empty_pb2.Empty()
 
     def InitV4Device(self, servo_type, devices_keys):
@@ -196,7 +195,9 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         if not self.servod._usb_keyboard:
             # Setup the keyboard always, and then turn on/off as needed.
             set_usb_keyboard(self.grpc_core_addr, self.servod, legacy_atmega)
-        if value:
+
+        # Robustly handle boolean-like values from JSON/gRPC
+        if value in ["on", "yes", True, 1, "1"]:
             self.servod._usb_keyboard.open()
         else:
             self.servod._usb_keyboard.close()
@@ -204,7 +205,8 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
     def SetInitUsbKeyboard(self, request, context):
         """Initialize the default keyboard on the servo instance."""
         self.logger.debug("Handle request for %s, in context %s", request, context)
-        self.set_init_usb_keyboard(request.value, request.is_legacy)
+        value = json_format.MessageToDict(request.value)
+        self.set_init_usb_keyboard(value, request.is_legacy)
         return empty_pb2.Empty()
 
     def GetFileConfig(self, request, context):
@@ -259,7 +261,21 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         func = getattr(keyboard, request.key, None)
         if func is None:
             raise ServoImplError("Key %r not found." % (request.key,))
-        func(press_secs=request.duration)
+
+        duration = json_format.MessageToDict(request.duration)
+        duration_val = 0.0
+        if isinstance(duration, str):
+            try:
+                duration_val = float(duration)
+            except ValueError:
+                # If it's a string like "press", we must resolve it.
+                # We attempt to resolve the string alias to a float duration
+                # by querying the map associated with the specific key being pressed.
+                duration_val = self.servod.get(request.key)
+        else:
+            duration_val = float(duration)
+
+        func(press_secs=duration_val)
         if turn_off_needed:
             self.logger.error("Keyboard was not on for call. Turning it off again.")
             keyboard.close()

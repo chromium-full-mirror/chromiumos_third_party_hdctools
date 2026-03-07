@@ -180,7 +180,9 @@ class TestServoImpl(unittest.TestCase):
 
     def test_set_init_keyboard(self):
         """Test SetInitKeyboard."""
-        request = SetKeyboard(handler_type="type", value="handler")
+        val_pb = struct_pb2.Value()
+        json_format.ParseDict("handler", val_pb)
+        request = SetKeyboard(handler_type="type", value=val_pb)
         with patch("servo.core.grpc_server.impl.servo_impl.set_keyboard") as mock_set:
             servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
             servo_impl.SetInitKeyboard(request, None)
@@ -255,7 +257,9 @@ class TestServoImpl(unittest.TestCase):
 
     def test_set_init_usb_keyboard(self):
         """Test SetInitUsbKeyboard."""
-        request = SetUsbRequest(is_legacy=True, value=1)
+        val_pb = struct_pb2.Value()
+        json_format.ParseDict(1, val_pb)
+        request = SetUsbRequest(is_legacy=True, value=val_pb)
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.set_init_usb_keyboard = unittest.mock.MagicMock()
         servo_impl.SetInitUsbKeyboard(request, None)
