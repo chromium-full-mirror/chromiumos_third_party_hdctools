@@ -207,87 +207,87 @@ class _BaseHandler(_HandlerTemplate):
 
     def ctrl_d(self, press_secs=""):
         """Simulate Ctrl-d simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_f(self, press_secs=""):
         """Simulate Ctrl-f simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_r(self, press_secs=""):
         """Simulate Ctrl-r simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_u(self, press_secs=""):
         """Simulate Ctrl-u simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_s(self, press_secs=""):
         """Simulate Ctrl-s simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_enter(self, press_secs=""):
         """Simulate Ctrl-enter simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_key(self, press_secs=""):
         """Simulate Enter key button press."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def alt_f5(self, press_secs=""):
         """Simulate Alt-F5 simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def alt_f6(self, press_secs=""):
         """Simulate Alt-F6 simultaneous button presses."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def arrow_up(self, press_secs=""):
         """Simulate ArrowUp key button press."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def arrow_down(self, press_secs=""):
         """Simulate ArrowDown key button press."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def enter_key(self, press_secs=""):
         """Simulate Enter key button press."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def refresh_key(self, press_secs=""):
         """Simulate Refresh key (F3) button press."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def ctrl_refresh_key(self, press_secs=""):
         """Simulate Ctrl and Refresh (F3) simultaneous press.
 
         This key combination is an alternative of Space key.
         """
-        NotImplementedError()
+        raise NotImplementedError()
 
     def imaginary_key(self, press_secs=""):
         """Simulate imaginary key button press.
 
         Maps to a key that doesn't physically exist.
         """
-        NotImplementedError()
+        raise NotImplementedError()
 
     def sysrq_x(self, press_secs=""):
         """Simulate Alt VolumeUp X simultaneous press.
 
         This key combination is the kernel system request (sysrq) X.
         """
-        NotImplementedError()
+        raise NotImplementedError()
 
     def sysrq_r(self, press_secs=""):
         """Simulate Alt VolumeUp R simultaneous press.
 
         This key combination is the kernel system request (sysrq) R.
         """
-        NotImplementedError()
+        raise NotImplementedError()
 
     def arb_key(self, press_secs=""):
         """Simulate an arbitrary key press."""
-        NotImplementedError()
+        raise NotImplementedError()
 
     def arb_key_config(self, key):
         """Set key for an arbitrary key press."""

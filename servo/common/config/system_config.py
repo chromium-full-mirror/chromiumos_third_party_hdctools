@@ -391,7 +391,7 @@ class SystemConfig:
 
                 if tag == CONTROL_TAG:
                     for p in params_list:
-                        if CONTENT_PARAM in p:
+                        if CONTENT_PARAM in p.attrib:
                             raise SystemConfigError(
                                 "file %r %s element %r specifies "
                                 "reserved params attribute name %r"

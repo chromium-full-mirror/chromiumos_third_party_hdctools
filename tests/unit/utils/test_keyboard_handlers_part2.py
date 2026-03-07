@@ -1,11 +1,14 @@
-# Copyright 2026 The ChromiumOS Authors
-# Use of this source code is governed by a BSD-style license that can be
-# found in the LICENSE file.
-
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+import pytest
+
 from servo.common.utils import keyboard_handlers
+
+
+# Copyright 2026 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 
 class TestKeyboardHandlersMore:
@@ -23,11 +26,16 @@ class TestKeyboardHandlersMore:
         handler = keyboard_handlers._BaseHandler(["localhost", 1234])
         assert handler.power_key() is None
         assert handler.power_key(1) is None
-        assert handler.ctrl_key() is None
-        assert handler.sysrq_x() is None
-        assert handler.ctrl_d() is None
-        assert handler.ctrl_u() is None
-        assert handler.ctrl_enter() is None
+        with pytest.raises(NotImplementedError):
+            handler.ctrl_key()
+        with pytest.raises(NotImplementedError):
+            handler.sysrq_x()
+        with pytest.raises(NotImplementedError):
+            handler.ctrl_d()
+        with pytest.raises(NotImplementedError):
+            handler.ctrl_u()
+        with pytest.raises(NotImplementedError):
+            handler.ctrl_enter()
 
     @patch(
         "servo.common.utils.keyboard_handlers._BaseHandler._servod_get",
@@ -82,7 +90,8 @@ class TestKeyboardHandlersMore:
         handler.power_key(2)
         handler.ctrl_d()
         handler.ctrl_u()
-        handler.ctrl_enter()
+        with pytest.raises(NotImplementedError):
+            handler.ctrl_enter()
         handler.sysrq_x()
 
     @patch(
