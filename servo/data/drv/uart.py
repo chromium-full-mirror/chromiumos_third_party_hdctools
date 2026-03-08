@@ -29,7 +29,9 @@ class uart(pty_driver.PtyDriver):
           Path to pty attached to the uart.
         """
 
-        return self._interface.get_pty()
+        if hasattr(self._interface, "get_pty"):
+            return self._interface.get_pty()
+        return ""
 
     def _check_and_get_line_prop(self, valid_props):
         """Check line property request and return it.

@@ -34,6 +34,9 @@ UART_PARAMS = {
 }
 
 
+class ptyDriverError(hw_driver.HwDriverError):
+    """Error class for ptyDriver."""
+
 class PtyDriver(hw_driver.HwDriver):
     """."""
 
@@ -52,7 +55,13 @@ class PtyDriver(hw_driver.HwDriver):
             # We'll probe for a control PTY if this is an ec3po interface.
             self._pty_path = self._interface.get_control_pty()
             self._cmd_iface = True
-        except:
+        except AttributeError:
+            if hasattr(self._interface, "get_pty"):
+                self._pty_path = self._interface.get_pty()
+            else:
+                self._logger.warning("Interface %s has no get_pty method. Is it connected?", self._interface)
+                self._pty_path = ""
+        except Exception:
             self._pty_path = self._interface.get_pty()
         # Store the uart state in an interface variable. Copy uart params, so the
         # uart state dict is a different object for each interface. We don't want
@@ -68,6 +77,9 @@ class PtyDriver(hw_driver.HwDriver):
         freezing and thawing any other terminals that are using this PTY as well as
         closing the connection when finished.
         """
+        if not self._pty_path:
+            raise ptyDriverError("Cannot open PTY: No PTY path available for this interface.")
+        
         if self._cmd_iface:
             try:
                 self._interface.get_command_lock()
@@ -88,7 +100,7 @@ class PtyDriver(hw_driver.HwDriver):
             # Freeze any terminals that are using this PTY, otherwise when we check
             # for the regex matches, it will fail with a 'resource temporarily
             # unavailable' error.
-            with servo.terminal_freezer.TerminalFreezer(self._pty_path):
+            with servo.common.terminal_freezer.TerminalFreezer(self._pty_path):
                 self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
                 try:
                     self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
