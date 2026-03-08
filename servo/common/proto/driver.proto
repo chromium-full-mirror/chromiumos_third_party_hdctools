@@ -7,6 +7,7 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/struct.proto";
+import "google/protobuf/wrappers.proto";
 
 /*
     The DriverService provides RPC methods for interacting with drivers and interfaces.
@@ -36,6 +37,13 @@ service DriverService {
     rpc RestoreEcDriverChannel(EcChannelRequest) returns (google.protobuf.Empty);
     // Issue command in EC console.
     rpc IssueCmdGetResults(IssueCmdRequest) returns (google.protobuf.Empty);
+    // Check if device exists
+    rpc CheckDevice(DeviceRequest) returns (google.protobuf.BoolValue);
+}
+
+message DeviceRequest {
+    // Sysfs path of the device
+    string sysfs_path = 1;
 }
 
 message EcChannelRequest

@@ -6,7 +6,6 @@
 
 import json
 import logging
-import os
 import sys
 import termios
 import threading
@@ -227,7 +226,14 @@ class ServoDevice:
 
     def is_connected(self):
         """Returns True if the device is connected."""
-        return os.path.exists(self._sysfs_path)
+        try:
+            return self._driver_client.CheckDevice(sysfs_path=self._sysfs_path).value
+        except grpc.RpcError:
+            self._logger.debug(
+                "Failed to ping data service for connection state. "
+                "Assuming disconnected."
+            )
+            return False
 
     def get_prefixes(self):
         """Get all prefixes of the device."""

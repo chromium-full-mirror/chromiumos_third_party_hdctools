@@ -122,6 +122,10 @@ class LocalDriverClient:
         req = self._get_req(driver_pb2.InterfaceRequest, args, kwargs)
         return self.impl.SyncInterfaceList(req, None)
 
+    def CheckDevice(self, *_args, **_kwargs):
+        from google.protobuf import wrappers_pb2
+        return wrappers_pb2.BoolValue(value=True)
+
     def ResetInterface(self, *args, **kwargs):
         req = self._get_req(driver_pb2.ResetInterfaceRequest, args, kwargs)
         return self.impl.ResetInterface(req, None)

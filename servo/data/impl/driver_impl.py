@@ -383,3 +383,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         )
 
         return empty_pb2.Empty()
+
+    def CheckDevice(self, request, context):
+        import os
+        from google.protobuf import wrappers_pb2
+        exists = os.path.exists(request.sysfs_path)
+        return wrappers_pb2.BoolValue(value=exists)
