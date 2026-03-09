@@ -864,9 +864,9 @@ class ServodStarter:
             bool: True if in chroot and orchestration is requested, False otherwise.
         """
         if os.environ.get("CROS_WORKON_SRCROOT"):
-            if os.environ.get("I_NEED_SERVO") == "1":
+            if os.environ.get("I_NEED_SERVOD") == "1":
                 self._logger.info(
-                    "Running in cros_sdk with I_NEED_SERVO=1. "
+                    "Running in cros_sdk with I_NEED_SERVOD=1. "
                     "Orchestrating Fission services."
                 )
                 return True
