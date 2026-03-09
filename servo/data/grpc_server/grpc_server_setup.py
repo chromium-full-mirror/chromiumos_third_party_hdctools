@@ -101,7 +101,7 @@ def grpc_server_start():
     driver_grpc.add_DriverServiceServicer_to_server(service, server)
 
     # Bind the server on port 50051
-    server.add_insecure_port("[::]:{}".format(args.grpc_data_port))
+    server.add_insecure_port("0.0.0.0:{}".format(args.grpc_data_port))
 
     # Start the gRPC server
     server.start()
