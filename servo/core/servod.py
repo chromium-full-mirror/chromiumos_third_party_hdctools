@@ -225,8 +225,12 @@ class ServodStarter:
             ("grpc.http2.max_ping_strikes", 0),
             ("grpc.max_metadata_size", 64 * 1024),
         ]
+        from servo.common import grpc_server_interceptor
+
         self._grpc_server = grpc.server(
-            futures.ThreadPoolExecutor(max_workers=10), options=options
+            futures.ThreadPoolExecutor(max_workers=10), 
+            options=options,
+            interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),)
         )
         servo = servo_impl.ServoImpl(("localhost", sopts.grpc_core_port), self._servod)
         servo_dev_grpc.add_ServoServiceServicer_to_server(servo, self._grpc_server)

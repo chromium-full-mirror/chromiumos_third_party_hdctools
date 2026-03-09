@@ -82,7 +82,12 @@ def grpc_server_start():
         ("grpc.http2.max_ping_strikes", 0),
         ("grpc.max_metadata_size", 64 * 1024),
     ]
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=options)
+    from servo.common import grpc_server_interceptor
+    server = grpc.server(
+        futures.ThreadPoolExecutor(max_workers=10), 
+        options=options,
+        interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),)
+    )
 
     # Add the SystemConfigServicer implementation to the gRPC server
     system_config_grpc.add_SystemConfigServicer_to_server(
