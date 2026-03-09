@@ -41,8 +41,20 @@ FROM hdctools-builder as hdctools-ec3po-builder
 WORKDIR /hdctools/ec3po
 RUN python3 setup.py bdist_wheel
 
+
+#####################################################################
+FROM python:3.11-slim-bookworm as image-downloader-builder
+RUN apt-get update --no-install-recommends \
+    && apt-get install -y --no-install-recommends git
+WORKDIR /
+RUN git clone https://chromium.googlesource.com/chromiumos/platform/labstation
+WORKDIR /labstation/image_downloader
+RUN python3 setup.py bdist_wheel
+
 ######################################################################
 FROM ${BASE_IMG}
+RUN apt-get update && apt-get install -y --no-install-recommends sudo && rm -rf /var/lib/apt/lists/* 
+
 
 WORKDIR /hdctools/chromeos/
 WORKDIR /wheels
@@ -54,6 +66,7 @@ COPY --link --from=hdctools-servo-updater-builder /hdctools/servo_updater/dist/*
 COPY --link --from=hdctools-measurement-tools-builder /hdctools/measurement_tools/dist/* ./
 COPY --link --from=hdctools-ec3po-builder /hdctools/ec3po/dist/* ./
 COPY --link --from=hdctools-usbkm232-builder /hdctools/usbkm232/dist/* ./
+COPY --link --from=image-downloader-builder /labstation/image_downloader/dist/* ./
 RUN pip3  install  *.whl --break-system-packages
 WORKDIR /
 RUN rm -rf wheels

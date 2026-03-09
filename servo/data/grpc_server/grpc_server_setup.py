@@ -84,7 +84,7 @@ def grpc_server_start():
     ]
     from servo.common import grpc_server_interceptor
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=10), 
+        futures.ThreadPoolExecutor(max_workers=10),
         options=options,
         interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),)
     )

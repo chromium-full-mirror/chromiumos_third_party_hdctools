@@ -19,7 +19,7 @@ class TestEmptyPty(unittest.TestCase):
         # UART interface which replaces it with an Empty() object.
         mock_interface = Empty()
 
-        # Initialize the UART driver with a dummy cmd param to satisfy hw_driver.
+        # Initialize the UART driver with a fake cmd param to satisfy hw_driver.
         driver = uart(None, None, mock_interface, {"cmd": "get", "subtype": "pty"})
 
         # get_pty() should gracefully return an empty string instead of
@@ -29,7 +29,7 @@ class TestEmptyPty(unittest.TestCase):
     def test_pty_driver_empty_interface(self):
         """Verify PtyDriver._open raises error when PTY path is empty."""
         mock_interface = Empty()
-        # Initialize with a dummy cmd param to satisfy hw_driver.
+        # Initialize with a fake cmd param to satisfy hw_driver.
         driver = PtyDriver(None, None, mock_interface, {"cmd": "get", "subtype": "pty"})
 
         # When trying to send a command, _open() should raise a ptyDriverError

@@ -228,9 +228,9 @@ class ServodStarter:
         from servo.common import grpc_server_interceptor
 
         self._grpc_server = grpc.server(
-            futures.ThreadPoolExecutor(max_workers=10), 
+            futures.ThreadPoolExecutor(max_workers=10),
             options=options,
-            interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),)
+            interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),),
         )
         servo = servo_impl.ServoImpl(("localhost", sopts.grpc_core_port), self._servod)
         servo_dev_grpc.add_ServoServiceServicer_to_server(servo, self._grpc_server)

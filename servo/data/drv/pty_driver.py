@@ -79,7 +79,7 @@ class PtyDriver(hw_driver.HwDriver):
         """
         if not self._pty_path:
             raise ptyDriverError("Cannot open PTY: No PTY path available for this interface.")
-        
+
         if self._cmd_iface:
             try:
                 self._interface.get_command_lock()
