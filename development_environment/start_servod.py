@@ -570,6 +570,11 @@ def main():
     logging.info("Setup.")
     client = setup()
     args = parse_args()
+
+    # Re-map fission-latest to latest as requested
+    if args.channel == "fission-latest":
+        args.channel = "latest"
+
     if args.verbose:
         logging.getLogger().setLevel(logging.DEBUG)
     image = get_image(
