@@ -19,7 +19,10 @@ class ExceptionTruncatingInterceptor(grpc.ServerInterceptor):
                 if len(error_msg) > 4000:
                     error_msg = error_msg[:4000] + "... [truncated traceback]"
                 
-                details_msg = "Exception calling application: Error occurred: " + str(e)[:200] + "\nTraceback:\n" + error_msg
+                # Prepend the known prefix `Exception calling application: ` so that 
+                # servo_server.py's get/set handlers successfully slice it off and
+                # raise the underlying error message cleanly to the caller.
+                details_msg = "Exception calling application: " + str(e)[:200] + "\nTraceback:\n" + error_msg
                 logging.error(details_msg)
                 context.abort(grpc.StatusCode.UNKNOWN, details_msg)
 
