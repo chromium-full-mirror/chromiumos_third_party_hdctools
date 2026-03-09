@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <include>
+    <name>ec_common.xml</name>
+  </include>
+  <!-- ********** Maps ********** -->
+  <map>
+    <name>fan_target_rpm</name>
+    <doc>map for fan_target_rpm</doc>
+    <params auto="-2" max="-1" off="0"></params>
+  </map>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>cpu_temp</name>
+    <doc>CPU temperature reading in degC. Only works when device is powered on.</doc>
+    <params cmd="get" uart_cmd="temps"
+    regex="PECI[ \t]*:[ \t]*[0-9]* K[ \t]*=[ \t]*([0-9]*)[ \t]*C"
+    group="1" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>fan_actual_rpm</name>
+    <doc>Actual fan RPM.</doc>
+    <params cmd="get" uart_cmd="faninfo" regex="Actual:[ \t]*(\d+) rpm"
+    group="1" formatting="int" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>fan_target_rpm</name>
+    <doc>Target fan RPM. Set this value to -1 to max out fan speed.
+    Set to -2 to enable auto fan speed control.</doc>
+    <params cmd="get" uart_cmd="faninfo" regex="Target:[ \t]*(\d+) rpm"
+    group="1" formatting="int" interface="10" drv="simple_ec"></params>
+    <params cmd="set" subtype="fan_target_rpm" interface="10" drv="ec"
+    map="fan_target_rpm"></params>
+  </control>
+  <control>
+    <name>fan_duty</name>
+    <doc>Current fan duty cycle.</doc>
+    <params cmd="get" uart_cmd="faninfo" regex="Duty:[ \t]*(\d+)%"
+    group="1" formatting="int" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params clobber_ok="patch" cmd="set" drv="cros_ec_hardrec_power"/>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="lm4"/>
+  </control>
+</root>

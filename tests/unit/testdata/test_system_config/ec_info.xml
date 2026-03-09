@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <!-- Collection of controls retrieving information from the a CrOS EC -->
+  <control>
+    <name>ec_board</name>
+    <doc>The board name of the EC image</doc>
+    <params interface="10" drv="simple_ec" uart_cmd="version"
+      regex="RO:\s+(\S*)_v?[\d.\w\+:,-]+[\n\r]" group="1" formatting="strip"/>
+  </control>
+  <control>
+    <name>ec_model</name>
+    <doc>The model name of the EC image</doc>
+    <params interface="10" drv="simple_ec" uart_cmd="version"
+      regex="Chip:\s+(\S+)\s+" group="1" fmt="lowercase"/>
+  </control>
+  <control>
+    <name>ec_active_copy</name>
+    <doc>The active copy of the EC image</doc>
+    <params interface="10" drv="simple_ec" uart_cmd="sysinfo"
+      regex="Copy:\s+(\S+)\s" group="1" formatting="strip"/>
+  </control>
+  <control>
+    <name>ec_system_powerstate</name>
+    <doc>The current power state according to the EC.</doc>
+    <params interface="10" drv="simple_ec" uart_cmd="powerinfo"
+      regex="power state \d+ = ([^,]*), in" group="1" formatting="strip"
+      debug_info="Cannot retrieve the power state on EC console."/>
+  </control>
+</root>

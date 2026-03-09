@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1.4
+# Copyright 2025 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+ARG BASE_IMG=servod:dev
+
+FROM ${BASE_IMG}
+
+RUN apt-get update --no-install-recommends \
+    && apt-get install -y --no-install-recommends \
+    python3-pytest \
+    python3-pytest-cov \
+    python3-pytest-forked \
+    python3-pytest-mock \
+    python3-pytest-xdist \
+    python3-mock \
+    python3-setuptools \
+    python3-wheel \
+    python3-pip \
+    build-essential \
+    pkg-config \
+    libftdi1-dev \
+    libusb-1.0-0-dev \
+    git \
+    pylint
+
+COPY / /hdctools/
+WORKDIR /hdctools
+ENV PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+RUN pip3 install --require-hashes --ignore-installed -r development_environment/requirements_test.txt -r tests/hardware/orchestrator/requirements.txt --break-system-packages
+RUN make -j$(nproc) && make install
+RUN mkdir -p /wheels
+RUN cd servo && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd servo_updater && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd measurement_tools && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd usbkm232 && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN cd ec3po && python3 setup.py bdist_wheel && cp dist/*.whl /wheels/
+RUN python3 setup_tests.py bdist_wheel && cp dist/*.whl /wheels/
+RUN pip3 install --force-reinstall /wheels/*.whl --break-system-packages
+
+WORKDIR /

@@ -94,7 +94,7 @@ class PowerlogINAConfigGenerator(INAConfigGenerator):
           module_name: name of the template module
           ina_pkg: template loaded as a module
         """
-        super(PowerlogINAConfigGenerator, self).__init__(module_name, ina_pkg)
+        super().__init__(module_name, ina_pkg)
         self._board_content, self._scenario_content = self.DumpADCs(ina_pkg.inas)
 
     def DumpADCs(self, adcs):
@@ -183,9 +183,9 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         Raises:
           INAConfigGeneratorError: if a a non-int interface is defined in |ina_pkg|
         """
-        super(ServoINAConfigGenerator, self).__init__(module_name, ina_pkg)
+        super().__init__(module_name, ina_pkg)
         if not servo_drv_dir:
-            servo_drv_dir = os.path.join(servo_data_dir, "..", "drv")
+            servo_drv_dir = os.path.join(servo_data_dir, "drv")
         self._servo_drv_dir = servo_drv_dir
         power_tools_cfg = os.path.join(servo_data_dir, "power_tools.xml")
         ina2xx_drv_cfg = os.path.join(servo_data_dir, "ina2xx.xml")
@@ -456,7 +456,10 @@ def main(cmdline=sys.argv[1:]):
             msg_prefix = "Success:"
         except Exception as e:
             msg_prefix = "FAILURE: %s" % e.message
+            return 1
         print("%s for candidate file %s" % (msg_prefix, candidate))
+
+    return 0
 
 
 if __name__ == "__main__":

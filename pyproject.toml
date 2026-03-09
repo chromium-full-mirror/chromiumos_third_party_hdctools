@@ -21,3 +21,34 @@ filterwarnings = [
       "ignore:Type google.protobuf.pyext._message.*:DeprecationWarning::",
       "ignore:datetime.datetime.utcfromtimestamp\\(\\) is deprecated.*:DeprecationWarning::",
 ]
+
+[tool.mypy]
+ignore_missing_imports = true
+follow_imports = "silent"
+check_untyped_defs = true
+explicit_package_bases = true
+mypy_path = "."
+
+[tool.coverage.run]
+omit = [
+    '*pb2.py',
+    '*pb2_grpc.py',
+    '*_grpc_aio.py',
+    '*_grpc.py',
+    '*/protoc-gen-custom_grpc.py',
+    '*/_utils.py',
+    '*/tests/fixtures/*',
+    '*/data/*'
+]
+
+[tool.coverage.report]
+omit = [
+    '*pb2.py',
+    '*pb2_grpc.py',
+    '*_grpc_aio.py',
+    '*_grpc.py',
+    '*/protoc-gen-custom_grpc.py',
+    '*/_utils.py',
+    '*/tests/fixtures/*',
+    '*/data/*'
+]

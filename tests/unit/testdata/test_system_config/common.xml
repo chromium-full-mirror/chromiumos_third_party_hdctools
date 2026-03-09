@@ -1,0 +1,230 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <include>
+    <name>power_tools.xml</name>
+  </include>
+  <map>
+    <name>onoff</name>
+    <doc>assertive high map for on/off</doc>
+    <params on="1" off="0"></params>
+  </map>
+  <map>
+    <name>enabled</name>
+    <doc>assertive high map for enabled/disabled</doc>
+    <params enabled="1" disabled="0"></params>
+  </map>
+  <map>
+    <name>enabled_re</name>
+    <doc>map enabled/disabled/access denied to on and off using a regex</doc>
+    <params on="ena" off="dis" unsupported="Access Denied"></params>
+  </map>
+  <map>
+    <name>onoff_i</name>
+    <doc>assertive low map for on/off</doc>
+    <params on="0" off="1"></params>
+  </map>
+  <map>
+    <name>asserted_re</name>
+    <doc>map asserted/deasserted for on/off using a regex</doc>
+    <params off="^deasserted" on="^asserted"></params>
+  </map>
+  <map>
+    <name>yes</name>
+    <doc>singular yes map</doc>
+    <params yes="1"></params>
+  </map>
+  <map>
+    <name>yesno</name>
+    <doc>assertive high map for yes/no</doc>
+    <params yes="1" no="0"></params>
+  </map>
+  <map>
+    <name>yesno_i</name>
+    <doc>assertive low map for yes/no</doc>
+    <params yes="0" no="1"></params>
+  </map>
+  <map>
+    <name>press</name>
+    <doc>map for press and release of buttons</doc>
+    <params press="0" release="1"></params>
+  </map>
+  <map>
+    <name>press_i</name>
+    <doc>map for press and release of buttons (inverted)</doc>
+    <params press="1" release="0"></params>
+  </map>
+  <map>
+    <name>press_re</name>
+    <doc>map for press and release of buttons using a regex</doc>
+    <params press="press" release="release"></params>
+  </map>
+  <map>
+    <name>servo_re</name>
+    <doc>map a string that contains servo to on, otherwise to off using a regex</doc>
+    <params on="servo" off="^((?!servo).)*$"></params>
+  </map>
+  <map>
+    <name>uart_parity</name>
+    <doc>Parity of uart line properties</doc>
+    <params none="0" odd="1" even="2"></params>
+  </map>
+  <map>
+    <name>uart_sbits</name>
+    <doc>Number of stop bits for uart line properties</doc>
+    <params one="0" oneandhalf="1" two="2"></params>
+  </map>
+  <map>
+    <name>uart_bits</name>
+    <doc>Number of data bits for uart line properties</doc>
+    <params five="5" six="6" seven="7" eight="8"></params>
+  </map>
+  <map>
+    <name>check</name>
+    <doc>helper for commands that need to 'check' something</doc>
+    <params check="0"></params>
+  </map>
+  <map>
+    <name>print</name>
+    <doc>debug print map</doc>
+    <params print="0"></params>
+  </map>
+  <control>
+    <name>sleep</name>
+    <doc>Forces a delay in seconds, according to the parameter</doc>
+    <params cmd="set" interface="servo" drv="sleep"
+    input_type="float" />
+  </control>
+  <control>
+    <name>loglevel</name>
+    <doc>The current log level of the root logger.</doc>
+    <params drv="loglevel" interface="servo" input_type="str" />
+  </control>
+  <control>
+    <name>rotate_servod_logs</name>
+    <doc>Trigger a forced servod log rotation.</doc>
+    <params drv="servo_metadata" interface="servo" map="yes"
+      subtype="rotate_logs"/>
+  </control>
+  <control>
+    <name>servod_logging_active</name>
+    <doc>Query whether file logging is turned on.</doc>
+    <params drv="servo_metadata" interface="servo" map="yesno"
+      subtype="servod_logs_active"/>
+  </control>
+  <control>
+    <name>log_msg</name>
+    <doc>Send a string to the servod INFO logs.</doc>
+    <params drv="servo_metadata" interface="servo" input_type="str"
+      subtype="log_msg"/>
+  </control>
+  <control>
+    <name>servod_pid</name>
+    <doc>The process id of the servod instance.</doc>
+    <params drv="servo_metadata" subtype="pid" interface="servo" />
+  </control>
+  <control>
+    <name>config_files</name>
+    <doc>A comma separated list of config files used to invoke this
+    server.</doc>
+    <params drv="servo_metadata" subtype="config_files"
+    interface="servo" />
+  </control>
+  <control>
+    <name>serialname</name>
+    <doc>The main serial number of servo being used.</doc>
+    <params drv="servo_metadata" subtype="serial"
+    interface="servo" />
+  </control>
+  <control>
+    <name>serialnames</name>
+    <doc>The serial number of servo being used.</doc>
+    <params drv="servo_metadata" subtype="serials"
+    interface="servo" />
+  </control>
+  <control>
+    <name>servo_type</name>
+    <doc>What type of servo devices are set up for the servod instance.
+    NOTE: please avoid assuming the format of servo_type and parsing it.
+    Use 'devices' to fetch all servo devices of this servod instance instead.</doc>
+    <params drv="servo_metadata" subtype="type" interface="servo" />
+  </control>
+  <control>
+    <name>devices</name>
+    <doc>Detailed information of servo devices set up for the servod instance.</doc>
+    <params drv="servo_metadata" subtype="devices" interface="servo" />
+  </control>
+  <control>
+    <name>watchdog</name>
+    <doc>The connection state of all devices.</doc>
+    <params drv="servo_watchdog" subtype="watchdog" interface="servo"
+    input_type="str"/>
+  </control>
+  <control>
+    <name>watchdog_add</name>
+    <doc>Servod will eventually shutdown if the device is disconnected.</doc>
+    <params subtype="watchdog_add" interface="servo" drv="servo_watchdog"
+    input_type="str" cmd="set"></params>
+    <params drv="servo_watchdog" subtype="watchdog" interface="servo"
+    input_type="str" cmd="get"/>
+  </control>
+  <control>
+    <name>watchdog_remove</name>
+    <doc>Servod won't shutdown if the device is disconnected.</doc>
+    <params subtype="watchdog_remove" interface="servo" drv="servo_watchdog"
+    input_type="str" cmd="set"></params>
+    <params drv="servo_watchdog" subtype="watchdog" interface="servo"
+    input_type="str" cmd="get"/>
+  </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeEC"></params>
+  </control>
+  <control>
+    <name>fault_flag_controls</name>
+    <doc>Known fault flags that servod can report on</doc>
+    <params drv="servo_metadata" interface="servo" tag="fault_flag"
+    subtype="tagged_controls"></params>
+  </control>
+  <control>
+    <name>servo_console_command_controls</name>
+    <doc>List of all controls to issue commands to servo device consoles</doc>
+    <params drv="servo_metadata" interface="servo" tag="servo_cmd_ctrl"
+    subtype="tagged_controls"></params>
+  </control>
+  <control>
+    <name>servo_firmware_version_controls</name>
+    <doc>Controls to query servo firmware versions on setup.</doc>
+    <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
+    tag="servo_fw_version"/>
+  </control>
+  <control>
+    <name>servo_mcu_panicinfo</name>
+    <doc>Controls to query panicinfo from servo mcu (v4, micro, etc).</doc>
+    <params drv="servo_metadata" subtype="tagged_controls" interface="servo"
+    tag="servo_mcu_panicinfo"/>
+  </control>
+  <!-- The majority of deployed and active DUTs have a CrOS EC. In the special
+    cases where that is not true, overwrite in the board overlay.-->
+  <control>
+    <name>supports_cros_ec_communication</name>
+    <doc>whether the DUT has a CrOS EC that can talk through servo UART</doc>
+    <params drv="echo" value="yes" interface="servo"/>
+  </control>
+  <control>
+    <name>servo_class</name>
+    <doc>servo type (flex or ccd)</doc>
+    <params drv="echo" value="flex" interface="servo"/>
+  </control>
+  <control>
+    <name>all_controls</name>
+    <doc>All control names support by current servod instance.</doc>
+    <params drv="servo_metadata" subtype="all_controls" interface="servo"/>
+  </control>
+</root>

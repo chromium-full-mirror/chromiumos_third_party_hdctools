@@ -452,7 +452,6 @@ class ManualPoolExecutor(concurrent.futures.Executor):
         super().__init__()
         self._func = None
 
-    # pylint: disable=arguments-differ
     def submit(self, func, *args, **kwargs):
         """Submits work to the pool, stashing the partial for later use."""
         self._func = functools.partial(func, *args, **kwargs)
@@ -467,7 +466,6 @@ class ManualPoolExecutor(concurrent.futures.Executor):
 class InlinePoolExecutor(concurrent.futures.Executor):
     """A stubbed pool executor that runs work immediately, inline."""
 
-    # pylint: disable=arguments-differ
     def submit(self, func, *args, **kwargs):
         """Submits work to the pool, stashing the partial for later use."""
         func(*args, **kwargs)
@@ -601,7 +599,6 @@ class AutoUpdatingDetokenizerTest(unittest.TestCase):
                     pass
 
                 self.assertTrue(detok.detokenize(JELLO_WORLD_TOKEN).ok())
-                self.assertTrue(detok.detokenize(JELLO_WORLD_TOKEN).ok())
 
                 # Move back time so the now-empty file is reloaded.
                 mock_getmtime.return_value = 50
@@ -710,7 +707,8 @@ class NestedMessageParserTest(unittest.TestCase):
             )
 
     def test_transform_bytes_sequential(self) -> None:
-        transform = lambda message: message.upper().replace(b"$", b"*")
+        def transform(message):
+            return message.upper().replace(b"$", b"*")
 
         self.assertEqual(self.decoder.transform(b"abc$abcd", transform), b"abc")
         self.assertEqual(self.decoder.transform(b"$", transform), b"*ABCD")

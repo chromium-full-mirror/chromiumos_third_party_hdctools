@@ -19,6 +19,8 @@ import time
 
 import servo_dev_templates
 
+from servo.utils.sys_interface import sys_interface
+
 
 # Servo V2 PID
 V2_PID = servo_dev_templates.get_pid("servo_v2")
@@ -51,7 +53,7 @@ def do_cmd(cmd, timeout, plist=None, flist=None):
     logging.debug("cmd = %s", cmd)
     if isinstance(cmd, str):
         cmd = cmd.split()
-    cmd_obj = subprocess.Popen(cmd, 0, None, None, subprocess.PIPE, subprocess.PIPE)
+    cmd_obj = sys_interface.popen(cmd, 0, None, None, subprocess.PIPE, subprocess.PIPE)
     assert cmd_obj.stderr and cmd_obj.stdout, "Failed to get stdout & stderr"
     start_time = time.time()
     all_str = ""
@@ -61,7 +63,7 @@ def do_cmd(cmd, timeout, plist=None, flist=None):
                 [cmd_obj.stdout, cmd_obj.stderr], [], [], 0.01
             )
             if len(rfds) > 0:
-                log_str = rfds[0].readline().rstrip()
+                log_str = rfds[0].readline().decode("utf-8", errors="replace").rstrip()
                 all_str = all_str + log_str + "\n"
                 if len(log_str) > 0:
                     logging.debug("CMD_LOG: = %s", log_str)
@@ -95,7 +97,7 @@ def launch_servod(options):
     """
 
     cmd = "sudo pkill servod"
-    subprocess.call(cmd, shell=True)
+    sys_interface.call(cmd, shell=True)
     xml_files = "-c servoflex_test_v2.xml "
     if options.pins == 50:
         xml_files += "-c servoflex_v2_r0_p50.xml "
@@ -171,10 +173,9 @@ def test_jtag(_options):
         return False
 
     fname = "/tmp/servoflex_test_openocd.cfg"
-    fd = os.open(fname, os.O_WRONLY | os.O_CREAT)
+    with sys_interface.managed_open(fname, os.O_WRONLY | os.O_CREAT) as fd:
+        sys_interface.write(fd, openocd.encode("utf-8"))
 
-    os.write(fd, openocd)
-    os.close(fd)
     cmd = "sudo openocd -f %s" % fname
     (retval, openocd, _unused) = do_cmd(cmd, 10, plist=OPENOCD_PASS, flist=OPENOCD_FAIL)
 
@@ -183,7 +184,7 @@ def test_jtag(_options):
         errors += 1
 
     cmd = "sudo kill %d" % openocd.pid
-    subprocess.call(cmd, shell=True)
+    sys_interface.call(cmd, shell=True)
     # TODO(tbroch) should we stress jtag here?  Currently only get TAP's IDCODE
 
     if not set_ctrls(" ".join(ctrls).format(pwr="off", val="off")):
@@ -269,14 +270,16 @@ def test_uart(dev_id, _options):
         errors += 1
 
     if not errors:
-        fd = os.open(get_dict["uart%s_pty" % id_str], os.O_RDWR)
+        fd = sys_interface.open(get_dict["uart%s_pty" % id_str], os.O_RDWR)
         send_str = "hello %s" % id_str
-        os.write(fd, send_str)
+        sys_interface.write(fd, send_str.encode("utf-8"))
         (rfds, _unused, _unused) = select.select([fd], [], [], 1)
         rsp_str = ""
         reread_count = 0
         while len(rfds) > 0 and reread_count < 1000:
-            rsp_str += os.read(fd, len(send_str))
+            rsp_str += sys_interface.read(fd, len(send_str)).decode(
+                "utf-8", errors="replace"
+            )
             (rfds, _unused, _unused) = select.select([fd], [], [], 1)
             reread_count += 1
 
@@ -284,7 +287,7 @@ def test_uart(dev_id, _options):
         if rsp_str != send_str:
             logging.error("Sent(%s) != Rcv(%s) for UART %s", send_str, rsp_str, id_str)
             errors += 1
-        os.close(fd)
+        sys_interface.close(fd)
 
     if not set_ctrls(" ".join(ctrls).format(id=id_str, pwr="off", val="off")):
         logging.error("Disabling access to UART %s", id_str)
@@ -511,7 +514,7 @@ def main():
         errors += 1
 
     cmd = "sudo kill %d" % servod.pid
-    subprocess.call(cmd, shell=True)
+    sys_interface.call(cmd, shell=True)
     return errors == 0
 
 

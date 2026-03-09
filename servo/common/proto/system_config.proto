@@ -1,0 +1,199 @@
+// Copyright 2023 The ChromiumOS Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+message SystemConfigRequest {
+    // The Vendor ID associated with this servo device;
+    uint32 VID = 1;
+    // The product ID associated with this servo device
+    uint32 PID = 2;
+    // For some servo devices, different lot ids (from serialname) identify the
+    // template class
+    repeated string LOTIDS = 3;
+    // The default configuration file to pull in for this servo device
+    string DEFAULT_CONFIG = 4;
+    // The type string of a servo device
+    string TYPE = 5;
+    // Whether a ServoDevice has a built-in USB hub for connecting other ServoDevices and DUT. Default to False.
+    bool HUB_SERVO = 6;
+    // Whether a ServoDevice can access DUTs consoles (EC, AP, etc). Default to False.
+    bool DUT_CONTROLLER = 7;
+    // Servo serial number
+    string serial = 8;
+}
+
+message SystemConfigResponse {
+    repeated SystemConfigObjectResponse systemConfig = 1;
+    // Log lines captured during the operation
+    repeated string loglines = 2;
+}
+
+message SystemConfigObjectResponse {
+    string control_tags = 1;
+    string aliases = 2;
+    string syscfg_dict = 3;
+    string hwinit = 4;
+}
+
+message SystemFileRequest {
+    string prefix = 1;
+    string filename = 2;
+    int32 vid = 3;
+    int32 pid = 4;
+    // Servo serial number
+    string serial = 5;
+}
+
+message IsControlRequest {
+    // The Vendor ID associated with this servo device
+    int32 vid = 1;
+    // The product ID associated with this servo device
+    int32 pid = 2;
+    // Name of control to check existence
+    string control_name = 3;
+    // Servo serial number
+    string serial = 4;
+}
+
+message IsControlResponse {
+    // Result, true if control with specified name exists
+    bool value = 1;
+}
+
+service SystemConfig {
+    rpc GetFileContent (SystemConfigRequest) returns (SystemConfigResponse);
+    // Add a file to system config dict
+    rpc AddCfgFile (SystemFileRequest) returns (SystemConfigResponse);
+    // Check if control exists
+    rpc IsControl (IsControlRequest) returns (IsControlResponse);
+    // Get doc string for a control
+    rpc GetControlDoc (ControlDocRequest) returns (ControlDocResponse);
+    // Get list of controls for hardware initialization
+    rpc GetInitControls (InitControlsRequest) returns (InitControlsResponse);
+    // Get display config (all controls documentation)
+    rpc GetDisplayConfig (DisplayConfigRequest) returns (DisplayConfigResponse);
+    // Finalize configuration setup
+    rpc Finalize (FinalizeRequest) returns (FinalizeResponse);
+    // Get board/model config file
+    rpc GetBoardModelConfig (BoardModelConfigRequest) returns (BoardModelConfigResponse);
+    // Get all control names
+    rpc GetAllControls (GetAllControlsRequest) returns (GetAllControlsResponse);
+    // Get doc string for a control (formatted)
+    rpc GetControlStr (ControlStrRequest) returns (ControlStrResponse);
+    // Get controls for a tag
+    rpc GetControlsForTag (ControlsForTagRequest) returns (ControlsForTagResponse);
+    // Get loaded config files
+    rpc GetConfigFiles (ConfigFilesRequest) returns (ConfigFilesResponse);
+    // Get servo interfaces
+    rpc GetServoInterfaces (ServoInterfacesRequest) returns (ServoInterfacesResponse);
+}
+
+message ServoInterfacesRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string board = 3;
+}
+
+message ServoInterfacesResponse {
+    // JSON encoded list of interface data
+    string interface_list_json = 1;
+}
+
+message ConfigFilesRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message ConfigFilesResponse {
+    repeated string files = 1;
+}
+
+message ControlsForTagRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string tag = 4;
+}
+
+message ControlsForTagResponse {
+    string controls_json = 1;
+}
+
+message GetAllControlsRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message GetAllControlsResponse {
+    string controls_json = 1;
+}
+
+message ControlStrRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string name = 4;
+}
+
+message ControlStrResponse {
+    string doc = 1;
+}
+
+message BoardModelConfigRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string board = 4;
+    string model = 5;
+}
+
+message BoardModelConfigResponse {
+    string board_config = 1;
+    string board_id = 2;
+}
+
+message FinalizeRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message FinalizeResponse {
+    bool value = 1;
+}
+
+message ControlDocRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+    string name = 4;
+}
+
+message ControlDocResponse {
+    string doc = 1;
+}
+
+message InitControlsRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message InitControlsResponse {
+    // JSON encoded list of (control_name, value) tuples
+    string hwinit_json = 1;
+}
+
+message DisplayConfigRequest {
+    int32 vid = 1;
+    int32 pid = 2;
+    string serial = 3;
+}
+
+message DisplayConfigResponse {
+    string display_config = 1;
+}

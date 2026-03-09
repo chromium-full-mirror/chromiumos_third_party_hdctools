@@ -12,7 +12,7 @@ import threading
 import time
 import tty
 
-import usb  # pylint:disable=import-error
+import usb
 
 from . import stm32usb
 
@@ -27,7 +27,7 @@ class SuartError(Exception):
           msg: string, message describing error in detail
           value: integer, value of error when non-zero status returned.  Default=0
         """
-        super(SuartError, self).__init__(msg, value)
+        super().__init__(msg, value)
         self.msg = msg
         self.value = value
 
@@ -251,5 +251,5 @@ def main():
         sys.exit(0)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()

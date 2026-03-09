@@ -13,6 +13,13 @@ while [ -L "${SOURCE}" ]; do # resolve $SOURCE until the file is no longer a sym
 done
 DIR=$( cd -P "${DIR:-.}/$( dirname "${SOURCE}" )" >/dev/null 2>&1 && pwd )
 
+# Build/Verify bases locally without relying on remote registry access
+docker build -t servod-builder-base:local --target hdctools-builder-base \
+    -f "${DIR}"/../dockerfiles/Dockerfile.base "${DIR}"/..
+
+docker build -t servod-base:local --target base \
+    -f "${DIR}"/../dockerfiles/Dockerfile.base "${DIR}"/..
+
 if [ "$1" == "multi" ]
 then
     docker buildx create \
@@ -23,10 +30,12 @@ then
 	    --platform=linux/arm64,linux/amd64 \
 	    -t "${IMAGE}" \
 	    -o type=image \
-	    -f "${DIR}"/../servo/dockerfiles/Dockerfile "${DIR}"/..
-elif [ "$1" == "cq" ]
-then
-	 docker build -t "${IMAGE}cq" -f servo/dockerfiles/Dockerfile.cq .
+        --build-arg BUILDER_BASE_IMG=servod-builder-base:local \
+        --build-arg BASE_IMG=servod-base:local \
+	    -f "${DIR}"/../dockerfiles/Dockerfile "${DIR}"/..
 else
-     docker build -t "${IMAGE}" -f servo/dockerfiles/Dockerfile .
+     docker build --no-cache -t "${IMAGE}" \
+        --build-arg BUILDER_BASE_IMG=servod-builder-base:local \
+        --build-arg BASE_IMG=servod-base:local \
+        -f "${DIR}"/../dockerfiles/Dockerfile "${DIR}"/..
 fi

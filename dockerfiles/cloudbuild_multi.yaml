@@ -1,0 +1,43 @@
+# Copyright 2023 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'binfmt'
+  args:
+    - run
+    - --privileged
+    - --rm
+    - tonistiigi/binfmt
+    - --install
+    - all
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'driver'
+  args:
+    - 'buildx'
+    - 'create'
+    - --use
+  waitFor: ['binfmt']
+
+- name: 'gcr.io/cloud-builders/docker'
+  id: 'build'
+  args:
+  - 'buildx'
+  - 'build'
+  - --push
+  - --no-cache
+  - --platform
+  - linux/amd64,linux/arm64
+  - -t=us-docker.pkg.dev/$PROJECT_ID/servod/servod_multi:$_BRANCH_NAME-$_SPIN_NUMBER
+  - -f=/workspace/dockerfiles/Dockerfile
+  - '.'
+  waitFor: ['driver']
+
+options:
+  # Use higher CPU machines so the caching and build steps are faster.
+  pool:
+    name: 'projects/chromeos-hw-tools-dev/locations/us-central1/workerPools/proto-servo-pool'
+
+timeout: 7200s

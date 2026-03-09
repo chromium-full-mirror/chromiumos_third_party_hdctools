@@ -106,7 +106,7 @@ In fleet firmware is shared via labstation image, so we need to modify specific 
 
 We aim to synchronize deploying images in fleet and to other users (via docker). However these tow process are independent and different with schedule, so sometimes we need to be accordingly flexible.
 
-1. Update `~/chromiumos/src/third_party/hdctools/servo/dockerfiles/servo_firmware_provision.py`
+1. Update `~/chromiumos/src/third_party/hdctools/dockerfiles/servo_firmware_provision.py`
 
     Change string under specific channel and device you want to modify to new version.
 

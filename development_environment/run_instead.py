@@ -42,8 +42,12 @@ class RunInsteadBase:
             image = ARTIFACT_URL_TEMPLATE % channel
             try:
                 self.client.images.pull(image)
-            except docker.errors.APIError as e:
-                if (
+            except (docker.errors.APIError, docker.errors.DockerException) as e:
+                if self.client.images.list(filters={"reference": image}):
+                    print("Warning: Failed to pull newest image, using local version.")
+                    return image
+
+                if isinstance(e, docker.errors.APIError) and (
                     e.is_server_error()
                     and e.response is not None
                     and str(e.response.content).find("unauthorized") > 0
@@ -58,6 +62,7 @@ class RunInsteadBase:
                         "-sent-me-here-after-authenticating-with-the-registry-failed"
                     )
                     sys.exit(1)
+                raise
             return image
         return DEFAULT_IMAGE
 

@@ -11,9 +11,9 @@ import tempfile
 import unittest
 from unittest import mock
 
-from ec3po import console  # pylint: disable=wrong-import-position
-from ec3po import interpreter  # pylint: disable=wrong-import-position
-from ec3po import threadproc_shim  # pylint: disable=wrong-import-position
+from ec3po import console
+from ec3po import interpreter
+from ec3po import threadproc_shim
 
 
 ESC_STRING = bytes([console.ControlKey.ESC])

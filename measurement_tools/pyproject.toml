@@ -1,0 +1,28 @@
+# Copyright 2026 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "measurement_tools"
+version = "0.1"
+description = "Servod power measurement tools"
+authors = [
+  { name = "The ChromiumOS Authors", email = "chromium-os-dev@chromium.org" },
+]
+license = { text = "BSD-style" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    # "servo", # Assuming 'servo' package is installable
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["measurement_tools*"]

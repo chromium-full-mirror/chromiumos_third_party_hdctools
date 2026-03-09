@@ -45,7 +45,7 @@ class Instance(tool.Tool):
 
     def __init__(self):
         """Setup scratch to use."""
-        super(Instance, self).__init__()
+        super().__init__()
         self._scratch = scratch.Scratch()
 
     @property
@@ -163,7 +163,10 @@ class Instance(tool.Tool):
           args: parser namespace that should contain |port|,
                 port is either None or a port number
         """
-        known_ports = lambda entries: set(int(entry["port"]) for entry in entries)
+
+        def known_ports(entries):
+            return set(int(entry["port"]) for entry in entries)
+
         if args.port:
             port = args.port
             if port in known_ports(self._scratch.get_all_entries()):

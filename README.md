@@ -1,42 +1,47 @@
-# hdctools: Chrome OS Hardware Debug & Control Tools
+#  HDCTools (Hardware Debug Control Tools)
 
-This repository contains source code and documentation for the Servo debug
-boards. The tools in this repository are only supported in the
-[CrOS SDK chroot][Developer guide] or the HDCTools Docker container. See:
-[Servod outside Chroot](./docs/servod_outside_chroot.md).
+Welcome to the `hdctools` repository. This project contains the software stack for interacting with ChromeOS hardware debug targets, most notably the **Servo** family of debug boards (Servo v2, Servo v4, Servo Micro, C2D2, SuzyQable, etc.).
 
-[TOC]
+The core component of this repository is `servod`, a daemon that abstracts the complex hardware interfaces (I2C, UART, SPI, GPIO) of the Servo ecosystem into a unified control plane.
 
-## Servo
+## 🚀 The "Fission" Architecture
 
-*   [Servo: Debug Board](./docs/servo.md)
-    *   [Servo v2](./docs/servo_v2.md)
-    *   [Servo v4](./docs/servo_v4.md)
-    *   [Servo v4.1](./docs/servo_v4p1.md)
-    *   [Servo Micro](./docs/servo_micro.md)
+`hdctools` is transitioning to the **Fission** architecture. This represents a major modernization effort for the repository, including:
+*   **gRPC Interface:** Shifting from legacy XML-RPC to a robust, high-performance gRPC API for `servod` communication.
+*   **Containerization:** `servod` and its dependencies are now heavily Dockerized for reproducible development, testing, and deployment.
+*   **Test Orchestration:** A new `local_agent` and Docker Orchestrator workflow for scalable Hardware-in-the-Loop (HIL) and labstation testing.
 
-## servod
+## 📚 Documentation
 
-*   [`servod`: Daemon for Servo](./docs/servod.md)
-*   [`servod` FAQ](./docs/servod_faq.md)
-*   [Writing XML data files](./docs/servod_data.md)
+*   **[Hardware Testing Quickstart](tests/hardware/README.md):** Start here if you are a test operator or developer looking to run tests against physical hardware locally or on a remote labstation.
+*   **[Design & Core Docs](docs/):** Detailed documentation on `servod`, `ec-3po`, power measurement, and specific Servo hardware revisions.
 
-## Closed Case Debugging (CCD)
+## 🛠️ Development & Testing
 
-*   [Closed Case Debugging (CCD) Overview](./docs/ccd.md)
-*   [C2D2: Case-Closed Debugging Debugger](./docs/c2d2.md)
+This project requires strict adherence to code quality and testing standards.
 
-## Power Measurement
+### Running Tests
+Always run the test suite before submitting a CL. The testing framework leverages Docker for consistency:
+```bash
+./scripts/run-servod-tests
+```
 
-*   [Power Measurement](./docs/power_measurement.md)
-*   [Sweetberry Power Monitoring Board](./docs/sweetberry.md)
-*   [INA: Instrumentation Amplifier](./docs/ina.md)
+### Linting
+Check for pylint errors using `pre-commit`:
+```bash
+pre-commit run pylint --all-files
+```
 
-## Resources
+## 🤝 Contributing
 
-*   [hdctools Docker container]: Run common hardware debug tasks outside the chroot.
-*   [File a Bug](https://issuetracker.google.com/issues/new?component=983411&template=1678684)
-*   [Contact](https://chromium.googlesource.com/chromiumos/docs/+/HEAD/contact.md)
+Commits in this project are pushed to ChromeOS Gerrit. Ensure your commit messages follow the standard formatting and **always** include a `BUG=` and `TEST=` line.
 
-[hdctools Docker container]: https://docs.google.com/document/d/e/2PACX-1vRGZ8yAfwzp6vlLZVGpJYQIFdv7_gR7yt6F6_Afk_2gWBlun5p-juZvOuHia9vfcOK88f4d6lIR1HqZ/pub
-[Developer guide]: https://chromium.googlesource.com/chromiumos/docs/+/HEAD/developer_guide.md
+```text
+component: concise description of changes
+
+Longer explanation of why these changes were made, what bugs they fix,
+and how the new architecture handles the problem.
+
+BUG=b:12345678
+TEST=scripts/run-servod-tests and manual validation steps
+```

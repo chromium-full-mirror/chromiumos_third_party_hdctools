@@ -1,0 +1,330 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <!-- ******** Map ******** -->
+  <map>
+    <name>gsc_i2c_cmds</name>
+    <doc>Special i2c commands to GSC</doc>
+    <!-- NAME               : VALUE : DESCRIPTION
+         .................................................................
+         ite_debugger_mode: :     0 : For ITE ECs only.
+                                      This requests GSC to send a special
+                                      waveform to ITE EC, which triggers
+                                      'DEBUGGER' mode.
+         .................................................................-->
+    <params ite_debugger_mode="0" />
+  </map>
+  <map>
+    <name>idle_states</name>
+    <doc>Different levels of sleep the GSC enters during idle time</doc>
+    <params active="wfi" sleep="sleep" />
+  </map>
+  <!-- gsc is also named 'usbpd' and 'cr50' for compatibility with previous
+       scripts -->
+  <control>
+    <name>uart4_pty</name>
+    <alias>raw_gsc_uart_pty,raw_cr50_uart_pty,raw_usbpd_uart_pty</alias>
+    <doc>Pseudo-terminal (pty) thats connected to the gsc uart console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart" ></params>
+  </control>
+  <!-- This control must be available prior to accessing the gsc console over
+       micro, so must be initialized prior to the gsc_version control (which
+       relies on gsc console access during initialization).  -->
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params clobber_ok="patch" init="glados" />
+  </control>
+  <!-- EC-3PO console interpreter for gsc -->
+  <control>
+    <name>gsc_loglevel</name>
+    <alias>cr50_loglevel</alias>
+    <doc>gsc console loglevel</doc>
+    <params interface="9" drv="ec3po_driver" input_type="str"
+    subtype="loglevel" ></params>
+  </control>
+  <control>
+    <name>gsc_uart_raw_debug</name>
+    <alias>cr50_uart_raw_debug</alias>
+    <doc>Turn on per-message-received logs to the gsc console messages.</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug" ></params>
+  </control>
+  <control>
+    <name>gsc_uart_timestamp</name>
+    <alias>cr50_uart_timestamp</alias>
+    <doc>Add timestamps to the GSC console messages</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp" ></params>
+  </control>
+  <control>
+    <name>ec3po_gsc_uart</name>
+    <alias>ec3po_cr50_uart,cr50_uart_pty,ec3po_usbpd_uart_pty,usbpd_uart_pty,gsc_uart_pty</alias>
+    <doc>gsc UART console provided via EC-3PO console interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart" >
+    </params>
+  </control>
+  <control>
+    <name>gsc_ec3po_interp_connect</name>
+    <alias>cr50_ec3po_interp_connect,usbpd_ec3po_interp_connect</alias>
+    <doc>State indicating if interpreter is listening to the gsc UART.</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect" ></params>
+  </control>
+  <control>
+    <name>uart4_baudrate</name>
+    <alias>cr50_uart_baudrate,gsc_uart_baudrate,usbpd_console_baudrate</alias>
+    <doc>Baudrate for gsc uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="1" ></params>
+  </control>
+  <control>
+    <name>uart4_parity</name>
+    <alias>cr50_uart_parity,gsc_uart_parity,usbpd_console_parity</alias>
+    <doc>Parity for gsc uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="1" map="uart_parity" ></params>
+  </control>
+  <control>
+    <name>uart4_sbits</name>
+    <alias>cr50_uart_sbits,gsc_uart_sbits,usbpd_console_sbits</alias>
+    <doc>Number of stop bits for gsc uart console</doc>
+    <params drv="uart" subtype="props" line_prop="sbits"
+    interface="1" map="uart_sbits" ></params>
+  </control>
+  <control>
+    <name>uart4_bits</name>
+    <alias>cr50_uart_bits,gsc_uart_bits,usbpd_console_bits</alias>
+    <doc>Number of data bits for gsc uart console</doc>
+    <params drv="uart" subtype="props" line_prop="bits"
+    interface="1" map="uart_bits" ></params>
+  </control>
+  <control>
+    <name>gsc_uart_timeout</name>
+    <alias>cr50_uart_timeout</alias>
+    <doc>Timeout value for waiting gsc console response of issuing an EC
+    command.</doc>
+    <params subtype="uart_timeout" interface="9" drv="uart" input_type="float"
+    ></params>
+  </control>
+  <!-- GSC Console Automation Controls -->
+  <control>
+    <name>gsc_uart_cmd</name>
+    <alias>cr50_uart_cmd</alias>
+    <doc>Set to send command to the gsc console. Get to obtain the matched
+    results with the regular expression of gsc_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="9" drv="uart" input_type="str"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_uart_multicmd</name>
+    <alias>cr50_uart_multicmd</alias>
+    <doc>Set to send multiple commands to the GSC console.</doc>
+    <params interface="9" drv="na" cmd="get" ></params>
+    <params subtype="uart_multicmd" interface="9" drv="uart" input_type="str"
+    cmd="set" ></params>
+  </control>
+  <control>
+    <name>gsc_uart_regexp</name>
+    <alias>cr50_uart_regexp</alias>
+    <doc>List of regular expressions to match the response of
+    gsc_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="9" drv="uart" input_type="str"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_uart_capture</name>
+    <alias>cr50_uart_capture</alias>
+    <doc>Enable gsc uart capture</doc>
+    <params subtype="uart_capture" interface="9" drv="uart" map="onoff"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_uart_stream</name>
+    <alias>cr50_uart_stream</alias>
+    <doc>GSC console stream collected while gsc_uart_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="9" drv="uart" ></params>
+  </control>
+  <!-- gsc controls -->
+  <control>
+    <name>gsc_reboot</name>
+    <alias>cr50_reboot</alias>
+    <doc>reboot the gsc</doc>
+    <params cmd="get" interface="9" drv="na" ></params>
+    <params cmd="set" subtype="gsc_reboot" interface="9" drv="cr50"
+    map="onoff" ></params>
+  </control>
+  <control>
+    <name>gsc_ccd_level</name>
+    <alias>cr50_ccd_level</alias>
+    <doc>State of CCD, which can be lock, unlock, or open based on the current
+    ccd privilege level.</doc>
+    <params cmd="get" uart_cmd="ccd" regex="State:\s+(Lock|Unlock|Open)" group="1" fmt="lowercase" interface="9" drv="cr50" input_type="str" ></params>
+  </control>
+  <control>
+    <name>ccd_i2c_en</name>
+    <doc>Query CCD I2C capability (read-only). 'Default' means Default value.
+    'Always' means Enabled always.
+    'UnlessLocked' means Enabled unless CCD is locked.
+    'IfOpened' means Enabled if CCD is opened.</doc>
+    <params cmd="get" uart_cmd="ccd"
+    regex="\s+I2C\s+[Y-]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)" group="1" interface="9" drv="cr50" ></params>
+  </control>
+  <control>
+    <name>gsc_testlab</name>
+    <alias>cr50_testlab</alias>
+    <doc>gsc testlab state</doc>
+    <params cmd="get" uart_cmd="ccd testlab"
+    regex="(CCD test lab mode (ena|dis)|Access Denied)" group="1"
+    interface="9" drv="cr50" map="enabled_re" ></params>
+    <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="9"
+    drv="cr50" input_type="str" init="open" ></params>
+  </control>
+  <control>
+    <name>gsc_ecrst_pulse</name>
+    <doc>Send the gsc 'ecrst pulse' command</doc>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="get_controls">
+          <item>gsc_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>gsc_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <item>cr50_uart_cmd:ecrst pulse</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>gsc_cold_reset</name>
+    <alias>gsc_ec_reset</alias>
+    <doc>send the gsc ec_reset command to reset the EC.</doc>
+    <params cmd="get" uart_cmd="ecrst"
+    regex="EC_RST_L is (asserted|deasserted)" group="1"
+    interface="9" drv="cr50" map="asserted_re"></params>
+    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
+    map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>gsc_locked_cold_reset</name>
+    <doc>pulse gsc ecrst and assert flex cold_reset.</doc>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="get_controls">
+          <item>default_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>default_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <item>default_cold_reset:on</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>gsc_reset_count</name>
+    <alias>cr50_reset_count</alias>
+    <doc>GSC reset count</doc>
+    <params cmd="get" uart_cmd="sysinfo"
+    regex="Reset count: (\d+)" group="1" interface="9" drv="cr50"
+    input_type="str" ></params>
+  </control>
+  <control>
+    <name>gsc_devid</name>
+    <alias>cr50_devid</alias>
+    <doc>current gsc devid</doc>
+    <params cmd="get" uart_cmd="sysinfo"
+    regex="DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})" group="1" interface="9"
+    drv="cr50" input_type="str" ></params>
+  </control>
+  <control>
+    <name>gsc_servo</name>
+    <alias>cr50_servo</alias>
+    <doc>Get the servo state from gsc ccdstate. Can be 'undetectable',
+    'disconnected', or 'connected'</doc>
+    <params cmd="get" uart_cmd="ccdstate" regex="Servo:\s+(\S+)\s" group="1"
+    interface="9" drv="cr50" input_type="str" >
+    </params>
+  </control>
+  <control>
+    <name>gsc_force_servo_detect</name>
+    <alias>cr50_force_servo_detect</alias>
+    <doc>Control ccdblock to control detecting servo.</doc>
+    <params cmd="get" uart_cmd="ccdstate" regex="CCD ports blocked:([\S ]+)[\n\r]"
+    group="1" interface="9" drv="cr50" map="servo_re" ></params>
+    <params cmd="set" subtype="detect_servo" interface="9" drv="cr50" map="onoff"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_idle_level</name>
+    <alias>cr50_idle_level</alias>
+    <doc>Controls the level of sleep the gsc will enter when idling.</doc>
+    <params cmd="get" uart_cmd="idle"
+    regex="idle action:\s+(\w+)" group="1" fmt="lowercase" interface="9"
+    drv="cr50" input_type="str" map="idle_states"></params>
+    <params cmd="set" uart_cmd="idle" interface="9" drv="cr50" input_type="str"
+    map="idle_states"></params>
+  </control>
+  <!-- gsc UART Buffers & VREF Controls -->
+  <control>
+    <name>jtag_buf_on_flex_en</name>
+    <alias>uart4_on_flex_en,cr50_uart_on_flex_en,gsc_uart_on_flex_en,usbpd_uart_on_flex_en</alias>
+    <doc>Enables JTAG buffer on servo flex ... repurposed to uart4.</doc>
+    <params clobber_ok="patch" init="on" />
+  </control>
+  <control>
+    <name>jtag_buf_en</name>
+    <alias>cr50_uart_en,gsc_uart_en,usbpd_uart_en</alias>
+    <doc>Enabled JTAG buffer on servo ... re-purposed to uart4.</doc>
+    <params clobber_ok="patch" init="on" />
+  </control>
+  <control>
+    <name>gsc_version</name>
+    <alias>cr50_version</alias>
+    <doc>current gsc version</doc>
+    <params cmd="get" uart_cmd="version"
+    regex="RW_(A|B):\s+\*\s+([\S ]+)\s" group="2" interface="9" drv="cr50"
+    ></params>
+  </control>
+  <control>
+    <name>gsc_brdprop</name>
+    <alias>cr50_brdprop</alias>
+    <doc>current gsc board properties</doc>
+    <params cmd="get" uart_cmd="brdprop"
+    regex="properties = (\S+)\s" group="1" interface="9" drv="cr50" ></params>
+  </control>
+  <control>
+    <name>gsc_ccd_state_flags</name>
+    <alias>cr50_ccd_state_flags</alias>
+    <doc>CCD state flags that are currently enabled.</doc>
+    <params cmd="get" uart_cmd="ccdstate" regex="State flags:([\S ]*)[\n\r]"
+    group="1" interface="9" drv="cr50" ></params>
+  </control>
+  <!-- gsc I2C controls -->
+  <control>
+    <name>gsc_i2c_ctrl</name>
+    <alias>cr50_i2c_ctrl</alias>
+    <doc>Send a special command to GSC (write-only)</doc>
+    <params interface="2" drv="gsc_i2c" child="0x78" cmd="set"
+    map="gsc_i2c_cmds" />
+  </control>
+  <control>
+    <name>ccd_keepalive_en</name>
+    <doc>Enable/disable keepalive on CCD</doc>
+    <params subtype="ccd_keepalive_en" interface="9" drv="cr50"
+    map="onoff" init="off"></params>
+  </control>
+</root>

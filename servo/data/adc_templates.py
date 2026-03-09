@@ -522,7 +522,7 @@ class PAC1954Template(PAC1934Template):
 
   def GetFunctionalParams(self, rsense, interface='servo'):
     """pac1954 specific overwrite to handle special 'slow' implementation."""
-    funcs = super(PAC1954Template, self).GetFunctionalParams(rsense,
+    funcs = super().GetFunctionalParams(rsense,
                                                                interface)
     funcs['slow_enabled'].update(dict(subtype='slow', drv='pac1954_gpio',
                                       interface=interface, io_mode='slow',

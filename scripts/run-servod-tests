@@ -5,12 +5,24 @@
 set -ex
 
 TESTS="."
+FAST_MODE=0
 
-if [ -n "${1}" ]; then
-   TESTS="${1}"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --fast)
+      FAST_MODE=1
+      shift
+      ;;
+    *)
+      TESTS="${1}"
+      shift
+      ;;
+  esac
+done
+
+if [ "${FAST_MODE}" -eq 0 ]; then
+    scripts/build-servod cq
 fi
-
-scripts/build-servod cq
 
 CALLER_UID=$(id -u)
 
@@ -24,24 +36,28 @@ if [ -d ${PWD}/coverage ]; then
         --cov=/usr/local/lib/python3.13/dist-packages/servo_updater \
         --cov=/usr/local/lib/python3.13/dist-packages/ec3po \
         --cov-report=lcov:/coverage/lcov.info \
+        --cov-report=xml:/coverage/coverage.xml \
         --cov-report=html:/coverage/cov.html "
 
     COVERAGE_POST_PROCESS="&& \
         sed -i s#/usr/local/lib/python3.13/dist-packages/##g /coverage/lcov.info && \
+        sed -i s#/usr/local/lib/python3.13/dist-packages/##g /coverage/coverage.xml && \
         chown -R ${CALLER_UID} /coverage/*"
 
     DOCKER_MOUNT="--volume ${PWD}/coverage:/coverage "
 fi
 
-docker build \
-    --build-arg=BASE_IMG=servod:devcq \
-    -t "${TEST_IMAGE}" -f servo/dockerfiles/Dockerfile.test .
+if [ "${FAST_MODE}" -eq 0 ]; then
+    docker build \
+        --build-arg=BASE_IMG=servod:dev \
+        -t "${TEST_IMAGE}" -f dockerfiles/Dockerfile.test .
+fi
 
 docker run -e SERVOD_LIMIT_TEST_DUT=1 \
     --ulimit=nofile=65535:65535 \
     ${DOCKER_MOUNT} \
     ${TEST_IMAGE} \
     bash -c "pushd hdctools && \\
-    pytest -x ${COVERAGE_FLAGS} ${TESTS} && \\
+    pytest -n auto -x ${COVERAGE_FLAGS} ${TESTS} && \\
     popd \\
     ${COVERAGE_POST_PROCESS}"

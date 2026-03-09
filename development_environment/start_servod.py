@@ -170,8 +170,12 @@ def pull_newest_image(client, image, allow_offline, verbose):
                 print("+", end="", flush=True)
         print("", flush=True)
         update_check_timestamp()
-    except docker.errors.APIError as e:
-        if (
+    except (docker.errors.APIError, docker.errors.DockerException) as e:
+        if client.images.list(filters={"reference": image}):
+            print("\nWarning: Failed to pull newest image, using local version.\n")
+            return
+
+        if isinstance(e, docker.errors.APIError) and (
             e.is_server_error()
             and e.response is not None
             and str(e.response.content).find("unauthorized") > 0
@@ -185,10 +189,6 @@ def pull_newest_image(client, image, allow_offline, verbose):
                 "-sent-me-here-after-authenticating-with-the-registry-failed"
             )
             sys.exit(1)
-        if not allow_offline:
-            raise
-        print("Failed to check for new version, offline mode specified.")
-    except docker.errors.DockerException:
         if not allow_offline:
             raise
         print("Failed to check for new version, offline mode specified.")
@@ -261,7 +261,7 @@ def start_servod(
             container_name = now.strftime("%s")
 
         name = "%s-docker_servod" % container_name
-        volumes = ["/dev:/dev"]
+        volumes = ["/dev:/dev", "/sys:/sys"]
 
         if os.path.exists("/proc/modules"):
             volumes.append("/proc/modules:/host_proc_modules:ro")

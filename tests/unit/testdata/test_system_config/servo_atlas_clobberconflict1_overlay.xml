@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <!-- ******** Includes ******** -->
+  <include>
+    <name>servo_atlas_overlay.xml</name>
+  </include>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_int_spi"/>
+    <params clobber_ok="patch" cmd="set" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_int_spi"/>
+  </control>
+</root>

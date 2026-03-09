@@ -12,6 +12,7 @@ the CrOS EC console commands.
 import ast
 import errno
 import fcntl
+import logging
 import os
 import time
 
@@ -41,6 +42,7 @@ class PtyDriver:
 
     def __init__(self, interface, _unused_params, fast=False):
         """Init class variables."""
+        self._logger = logging.getLogger(__name__)
         self._child = None
         self._fd = None
         self._interface = interface
@@ -53,9 +55,11 @@ class PtyDriver:
 
     def close(self):
         """Close any open files and interfaces."""
-        if self._fd:
-            self._close()
-        self._interface.close()
+        try:
+            if self._fd is not None:
+                self._close()
+        finally:
+            self._interface.close()
 
     def _open(self):
         """Connect to serial device and create pexpect interface."""
@@ -78,9 +82,23 @@ class PtyDriver:
 
     def _close(self):
         """Close serial device connection."""
-        os.close(self._fd)
-        self._fd = None
-        self._child = None
+        try:
+            if self._child:
+                try:
+                    self._child.close()
+                except Exception as e:
+                    self._logger.debug("Error closing pexpect child: %s", e)
+            if self._fd is not None:
+                try:
+                    os.close(self._fd)
+                except OSError as e:
+                    # EBADF means it was already closed by child.close()
+                    if e.errno != errno.EBADF:
+                        self._logger.debug("Error closing fd %d: %s", self._fd, e)
+                        raise
+        finally:
+            self._fd = None
+            self._child = None
 
     def _flush(self):
         """Flush device output to prevent previous messages interfering."""
@@ -169,6 +187,8 @@ class PtyDriver:
                 # the subgroups of the match.
                 result = match.group(*range(lastindex + 1)) if match else None
                 if result is not None:
+                    if not isinstance(result, tuple):
+                        result = (result,)
                     result = tuple(res.decode("utf-8") for res in result)
                 result_list.append(result)
         except pexpect.TIMEOUT as e:
@@ -207,6 +227,8 @@ class PtyDriver:
                     # the subgroups of the match.
                     result = match.group(*range(lastindex + 1)) if match else None
                     if result is not None:
+                        if not isinstance(result, tuple):
+                            result = (result,)
                         result = tuple(res.decode("utf-8") for res in result)
                     result_list.append(result)
                 except pexpect.TIMEOUT:

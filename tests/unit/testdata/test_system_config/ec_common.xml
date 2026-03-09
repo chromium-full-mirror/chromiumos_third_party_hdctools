@@ -1,0 +1,165 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>kbd_en</name>
+    <doc>Enable servo to assert certain keypresses via kbd_m1 and
+    kbd_m2</doc>
+    <params subtype="kbd_en" interface="10" drv="ec" map="onoff"
+    clobber_ok="full"/>
+  </control>
+  <control>
+    <name>kbd_m1_a0</name>
+    <doc>kbd_m1_a0</doc>
+    <params subtype="kbd_m1_a0" interface="10" drv="ec" map="onoff"
+    clobber_ok="full"/>
+  </control>
+  <control>
+    <name>kbd_m1_a1</name>
+    <doc>kbd_m1_a1</doc>
+    <params subtype="kbd_m1_a1" interface="10" drv="ec" map="onoff"
+    clobber_ok="full"/>
+  </control>
+  <control>
+    <name>kbd_m2_a0</name>
+    <doc>kbd_m2_a0</doc>
+    <params subtype="kbd_m2_a0" interface="10" drv="ec" map="onoff"
+    clobber_ok="full"/>
+  </control>
+  <control>
+    <name>kbd_m2_a1</name>
+    <doc>kbd_m2_a1</doc>
+    <params subtype="kbd_m2_a1" interface="10" drv="ec" map="onoff"
+    clobber_ok="full"/>
+  </control>
+  <control>
+    <name>avg_ppvar_vbat_ma</name>
+    <doc>milliamps being consumed (discharging/positive) or supplied
+    (charging/negative) to the battery. 1 minute running
+    average</doc>
+    <params cmd="get" uart_cmd="pwr_avg" regex="ma = (-?\d+)[\r\n]+"
+    group="1" formatting="int,negative" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>avg_ppvar_vbat_mv</name>
+    <doc>millivolts of the battery. 1 minute running average</doc>
+    <params cmd="get" uart_cmd="pwr_avg" regex="mv = (-?\d+)[\r\n]+"
+    group="1" formatting="int" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>avg_ppvar_vbat_mw</name>
+    <doc>milliwatts being consumed (discharging) or supplied
+    (charging) to the battery. 1 minute running average</doc>
+    <params cmd="get" uart_cmd="pwr_avg" regex="mw = (-?\d+)[\r\n]+|%s"
+    group="1" formatting="int,negative" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>ppvar_vbat_ma</name>
+    <doc>milliamps being consumed (discharging/positive) or supplied
+    (charging/negative) to the battery</doc>
+    <params cmd="get" uart_cmd="battery" regex="I:[\s0-9a-fx]*= (-*\d+) mA"
+    group="1" formatting="int,negative" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>ppvar_vbat_mv</name>
+    <doc>millivolts of the battery</doc>
+    <params cmd="get" uart_cmd="battery" regex="V:[\s0-9a-fx]*= (-*\d+) mV"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>ppvar_vbat_mw</name>
+    <doc>milliwatts being consumed (discharging) or supplied
+    (charging) to the battery</doc>
+    <params cmd="get" subtype="milliwatts" interface="10" drv="ec">
+    </params>
+  </control>
+  <control>
+    <name>charger_attached</name>
+    <doc>whether an AC charger is attached</doc>
+    <params cmd="get" uart_cmd="chgstate" regex="ac = (\d)[\r\n]+"
+    group="1" formatting="int,bool" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_tempc</name>
+    <doc>battery temperature in degrees Celsius</doc>
+    <params cmd="get" uart_cmd="battery" regex="Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)"
+    group="1" formatting="float" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_charge_percent</name>
+    <doc>battery charge in percent</doc>
+    <params cmd="get" uart_cmd="battery" regex="Charge:\s*(\d+) %"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_charge_mah</name>
+    <doc>battery charge in mAh</doc>
+    <params cmd="get" uart_cmd="battery" regex="Remaining:\s*(\d+) mAh"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_full_charge_mah</name>
+    <doc>battery last full charge in mAh</doc>
+    <params cmd="get" uart_cmd="battery" regex="Cap-full:\s*(\d+) mAh"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_full_design_mah</name>
+    <doc>battery design full capacity in mAh</doc>
+    <params cmd="get" uart_cmd="battery" regex="Design:\s*(\d+) mAh"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_is_charging</name>
+    <doc>Whether the battery is charging.</doc>
+    <params cmd="get" uart_cmd="chgstate" regex="batt_is_charging = (\d)[\r\n]+"
+    group="1" formatting="int,bool" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>battery_voltage_design_mv</name>
+    <doc>Battery design voltage in mV</doc>
+    <params cmd="get" uart_cmd="battery" regex="V-design:[\s0-9a-fx]*= (\d+) mV"
+    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+  </control>
+  <control>
+    <name>pwr_button_hold</name>
+    <doc>milliseconds to hold the power button</doc>
+    <params cmd="get" interface="10" drv="na" />
+    <params cmd="set" subtype='button_hold' interface="10"
+    drv="ec" input_type="int" ec_cmd="powerbtn"/>
+  </control>
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params cmd="set" interface="servo" drv="cros_ec_power"
+    input_type="str" reset_hold="0.1" reset_recovery="0.5" />
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="unknown" />
+  </control>
+  <control>
+    <name>usbpd_chip</name>
+    <doc>USB PD chip name (read-only)</doc>
+    <params cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="unknown" />
+  </control>
+  <control>
+    <name>fpmcu_chip</name>
+    <doc>Fingerprint MCU chip name (read-only)</doc>
+    <params cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="unknown" />
+  </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <doc>The USB PD data role from the perspective of the DUT. It is not possible to set to UFP when servo_pd_role is SNK.</doc>
+    <params interface="10" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" />
+  </control>
+</root>

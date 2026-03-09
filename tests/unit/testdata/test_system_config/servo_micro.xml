@@ -1,0 +1,523 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <include>
+    <name>keyboard.xml</name>
+  </include>
+  <include>
+    <name>uart_common.xml</name>
+  </include>
+  <include>
+    <name>servo_adc_enabled_noop.xml</name>
+  </include>
+  <include>
+    <name>select_cold_reset.xml</name>
+  </include>
+  <!-- Console GPIO interface -->
+  <map>
+    <name>onoff_vref_sel</name>
+    <doc>Determine VREF between pp3300, pp1800 and off. Default is
+    off</doc>
+    <params off="0" pp3300="1" pp1800="2"></params>
+  </map>
+  <map>
+    <name>usbpd_uart_map</name>
+    <doc>Enable alternate uart3 routing for PD</doc>
+    <params off="0" samus="1" glados="2"></params>
+  </map>
+  <control>
+    <name>uart1_en</name>
+    <alias>ec_uart_en</alias>
+    <doc>UART1_EN_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="UART1_EN_L"
+    subtype="single" map="onoff_i" init="on"></params>
+  </control>
+  <control>
+    <name>servo_micro_ec_boot_mode_uut</name>
+    <alias>ec_boot_mode_uut</alias>
+    <doc>UUT boot mode GPIO. See also tp1 control. Rework in
+    b/143163043#comment3 is necessary for this to work.</doc>
+    <params subtype="uut_boot_mode" interface="6" drv="ec3po_servo_micro"
+    map="onoff" init="off" />
+  </control>
+  <control>
+    <name>servo_jtag_trst</name>
+    <doc>SERVO_JTAG_TRST_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TRST_L"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>spi1_buf_en</name>
+    <doc>SPI1_BUF_EN_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="SPI1_BUF_EN_L"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>spi2_buf_en</name>
+    <doc>SPI2_BUF_EN_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="SPI2_BUF_EN_L"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>uart2_en</name>
+    <alias>cpu_uart_en</alias>
+    <doc>UART2_EN_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="UART2_EN_L"
+    subtype="single" map="onoff_i" init="on"></params>
+  </control>
+  <control>
+    <name>spi1_vref</name>
+    <doc>VREF applied to SPI1</doc>
+    <params interface="6" drv="ec3po_gpio"
+    names="SPI1_VREF_33, SPI1_VREF_18" subtype="multi"
+    map="onoff_vref_sel" init="off"></params>
+  </control>
+  <control>
+    <name>spi2_vref</name>
+    <alias>fw_wp_vref</alias>
+    <doc>VREF applied to SPI2 (coreboot)</doc>
+    <params interface="6" drv="ec3po_gpio"
+    names="SPI2_VREF_33, SPI2_VREF_18" subtype="multi"
+    map="onoff_vref_sel" init="off"></params>
+  </control>
+  <control>
+    <name>servo_jtag_trst_dir</name>
+    <doc>SERVO_JTAG_TRST_DIR</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TRST_DIR"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>servo_jtag_tdi_dir</name>
+    <doc>SERVO_JTAG_TDI_DIR</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDI_DIR"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>gpio_expander_reset</name>
+    <doc>TCA6416_RESET_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="TCA6416_RESET_L"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>uart3_on_spi1</name>
+    <doc>SPI1_MUX_SEL</doc>
+    <params interface="6" drv="ec3po_gpio" name="SPI1_MUX_SEL"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>SERVO_JTAG_TMS_DIR</name>
+    <doc>SERVO_JTAG_TMS_DIR</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TMS_DIR"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>SERVO_JTAG_TDO_SEL</name>
+    <doc>SERVO_JTAG_TDO_SEL</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDO_SEL"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>SERVO_JTAG_TMS</name>
+    <doc>SERVO_JTAG_TMS</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TMS"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>UART3_TX_SERVO_JTAG_TCK</name>
+    <doc>UART3_TX_SERVO_JTAG_TCK</doc>
+    <params interface="6" drv="ec3po_gpio"
+    name="UART3_TX_SERVO_JTAG_TCK" subtype="single" map="onoff"
+    init="off"></params>
+  </control>
+  <control>
+    <name>UART3_RX_JTAG_BUFFER_TO_SERVO_TDO</name>
+    <doc>UART3_RX_JTAG_BUFFER_TO_SERVO_TDO</doc>
+    <params interface="6" drv="ec3po_gpio"
+    name="UART3_RX_JTAG_BUFFER_TO_SERVO_TDO" subtype="single"
+    map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>SERVO_JTAG_TDO_BUFFER_EN</name>
+    <doc>SERVO_JTAG_TDO_BUFFER_EN</doc>
+    <params interface="6" drv="ec3po_gpio"
+    name="SERVO_JTAG_TDO_BUFFER_EN" subtype="single" map="onoff"
+    init="off"></params>
+  </control>
+  <control>
+    <name>SERVO_JTAG_TDI</name>
+    <doc>SERVO_JTAG_TDI</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_TDI"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>SERVO_JTAG_RTCK</name>
+    <doc>SERVO_JTAG_RTCK</doc>
+    <params interface="6" drv="ec3po_gpio" name="SERVO_JTAG_RTCK"
+    subtype="single" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>JTAG_BUFOUT_EN_L</name>
+    <doc>JTAG_BUFOUT_EN_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="JTAG_BUFOUT_EN_L"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>JTAG_BUFIN_EN_L</name>
+    <doc>JTAG_BUFIN_EN_L</doc>
+    <params interface="6" drv="ec3po_gpio" name="JTAG_BUFIN_EN_L"
+    subtype="single" map="onoff_i" init="off"></params>
+  </control>
+  <!-- GPIO on expander settings -->
+  <!-- hwinit order does not change. Make sure to initialize usbpd uart routing
+       before other controls, so the gsc console can get enabled first.
+       usbpd_console sets the GPIOS that are defined above this, so this is the
+       earliest usbpd_uart_routing can get defined. -->
+  <control>
+    <name>usbpd_uart_routing</name>
+    <doc>enable pd uart routing</doc>
+    <params interface="6" drv="ec3po_servo_micro"
+    subtype="usbpd_console" map="usbpd_uart_map" init="off">
+    </params>
+  </control>
+  <control>
+    <name>fw_wp_en</name>
+    <doc>Enables forwarding of write-protect gpio. Must assert this
+    and set fw_wp_vref prior to changing fw_wp.</doc>
+    <params interface="2" drv="tca6416" child="0x20" port="0"
+    offset="0" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>fw_wp</name>
+    <doc>Firmware write-protect GPIO</doc>
+    <!-- DUT_MFG_MODE read only -->
+    <params cmd="get" interface="2" drv="tca6416" child="0x20" port="0"
+    offset="2" map="onoff_i"></params>
+    <!-- FTDI_MFG_MODE write only -->
+    <params cmd="set" interface="2" drv="tca6416" child="0x20" port="0"
+    offset="1" map="onoff_i"></params>
+  </control>
+  <!-- Duplicate the fw_wp control but uses open-drain output,
+  instead of the level shifter -->
+  <control>
+    <name>fw_wp_od</name>
+    <doc>Firmware write-protect open-drain GPIO</doc>
+    <!-- DUT_MFG_MODE -->
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
+    offset="2" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>tp1</name>
+    <doc>Test point 1. This is also used on a reworked (b/143163043#comment3)
+    servo micro to control the direction of the EC_TX_SERVO_RX pin in the level
+    shifter, thus allowing the servo to drive the net low to enable UART
+    programming on the EC</doc>
+    <params interface="2" drv="tca6416" child="0x20" port="0"
+    offset="3" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>spi_hold</name>
+    <doc>spi_hold</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
+    offset="4" map="onoff_i"></params>
+  </control>
+  <control>
+    <name>default_cold_reset</name>
+    <doc>cold_reset from the flex cable</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
+    offset="5" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>pwr_button</name>
+    <doc>Power button GPIO</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
+    offset="6" map="press" init="release"></params>
+  </control>
+  <control>
+    <name>warm_reset</name>
+    <doc>warm_reset</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="0"
+    offset="7" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>rec_mode</name>
+    <doc>Google recovery mode</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="0" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>hpd</name>
+    <doc>hpd</doc>
+    <params interface="2" drv="tca6416" child="0x20" port="1"
+    offset="2" map="onoff"></params>
+  </control>
+  <control>
+    <name>fw_up</name>
+    <alias>t20_rec,proc_hot,ec_boot_mode</alias>
+    <doc>Firmware update mode via USB</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="3" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>lid_open</name>
+    <doc>lid open GPIO</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="4" map="yesno" init="yes"></params>
+  </control>
+  <control>
+    <name>dev_mode</name>
+    <alias>usbpd_boot_mode</alias>
+    <doc>dev_mode GPIO</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="5" map="onoff"></params>
+  </control>
+  <control>
+    <name>pch_disable</name>
+    <alias>usbpd_reset</alias>
+    <doc>DUT specific.</doc>
+    <params interface="2" drv="tca6416" child="0x20" od="PU" port="1"
+    offset="6" map="onoff_i" init="off"></params>
+  </control>
+  <control>
+    <name>tp2</name>
+    <doc>Test point 2</doc>
+    <params interface="2" drv="tca6416" child="0x20" port="1"
+    offset="7" map="onoff" init="off"></params>
+  </control>
+  <control>
+    <name>fw_wp_state</name>
+    <doc>Used to turn fw wp off and on</doc>
+    <params interface="servo" drv="fw_wp_servoflex" input_type="str"
+    fw_wp_vref="pp1800" init="force_off"/>
+  </control>
+  <!-- UART and CONSOLE settings -->
+  <control>
+    <name>uart3_pty</name>
+    <alias>raw_usbpd_uart_pty</alias>
+    <doc>Legacy (v1) uart console. USART4: PA0/PA1 - Servo
+    UART3</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>uart3_parity</name>
+    <alias>usbpd_uart_parity</alias>
+    <doc>Parity for uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="1" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart3_baudrate</name>
+    <alias>usbpd_uart_baudrate</alias>
+    <doc>Baudrate for EC's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="1"></params>
+  </control>
+  <control>
+    <name>uart2_pty</name>
+    <alias>raw_cpu_uart_pty</alias>
+    <doc>UART console. USART3: PB10/PB11 - Servo header UART2</doc>
+    <params cmd="get" subtype="pty" interface="8" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>uart2_parity</name>
+    <alias>cpu_uart_parity</alias>
+    <doc>Parity for uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="8" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart2_baudrate</name>
+    <alias>cpu_uart_baudrate</alias>
+    <doc>Baudrate for EC's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="8"></params>
+  </control>
+  <control>
+    <name>uart1_pty</name>
+    <alias>raw_ec_uart_pty</alias>
+    <doc>UART console. USART2: PA2/PA3 - Servo header UART1</doc>
+    <params cmd="get" subtype="pty" interface="7" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>uart1_parity</name>
+    <alias>ec_uart_parity</alias>
+    <doc>Parity for uart console</doc>
+    <params drv="uart" subtype="props" line_prop="parity"
+    interface="7" map="uart_parity"></params>
+  </control>
+  <control>
+    <name>uart1_baudrate</name>
+    <alias>ec_uart_baudrate</alias>
+    <doc>Baudrate for EC's uart console</doc>
+    <params drv="uart" subtype="props" line_prop="baudrate"
+    interface="7"></params>
+  </control>
+  <control>
+    <name>raw_servo_micro_uart_pty</name>
+    <doc>Servo micro's stm32 console.</doc>
+    <params cmd="get" subtype="pty" interface="3" drv="uart">
+    </params>
+  </control>
+  <!-- firmware version introspection controls -->
+  <control>
+    <name>servo_micro_version</name>
+    <doc>current fw version</doc>
+    <params cmd="get" interface="6" drv="simple_ec" uart_cmd="version"
+      regex="RO:\s+(\S*_v?[\d.\w\+-]+)[\n\r]" group="1" formatting="strip"
+      tags="servo_fw_version"/>
+  </control>
+  <control>
+    <name>servo_micro_latest_stable_version</name>
+    <alias>servo_micro_latest_version</alias>
+    <doc>servo-firmware available fw version</doc>
+    <params cmd="get" interface="servo" drv="servo_updater_reader"
+      board="servo_micro" channel="stable"/>
+  </control>
+  <control>
+    <name>servo_micro_firmware_channel</name>
+    <doc>which channel the current servo micro firmware is from</doc>
+    <params cmd="get" interface="servo" drv="servo_updater_channel_parser"
+      board="servo_micro"/>
+  </control>
+  <control>
+    <name>servo_micro_firmware_uptodate</name>
+    <doc>whether servo micro firmware is to update</doc>
+    <params cmd="get" interface="servo" drv="servo_firmware_checker"
+      board="servo_micro" map="yesno"/>
+    <params cmd="set" interface="servo" drv="servo_firmware_checker"
+      board="servo_micro" map="check" init="check"/>
+  </control>
+
+  <!-- EC-3PO console interpreter linkup -->
+  <control>
+    <name>ec3po_servo_micro_uart</name>
+    <alias>servo_micro_uart_pty</alias>
+    <doc>Servo micro console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="6" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>servo_ec3po_interp_connect</name>
+    <doc>State indicating if interpreter is listening to the servo
+    console.</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect"></params>
+  </control>
+  <control>
+    <name>servo_micro_loglevel</name>
+    <doc>servo micro console loglevel</doc>
+    <params interface="6" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
+  <!-- Servo Micro Console Automation Controls -->
+  <control>
+    <name>servo_micro_uart_cmd</name>
+    <doc>Set to send command to the servo micro console. Get to obtain the
+    matched results with the regular expression of
+    servo_micro_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="6" drv="uart" input_type="str"
+    tags="servo_cmd_ctrl"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_timeout</name>
+    <doc>Timeout value for waiting servo micro console response of issuing
+    an EC command.</doc>
+    <params subtype="uart_timeout" interface="6" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_multicmd</name>
+    <doc>Set to send multiple commands to the servo micro console.</doc>
+    <params interface="6" drv="na" cmd="get"></params>
+    <params subtype="uart_multicmd" interface="6" drv="uart" input_type="str"
+    cmd="set"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_regexp</name>
+    <doc>List of regular expressions to match the response of
+    servo_micro_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="6" drv="uart"
+    input_type="str" cmd="set"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_capture</name>
+    <doc>enable servo micro console capture</doc>
+    <params subtype="uart_capture" interface="6" drv="uart"
+    map="onoff"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_stream</name>
+    <doc>servo micro stream collected while servo_micro_uart_capture on</doc>
+    <params cmd="get" subtype="uart_stream" interface="6" drv="uart"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the servo micro console
+      messages.</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
+    <name>servo_micro_uart_timestamp</name>
+    <doc>Add timestamps to the servo micro console messages</doc>
+    <params interface="6" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
+  </control>
+  <control>
+    <name>ec3po_usbpd_console</name>
+    <alias>usbpd_uart_pty</alias>
+    <doc>USB PD UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>usbpd_ec3po_interp_connect</name>
+    <doc>State indicating if interpreter is listening to the usb pd
+    UART.</doc>
+    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect"></params>
+  </control>
+  <control>
+    <name>jtag_vref_sel0</name>
+    <alias>jtag_vref_sel1</alias>
+    <doc>Fake control. No way to change it.</doc>
+    <params interface="9" drv="na" input_type="str"/>
+  </control>
+  <!-- Debug helper controls -->
+  <control>
+    <name>servo_micro_panicinfo</name>
+    <doc>Get panicinfo output for servo micro.</doc>
+    <params interface="6" drv="simple_ec"
+      uart_cmd="panicinfo" regex="panicinfo(.*)>" group="1"
+      tags="servo_mcu_panicinfo" formatting="strip"/>
+  </control>
+  <!-- ITE EC firmware flashing support -->
+  <control>
+    <name>enable_ite_dfu</name>
+    <doc>Enable direct firmware update (DFU) over I2C mode on ITE
+    IT8320 EC chip by sending special non-I2C waveforms over the I2C
+    bus wires.</doc>
+    <params cmd="get" subtype="enable_ite_dfu" interface="6"
+    drv="ec3po_servo_micro" input_type="str"></params>
+  </control>
+  <control>
+    <name>get_ite_chipid</name>
+    <doc>Verify that ITE IT8320 EC chip direct firmware update (DFU)
+    mode is enabled by querying the EC over I2C for its CHIPID1 and
+    CHIPID2 registers. It will only respond over I2C when in DFU
+    mode.</doc>
+    <params cmd="get" subtype="get_ite_chipid" interface="6"
+    drv="ec3po_servo_micro" input_type="str"></params>
+  </control>
+</root>

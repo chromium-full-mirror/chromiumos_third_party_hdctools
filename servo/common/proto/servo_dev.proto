@@ -1,0 +1,230 @@
+// Copyright 2023 The ChromiumOS Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/struct.proto";
+
+/*
+Servo device template classes are classes to centrally collect information
+about a servo device. This us to quickly answer questions about different
+servo devices, and to abstract capabilities from device types/names by
+having different capabilities just be attributes.
+*/
+message ServoDevice {
+    // The Vendor ID associated with this servo device;
+    uint32 VID = 1;
+    // The product ID associated with this servo device
+    uint32 PID = 2;
+    // For some servo devices, different lot ids (from serialname) identify the
+    // template class
+    repeated string LOTIDS = 3;
+    // The default configuration file to pull in for this servo device
+    string DEFAULT_CONFIG = 4;
+    // The type string of a servo device
+    string TYPE = 5;
+    // Whether a ServoDevice has a built-in USB hub for connectting other ServoDevices and DUT. Default to False.
+    bool HUB_SERVO = 6;
+    // Whether a ServoDevice can access DUTs consoles (EC, AP, etc). Default to False.
+    bool DUT_CONTROLLER = 7;
+}
+
+// Additional data structure necessary to list multiple devices in .textproto files
+message ServoDeviceList {
+    repeated ServoDevice servo_devices = 1;
+}
+
+/*
+  Servo service allows drivers that located in data side
+  to manipulate data and execute methods on the servo core side.
+ */
+service ServoService {
+    // Set driver within servo core.
+    rpc SetServo (SetServoRequest) returns (google.protobuf.Empty);
+    // Get driver from servo core.
+    rpc GetServo (GetRequest) returns (ServiceResponse);
+    // Get Servo version
+    rpc GetVersion (google.protobuf.Empty) returns (ServiceResponse);
+    // InitSelectedControls
+    rpc InitSelectedControls (google.protobuf.Empty) returns (google.protobuf.Empty);
+    // Get selected controls
+    rpc GetSelectedControls (google.protobuf.Empty) returns (ServiceResponse);
+    // Set selected controls
+    rpc SetSelectedControls (SetRequest) returns (google.protobuf.Empty);
+    // Get init default keyboard
+    rpc GetInitKeyboard (KeyboardRequest) returns (OpenResponse);
+    // Set init default keyboard
+    rpc SetInitKeyboard (SetKeyboard) returns (google.protobuf.Empty);
+    // Get Init activate V4 servo
+    rpc GetInitV4Device (V4DeviceRequest) returns (V4DeviceResponse);
+    // check servo attribute on servod instance
+    rpc IsServoHasAttr (ServiceRequest) returns (BoolResponse);
+    // Get serial
+    rpc GetSerial (google.protobuf.Empty) returns (GetResponse);
+    // Get all serials
+    rpc GetSerials (google.protobuf.Empty) returns (GetResponse);
+    // Get all controls
+    rpc GetAllControls (google.protobuf.Empty) returns (GetResponse);
+    // Check if servod has a control
+    rpc HasControl (GetRequest) returns (BoolResponse);
+    // Get init default keyboard
+    rpc GetInitUsbKeyboard (BoolRequest) returns (OpenResponse);
+    // Set init default keyboard
+    rpc SetInitUsbKeyboard (SetUsbRequest) returns (google.protobuf.Empty);
+    // Gets the configuration files used for this servo server invocation
+    rpc GetFileConfig (google.protobuf.Empty) returns (ServiceResponse);
+    // Gets detailed information about the devices set up for the servod instance.
+    rpc GetDevices (google.protobuf.Empty) returns (ServiceResponse);
+    // Retrieve all controls under a certain tag.
+    rpc GetTaggedControls (ServiceRequest) returns (ServiceResponse);
+    // Get main device board name
+    rpc GetBaseBoard (google.protobuf.Empty) returns (ServiceResponse);
+    // Set or get couple commands
+    rpc SetGetAll (ListRequest) returns (ListResponse);
+    // Set key
+    rpc SetKeyboardKey (DurationRequest) returns (google.protobuf.Empty);
+    // Set the key to be pressed when arb_key control is called
+    rpc SetArbKeyConfig (KeyRequest) returns (google.protobuf.Empty);
+    // Set the keys to be pressed when arb_key control is called
+    rpc SetArbKeysConfig (KeyRequest) returns (google.protobuf.Empty);
+    // limit chanel for ec driver on main servod device
+    // Limit EC channels on main servo
+    rpc LimitEcDriverChannel(google.protobuf.Empty) returns (google.protobuf.Empty);
+    // Restore EC channels on main servo
+    rpc RestoreEcDriverChannel(google.protobuf.Empty) returns (google.protobuf.Empty);
+    // Execute EC command on main servo
+    rpc IssueCmdGetResult(IssueCmdOnMainDevRequest) returns (google.protobuf.Empty);
+    rpc GetWatchdog(google.protobuf.Empty) returns (ServiceResponse);
+    rpc UpdateDeviceDisconnectOk(WatchdogRequest) returns (google.protobuf.Empty);
+    rpc GetCcdState(google.protobuf.Empty) returns (CcdStateResponse);
+    rpc GetCrosChip(ServiceRequest) returns (ServiceResponse);
+    rpc GetUSBHubAddress(google.protobuf.Empty) returns (ServiceResponse);
+}
+
+message GetRequest {
+    string control_name = 1;
+}
+
+message SetServoRequest {
+    string control_name = 1;
+    google.protobuf.Value value = 2;
+}
+
+message SetRequest {
+    string control_name = 1;
+    google.protobuf.Value control_value = 2;
+}
+
+message ServiceRequest {
+    // Method name
+    string name = 1;
+}
+
+message GetResponse {
+    string get_value = 1;
+}
+
+message ServiceResponse {
+    // Method response
+    string response = 1;
+}
+
+message Device {
+    repeated string prefix = 1;
+    string type = 2;
+    int32 vendor_id = 3;
+    int32 product_id = 4;
+    string serial = 5;
+    string sysfs_path = 6;
+    string root_hub_device = 7;
+    repeated Device child_devices = 8;
+}
+
+message DeviceList {
+    repeated Device device_list = 1;
+}
+
+message DeviceConfig {
+    string device_name = 1;
+    repeated string xml_files = 2;
+}
+
+message SetUsbRequest {
+    bool is_legacy = 1;
+    google.protobuf.Value value = 2;
+}
+
+message BoolResponse {
+    bool value = 1;
+}
+
+message BoolRequest {
+    bool value = 1;
+}
+
+message ListResponse {
+    repeated string response_list = 1;
+}
+
+message ListRequest {
+    repeated string request_list = 1;
+}
+
+message OpenResponse {
+    int32 open = 1;
+}
+
+message SetKeyboard {
+    string handler_type = 1;
+    google.protobuf.Value value = 2;
+}
+
+message KeyboardRequest {
+    string type = 1;
+}
+
+message V4DeviceRequest {
+    string servo_type = 1;
+    repeated string devices_keys = 2;
+    string info_type = 3;
+}
+
+message V4DeviceResponse {
+    oneof response {
+        string value = 1;
+        ListOfDevices device_list = 2;
+    }
+}
+
+message ListOfDevices {
+    repeated string list = 1;
+}
+
+message DurationRequest {
+    google.protobuf.Value duration = 1;
+    string key = 2;
+    string handler = 3;
+}
+
+message KeyRequest {
+    string key = 1;
+    string handler = 2;
+}
+
+message IssueCmdOnMainDevRequest {
+    string cmds = 1;
+    repeated string regex_list = 2;
+    bool flush = 3;
+    int32 time_out = 4;
+}
+
+message WatchdogRequest {
+    string name = 1;
+    bool disconnect_ok = 2;
+}
+
+message CcdStateResponse {
+    int32 state = 1;
+}

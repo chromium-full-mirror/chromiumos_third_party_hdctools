@@ -1,0 +1,29 @@
+# Copyright 2026 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+trigger {
+  cloud_project_number: 799186886912
+  name: "trigger-main"
+  gerrit_trigger {
+    host: "chromium"
+    project: "chromiumos/third_party/hdctools"
+    branch: "main"
+  }
+  build_configs {
+    file_source {
+      path: "dockerfiles/cloudbuild.yaml"
+    }
+  }
+  result_config {
+    code_review_config {
+      notify_condition {
+        condition: ALWAYS
+      }
+      update_status: true
+      status_name: "Code-Review"
+    }
+  }
+}
+# Trivial change to trigger CQ
+# Trivial change to trigger CQ - Try 2

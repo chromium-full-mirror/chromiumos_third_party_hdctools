@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <!-- ******** Includes ******** -->
+  <include>
+    <name>servo_atlas_overlay.xml</name>
+  </include>
+  <map>
+    <name>dupmap</name>
+    <doc>two of this map in a file should be an error!</doc>
+    <params on="1" off="0"></params>
+  </map>
+  <map>
+    <name>dupmap</name>
+    <doc>two of this map in a file should be an error!</doc>
+    <params on="1" off="0"></params>
+  </map>
+</root>

@@ -16,9 +16,7 @@ import ctypes
 from datetime import datetime
 import logging
 import multiprocessing.connection
-import os
 import pathlib
-import pty
 import re
 import select
 import socket
@@ -41,6 +39,7 @@ else:
 # pylint: disable=C0413
 from ec3po import interpreter
 from ec3po import threadproc_shim
+from servo.utils.sys_interface import sys_interface
 
 
 PROMPT = b"> "
@@ -191,6 +190,7 @@ class Console:
         # Create a unique logger based on the console name
         console_prefix = ("%s - " % (name,)) if name else ""
         logger = logging.getLogger("%sEC3PO.Console" % (console_prefix,))
+        logger.setLevel(logging.INFO)
         self.logger = interpreter.LoggerAdapter(logger, {"pty": user_pty})
         self.controller_pty = controller_pty
         self.user_pty = user_pty
@@ -316,7 +316,8 @@ class Console:
             if byte == ord("\n"):
                 line.append(symbols[byte])
                 if line:
-                    self.logger.debug("%s", "".join(line))
+                    if self.raw_debug or self.logger.logger.isEnabledFor(logging.DEBUG):
+                        self.logger.debug("%s", "".join(line))
                 line = []
             elif byte == ord("\b"):
                 # Backspace: trim the last character off the buffer
@@ -342,7 +343,7 @@ class Console:
         wide = (len(self.history) // 10) + 1
         for i in range(len(self.history)):
             line = b" %*d %s\r\n" % (wide, i, self.history[i])
-            os.write(fd, line)
+            sys_interface.write(fd, line)
 
     def show_previous_command(self):
         """Shows the previous command from the history list."""
@@ -379,7 +380,7 @@ class Console:
         )
         fd = self.controller_pty
         prev_cmd = self.history[self.history_pos]
-        os.write(fd, prev_cmd)
+        sys_interface.write(fd, prev_cmd)
         # Update the input buffer.
         self.input_buffer = prev_cmd
         self.input_buffer_pos = len(prev_cmd)
@@ -404,7 +405,7 @@ class Console:
             for _unused in range(self.input_buffer_pos):
                 self.send_backspace()
             # Print the partially entered command if any.
-            os.write(fd, self.partial_cmd)
+            sys_interface.write(fd, self.partial_cmd)
             self.input_buffer = self.partial_cmd
             self.input_buffer_pos = len(self.input_buffer)
             # Now that we've printed it, clear the partial cmd storage.
@@ -431,7 +432,7 @@ class Console:
             self.history[self.history_pos],
         )
         next_cmd = self.history[self.history_pos]
-        os.write(fd, next_cmd)
+        sys_interface.write(fd, next_cmd)
         # Update the input buffer.
         self.input_buffer = next_cmd
         self.input_buffer_pos = len(next_cmd)
@@ -446,9 +447,9 @@ class Console:
             + self.input_buffer[self.input_buffer_pos + 1 :]
         )
         # Write the rest of the line
-        moved_col = os.write(fd, self.input_buffer[self.input_buffer_pos :])
+        moved_col = sys_interface.write(fd, self.input_buffer[self.input_buffer_pos :])
         # Write a space to clear out the last char
-        moved_col += os.write(fd, b" ")
+        moved_col += sys_interface.write(fd, b" ")
         # Update the input buffer position.
         self.input_buffer_pos += moved_col
         # Reset the cursor
@@ -645,7 +646,7 @@ class Console:
             self.logger.debug("Begin OOBM command.")
             self.receiving_oobm_cmd = True
             # Print a "prompt".
-            os.write(self.controller_pty, b"\r\n% ")
+            sys_interface.write(self.controller_pty, b"\r\n% ")
             return
 
         # Add chars to the pending OOBM command if we're currently receiving one.
@@ -653,7 +654,7 @@ class Console:
             tmp_bytes = bytes([byte])
             self.pending_oobm_cmd += tmp_bytes
             self.logger.debug("%s", tmp_bytes)
-            os.write(self.controller_pty, tmp_bytes)
+            sys_interface.write(self.controller_pty, tmp_bytes)
             return
 
         if byte == ControlKey.CARRIAGE_RETURN:
@@ -668,7 +669,7 @@ class Console:
                     )
 
                 # Reset the state.
-                os.write(self.controller_pty, b"\r\n" + self.prompt)
+                sys_interface.write(self.controller_pty, b"\r\n" + self.prompt)
                 self.input_buffer = b""
                 self.input_buffer_pos = 0
                 self.receiving_oobm_cmd = False
@@ -720,14 +721,14 @@ class Console:
         if byte == ControlKey.CARRIAGE_RETURN:
             self.logger.debug("Enter key pressed.")
             # Put a carriage return/newline and the print the prompt.
-            os.write(fd, b"\r\n")
+            sys_interface.write(fd, b"\r\n")
 
             # TODO(aaboagye): When we control the printing of all output, print the
             # prompt AFTER printing all the output.  We can't do it yet because we
             # don't know how much is coming from the EC.
 
             # Print the prompt.
-            os.write(fd, self.prompt)
+            sys_interface.write(fd, self.prompt)
             # Process the input.
             self.process_input()
             # Now, clear the buffer.
@@ -803,9 +804,9 @@ class Console:
                 self.logger.debug("Dropped char: %c(%d)", byte, byte)
                 return
             # Print the character.
-            os.write(fd, bytes([byte]))
+            sys_interface.write(fd, bytes([byte]))
             # Print the rest of the line (if any).
-            extra_bytes_written = os.write(
+            extra_bytes_written = sys_interface.write(
                 fd, self.input_buffer[self.input_buffer_pos :]
             )
 
@@ -862,7 +863,7 @@ class Console:
         self.logger.debug("input_buffer_pos: %d", self.input_buffer_pos)
         # Move the cursor.
         if count != 0:
-            os.write(fd, seq)
+            sys_interface.write(fd, seq)
 
     def kill_line(self):
         """Kill the rest of the line based on the input buffer position."""
@@ -887,7 +888,7 @@ class Console:
 
     def send_backspace(self):
         """Backspace a character on the console."""
-        os.write(self.controller_pty, b"\033[1D \033[1D")
+        sys_interface.write(self.controller_pty, b"\033[1D \033[1D")
 
     def process_oobm_queue(self):
         """Retrieve an item from the OOBM queue and process it."""
@@ -982,13 +983,13 @@ class Console:
     def print_oobm_help(self):
         """Prints out the OOBM help."""
         # Print help syntax.
-        os.write(self.controller_pty, b"\r\n" + b"Known OOBM commands:\r\n")
-        os.write(
+        sys_interface.write(self.controller_pty, b"\r\n" + b"Known OOBM commands:\r\n")
+        sys_interface.write(
             self.controller_pty,
             b"  interrogate <never | always | auto> " b"[enhanced]\r\n",
         )
-        os.write(self.controller_pty, b"  loglevel <int>\r\n")
-        os.write(self.controller_pty, b"  tokens <off | on [path]>\r\n")
+        sys_interface.write(self.controller_pty, b"  loglevel <int>\r\n")
+        sys_interface.write(self.controller_pty, b"  tokens <off | on [path]>\r\n")
 
     def check_buffer_for_enhanced_image(self, data):
         """Adds data to a look buffer and checks to see for enhanced EC image.
@@ -1036,7 +1037,7 @@ class Console:
             if self.tm_req:
                 now = datetime.now()
                 tm = canonicalize_time_string(now.strftime(HOST_STRFTIME))
-                os.write(self.controller_pty, tm)
+                sys_interface.write(self.controller_pty, tm)
                 self.tm_req = False
 
             # Insert timestamps into the middle where appropriate
@@ -1051,7 +1052,7 @@ class Console:
         # timestamp required on next input
         if data[-1:] == b"\n":
             self.tm_req = True
-        os.write(self.controller_pty, data_tm)
+        sys_interface.write(self.controller_pty, data_tm)
 
     def handle_debug_pipe_data(self, data: bytes, controller_connected, command_active):
         """Handle data coming from debug pipe.
@@ -1072,7 +1073,7 @@ class Console:
             self.send_to_controller(data)
 
         if command_active:
-            os.write(self.interface_pty, data)
+            sys_interface.write(self.interface_pty, data)
 
 
 def canonicalize_time_string(timestr):
@@ -1159,7 +1160,9 @@ def start_loop(console, command_active, shutdown_pipe=None):
                             # chars such as Ctrl+A, Ctrl+E, etc.
                             try:
                                 line = bytearray(
-                                    os.read(console.controller_pty, CONSOLE_MAX_READ)
+                                    sys_interface.read(
+                                        console.controller_pty, CONSOLE_MAX_READ
+                                    )
                                 )
                                 console.logger.debug(
                                     "Input from user: %s, locked:%s",
@@ -1170,7 +1173,11 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                     try:
                                         # Handle each character as it arrives.
                                         console.handle_char(i)
-                                    except EOFError:
+                                    except (
+                                        EOFError,
+                                        ConnectionResetError,
+                                        BrokenPipeError,
+                                    ):
                                         console.logger.debug(
                                             "ec3po console received EOF from dbg_pipe "
                                             "in handle_char()"
@@ -1188,7 +1195,9 @@ def start_loop(console, command_active, shutdown_pipe=None):
                             # Convert to bytes so we can look for non-printable
                             # chars such as Ctrl+A, Ctrl+E, etc.
                             line = bytearray(
-                                os.read(console.interface_pty, CONSOLE_MAX_READ)
+                                sys_interface.read(
+                                    console.interface_pty, CONSOLE_MAX_READ
+                                )
                             )
                             console.logger.debug(
                                 "Input from interface: %s, locked:%s",
@@ -1199,7 +1208,11 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                 try:
                                     # Handle each character as it arrives.
                                     console.handle_char(i)
-                                except EOFError:
+                                except (
+                                    EOFError,
+                                    ConnectionResetError,
+                                    BrokenPipeError,
+                                ):
                                     console.logger.debug(
                                         "ec3po console received EOF from dbg_pipe "
                                         "in handle_char()"
@@ -1211,7 +1224,7 @@ def start_loop(console, command_active, shutdown_pipe=None):
                     elif fileno == console.cmd_pipe.fileno():
                         try:
                             data = console.cmd_pipe.recv()
-                        except EOFError:
+                        except (EOFError, ConnectionResetError, BrokenPipeError):
                             console.logger.debug(
                                 "ec3po console received EOF from cmd_pipe"
                             )
@@ -1226,14 +1239,14 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                 data.strip(),
                             )
                         if controller_connected:
-                            os.write(console.controller_pty, data)
+                            sys_interface.write(console.controller_pty, data)
                         if command_active.value:
-                            os.write(console.interface_pty, data)
+                            sys_interface.write(console.interface_pty, data)
 
                     elif fileno == console.dbg_pipe.fileno():
                         try:
                             data = console.dbg_pipe.recv()
-                        except EOFError:
+                        except (EOFError, ConnectionResetError, BrokenPipeError):
                             console.logger.debug(
                                 "ec3po console received EOF from dbg_pipe"
                             )
@@ -1252,7 +1265,9 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                     # detokenize and print
                                     message = console.z_detokenizer.detokenize_text(
                                         chunk,
+                                        prefix=TOKEN_PREFIX,
                                     )
+
                                     message = message.replace(b"\n", b"\r\n")
                                     console.handle_debug_pipe_data(
                                         message,
@@ -1294,8 +1309,8 @@ def start_loop(console, command_active, shutdown_pipe=None):
         ep.unregister(console.controller_pty)
         console.dbg_pipe.close()
         console.cmd_pipe.close()
-        os.close(console.controller_pty)
-        os.close(console.interface_pty)
+        sys_interface.close(console.controller_pty)
+        sys_interface.close(console.interface_pty)
         if shutdown_pipe is not None:
             shutdown_pipe.close()
         console.logger.debug("Exit ec3po console loop for %s", console.user_pty)
@@ -1372,16 +1387,16 @@ def main(argv):
     itpr_process.start()
 
     # Open a new pseudo-terminal pair
-    (controller_pty, user_pty) = pty.openpty()
+    (controller_pty, user_pty) = sys_interface.openpty()
     # Set the permissions to 660.
-    os.chmod(
-        os.ttyname(user_pty),
+    sys_interface.chmod(
+        sys_interface.ttyname(user_pty),
         (stat.S_IRGRP | stat.S_IWGRP | stat.S_IRUSR | stat.S_IWUSR),
     )
     # Create a console.
     console = Console(
         controller_pty,
-        os.ttyname(user_pty),
+        sys_interface.ttyname(user_pty),
         controller_pty,
         cmd_pipe_interactive,
         dbg_pipe_interactive,

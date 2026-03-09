@@ -5,7 +5,7 @@
 export HDCTOOLS_DIR = $(shell pwd)
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 
-SUBDIRS		= ec3po lib test servo servo_updater usbkm232
+SUBDIRS		= ec3po lib measurement_tools tests/c_legacy servo servo_updater usbkm232
 ifdef EXTRA_DIRS
 SUBDIRS		+= $(EXTRA_DIRS)
 endif
@@ -35,3 +35,4 @@ ver:
 
 src:	lib
 test:	src lib
+tests/c_legacy: lib

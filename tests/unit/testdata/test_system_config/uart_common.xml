@@ -1,0 +1,201 @@
+<?xml version="1.0"?>
+<!--
+Copyright 2026 The ChromiumOS Authors
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<root>
+  <!-- EC-3PO console interpreter for main CPU -->
+  <include>
+    <!-- controls retrieving information from the a CrOS EC -->
+    <name>ec_info.xml</name>
+  </include>
+  <control>
+    <name>ec3po_cpu_console</name>
+    <alias>cpu_uart_pty</alias>
+    <doc>CPU UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="11" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>cpu_ec3po_interp_connect</name>
+    <doc>State indicating if interpreter is listening to the CPU
+    UART.</doc>
+    <params interface="11" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect"></params>
+  </control>
+  <control>
+    <name>cpu_loglevel</name>
+    <doc>CPU console loglevel</doc>
+    <params interface="11" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
+  <control>
+    <name>cpu_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the AP console messages.</doc>
+    <params interface="11" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
+    <name>cpu_uart_timestamp</name>
+    <doc>Add timestamps to CPU console messages</doc>
+    <params interface="11" drv="ec3po_driver" map="onoff" init="off"
+    subtype="timestamp"></params>
+  </control>
+  <!-- EC-3PO console interpreter for main EC -->
+  <control>
+    <name>ec3po_ec_console</name>
+    <alias>ec_uart_pty</alias>
+    <doc>EC UART console provided via EC-3PO console
+    interpreter.</doc>
+    <params cmd="get" subtype="pty" interface="10" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>ec_ec3po_interp_connect</name>
+    <doc>State indicating if interpreter is listening to the EC
+    UART.</doc>
+    <params interface="10" drv="ec3po_driver" map="onoff" init="on"
+    subtype="interp_connect"></params>
+  </control>
+  <control>
+    <name>ec_loglevel</name>
+    <doc>EC console loglevel</doc>
+    <params interface="10" drv="ec3po_driver" input_type="str"
+    subtype="loglevel"></params>
+  </control>
+  <control>
+    <name>ec_uart_raw_debug</name>
+    <doc>Turn on per-message-received logs to the EC console messages.</doc>
+    <params interface="10" drv="ec3po_driver" map="onoff" init="off"
+    subtype="raw_debug"></params>
+  </control>
+  <control>
+    <name>ec_uart_timestamp</name>
+    <doc>Add timestamps to the EC console messages</doc>
+    <params interface="10" drv="ec3po_driver" map="onoff" init="on"
+    subtype="timestamp"></params>
+  </control>
+  <!-- UART Command Controls -->
+  <control>
+    <name>ec_uart_capture</name>
+    <doc>ec_uart_capture</doc>
+    <params subtype="uart_capture" interface="10" drv="uart"
+    map="onoff"></params>
+  </control>
+  <control>
+    <name>ec_uart_cmd</name>
+    <doc>Set to send command to EC UART. Get to obtain the matched
+    results with the regular expression of ec_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="10" drv="uart"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>ec_uart_multicmd</name>
+    <doc>Set to send multiple commands to EC UART.</doc>
+    <params interface="10" drv="na" cmd="get"></params>
+    <params subtype="uart_multicmd" interface="10" drv="uart"
+    input_type="str" cmd="set"></params>
+  </control>
+  <control>
+    <name>ec_uart_regexp</name>
+    <doc>List of regular expressions which matches the response of
+    ec_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="10" drv="uart"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>ec_uart_stream</name>
+    <doc>Ec uart stream collected while ec_uart_capture is set to
+    'on'</doc>
+    <params cmd="get" subtype="uart_stream" interface="10"
+    drv="uart"></params>
+  </control>
+  <control>
+    <name>ec_uart_flush</name>
+    <doc>Enable flushing the console before sending an EC command.</doc>
+    <params subtype="uart_flush" interface="10" drv="uart"
+    map="onoff" init="on"></params>
+  </control>
+  <control>
+    <name>ec_uart_timeout</name>
+    <doc>Timeout value for waiting EC UART response of issuing an EC
+    command.</doc>
+    <params subtype="uart_timeout" interface="10" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>login</name>
+    <doc>Query if AP UART session is logged in. Ask to login/logout
+    of a session by calling login:yes and login:no</doc>
+    <params map="yesno" subtype="login" interface="11" drv="ap">
+    </params>
+  </control>
+  <control>
+    <name>login_username</name>
+    <doc>Username used to log into a session.</doc>
+    <params input_type="str" subtype="username" interface="11"
+    drv="ap"></params>
+  </control>
+  <control>
+    <name>login_password</name>
+    <doc>Password used to log into a session.</doc>
+    <params input_type="str" subtype="password" interface="11"
+    drv="ap"></params>
+  </control>
+  <control>
+    <name>ec_gpio</name>
+    <doc>The EC GPIOs and their state.</doc>
+    <params cmd="get" uart_cmd="gpioget"
+    regex="gpioget.*>" group="0" formatting="gpio" interface="10" drv="simple_ec"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>ec_flash_size</name>
+    <doc>The usable size of the EC flash memory in Kbytes</doc>
+    <params cmd="get" uart_cmd="flashinfo"
+    regex="(?i)Usable:\s*(\d+)\sKB" group="1" interface="10" drv="simple_ec"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>ec_feat</name>
+    <doc>The feature flags supported by the EC.</doc>
+    <params cmd="get" subtype="feat" interface="10" drv="ec"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>cpu_uart_capture</name>
+    <doc>cpu_uart_capture</doc>
+    <params subtype="uart_capture" interface="11" drv="uart"
+    map="onoff"></params>
+  </control>
+  <control>
+    <name>cpu_uart_cmd</name>
+    <doc>Set to send command to CPU UART. Get to obtain the matched
+    results with the regular expression of cpu_uart_regexp.</doc>
+    <params subtype="uart_cmd" interface="11" drv="uart"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>cpu_uart_regexp</name>
+    <doc>List of regular expressions which matches the response of
+    cpu_uart_cmd.</doc>
+    <params subtype="uart_regexp" interface="11" drv="uart"
+    input_type="str"></params>
+  </control>
+  <control>
+    <name>cpu_uart_stream</name>
+    <doc>Cpu uart stream collected while cpu_uart_capture is set to
+    'on'</doc>
+    <params cmd="get" subtype="uart_stream" interface="11" drv="uart">
+    </params>
+  </control>
+  <control>
+    <name>cpu_uart_timeout</name>
+    <doc>Timeout value for waiting CPU UART response of issuing an EC
+    command.</doc>
+    <params subtype="uart_timeout" interface="11" drv="uart"
+    input_type="float"></params>
+  </control>
+</root>

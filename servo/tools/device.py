@@ -1,6 +1,7 @@
 # Copyright 2020 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# pylint: disable=redefined-variable-type
 
 """Device tool to manage the (usb) servo device."""
 
@@ -10,7 +11,7 @@ import time
 import usb
 
 from servo.common import tiny_servod
-from servo.drv.pty_driver import PtyError
+from servo.data.drv.pty_driver import PtyError
 from servo.tools import tool
 import servo.utils.usb_hierarchy as uh
 
@@ -75,7 +76,7 @@ class Device(tool.Tool):
     def reboot(self, args):
         """Reboot the device."""
         # First, let's make sure the device exists.
-        e = None
+        reboot_error = None
         dev_path = self._usb_path(args.serial)
         if not dev_path:
             self.error("Device with serial %r not found.", args.serial)
@@ -96,7 +97,7 @@ class Device(tool.Tool):
             # was too quick for the console to send a newline. That's fine.
             if "No data was sent from the pty" not in str(ex):
                 raise
-            e = ex
+            reboot_error = ex
         # Make sure the device comes back with a new devnum before attempting
         # to communicate with it.
         self._check_devnum_reset(dev_path, devnum, "reboot")
@@ -114,13 +115,17 @@ class Device(tool.Tool):
                 ts.pty._issue_cmd_get_results("chan restore", [">"])
                 return
             except Exception as ex:
-                # store the exception in e here so that we have access to it later
-                # if we need to print it.
+                # store the exception in reboot_error here so that we have access to
+                # it later if we need to print it.
                 self._logger.debug(ex)
-                e = ex
+                reboot_error = ex
             time.sleep(self.REBOOT_SLEEP_S)
         self.error(
-            "Device %04x:%04x %s issue after reboot: %s", vid, pid, args.serial, e
+            "Device %04x:%04x %s issue after reboot: %s",
+            vid,
+            pid,
+            args.serial,
+            reboot_error,
         )
 
     def usb_path(self, args):

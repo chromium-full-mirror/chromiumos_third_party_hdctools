@@ -1,0 +1,17 @@
+requests==2.32.5
+docker
+flask
+diff-cover
+pytest
+pytest-cov
+pytest-xdist
+pytest-forked
+pytest-mock
+requests-mock==1.12.1
+typeguard
+grpcio==1.68.1
+grpcio-tools==1.68.1
+protobuf==5.28.3
+grpcio-testing==1.68.1
+setuptools==75.8.0
+werkzeug==3.1.6

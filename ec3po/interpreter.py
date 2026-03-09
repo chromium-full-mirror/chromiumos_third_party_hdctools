@@ -95,6 +95,7 @@ class Interpreter:
         # Create a unique logger based on the interpreter name
         interpreter_prefix = ("%s - " % (name,)) if name else ""
         logger = logging.getLogger("%sEC3PO.Interpreter" % (interpreter_prefix,))
+        logger.setLevel(logging.INFO)
         self.logger = LoggerAdapter(logger, {"pty": ec_uart_pty})
         # TODO(https://crbug.com/1162189): revisit the 2 TODOs below
         # TODO(https://bugs.python.org/issue27805, python3.7+): revert to ab+
@@ -452,13 +453,16 @@ def start_loop(interp, shutdown_pipe=None):
                             )
                         # Handle any debug prints from the EC.
                         if fileno == ec_uart_pty_fileno:
-                            interp.handle_ec_data()
+                            try:
+                                interp.handle_ec_data()
+                            except (EOFError, ConnectionResetError, BrokenPipeError):
+                                continue_looping = False
 
                         # Handle any commands from the user.
                         elif fileno == interp.cmd_pipe.fileno():
                             try:
                                 interp.handle_user_data()
-                            except EOFError:
+                            except (EOFError, ConnectionResetError, BrokenPipeError):
                                 interp.logger.debug(
                                     "ec3po interpreter received EOF from cmd_pipe in "
                                     "handle_user_data()"
