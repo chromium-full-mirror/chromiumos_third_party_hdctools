@@ -85,8 +85,14 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             return response
         except Exception as e:
             import traceback
+            # Truncate the request string to prevent gRPC RESOURCE_EXHAUSTED 
+            # metadata limit errors when the interface_template is very large.
+            req_str = str(driver_request)
+            if len(req_str) > 1024:
+                req_str = req_str[:1024] + "... [truncated]"
+                
             error_msg = "Error occurred: {}\\nTraceback:\\n{}\\nRequest: {}".format(
-                str(e), traceback.format_exc(), driver_request
+                str(e), traceback.format_exc(), req_str
             )
             raise DriverImplError(error_msg)
 

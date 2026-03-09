@@ -230,7 +230,7 @@ class ServodStarter:
         )
         servo = servo_impl.ServoImpl(("localhost", sopts.grpc_core_port), self._servod)
         servo_dev_grpc.add_ServoServiceServicer_to_server(servo, self._grpc_server)
-        self._grpc_server.add_insecure_port("[::]:{}".format(sopts.grpc_core_port))
+        self._grpc_server.add_insecure_port("0.0.0.0:{}".format(sopts.grpc_core_port))
         self._grpc_server.start()
         self._logger.info("Core Server started....")
 
