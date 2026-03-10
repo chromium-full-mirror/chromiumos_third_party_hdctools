@@ -398,6 +398,24 @@ class TestServoImpl(unittest.TestCase):
         servo_impl.UpdateDeviceDisconnectOk(request, None)
         self._micro_dev.set_disconnect_ok.assert_called_once_with(True)
 
+    def test_update_device_disconnect_ok_by_type(self):
+        """Test UpdateDeviceDisconnectOk by type (alias like 'ccd')."""
+        request = WatchdogRequest(name="ccd", disconnect_ok=True)
+        self._servod.get_servo_serials = unittest.mock.MagicMock(return_value={})
+        self._servod.get_devices = unittest.mock.MagicMock(return_value=[self.ccd_cr50])
+        self._servod.get_main_device = unittest.mock.MagicMock(
+            return_value=self._v4_dev
+        )
+        self.ccd_cr50.template = unittest.mock.MagicMock()
+        self.ccd_cr50.template.TYPE = "ccd_cr50"
+        self._v4_dev.template = unittest.mock.MagicMock()
+        self._v4_dev.template.TYPE = "servo_v4"
+        self._servod._devices = {}
+        self.ccd_cr50.set_disconnect_ok = unittest.mock.MagicMock()
+        servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
+        servo_impl.UpdateDeviceDisconnectOk(request, None)
+        self.ccd_cr50.set_disconnect_ok.assert_called_once_with(True)
+
     def test_get_ccd_state(self):
         """Test GetCcdState."""
         request = empty_pb2.Empty()

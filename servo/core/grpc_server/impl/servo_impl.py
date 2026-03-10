@@ -352,18 +352,9 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
                 if request.name in dev.get_id():
                     device = dev
                     break
-        # 3. Exact match on template TYPE
+        # 3. Match on template TYPE
         else:
-            candidates = []
-            for dev in unique_devices:
-                if dev.template.TYPE == request.name:
-                    candidates.append(dev)
-            if len(candidates) == 1:
-                device = candidates[0]
-            elif len(candidates) > 1:
-                raise ServoImplError(
-                    "Multiple devices matching with type %s" % request.name
-                )
+            device = get_device_from_type(self.servod, request.name)
 
         if device is None:
             raise ServoImplError("Invalid device %s" % request.name)
