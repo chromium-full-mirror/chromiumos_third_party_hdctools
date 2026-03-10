@@ -490,7 +490,7 @@ class ServodStarter:
             "--board",
             default="",
             type=str,
-            action="store",
+            action=servo_parsing.StoreAndMarkAction,
             help="include config file (XML) for given board",
         )
         dev_pars.add_argument(
@@ -498,8 +498,20 @@ class ServodStarter:
             "--model",
             default="",
             type=str,
-            action="store",
+            action=servo_parsing.StoreAndMarkAction,
             help="optional config for a model of the given board, requires --board",
+        )
+        dev_pars.add_argument(
+            "--noboard",
+            action=servo_parsing.StoreTrueAndMarkAction,
+            default=False,
+            help="Explicitly indicate no board is intended",
+        )
+        dev_pars.add_argument(
+            "--nomodel",
+            action=servo_parsing.StoreTrueAndMarkAction,
+            default=False,
+            help="Explicitly indicate no model is intended",
         )
         dev_pars.add_argument(
             "--noautoconfig",
@@ -721,7 +733,10 @@ class ServodStarter:
                 servod=weakref.proxy(self._servod),
             )
 
-            if servo_device.template.DUT_CONTROLLER and not devopts.board:
+            board_supplied = getattr(devopts, "board_supplied_by_user", False)
+            model_supplied = getattr(devopts, "model_supplied_by_user", False)
+
+            if servo_device.template.DUT_CONTROLLER and not board_supplied:
                 # Initialize all interfaces already possible to see if the board
                 # can be probed
                 servo_device.init_servo_interfaces(fault_tolerant=True)
@@ -736,9 +751,49 @@ class ServodStarter:
                     devopts.board = ec_board
                 devopts.model = prober.get_model_from_ec(servo_device)
                 servo_device.set_base_board(devopts.board)
+
+            if getattr(devopts, "noboard", False) and board_supplied:
+                raise ServodError("Cannot provide both --board and --noboard.")
+
+            if getattr(devopts, "nomodel", False) and model_supplied:
+                raise ServodError("Cannot provide both --model and --nomodel.")
+
+            if not getattr(devopts, "noboard", False):
+                if not getattr(devopts, "board", ""):
+                    raise ServodError(
+                        "No board provided and probing failed. Please provide "
+                        "--board <board> or use --noboard to allow implicit "
+                        "probed board."
+                    )
+
+                if (
+                    devopts.board
+                    and not model_supplied
+                    and not getattr(devopts, "nomodel", False)
+                ):
+                    models_response = system_config_client.GetAvailableModels(
+                        board=devopts.board
+                    )
+                    if models_response.models:
+                        raise ServodError(
+                            "Board %s has models: %s. Please specify "
+                            "--model or use --nomodel."
+                            % (devopts.board, ", ".join(models_response.models))
+                        )
+
             # Set the board and the model for a DUT
             if devopts.board:
                 if not servo_device.set_board_and_model(devopts.board, devopts.model):
+                    if not getattr(devopts, "noboard", False):
+                        raise ServodError(
+                            "Cannot find XML overlay for board %s (model: %s). "
+                            "Please check the board/model name."
+                            % (
+                                devopts.board,
+                                devopts.model if devopts.model else "None",
+                            )
+                        )
+
                     self._logger.warning(
                         "Cannot set up board %s for device %s. "
                         "Start device without board specific config.",

@@ -13,6 +13,7 @@ import select
 import sys
 
 from servo.common import servo_dev_templates
+from servo.core import recovery
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
 
@@ -147,11 +148,13 @@ class ServoDeviceFinder:
                 one_dev_opts.serialname,
             )
             dev_entry = self._find_one_device(vid, pid, serial)
-            dev_entry.devopts = one_dev_opts
-            self._logger.info(
-                "Pulling in device %s as it is included in invocation args.", dev_entry
-            )
-            invocation_devs.add(dev_entry)
+            if dev_entry:
+                dev_entry.devopts = one_dev_opts
+                self._logger.info(
+                    "Pulling in device %s as it is included in invocation args.",
+                    dev_entry,
+                )
+                invocation_devs.add(dev_entry)
 
         # Then pull in all the devices connecting to the devices included in command
         # line invocation
@@ -234,6 +237,13 @@ class ServoDeviceFinder:
         # It may in the future be useful for enhancing interactive servo selection.
 
         if len(candidates) < 1:
+            if recovery.is_recovery_active():
+                self._logger.warning(
+                    "Cannot find a servo device with %s, but "
+                    "continuing due to recovery mode.",
+                    input_str,
+                )
+                return None
             raise ServoDeviceFinderError(
                 "Cannot find a servo device with %s" % (input_str,)
             )
@@ -279,8 +289,20 @@ class ServoDeviceFinder:
           old_dev: a ServoDeviceEntry which already has device options
         """
         new_dev.devopts = self._devopts_generator()
-        for arg in "board", "model", "config", "noautoconfig", "token_db":
-            setattr(new_dev.devopts, arg, getattr(old_dev.devopts, arg))
+        args_to_copy = (
+            "board",
+            "model",
+            "config",
+            "noautoconfig",
+            "token_db",
+            "board_supplied_by_user",
+            "model_supplied_by_user",
+            "noboard",
+            "nomodel",
+        )
+        for arg in args_to_copy:
+            if hasattr(old_dev.devopts, arg):
+                setattr(new_dev.devopts, arg, getattr(old_dev.devopts, arg))
 
     def choose_main_device(self, devs):
         """Choose the main device of the servod instance.
@@ -320,7 +342,7 @@ class ServoDeviceFinder:
                     prioritized_devs
                 )
             )
-            candidate = candidates[0]
+            candidate = candidates[0] if candidates else None
             if len(candidates) > 1:
                 self._logger.info("")
                 self._logger.info(
@@ -328,6 +350,11 @@ class ServoDeviceFinder:
                 )
                 candidate = self.choose_device(candidates)
         if not candidate:
+            if recovery.is_recovery_active() and not devs:
+                self._logger.warning(
+                    "No devices found, but continuing due to recovery mode."
+                )
+                return None
             raise ServoDeviceFinderError("No device is picked as the main device.")
         self._logger.info("Main device is chosen as the device %s", candidate)
         return candidate

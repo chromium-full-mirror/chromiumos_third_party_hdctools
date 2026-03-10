@@ -5,6 +5,7 @@
 
 import json
 
+from servo.common.config.system_config import SystemConfig
 from servo.common.proto import system_config_grpc
 from servo.common.proto import system_config_pb2
 from servo.common.utils.grpc_log_capture import LogCaptureContext
@@ -150,6 +151,14 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             board_config=board_config if board_config else "",
             board_id=board_id if board_id else "",
         )
+
+    def GetAvailableModels(self, request, context):
+        """
+        Get available models for a board.
+        """
+        scfg = SystemConfig()
+        models = scfg.get_available_models(board=request.board)
+        return system_config_pb2.AvailableModelsResponse(models=models)
 
     def GetAllControls(self, request, context):
         """

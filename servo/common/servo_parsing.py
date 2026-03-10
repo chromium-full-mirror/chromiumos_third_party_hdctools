@@ -135,6 +135,25 @@ class StoreAndMarkAction(argparse._StoreAction):
         setattr(namespace, marker_name, True)
 
 
+class StoreTrueAndMarkAction(argparse._StoreTrueAction):
+    """Helper to mark boolean arguments whether they were supplied by the user.
+
+    If an argument is supplied by the user instead of using defaults or RC,
+    add another option with the name |arg|_supplied_by_user.
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        """Extend default __call__ implementation."""
+        super().__call__(
+            parser=parser,
+            namespace=namespace,
+            values=values,
+            option_string=option_string,
+        )
+        marker_name = "%s_%s" % (self.dest, ARG_BY_USER_MARKER)
+        setattr(namespace, marker_name, True)
+
+
 class ServodParserHelpFormatter(
     argparse.RawDescriptionHelpFormatter, argparse.ArgumentDefaultsHelpFormatter
 ):
@@ -390,6 +409,8 @@ class ServodRCParser(_BaseServodParser):
                             rc[elem],
                         )
                         setattr(options, elem, rc[elem])
+                        marker_name = "%s_%s" % (elem, ARG_BY_USER_MARKER)
+                        setattr(options, marker_name, True)
                     else:
                         if getattr(options, elem) != rc[elem]:
                             logger.warning(

@@ -437,7 +437,7 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
     @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
-    @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=False)
+    @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True)
     @patch("servo.core.servo_dev.ServoDevice.set_base_board")
     @patch("servo.core.servo_dev.GrpcClient")  # Mock GrpcClient to avoid network
     @patch("servo.common.proto.system_config_grpc.SystemConfig")
@@ -473,6 +473,7 @@ class TestServoStarter(unittest.TestCase):
         mock_client.GetFileContent.return_value = mock_response
         mock_client.AddCfgFile.return_value = mock_response
         mock_client.Finalize.return_value = None
+        mock_client.GetAvailableModels.return_value = MagicMock(models=[])
 
         mock_interfaces = MagicMock()
         mock_interfaces.interface_list_json = json.dumps(["interface1"])
@@ -490,6 +491,11 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.config = ["extraconfig1"]
         dev_entry_1.devopts.prefix = [""]
         dev_entry_1.devopts.board = None
+        dev_entry_1.devopts.model = None
+        dev_entry_1.devopts.noboard = False
+        dev_entry_1.devopts.nomodel = False
+        dev_entry_1.devopts.board_supplied_by_user = False
+        dev_entry_1.devopts.model_supplied_by_user = False
         dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
             "ccd_cr50"
         )
@@ -503,6 +509,10 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.devopts.prefix = ["v4"]
         dev_entry_2.devopts.board = "testing"
         dev_entry_2.devopts.model = "testing"
+        dev_entry_2.devopts.noboard = False
+        dev_entry_2.devopts.nomodel = False
+        dev_entry_2.devopts.board_supplied_by_user = True
+        dev_entry_2.devopts.model_supplied_by_user = True
         dev_entry_2.dev_template = servo_dev_templates.get_template_class_by_name(
             "servo_v4p1"
         )
@@ -536,7 +546,7 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
     @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
-    @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=False)
+    @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True)
     @patch("servo.core.servo_dev.ServoDevice.set_base_board")
     @patch("servo.common.proto.system_config_grpc.SystemConfig")
     @patch("grpc.insecure_channel")
@@ -566,6 +576,10 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.config = ["extraconfig1", "extraconfig2"]
         dev_entry_1.devopts.prefix = [""]
         dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
+        dev_entry_1.devopts.noboard = False
+        dev_entry_1.devopts.nomodel = False
+        dev_entry_1.devopts.board_supplied_by_user = False
+        dev_entry_1.devopts.model_supplied_by_user = False
         dev_entry_1.devopts.interfaces = []
         dev_entry_1.devopts.token_db = "default"
         dev_entry_1.dev_template = servo_dev_templates.get_template_class_by_name(
@@ -580,6 +594,10 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_2.devopts.config = []
         dev_entry_2.devopts.prefix = ["v4"]
         dev_entry_2.devopts.board = dev_entry_2.devopts.model = "testing"
+        dev_entry_2.devopts.noboard = False
+        dev_entry_2.devopts.nomodel = False
+        dev_entry_2.devopts.board_supplied_by_user = True
+        dev_entry_2.devopts.model_supplied_by_user = True
         dev_entry_2.devopts.interfaces = []
         dev_entry_2.devopts.token_db = "default"
         dev_entry_2.dev_template = servo_dev_templates.get_template_class_by_name(
@@ -596,6 +614,7 @@ class TestServoStarter(unittest.TestCase):
         mock_response.loglines = []
         mock_client.AddCfgFile.return_value = mock_response
         mock_client.Finalize.return_value = None
+        mock_client.GetAvailableModels.return_value = MagicMock(models=[])
 
         mock_interfaces = MagicMock()
         mock_interfaces.interface_list_json = json.dumps(["interface1"])
@@ -781,6 +800,149 @@ class TestMain(unittest.TestCase):
         servod.ServodStarter.__init__.assert_called_once_with(["-b", "atlas"])
         servod.ServodStarter.serve.assert_not_called()
         self.assertEqual(cm.exception.code, 1)
+
+
+class TestServodValidation(unittest.TestCase):
+    """Test board/model enforcement logic."""
+
+    @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
+    @patch("servo.common.proto.system_config_grpc.SystemConfig")
+    @patch("servo.common.proto.driver_grpc.DriverService")
+    @patch("servo.common.grpc_client.GrpcClient.create_grpc_channel")
+    @patch("grpc.insecure_channel")
+    def test_setup_servos_enforcement(
+        self,
+        _mock_channel,
+        _mock_create_channel,
+        mock_driver_grpc,
+        mock_sys_config_grpc,
+        _mock_init,
+    ):
+        starter = servod.ServodStarter([])
+        starter.opts = MagicMock()
+        starter.opts.debug = True
+        starter._logger = MagicMock()
+        starter._servod = MagicMock()
+
+        mock_client = mock_sys_config_grpc.return_value
+        mock_driver_client = mock_driver_grpc.return_value
+        mock_driver_client.InitInterface.return_value = MagicMock()
+
+        # Mock interfaces response
+        mock_interfaces = MagicMock()
+        mock_interfaces.interface_list_json = "[]"
+        mock_client.GetServoInterfaces.return_value = mock_interfaces
+
+        # Mock other config methods
+        mock_response = MagicMock()
+        mock_response.systemConfig = []
+        mock_response.loglines = []
+        mock_client.GetFileContent.return_value = mock_response
+        mock_client.AddCfgFile.return_value = mock_response
+        mock_client.Finalize.return_value = None
+        mock_client.GetAvailableModels.return_value = MagicMock(models=[])
+
+        # Helper to create a dev_entry
+        def create_dev_entry(board=None, model=None, noboard=False):
+            dev_entry = MagicMock()
+            dev_entry.devopts.board = board
+            dev_entry.devopts.model = model
+            dev_entry.devopts.noboard = noboard
+            dev_entry.devopts.nomodel = False
+            dev_entry.devopts.board_supplied_by_user = bool(board)
+            dev_entry.devopts.model_supplied_by_user = bool(model)
+            dev_entry.devopts.noautoconfig = False
+            dev_entry.devopts.config = []
+            dev_entry.devopts.prefix = [""]
+            dev_entry.devopts.interfaces = []
+            dev_entry.devopts.token_db = "default"
+            dev_entry.dev_template = servo_dev_templates.get_template_class_by_name(
+                "ccd_cr50"
+            )
+            dev_entry.vid = 0x18D1
+            dev_entry.pid = 0x5014
+            dev_entry.serial = "1234"
+            return dev_entry
+
+        # Test 1: No board, no noboard, probing fails (empty board)
+        dev_entry = create_dev_entry(board="", noboard=False)
+        # Mock prober to return nothing
+        prober = MagicMock()
+        prober.get_board_from_ec.return_value = ""
+
+        with self.assertRaisesRegex(
+            servod.ServodError, "No board provided and probing failed"
+        ):
+            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 2: No board, but --noboard is provided. Should NOT raise.
+        dev_entry = create_dev_entry(board="", noboard=True)
+        # We need to mock other things to avoid failure later in _setup_servos
+        starter._servod.add_device = MagicMock()
+        starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 3: Board provided, has models, but no --model provided.
+        dev_entry = create_dev_entry(board="brya", model="", noboard=False)
+        mock_client.GetAvailableModels.return_value = MagicMock(
+            models=["banshee", "vell"]
+        )
+
+        with self.assertRaisesRegex(
+            servod.ServodError, "Board brya has models: banshee, vell"
+        ):
+            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 4: Both board and noboard provided.
+        dev_entry = create_dev_entry(board="brya", noboard=True)
+        with self.assertRaisesRegex(
+            servod.ServodError, "Cannot provide both --board and --noboard"
+        ):
+            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 5: Board provided, has models, and model is provided. Should NOT raise.
+        dev_entry = create_dev_entry(board="brya", model="banshee", noboard=False)
+        starter._servod.add_device = MagicMock()
+
+        # Test 5.1: If set_board_and_model returns True, it succeeds.
+        with patch(
+            "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True
+        ):
+            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 6: Board provided, but XML config not found. Should raise.
+        dev_entry = create_dev_entry(
+            board="fakeboard", model="fakemodel", noboard=False
+        )
+        with patch(
+            "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=False
+        ):
+            with self.assertRaisesRegex(
+                servod.ServodError, "Cannot find XML overlay for board fakeboard"
+            ):
+                starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 7: Board provided, has models, --nomodel provided. Should NOT raise.
+        dev_entry = create_dev_entry(board="brya", model="", noboard=False)
+        dev_entry.devopts.nomodel = True
+        mock_client.GetAvailableModels.return_value = MagicMock(
+            models=["banshee", "vell"]
+        )
+        with patch(
+            "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True
+        ):
+            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+
+        # Test 8: Board and model provided, has models, model not found.
+        # Should NOT raise. (This implicitly tests the graceful fallback in
+        # system_config resolving to True)
+        dev_entry = create_dev_entry(board="brya", model="unknown_model", noboard=False)
+        mock_client.GetAvailableModels.return_value = MagicMock(
+            models=["banshee", "vell"]
+        )
+        with patch(
+            "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True
+        ):
+            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
 
 
 if __name__ == "__main__":

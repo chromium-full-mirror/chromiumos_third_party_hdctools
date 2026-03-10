@@ -78,6 +78,8 @@ service SystemConfig {
     rpc Finalize (FinalizeRequest) returns (FinalizeResponse);
     // Get board/model config file
     rpc GetBoardModelConfig (BoardModelConfigRequest) returns (BoardModelConfigResponse);
+    // Get available models for a board
+    rpc GetAvailableModels (AvailableModelsRequest) returns (AvailableModelsResponse);
     // Get all control names
     rpc GetAllControls (GetAllControlsRequest) returns (GetAllControlsResponse);
     // Get doc string for a control (formatted)
@@ -209,4 +211,12 @@ message DisplayConfigRequest {
 
 message DisplayConfigResponse {
     string display_config = 1;
+}
+
+message AvailableModelsRequest {
+    string board = 1;
+}
+
+message AvailableModelsResponse {
+    repeated string models = 1;
 }

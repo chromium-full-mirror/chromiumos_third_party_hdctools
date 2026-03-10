@@ -11,6 +11,7 @@ import tempfile
 import unittest
 
 from servo.common import servo_dev_templates as dev_templates
+from servo.core import recovery
 from servo.core import servo_dev_finder as dev_finder
 from servo.core.servo_dev_finder import ServoDeviceFinderError
 from servo.utils.scratch import Scratch
@@ -375,6 +376,26 @@ class TestServoDeviceFinder(unittest.TestCase):
             ServoDeviceFinderError, "Cannot find a servo device with"
         ):
             finder.discover_servos()
+
+    def test_discover_servos_no_device_recovery_mode(self):
+        """Test discover_servos does not error out when recovery mode is active."""
+
+        recovery.set_recovery_active()
+        try:
+            hierarchy = ServoDeviceHierarchy()
+            devopts = empty_devopts()
+            finder = dev_finder.ServoDeviceFinder(
+                [devopts],
+                empty_devopts,
+                hierarchy,
+                Scratch(),
+                dev_finder.ServoDeviceDiscoveryMode.FULL_AUTO,
+                self._testing_choose_device,
+            )
+            entries = finder.discover_servos()
+            self.assertEqual(len(entries), 0)
+        finally:
+            recovery.RECOVERY_ACTIVE = False
 
     def test_choose_main_device_1_user_main(self):
         """Test choose_main_device return the only main device chosen by the user."""

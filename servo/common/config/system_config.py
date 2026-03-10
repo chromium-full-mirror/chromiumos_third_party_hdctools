@@ -1004,6 +1004,7 @@ class SystemConfig:
         suffix = "_overlay.xml"
         for f in files:
             basename = os.path.basename(f)
-            model = basename[len(prefix) : -len(suffix)]
-            models.append(model)
+            if basename.startswith(prefix) and basename.endswith(suffix):
+                model = basename[len(prefix) : -len(suffix)]
+                models.append(model)
         return sorted(models)
