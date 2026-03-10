@@ -35,6 +35,8 @@ class LocalDriverClient:
         if args:
             return args[0]
         # Convert bytes values to strings in kwargs
+        kwargs.pop("timeout", None)
+        kwargs.pop("wait_for_ready", None)
         for k, v in kwargs.items():
             if isinstance(v, bytes):
                 kwargs[k] = v.decode("utf-8")
@@ -178,6 +180,8 @@ class LocalServoServiceClient:
         if req_class == empty_pb2.Empty:
             return empty_pb2.Empty()
         # Convert bytes values to strings in kwargs
+        kwargs.pop("timeout", None)
+        kwargs.pop("wait_for_ready", None)
         for k, v in kwargs.items():
             if isinstance(v, bytes):
                 kwargs[k] = v.decode("utf-8")
@@ -335,6 +339,8 @@ class LocalSystemConfigClient:
         if args:
             return args[0]
         # Convert bytes values to strings in kwargs
+        kwargs.pop("timeout", None)
+        kwargs.pop("wait_for_ready", None)
         for k, v in kwargs.items():
             if isinstance(v, bytes):
                 kwargs[k] = v.decode("utf-8")

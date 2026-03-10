@@ -417,6 +417,7 @@ class TestServoDevice(unittest.TestCase):
                 vid=self.v4_dev.template.VID,
                 pid=self.v4_dev.template.PID,
                 serial=self.v4_dev._serial,
+                timeout=0.5,
             )
 
     def test_clear_cached_drv(self):

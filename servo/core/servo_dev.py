@@ -378,7 +378,10 @@ class ServoDevice:
         """Servo device turn down logic."""
         try:
             self._driver_client.CloseInterface(
-                vid=self.template.VID, pid=self.template.PID, serial=self._serial
+                vid=self.template.VID,
+                pid=self.template.PID,
+                serial=self._serial,
+                timeout=0.5,
             )
         except grpc.RpcError as e:
             self._logger.debug("Failed to close interface via grpc: %s", e)
