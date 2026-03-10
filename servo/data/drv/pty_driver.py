@@ -51,6 +51,15 @@ class PtyDriver(hw_driver.HwDriver):
         self._child = None
         self._fd = None
         self._cmd_iface = False
+        self._refresh_pty_path()
+        # Store the uart state in an interface variable. Copy uart params, so the
+        # uart state dict is a different object for each interface. We don't want
+        # setting anything for the ec uart to affect the ap uart state.
+        if not hasattr(self._interface, "_uart_state"):
+            self._interface._uart_state = UART_PARAMS.copy()
+
+    def _refresh_pty_path(self):
+        """Refresh the PTY path from the interface."""
         try:
             # We'll probe for a control PTY if this is an ec3po interface.
             self._pty_path = self._interface.get_control_pty()
@@ -59,15 +68,12 @@ class PtyDriver(hw_driver.HwDriver):
             if hasattr(self._interface, "get_pty"):
                 self._pty_path = self._interface.get_pty()
             else:
-                self._logger.warning("Interface %s has no get_pty method. Is it connected?", self._interface)
+                self._logger.warning(
+                    "Interface %s has no get_pty method. Is it connected?", self._interface
+                )
                 self._pty_path = ""
         except Exception:
             self._pty_path = self._interface.get_pty()
-        # Store the uart state in an interface variable. Copy uart params, so the
-        # uart state dict is a different object for each interface. We don't want
-        # setting anything for the ec uart to affect the ap uart state.
-        if not hasattr(self._interface, "_uart_state"):
-            self._interface._uart_state = UART_PARAMS.copy()
 
     @contextlib.contextmanager
     def _open(self):
@@ -78,40 +84,62 @@ class PtyDriver(hw_driver.HwDriver):
         closing the connection when finished.
         """
         if not self._pty_path:
-            raise ptyDriverError("Cannot open PTY: No PTY path available for this interface.")
+            self._refresh_pty_path()
 
-        if self._cmd_iface:
+        if not self._pty_path:
+            raise ptyDriverError(
+                "Cannot open PTY: No PTY path available for this interface."
+            )
+
+        max_tries = 3
+        for i in range(max_tries):
             try:
-                self._interface.get_command_lock()
-                self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
-                try:
-                    self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
-                    # pexpect defaults to a 100ms delay before sending characters, to
-                    # work around race conditions in ssh. We don't need this feature
-                    # so we'll change delaybeforesend from 0.1 to 0.001
-                    # to speed things up.
-                    self._child.delaybeforesend = 0.001
-                    yield
-                finally:
-                    self._close()
-            finally:
-                self._interface.release_command_lock()
-        else:
-            # Freeze any terminals that are using this PTY, otherwise when we check
-            # for the regex matches, it will fail with a 'resource temporarily
-            # unavailable' error.
-            with servo.common.terminal_freezer.TerminalFreezer(self._pty_path):
-                self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
-                try:
-                    self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
-                    # pexpect defaults to a 100ms delay before sending characters, to
-                    # work around race conditions in ssh. We don't need this feature
-                    # so we'll change delaybeforesend from 0.1 to 0.001
-                    # to speed things up.
-                    self._child.delaybeforesend = 0.001
-                    yield
-                finally:
-                    self._close()
+                if self._cmd_iface:
+                    self._interface.get_command_lock()
+                    try:
+                        self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+                        self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
+                        # pexpect defaults to a 100ms delay before sending characters, to
+                        # work around race conditions in ssh. We don't need this feature
+                        # so we'll change delaybeforesend from 0.1 to 0.001
+                        # to speed things up.
+                        self._child.delaybeforesend = 0.001
+                        yield
+                        return
+                    finally:
+                        if self._fd is not None:
+                            self._close()
+                        self._interface.release_command_lock()
+                else:
+                    # Freeze any terminals that are using this PTY, otherwise when we check
+                    # for the regex matches, it will fail with a 'resource temporarily
+                    # unavailable' error.
+                    with servo.common.terminal_freezer.TerminalFreezer(self._pty_path):
+                        self._fd = sys_interface.open(self._pty_path, os.O_RDWR | os.O_NONBLOCK)
+                        try:
+                            self._child = fdpexpect.fdspawn(self._fd, use_poll=True)
+                            # pexpect defaults to a 100ms delay before sending characters, to
+                            # work around race conditions in ssh. We don't need this feature
+                            # so we'll change delaybeforesend from 0.1 to 0.001
+                            # to speed things up.
+                            self._child.delaybeforesend = 0.001
+                            yield
+                            return
+                        finally:
+                            if self._fd is not None:
+                                self._close()
+            except (FileNotFoundError, OSError) as e:
+                if i == max_tries - 1:
+                    raise
+                self._logger.warning(
+                    "Failed to open PTY %s: %s. Refreshing and retrying (%d/%d)...",
+                    self._pty_path,
+                    e,
+                    i + 1,
+                    max_tries,
+                )
+                time.sleep(1.0)
+                self._refresh_pty_path()
 
     def _close(self):
         """Close serial device connection."""
