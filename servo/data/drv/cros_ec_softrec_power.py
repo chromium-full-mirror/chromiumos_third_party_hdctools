@@ -238,7 +238,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 ):
                     try:
                         self._servod_set("dut_pd_data_role", "DFP")
-                    except ec.ecError:
+                    except Exception:
                         self._logger.debug(
                             "Failed to set DUT's role to DFP", exc_info=True
                         )
