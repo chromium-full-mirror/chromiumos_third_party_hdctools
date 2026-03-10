@@ -24,6 +24,9 @@ SERVO_V4P1_NAME_PREV = "servo_v4p1_v2.0.27354-3eeb06336"  # EC ToT from 01/27/20
 SWEETBERRY_NAME_PREV = "sweetberry_v2.3.7-096c7ee84"  # servo-firmware-R70-11011.14.0
 
 # Dev channel firmware
+SERVO_MICRO_NAME_DEV = (
+    "servo_micro_v2.4.85-0480cc7379"  # servo branch builder 03/04/2026
+)
 
 # Alpha channel firmware
 SERVO_V4P1_NAME_ALPHA = "servo_v4p1_v2.0.29601-4fd1021ab"  # EC Legacy from 12/12/2025
@@ -46,7 +49,7 @@ ALL_IMAGES = [
     ("c2d2.prev", C2D2_NAME_PREV),
     ("c2d2.stable", C2D2_NAME),
     ("servo_micro.alpha", SERVO_MICRO_NAME),
-    ("servo_micro.dev", SERVO_MICRO_NAME),
+    ("servo_micro.dev", SERVO_MICRO_NAME_DEV),
     ("servo_micro.prev", SERVO_MICRO_NAME_PREV),
     ("servo_micro.stable", SERVO_MICRO_NAME),
     ("servo_v4.alpha", SERVO_V4_NAME_ALPHA),
