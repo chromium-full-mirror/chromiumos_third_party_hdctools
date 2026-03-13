@@ -370,7 +370,9 @@ class ServoDevice:
 
     def reinitialize(self):
         """Reinitialize all interfaces that support reinitialization"""
-        self._driver_client.ReinitializeInterfaces()
+        self._driver_client.ReinitializeInterfaces(
+            vid=self.template.VID, pid=self.template.PID, serial=self._serial
+        )
         # Indicate interfaces are safe to use again.
         self.connect()
 

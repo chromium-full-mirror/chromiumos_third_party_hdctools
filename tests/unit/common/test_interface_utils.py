@@ -179,13 +179,26 @@ class TestInterfaceUtils(unittest.TestCase):
                     _interface.empty.Empty.build(),
                     _interface.empty.Empty.build(),
                 ]
-            }
+            },
+            "other_device": {
+                "interface_list": [
+                    _interface.empty.Empty.build(),
+                ]
+            },
         }
-        InterfaceUtils.reinitialize()
+        # Test targeted reinitialize
+        _interface.interface.Interface.reinitialize.reset_mock()
+        InterfaceUtils.reinitialize(vid=6365, pid=20500, serial="serial")
+        self.assertEqual(_interface.interface.Interface.reinitialize.call_count, 2)
 
+        # Test global reinitialize
+        _interface.interface.Interface.reinitialize.reset_mock()
+        InterfaceUtils.reinitialize()
+        expected_call_count = sum(
+            len(d["interface_list"]) for d in InterfaceUtils._interface_dict.values()
+        )
         self.assertEqual(
-            _interface.interface.Interface.reinitialize.call_count,
-            len(InterfaceUtils.get_interface_list(interface_key)),
+            _interface.interface.Interface.reinitialize.call_count, expected_call_count
         )
 
     @unittest.mock.patch(

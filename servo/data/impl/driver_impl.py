@@ -226,7 +226,9 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
             request InterfaceRequest
             context
         """
-        InterfaceUtils.reinitialize()
+        InterfaceUtils.reinitialize(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
         return empty_pb2.Empty()
 
     def CloseInterface(self, request, context):

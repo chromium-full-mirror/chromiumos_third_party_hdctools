@@ -20,7 +20,7 @@ service DriverService {
     // It takes an InterfaceRequest and returns an InterfaceResponse.
     rpc InitInterface(InterfaceRequest) returns (InterfaceResponse);
     // ReinitializeInterfaces is used to reinitialize interfaces for servo devices.
-    rpc ReinitializeInterfaces(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc ReinitializeInterfaces(InterfaceRequest) returns (google.protobuf.Empty);
     // CloseInterface is used to close specified interface.
     rpc CloseInterface(InterfaceRequest) returns (google.protobuf.Empty);
     // Set log level for interfaces in interface_list

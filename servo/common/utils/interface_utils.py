@@ -5,6 +5,7 @@ import logging
 
 from servo.common import interface as _interface
 from servo.common.interface import ftdii2c
+from servo.utils import usb_hierarchy
 
 
 class InterfaceUtilsError(Exception):
@@ -188,13 +189,44 @@ class InterfaceUtils:
             }
 
     @staticmethod
-    def reinitialize():
-        """Reinitialize the interfaces based on the provided VID, PID, and serial."""
-        interface_dict = InterfaceUtils._interface_dict
-        for device in interface_dict:
-            interface_list = interface_dict[device]["interface_list"]
-            for _unused, interface in enumerate(interface_list):
+    def reinitialize(vid=None, pid=None, serial=None):
+        """Reinitialize the interfaces based on the provided VID, PID, and serial.
+
+        Args:
+            vid (int): Vendor ID.
+            pid (int): Product ID.
+            serial (str): Serial number.
+        """
+        interface_key = None
+        if vid and pid and serial:
+            interface_key = InterfaceUtils.get_interface_key(vid, pid, serial)
+
+        if interface_key:
+            if interface_key not in InterfaceUtils._interface_dict:
+                InterfaceUtils._logger.warning(
+                    "Reinitialize requested for unknown device: %s", interface_key
+                )
+                return
+            interface_list = InterfaceUtils._interface_dict[interface_key][
+                "interface_list"
+            ]
+            for interface in interface_list:
                 interface.reinitialize()
+        else:
+            # Reinitialize ALL interfaces if no specific device is provided.
+            # This is primarily for backward compatibility or global resets.
+            interface_dict = InterfaceUtils._interface_dict
+            for device_key in interface_dict:
+                interface_list = interface_dict[device_key]["interface_list"]
+                for interface in interface_list:
+                    try:
+                        interface.reinitialize()
+                    except usb_hierarchy.HierarchyError as e:
+                        InterfaceUtils._logger.info(
+                            "Ignoring failed re-initialization for %s. error(%s).",
+                            device_key,
+                            e,
+                        )
 
     @staticmethod
     def close_interface(interface_key):
