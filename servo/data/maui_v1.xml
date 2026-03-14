@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<root>
+  <include>
+    <name>common.xml</name>
+  </include>
+  <control>
+    <name>ftdi_status</name>
+    <alias>ftdi_status,maui_status</alias>
+    <doc>Run version command on FTDI UART.</doc>
+    <params drv="maui" interface="1" cmd="get" subtype="text" uart_cmd="version" regex="Maui version ([\w.-]+)" group="1" timeout="10.0">
+    </params>
+  </control>
+  <control>
+    <name>raw_maui_uart_pty</name>
+    <alias>maui_uart_pty</alias>
+    <doc>Maui UART console</doc>
+    <params cmd="get" subtype="pty" interface="1" drv="uart"></params>
+  </control>
+</root>

@@ -52,6 +52,7 @@ from servo.data.drv import loglevel
 from servo.data.drv import ltc1663
 from servo.data.drv import m24c02
 from servo.data.drv import macro
+from servo.data.drv import maui
 from servo.data.drv import na
 from servo.data.drv import pac1934
 from servo.data.drv import pac1954

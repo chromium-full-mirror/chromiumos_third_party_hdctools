@@ -281,6 +281,15 @@ for vid, pid in SERVO_V4_DEFAULTS:
     # Slots for relocating Hammer interfaces.
     INTERFACE_DEFAULTS[vid][pid] += ["empty"] * SERVO_V4_SLOT_SIZE
 
+# Maui Proto
+# ftdi generic 232H and PD12
+MAUI_PROTO_DEFAULTS = [(0x0403, 0x6002)]
+for vid, pid in MAUI_PROTO_DEFAULTS:
+    INTERFACE_DEFAULTS[vid][pid] = [
+        "empty",
+        {"name": "ftdi_uart", "interface": 0},  # 1: UART
+    ]
+
 # Fluffy
 FLUFFY_ID_DEFAULTS = [(0x18D1, 0x503B)]
 for vid, pid in FLUFFY_ID_DEFAULTS:

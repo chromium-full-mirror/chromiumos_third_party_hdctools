@@ -108,6 +108,20 @@ servo_devices = [
         'VID': 0x0403,
         'PID': 0x6011,
         'DEFAULT_CONFIG': 'single_pac.xml'
+    },
+    {
+        'TYPE': 'maui_v1',
+        'VID': 0x18d1,
+        'PID': 0x5085,
+        'DEFAULT_CONFIG': 'maui_v1.xml',
+        'HUB_SERVO': True
+    },
+    {
+        'TYPE': 'maui_v1_proto',
+        'VID': 0x0403,
+        'PID': 0x6002,
+        'DEFAULT_CONFIG': 'maui_v1.xml',
+        'HUB_SERVO': True
     }
 ]
 
