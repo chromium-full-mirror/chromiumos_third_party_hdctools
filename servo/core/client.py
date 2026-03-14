@@ -3,15 +3,32 @@
 # found in the LICENSE file.
 """Classes and objects for the Servo Client API."""
 
+import http.client
 import re
 from xmlrpc.client import Fault
 from xmlrpc.client import ServerProxy
+from xmlrpc.client import Transport
 
 from servo.common import defaults
 
 
 DEFAULT_HOST = defaults.DEFAULT_HOST
 DEFAULT_PORT = defaults.DEFAULT_PORT
+
+
+class TimeoutTransport(Transport):
+    """Custom XML-RPC transport to support timeouts."""
+
+    def __init__(self, *args, timeout=None, **kwargs):
+        self.timeout = timeout
+        super().__init__(*args, **kwargs)
+
+    def make_connection(self, host):
+        if self._connection and host == self._connection[0]:
+            return self._connection[1]
+        chost, self._extra_headers, _x509 = self.get_host_info(host)
+        self._connection = host, http.client.HTTPConnection(chost, timeout=self.timeout)
+        return self._connection[1]
 
 
 class ServoClientError(Exception):
@@ -35,10 +52,11 @@ class ServoClientError(Exception):
         downstream exception handler
         """
         if xmlexc:
-            xml_error = re.sub("^.*>:", "", xmlexc.faultString)
-            self.message = "%s :: %s" % (text, xml_error)
+            xml_error = re.sub(r"^.*>:", "", xmlexc.faultString).strip()
+            message = f"{text} :: {xml_error}"
         else:
-            self.message = text
+            message = text
+        super().__init__(message)
 
 
 class ServoClient:
@@ -48,17 +66,24 @@ class ServoClient:
     set) have a corresponding method implemented in servod's server.
     """
 
-    def __init__(self, host=DEFAULT_HOST, port=DEFAULT_PORT, verbose=False):
+    def __init__(
+        self, host=DEFAULT_HOST, port=DEFAULT_PORT, verbose=False, timeout=60.0
+    ):
         """Constructor for ServoClient Class
 
         Args:
           host: name or IP address of servo server host
           port: TCP port on which servod is listening on
           verbose: enable verbose messaging across ServerProxy
+          timeout: timeout in seconds for XML-RPC requests
         """
         self._verbose = verbose
+        self._timeout = timeout
         remote = "http://%s:%s" % (host, port)
-        self._server = ServerProxy(remote, verbose=self._verbose, allow_none=True)
+        transport = TimeoutTransport(timeout=self._timeout)
+        self._server = ServerProxy(
+            remote, transport=transport, verbose=self._verbose, allow_none=True
+        )
 
     def doc_all(self):
         """Get the doc string for all controls from servo.

@@ -95,4 +95,25 @@ class servoMetadata(hw_driver.HwDriver):
 
     def _Get_all_controls(self):
         """Return all controls supported by current servod instance."""
-        return json.loads(self._driver_client.GetAllControls().get_value)
+        # GetAllControls returns a flat list of strings e.g. "ccd_cr50.gsc_uart_pty"
+        controls = json.loads(self._driver_client.GetAllControls().get_value)
+        groups = {}
+        for control in sorted(controls):
+            if "." in control:
+                prefix, name = control.split(".", 1)
+            else:
+                prefix, name = "main", control
+            groups.setdefault(prefix, []).append(name)
+
+        # Format out a nice string showing controls grouped by their prefix
+        out = []
+        for prefix, cmds in groups.items():
+            if prefix == "main":
+                out.append("\n=== Main Controls ===")
+            else:
+                out.append(f"\n=== {prefix} Controls ===")
+            # Join up to 4 controls per line for readability
+            for i in range(0, len(cmds), 4):
+                out.append("  " + ", ".join(cmds[i:i+4]))
+
+        return "\n".join(out)

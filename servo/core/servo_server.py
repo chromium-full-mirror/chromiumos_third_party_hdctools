@@ -204,15 +204,17 @@ class Servod:
 
         if not dev.is_control(processed_name):
             error_msg = (
-                "No control named '%s' registered with any connected servo device.\n"
-                "Servo device %s (prefix: %s) is picked as the target device for "
-                "the control.\n"
-            ) % (name, dev, dev.get_prefixes())
+                f"No control named '{name}' registered "
+                f"with any connected servo device.\n"
+                f"Servo device {dev} (prefix: {dev.get_prefixes()}) "
+                f"is picked as the target device for the control.\n"
+            )
             candidates = [ctrl for ctrl in self._controls if name in ctrl]
             if candidates:
-                error_msg += "Do you mean %s?\n" % candidates
+                # Wrap candidates slightly or just print comma separated
+                error_msg += f"Did you mean: {', '.join(candidates)}?\n"
             error_msg += (
-                "You can check all servod controls with 'dut-control -- all_controls'."
+                "You can check all servod controls with 'dut-control all_controls'."
             )
             raise ServodError(error_msg)
 

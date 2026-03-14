@@ -496,14 +496,16 @@ def _execute_test_internal(job, dry_run=False):
 
             logger.info("  Executing: dut-control %s", command)
 
+            import shlex
+
             try:
                 test_cmd = [
                     "docker",
                     "exec",
                     container_name,
                     "dut-control",
-                    command,
-                ]
+                ] + shlex.split(command)
+
                 test_result = run_command(test_cmd)
                 results["test_outputs"][original_command] = {
                     "stdout": test_result.stdout,

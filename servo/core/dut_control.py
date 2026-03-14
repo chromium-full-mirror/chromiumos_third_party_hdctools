@@ -144,6 +144,12 @@ def _build_parser():
         default=0.0,
         help="sleep for this many milliseconds between queries",
     )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=60.0,
+        help="timeout in seconds for XML-RPC requests (default: 60.0)",
+    )
 
     return parser
 
@@ -386,7 +392,10 @@ def real_main(cmdline):
     )
 
     sclient = client.ServoClient(
-        host=options.host, port=options.port, verbose=options.verbose
+        host=options.host,
+        port=options.port,
+        verbose=options.verbose,
+        timeout=options.timeout,
     )
     global _START_TIME
     _START_TIME = time.time()
@@ -423,7 +432,9 @@ def main(cmdline=sys.argv[1:]):
         sys.stderr.write(str(e) + "\n")
         sys.exit(1)
     except SocketError as e:
-        sys.stderr.write(e.strerror + "\n")
+        logging.debug("Caught SocketError: %r", e)
+        err_msg = e.strerror if e.strerror is not None else str(e)
+        sys.stderr.write(err_msg + "\n")
         sys.exit(1)
 
 

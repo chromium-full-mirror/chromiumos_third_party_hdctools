@@ -65,9 +65,17 @@ def main(cmdline=sys.argv[1:]):
         t = tool_dict[tname]
         tparser = subparsers.add_parser(tname, help=t.help)
         tool_dict[tname].add_args(tparser)
-    args = parser.parse_args(cmdline)
-    setup_logging(args.debug)
-    tool_dict[args.tool].run(args)
+    try:
+        args = parser.parse_args(cmdline)
+        setup_logging(args.debug)
+        tool_dict[args.tool].run(args)
+    except KeyboardInterrupt:
+        sys.exit(0)
+    except Exception as e:
+        if args.debug:
+            raise
+        print("Error: %s" % e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
