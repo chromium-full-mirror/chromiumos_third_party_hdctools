@@ -43,9 +43,11 @@ RUN python3 setup.py bdist_wheel
 
 
 #####################################################################
-FROM python:3.11-slim-bookworm as image-downloader-builder
-RUN apt-get update --no-install-recommends \
-    && apt-get install -y --no-install-recommends git
+FROM python:3.13-slim-trixie as image-downloader-builder
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && pip3 install setuptools wheel --break-system-packages \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/labstation
 WORKDIR /labstation/image_downloader
