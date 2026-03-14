@@ -137,6 +137,65 @@ steps:
       gsutil cp metadata.json gs://ng3-metrics/ng3-hw-tools-coverage/absolute/hdctools/$COMMIT_SHA/metadata.json
   waitFor: ['test-python']
 
+- name: gcr.io/cloud-builders/gcloud
+  id: 'xml-impact-analysis'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      set -ex
+      cd /workspace
+
+      # Prefer Cloud Build built-in variables for Gerrit triggers to get the numeric ID
+      # We use $$ to escape from Cloud Build substitution
+      GERRIT_NUM="${_GERRIT_CHANGE_NUMBER:-}"
+      if [ -z "$$GERRIT_NUM" ]; then
+          # Fallback: extract Change-Id hex and we could potentially query Gerrit for numeric ID,
+          # but for now let's just try to find the numeric ID in the git log if it's there
+          # or stick to the hex if we must.
+          # Actually, let's use the hex ID as GERRIT_NUM if the numeric one is missing.
+          GERRIT_NUM=$$(git log -1 --format=%B | grep "Change-Id:" | awk '{print $$2}')
+      fi
+
+      git config --global --add safe.directory /workspace
+
+      if [ -n "$$GERRIT_NUM" ]; then
+          mkdir -p /workspace/html_diffs
+
+          BUCKET_PATH="gs://servo-processed-xml/ci-diffs/$$GERRIT_NUM"
+          URL_PREFIX="https://storage.mtls.cloud.google.com/servo-processed-xml/ci-diffs/$$GERRIT_NUM"
+
+          # Use merge-base with main as the base commit for the impact analysis
+          git fetch origin main || true
+          BASE_COMMIT=$$(git merge-base origin/main HEAD || echo "HEAD~1")
+
+          python3 dockerfiles/scripts/analyze_xml_impact.py \
+            --base-commit "$$BASE_COMMIT" \
+            --target-commit "HEAD" \
+            --output-report /workspace/impact_report.md \
+            --output-diff /workspace/main.diff \
+            --html-diff-dir /workspace/html_diffs \
+            --diff-url-prefix "$$URL_PREFIX" \
+            --full-html-report /workspace/html_diffs/full_report.html
+
+          if [ -f /workspace/impact_report.md ]; then
+              cat /workspace/impact_report.md
+
+              if [ -s /workspace/impact_report.md ] && grep -q "configurations functionally" /workspace/impact_report.md; then
+                 # Upload HTML diffs to GCS.
+                 gsutil -m -h "Content-Type:text/html" cp -r /workspace/html_diffs/* "$$BUCKET_PATH/" || echo "Warning: Failed to upload diffs to GCS"
+
+                 # Post to Gerrit
+                 python3 dockerfiles/scripts/post_to_gerrit.py --change-id "$$GERRIT_NUM" /workspace/impact_report.md || echo "Warning: Failed to post to Gerrit"
+              fi
+          else
+              echo "No XML changes detected. Skipping report generation and upload."
+          fi
+      else
+          echo "Skipping CL impact analysis. Could not determine GERRIT_NUM."
+      fi
+  waitFor: ['src-prep']
+
 options:
   pool:
     name: 'projects/chromeos-hw-tools-dev/locations/us-central1/workerPools/proto-servo-pool'

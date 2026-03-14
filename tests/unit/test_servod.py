@@ -70,6 +70,7 @@ class TestServoStarter(unittest.TestCase):
         sopts.usbkm232 = None
         sopts.step_init = False
         sopts.fetch_token_db = False
+        sopts.dump_xml = None
         sopts.grpc_core_port = 9991
         sopts.grpc_data_host = "localhost"
         sopts.grpc_data_port = 9992

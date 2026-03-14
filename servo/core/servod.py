@@ -243,6 +243,41 @@ class ServodStarter:
 
         self._servod.validate_dut_controller()
         self._servod.hwinit(verbose=True, step_init=sopts.step_init)
+
+        if sopts.dump_xml:
+            devices = self._servod.get_devices()
+            if not devices:
+                self._logger.warning("No devices found, skipping XML dump")
+            elif len(devices) == 1:
+                devices[0].dump_to_xml(sopts.dump_xml)
+                self._logger.info("Dumped XML config to %s", sopts.dump_xml)
+            else:
+                base, ext = os.path.splitext(sopts.dump_xml)
+                for dev in devices:
+                    prefixes = dev.get_prefixes()
+                    prefix = prefixes[0] if prefixes else dev.template.TYPE
+                    # Clean up empty prefixes (e.g., the main DUT connection)
+                    if not prefix:
+                        prefix = "main"
+
+                    # If base points to a dir, avoid files like "_main.xml"
+                    # and instead create "main.xml" directly.
+                    if (
+                        base.endswith(os.sep)
+                        or not os.path.basename(base)
+                        or os.path.isdir(sopts.dump_xml)
+                    ):
+                        # Ensure trailing slash if missing and base is meant to be a dir
+                        if not base.endswith(os.sep):
+                            base += os.sep
+                        dev_filename = f"{base}{prefix}{ext if ext else '.xml'}"
+                    else:
+                        dev_filename = f"{base}_{prefix}{ext}"
+                    dev.dump_to_xml(dev_filename)
+                    self._logger.info(
+                        "Dumped XML config for %s to %s", dev, dev_filename
+                    )
+
         self._setup_servod_server()
         self._server_thread = threading.Thread(target=self._serve)
         self._server_thread.daemon = True
@@ -403,6 +438,13 @@ class ServodStarter:
                 action="store_true",
                 help="Automatically fetch latest EC token database",
             )
+        server_pars.add_argument(
+            "--dump-xml",
+            type=str,
+            default=None,
+            help="Path to dump the full parsed system config as an XML file. "
+            "If multiple devices exist, they will be written with a prefix.",
+        )
         server_pars.add_argument(
             "--grpc-core-port",
             type=int,

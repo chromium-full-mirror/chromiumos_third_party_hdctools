@@ -198,6 +198,14 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
             files=[entry[0] for entry in scfg._loaded_xml_files]
         )
 
+    def DumpToXml(self, request, context):
+        """Dump the system config to a file."""
+        scfg = get_system_config(
+            vid=request.vid, pid=request.pid, serial=request.serial
+        )
+        scfg.dump_to_xml(request.filename)
+        return system_config_pb2.DumpToXmlResponse(value=True)
+
     def GetServoInterfaces(self, request, context):
         """
         Get servo interfaces based on VID/PID/Board.
