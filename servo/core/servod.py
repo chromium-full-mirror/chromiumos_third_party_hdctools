@@ -744,9 +744,8 @@ class ServodStarter:
         )
 
         # Base logdir is where servod placed its logs, e.g. /var/log/servod_9999
-        # The data service will write to /var/log/servod_9999/data_29999
-        logdir_base = os.path.join(sopts.log_dir, f"servod_{self._servo_port}")
-        nested_logdir = os.path.join(logdir_base, f"data_{sopts.grpc_data_port}")
+        # The data service will create its own subdirectory under it.
+        nested_logdir = os.path.join(sopts.log_dir, f"servod_{self._servo_port}")
 
         try:
             os.makedirs(nested_logdir, exist_ok=True)

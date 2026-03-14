@@ -265,6 +265,7 @@ def start_servod(
 
         if os.path.exists("/proc/modules"):
             volumes.append("/proc/modules:/host_proc_modules:ro")
+
         if logs_dir is None:
             logs_volume = "%s_log" % container_name
         else:
@@ -273,8 +274,12 @@ def start_servod(
                 # has its own CWD in the container, not on the host.
                 print("Please provide --logs argument as absolute path")
                 sys.exit(1)
-            logs_volume = os.path.join(logs_dir, container_name)
+            timestamp = container_name.split("_")[-1]
+            log_dir_name = "servod_%s_%s" % (port if port else "9999", timestamp)
+            logs_volume = os.path.join(logs_dir, log_dir_name)
 
+        # Mount the host log directory to the container's log directory.
+        # Inside the container, port is always 9999 as mapped by Docker.
         volumes += ["%s:/var/log/servod_9999/" % logs_volume]
 
         if token_db:
@@ -533,6 +538,7 @@ def parse_args():
     parser.add_argument(
         "--logs",
         type=str,
+        default="/tmp/servod_logs",
         dest="logs_dir",
     )
     args = parser.parse_args()

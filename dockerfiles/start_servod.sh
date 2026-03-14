@@ -106,13 +106,14 @@ data_args=" /usr/local/lib/python3.13/dist-packages/servo/data/grpc_server/grpc_
 data_args+=" --grpc-core-host localhost"
 data_args+=" --grpc-core-port 50052"
 data_args+=" --grpc-data-port 50051"
-data_args+=" --logs /var/log/servo_${PORT}"
+data_args+=" --logs /var/log/servod_${PORT}"
 
 IFS=" " read -r -a dargs <<< "${data_args}"
 /usr/bin/python3 "${dargs[@]}" &
 
 log_output "Launching servod for ${BOARD} ${MODEL_MSG} on port ${PORT} ${SERIAL_MSG}"
 servod_args=" --host 0.0.0.0 "
+servod_args+=" --log-dir /var/log"
 servod_args+=" --log-dir-backup-count ${LOG_BACKUP_COUNT}"
 servod_args+=" ${BOARD_FLAG}"
 servod_args+=" ${MODEL_FLAG}"
