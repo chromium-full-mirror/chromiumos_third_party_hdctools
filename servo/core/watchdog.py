@@ -119,15 +119,23 @@ class DeviceWatchdog(threading.Thread):
                     # that the watchdog missed. This is fine for re-init capable
                     # devices, but not for the rest.
                     devnum = device.usb_devnum()
-                    if devnum != devnums[dev_id]:
+                    if devnum != devnums[dev_id] or dev_id in missing_devices:
                         if not device.reinit_ok():
                             # Re-enumeration here is bad and not recoverable.
-                            self._logger.error(
-                                "Device - %s - changed devnum from %d to %d.",
-                                device,
-                                devnums[dev_id],
-                                devnum,
-                            )
+                            if devnum != devnums[dev_id]:
+                                self._logger.error(
+                                    "Device - %s - changed devnum from %d to %d.",
+                                    device,
+                                    devnums[dev_id],
+                                    devnum,
+                                )
+                            else:
+                                self._logger.error(
+                                    "Device - %s - reconnected with "
+                                    "the same devnum %d.",
+                                    device,
+                                    devnum,
+                                )
                             self.disconnect(device)
                             break
                         # Here, the device is reinit_ok()
