@@ -22,20 +22,18 @@ from servo.data.impl import system_config_impl
 # If user does not specify a log directory, use this one.
 DEFAULT_LOG_DIR = "/var/log"
 
-DEBUG_FMT_STRING = (
-    "%(asctime)s - %(name)s - %(levelname)s - "
-    "%(filename)s:%(lineno)d:%(funcName)s - %(message)s"
-)
 
-
-def grpc_server_start():
+def serve():
     """
     Start a gRPC server for the data services.
     This function sets up and starts a gRPC server to handle remote procedure calls (
     RPCs) for the data service.
     The server listens on port 50051 and uses an insecure channel for communication.
     """
-    logging.basicConfig(level=logging.INFO, format=DEBUG_FMT_STRING)
+    default_handler = logging.StreamHandler()
+    default_handler.setLevel(logging.INFO)
+    default_handler.formatter = servo_logging.ShortUTCFormatter(fmt=servo_logging.SHORT_DEBUG_FMT_STRING)
+    logging.basicConfig(level=logging.INFO, handlers=[default_handler])
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -119,4 +117,4 @@ def grpc_server_start():
 
 
 if __name__ == "__main__":
-    grpc_server_start()
+    serve()

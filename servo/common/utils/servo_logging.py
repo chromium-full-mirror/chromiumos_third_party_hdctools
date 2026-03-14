@@ -35,11 +35,17 @@ import re
 import tarfile
 
 
-# Format strings used for servod logging.
+# Format strings used for servod logging in files.
 DEFAULT_FMT_STRING = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 DEBUG_FMT_STRING = (
     "%(asctime)s - %(name)s - %(levelname)s - "
     "%(filename)s:%(lineno)d:%(funcName)s - %(message)s"
+)
+
+# Format strings used for servod logging to stdout/stderr.
+SHORT_DEFAULT_FMT_STRING = "%(asctime)s(%(name)s) %(message)s"
+SHORT_DEBUG_FMT_STRING = (
+    "%(asctime)s(%(name)s) %(filename)s:%(lineno)d:%(funcName)s %(message)s"
 )
 
 # Convenience map to have access to format string and level using a shorthand.
@@ -49,6 +55,14 @@ LOGLEVEL_MAP = {
     "warning": (logging.WARNING, DEFAULT_FMT_STRING),
     "info": (logging.INFO, DEFAULT_FMT_STRING),
     "debug": (logging.DEBUG, DEBUG_FMT_STRING),
+}
+
+SHORT_LOGLEVEL_MAP = {
+    "critical": (logging.CRITICAL, SHORT_DEFAULT_FMT_STRING),
+    "error": (logging.ERROR, SHORT_DEFAULT_FMT_STRING),
+    "warning": (logging.WARNING, SHORT_DEFAULT_FMT_STRING),
+    "info": (logging.INFO, SHORT_DEFAULT_FMT_STRING),
+    "debug": (logging.DEBUG, SHORT_DEBUG_FMT_STRING),
 }
 
 # Default loglevel used on servod for stdout logger.
@@ -190,6 +204,17 @@ class UTCFormatter(logging.Formatter):
         ).isoformat(timespec="milliseconds")
 
 
+class ShortUTCFormatter(logging.Formatter):
+    """A formatter that prints UTC time without date and with single digit ms."""
+
+    def formatTime(self, record, datefmt=None):
+        # Format: HH:MM:SS.f
+        # truncate microseconds to tenths of a second
+        return datetime.datetime.fromtimestamp(
+            record.created, datetime.timezone.utc
+        ).strftime("%H:%M:%S.%f")[:-5]
+
+
 def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUNT):
     """Setup servod logging.
 
@@ -217,7 +242,6 @@ def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUN
     # handlers chose which ones to put out.
     root_logger.setLevel(logging.DEBUG)
     stderr_level = "debug" if debug_stderr else DEFAULT_LOGLEVEL
-    level, fmt = LOGLEVEL_MAP[stderr_level]
     # |log_dir| is None iff it's not in the cmdline. Otherwise it contains
     # a directory path to store the servod logs in.
 
@@ -225,11 +249,15 @@ def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUN
     # ServodStarter.__init__
     for handler in root_logger.handlers:
         if isinstance(handler, logging.StreamHandler):
+            short_level, short_fmt = SHORT_LOGLEVEL_MAP[stderr_level]
             logging.info(
-                "Updating log level & formatter of %s to %s/%s", handler, level, fmt
+                "Updating log level & formatter of %s to %s/%s",
+                handler,
+                short_level,
+                short_fmt,
             )
-            handler.setLevel(level)
-            handler.formatter = UTCFormatter(fmt=fmt)
+            handler.setLevel(short_level)
+            handler.formatter = ShortUTCFormatter(fmt=short_fmt)
     if logdir:
         # Start file loggers for each output file.
         instance_logdir = _buildLogdirName(logdir, module, port)
