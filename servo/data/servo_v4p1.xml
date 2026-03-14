@@ -15,6 +15,9 @@
   <include>
     <name>servo_adc_enabled_noop.xml</name>
   </include>
+  <include>
+    <name>e2e_test_data_generator.xml</name>
+  </include>
   <map>
     <name>onoff_pwrsrc_sel</name>
     <doc>Source DUT Type-C power from input Type-C or host USB.

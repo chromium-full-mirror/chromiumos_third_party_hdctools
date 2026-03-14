@@ -38,6 +38,10 @@ def main():
         default=["servo_fw_version", "ec_board"],
         help="List of dut-control commands to execute",
     )
+    parser.add_argument(
+        "--script",
+        help="Path to python script to execute",
+    )
     args = parser.parse_args()
 
     jobs = []
@@ -69,6 +73,10 @@ def main():
                     "servod_args": s_args,
                     "test_commands": args.cmds,
                 }
+
+                if args.script:
+                    with open(args.script, "r") as f:
+                        payload["script_body"] = f.read()
 
                 print(f"Submitting job for {board} ({model}) [Serial: {serial}]...")
                 try:
@@ -127,22 +135,35 @@ def main():
             print(f"Agent Error: {data.get('error')}")
 
         outputs = data.get("test_outputs", {})
-        for cmd in args.cmds:
-            if cmd not in outputs:
-                print(f"  [SKIP] {cmd}")
-                continue
 
-            out = outputs[cmd]
+        if args.script and "custom_script" in outputs:
+            out = outputs["custom_script"]
             cmd_status = "PASS" if out.get("exit_code") == 0 else "FAIL"
-            print(f"  [{cmd_status}] {cmd}")
-
+            print(f"  [{cmd_status}] custom_script")
             stdout = out.get("stdout", "").strip()
             stderr = out.get("stderr", "").strip()
-
             if stdout:
-                print(f"      stdout: {stdout}")
+                print(f"      stdout:\n{stdout}")
             if stderr:
-                print(f"      stderr: {stderr}")
+                print(f"      stderr:\n{stderr}")
+
+        if args.cmds:
+            for cmd in args.cmds:
+                if cmd not in outputs:
+                    print(f"  [SKIP] {cmd}")
+                    continue
+
+                out = outputs[cmd]
+                cmd_status = "PASS" if out.get("exit_code") == 0 else "FAIL"
+                print(f"  [{cmd_status}] {cmd}")
+
+                stdout = out.get("stdout", "").strip()
+                stderr = out.get("stderr", "").strip()
+
+                if stdout:
+                    print(f"      stdout:\n{stdout}")
+                if stderr:
+                    print(f"      stderr:\n{stderr}")
 
         print("-" * 50)
 

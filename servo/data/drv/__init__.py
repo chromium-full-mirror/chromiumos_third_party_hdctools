@@ -17,6 +17,7 @@ from servo.data.drv import cros_ec_hardrec_power
 from servo.data.drv import cros_ec_pd_softrec_power
 from servo.data.drv import cros_ec_power
 from servo.data.drv import cros_ec_softrec_power
+from servo.data.drv import e2e_test_data_generator
 from servo.data.drv import ec
 from servo.data.drv import ec3po_c2d2
 from servo.data.drv import ec3po_driver

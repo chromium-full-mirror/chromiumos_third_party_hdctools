@@ -1,0 +1,11 @@
+<!-- Copyright 2026 The ChromiumOS Authors
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+<root>
+  <control>
+    <name>generate_test_data</name>
+    <doc>Triggers the generation of end-to-end test data for a specific board and model.</doc>
+    <params cmd="set" drv="e2e_test_data_generator" input_type="str" interface="servo"/>
+  </control>
+</root>
