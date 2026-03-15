@@ -75,7 +75,7 @@ def main():
                 }
 
                 if args.script:
-                    with open(args.script, "r") as f:
+                    with open(args.script, "r", encoding="utf-8") as f:
                         payload["script_body"] = f.read()
 
                 print(f"Submitting job for {board} ({model}) [Serial: {serial}]...")

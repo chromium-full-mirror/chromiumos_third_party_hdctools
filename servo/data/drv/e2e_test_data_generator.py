@@ -318,7 +318,7 @@ class e2eTestDataGenerator(hw_driver.HwDriver):
         for data_key, pty_name in pty_interfaces.items():
             if data_key not in pty_commands:
                 continue
-            
+
             # Check if this servod instance actually has this PTY
             try:
                 self._servod_get(pty_name)
@@ -452,7 +452,6 @@ class e2eTestDataGenerator(hw_driver.HwDriver):
 
         elapsed = time.time() - start_time
         print(f"Data generation complete! Elapsed time: {elapsed:.2f}s")
-        
         # Attempt to parse port from gRPC address, fallback to 9999
         port = "9999"
         if hasattr(self, "_grpc_core_addr") and self._grpc_core_addr:

@@ -21,7 +21,6 @@ from servo.common.exceptions import HwDriverError
 from servo.common.grpc_client import GrpcClient
 from servo.common.proto import driver_grpc  # type: ignore
 from servo.common.proto import system_config_grpc  # type: ignore
-from servo.common.proto import system_config_pb2  # type: ignore
 from servo.common.utils import json_utils
 from servo.common.utils import servo_logging
 import servo.utils.usb_hierarchy as usb_hierarchy
@@ -523,13 +522,12 @@ class ServoDevice:
         Args:
           filename: string of the file to save to.
         """
-        request = system_config_pb2.DumpToXmlRequest(
-            vid=self._vendor,
-            pid=self._product,
+        self._system_config_client.DumpToXml(
+            vid=self.template.VID,
+            pid=self.template.PID,
             serial=self._serial,
             filename=filename,
         )
-        self._system_config_client.DumpToXml(request)
 
     def hwinit(self, verbose, skip_controls, step_init=False):
         """Initialize all controls.

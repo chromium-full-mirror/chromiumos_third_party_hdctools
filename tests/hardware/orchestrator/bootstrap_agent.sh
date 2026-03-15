@@ -41,11 +41,11 @@ mkdir -p "$AGENT_DIR"
 cd "$AGENT_DIR"
 
 echo "[1/4] Starting multiplexed SSH connection to Cloudtop..."
-# Start a master SSH connection in the background (removed -q to see errors)
-if ssh -o "ControlMaster=yes" -o "ControlPath=$CONTROL_SOCK" -o "ControlPersist=10m" -f -N "$CLOUDTOP_HOST" -p "$CLOUDTOP_PORT"; then
-    echo "  -> Master tunnel established."
+# Start a primary SSH connection in the background (removed -q to see errors)
+if ssh -M -o "ControlPath=$CONTROL_SOCK" -o "ControlPersist=10m" -f -N "$CLOUDTOP_HOST" -p "$CLOUDTOP_PORT"; then
+    echo "  -> Primary tunnel established."
 else
-    echo "  -> FAILED to establish master connection."
+    echo "  -> FAILED to establish primary connection."
     exit 1
 fi
 
