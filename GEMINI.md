@@ -7,6 +7,12 @@ To test changes, run the script scripts/run-servod-tests
 - I am always allowed to run scripts/run-servod-test command.
 - I am always allowed to run pre-commit commands.
 - Always run the tests before making a commit, if the tests do not pass then stop.
+- **Docker Rebuilding:** Any changes made to the `servod` core logic, `development_environment/start_servod.py` wrapper, or `dockerfiles/` scripts require the Docker image to be rebuilt to take effect. Run `cd development_environment && ./build_and_push.sh`.
+- **Argument Passthrough:** The `start_servod.py` wrapper uses `--` (argparse REMAINDER) to pass arguments to the inner container. However, the internal `servod` Python process does *not* accept `--`. You must filter out exactly `--` before passing arguments into the internal execution.
+- **User-Facing Tools (e.g., dut-control):** Never leak raw Python tracebacks, XML-RPC `<Fault>` objects, or unformatted tuples to the user. Catch exceptions and format errors cleanly as readable strings.
+- **Timeouts:** Keep synchronous CLI commands fast-failing. Avoid setting excessively long timeouts (e.g., 1800s) as global defaults; stick to reasonable times (e.g., 60s) unless explicitly overridden by an orchestrator flag.
+- **Banned Terms:** Do not use the word `master` in new variables, docs, or code. Use `primary` or `main`.
+- **XML Dumping:** When running `start-servod --dump-xml /path/file.xml` on a multi-device setup (like a v4.1 with a cr50), it actually creates multiple output files by automatically appending prefixes to the filename (e.g. `/path/file_root.xml` and `/path/file_main.xml`).
 
 ## Available Skills
 
