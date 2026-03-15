@@ -57,6 +57,18 @@ else
     DEBUG_FLAG=""
 fi
 
+if [ "${NOBOARD}" = "1" ]; then
+    NOBOARD_FLAG="--noboard"
+else
+    NOBOARD_FLAG=""
+fi
+
+if [ -n "${DUMP_XML}" ]; then
+    DUMP_XML_FLAG="--dump-xml ${DUMP_XML}"
+else
+    DUMP_XML_FLAG=""
+fi
+
 CONFIG_FLAG=""
 if [ -n "${CONFIG}" ]; then
     CONFIG_FLAG="--config ${CONFIG}"
@@ -120,6 +132,8 @@ servod_args+=" ${MODEL_FLAG}"
 servod_args+=" ${SERIAL_FLAG}"
 servod_args+=" ${PORT_FLAG}"
 servod_args+=" ${DEBUG_FLAG}"
+servod_args+=" ${NOBOARD_FLAG}"
+servod_args+=" ${DUMP_XML_FLAG}"
 servod_args+=" ${REC_MODE_FLAG}"
 servod_args+=" ${CONFIG_FLAG}"
 servod_args+=" ${NAME_FLAG}"

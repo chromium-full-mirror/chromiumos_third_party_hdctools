@@ -240,6 +240,8 @@ def start_servod(
     follow,
     token_db,
     logs_dir,
+    noboard,
+    dump_xml,
 ):
     try:
         # Just in case someone manages to press ctrl-c before the container object
@@ -254,15 +256,39 @@ def start_servod(
             servod_params += "--model %s " % model
         if serial_no:
             servod_params += "--serialname %s " % serial_no
+        if noboard:
+            servod_params += "--noboard "
+
+        volumes = ["/dev:/dev", "/sys:/sys"]
+
+        if dump_xml:
+            abs_dump_xml = os.path.abspath(dump_xml)
+            if os.path.isdir(abs_dump_xml) or dump_xml.endswith(os.sep):
+                dir_path = abs_dump_xml
+                new_file_path = "/tmp/dump_xml/"
+            else:
+                dir_path = os.path.dirname(abs_dump_xml)
+                new_file_path = f"/tmp/dump_xml/{os.path.basename(abs_dump_xml)}"
+
+            volumes.append(f"{dir_path}:/tmp/dump_xml/")
+            servod_params += f"--dump-xml {new_file_path} "
+
         if passthrough_args:
-            servod_params += str.join(" ", passthrough_args)
+            # argparse often leaves '--' in the remainder list if the user used it.
+            # `servod` itself does not take '--' as an argument.
+            filtered_args = [a for a in passthrough_args if a != "--"]
+            servod_params += str.join(" ", filtered_args) + " "
         if not container_name:
             now = datetime.now()
             container_name = now.strftime("%s")
 
-        name = "%s-docker_servod" % container_name
-        volumes = ["/dev:/dev", "/sys:/sys"]
+        env = {}
+        if noboard:
+            env["NOBOARD"] = "1"
+        if dump_xml:
+            env["DUMP_XML"] = new_file_path
 
+        name = "%s-docker_servod" % container_name
         if os.path.exists("/proc/modules"):
             volumes.append("/proc/modules:/host_proc_modules:ro")
 
@@ -323,6 +349,7 @@ def start_servod(
             volumes=volumes,
             ports=ports,
             command=command,
+            environment=env,
             ulimits=[nofile_limit],
         )
         started = False
@@ -541,6 +568,15 @@ def parse_args():
         default="/tmp/servod_logs",
         dest="logs_dir",
     )
+    parser.add_argument(
+        "--dump-xml",
+        type=str,
+        dest="dump_xml",
+    )
+    parser.add_argument(
+        "--noboard",
+        action=argparse.BooleanOptionalAction,
+    )
     args = parser.parse_args()
     if args.help:
         parser.print_usage()
@@ -596,12 +632,14 @@ def main():
         image=image,
         mounts=args.mount,
         port=args.port,
-        passthrough_args=args.passthrough[1:],
+        passthrough_args=args.passthrough,
         sleep=args.sleep,
         test=args.run_tests,
         follow=args.follow,
         token_db=args.token_db,
         logs_dir=args.logs_dir,
+        noboard=args.noboard,
+        dump_xml=args.dump_xml,
     )
 
 
