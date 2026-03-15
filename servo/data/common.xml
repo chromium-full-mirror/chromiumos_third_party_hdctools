@@ -225,4 +225,9 @@
     <doc>All control names support by current servod instance.</doc>
     <params drv="servo_metadata" subtype="all_controls" interface="servo"/>
   </control>
+  <control>
+    <name>ensure_usbkey_available</name>
+    <doc>Ensure the USB key is enumerated by the DUT.</doc>
+    <params cmd="set" interface="servo" drv="usbkey_availability" input_type="str" />
+  </control>
 </root>

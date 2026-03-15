@@ -218,30 +218,10 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 )
                 time.sleep(self._boot_to_rec_screen_delay)
 
-                # If we are using a Type-C servo, make sure the DUT's port is a DFP so
-                # that the ethernet and USB ports will be connected.  Since servo_v4 has
-                # the power role of source, its data role is a "downstream facing port"
-                # (DFP) and therefore making the DUT's role an "upstream facing port"
-                # (UFP). When the data roles are as such, the ethernet port and
-                # USB/microSD ports will not be connected to the DUT.  Therefore, we will
-                # need to trigger a data role swap by via the EC console.
-                #
-                # This is needed because the data role swaps normally don't happen in
-                # EC_RO (which is the image we MUST be in for entering recovery mode).
-                #
-                # If the servo_v4 is in pd role SNK, the DUT will already be in DFP and
-                # this will be a no-op.
-                if (
-                    self._servod_has_control("root.dut_connection_type")
-                    and self._servod_get("root.dut_connection_type") == "type-c"
-                    and self._servod_has_control("dut_pd_data_role")
-                ):
-                    try:
-                        self._servod_set("dut_pd_data_role", "DFP")
-                    except Exception:
-                        self._logger.debug(
-                            "Failed to set DUT's role to DFP", exc_info=True
-                        )
+                # Note: USB availability in recovery mode is now handled externally
+                # by calling the unified `ensure_usbkey_available` control, rather
+                # than automatically swapping data roles here. This prevents unwanted
+                # side-effects during non-USB recovery flows (e.g. FAFT).
         finally:
             self._driver_client.RestoreEcDriverChannel()
 
