@@ -5,33 +5,36 @@
 """System configuration module."""
 
 import collections
-import copy
 import functools
 import glob
 import logging
 import os
 import pathlib
 import re
+from xml.dom import minidom
 import xml.etree.ElementTree
+
+from . import config_resolver
 
 
 # valid tags in system config xml.  Any others will be ignored
-MAP_TAG = "map"
-CONTROL_TAG = "control"
-CLOBBER_ATTR = "clobber_ok"
-CLOBBER_NEVER = "never"
-CLOBBER_PATCH = "patch"
-CLOBBER_FULL = "full"
+MAP_TAG = config_resolver.MAP_TAG
+CONTROL_TAG = config_resolver.CONTROL_TAG
+CLOBBER_ATTR = config_resolver.CLOBBER_ATTR
+CLOBBER_NEVER = config_resolver.CLOBBER_NEVER
+CLOBBER_PATCH = config_resolver.CLOBBER_PATCH
+CLOBBER_FULL = config_resolver.CLOBBER_FULL
 CONTENT_TAG = "content"
 CONTENT_ITEM_TAG = "item"
+INTERFACE_ALIAS_TAG = "interface_alias"
 CONTENT_ITEM_KEY_ATTR = "key"
 CONTENT_ITEM_TYPE_ATTR = "type"
-CONTENT_PARAM = "CONTENT"
-SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG]
+CONTENT_PARAM = config_resolver.CONTENT_PARAM
+SYSCFG_TAG_LIST = [MAP_TAG, CONTROL_TAG, INTERFACE_ALIAS_TAG]
 ALLOWABLE_INPUT_TYPES = {"float": float, "int": int, "str": str}
 
 # A control to use when set/get is explicitly not defined for a control.
-UNDEF_CONTROL_DICT = {"drv": "undefined", "interface": "servo", "input_type": "str"}
+UNDEF_CONTROL_DICT = config_resolver.UNDEF_CONTROL_DICT
 
 # Valid pattern for control names and aliases
 IDENTIFIER_RE = re.compile(r"[a-z][a-z0-9_]+")
@@ -174,9 +177,13 @@ class SystemConfig:
         """SystemConfig constructor."""
         self._logger = logging.getLogger("SystemConfig")
         self.control_tags = collections.defaultdict(set)
-        self.aliases = {}
+        self.interface_aliases = {}
         self.syscfg_dict = collections.defaultdict(dict)
+        self.aliases = {}
         self.hwinit = []
+        self._resolver = config_resolver.ConfigResolver(
+            self.syscfg_dict, self.aliases, self.hwinit
+        )
         self._loaded_xml_files = set()
         self._board_cfg = None
 
@@ -383,10 +390,15 @@ class SystemConfig:
                     )
                 seen_entities.add(this_entity)
 
-                get_dict = None
-                set_dict = None
-                get_is_defined = True
-                set_is_defined = True
+                if tag == INTERFACE_ALIAS_TAG:
+                    alias_val = element.findtext("id")
+                    if not name or not alias_val:
+                        raise SystemConfigError(
+                            "interface_alias needs both 'name' and 'id'"
+                        )
+                    self.interface_aliases[name] = alias_val
+                    continue
+
                 params_list = element.findall("params")
 
                 if tag == CONTROL_TAG:
@@ -412,175 +424,41 @@ class SystemConfig:
                         # Modify the interface attributes.
                         if "interface" in p.attrib:
                             if p.attrib["interface"] != "servo":
-                                p.attrib["interface"] = int(p.attrib["interface"])
+                                try:
+                                    p.attrib["interface"] = int(p.attrib["interface"])
+                                except ValueError:
+                                    pass
 
-                if len(params_list) == 2:
-                    assert tag != MAP_TAG, "maps have only one params entry"
-                    for params in params_list:
-                        if "cmd" not in params.attrib:
-                            raise SystemConfigError(
-                                "%s %s multiple params but no cmd\n%s"
-                                % (tag, name, element_str)
-                            )
-                        cmd = params.attrib["cmd"]
-                        if cmd == "get":
-                            if get_dict:
-                                raise SystemConfigError(
-                                    "%s %s multiple get params defined\n%s"
-                                    % (tag, name, element_str)
-                                )
-                            get_dict = params.attrib
-                        else:  # |cmd| is 'set'
-                            # We know from above that cmd is guaranteed to be 'set'
-                            # or 'get'
-                            if set_dict:
-                                raise SystemConfigError(
-                                    "%s %s multiple set params defined\n%s"
-                                    % (tag, name, element_str)
-                                )
-                            set_dict = params.attrib
-                elif len(params_list) == 1:
-                    # Some controls work for both set and get. Some controls only work
-                    # for one of the two, and the other is undefined. If there is only
-                    # one |params| defined and it does *not* define cmd, then the policy
-                    # is to treat it like the same dictionary for both. If it does
-                    # define it, then the policy is that the control is *only* valid for
-                    # one direction: set or get.
-                    # |pd| here stands for params dict
-                    pd = params_list[0].attrib
-                    if "cmd" in pd:
-                        cmd = pd["cmd"]
-                        if cmd == "get":
-                            get_dict = copy.copy(pd)
-                            set_dict = copy.copy(UNDEF_CONTROL_DICT)
-                            set_is_defined = False
-                        else:  # |cmd| is 'set'
-                            set_dict = copy.copy(pd)
-                            get_dict = copy.copy(UNDEF_CONTROL_DICT)
-                            get_is_defined = False
-                    else:
-                        # |cmd| is not set. assume it's the same for both.
-                        get_dict = copy.copy(pd)
-                        set_dict = copy.copy(pd)
-                    if tag == CONTROL_TAG:
-                        # Lastly, to allow the |drv| full visibility in whether it's a
-                        # set or a get instance, make sure to store set and get in the
-                        # dict regardless of whether it was already there or has been
-                        # inferred here.
-                        get_dict["cmd"] = "get"
-                        set_dict["cmd"] = "set"
-                else:
-                    raise SystemConfigError(
-                        "%s %s has illegal number of params %d\n%s"
-                        % (tag, name, len(params_list), element_str)
+                try:
+                    self._resolver.add_entity(
+                        tag,
+                        name,
+                        doc,
+                        alias,
+                        [p.attrib for p in params_list],
+                        filename,
+                        element_str,
                     )
+                except config_resolver.ConfigError as e:
+                    raise SystemConfigError(str(e)) from e
 
-                if tag == CONTROL_TAG:
-                    set_dict["interface_prefix"] = name_prefix
-                    get_dict["interface_prefix"] = name_prefix
-
-                # Save the control name to the params dicts, such that the driver can
-                # refer to it.
-                if tag == CONTROL_TAG:
-                    get_dict["control_name"] = name
-                    set_dict["control_name"] = name
-
-                if tag == MAP_TAG:
-                    self.syscfg_dict[tag][name] = {"doc": doc, "map_params": get_dict}
-                    if alias:
-                        raise SystemConfigError("No aliases for maps allowed")
-                    continue
-
-                assert tag == CONTROL_TAG
-
-                clobber_vals = set()
-                if get_is_defined:
-                    clobber_vals.add(get_dict.get(CLOBBER_ATTR))
-                if set_is_defined:
-                    clobber_vals.add(set_dict.get(CLOBBER_ATTR))
-
-                if not clobber_vals:
-                    clobber_ok = None
-                elif len(clobber_vals) == 1:
-                    clobber_ok = clobber_vals.pop()
-                else:
-                    raise SystemConfigError(
-                        "config file %r %s %r has conflicting %s= values between "
-                        'cmd="get" and cmd="set"' % (filename, tag, name, CLOBBER_ATTR)
-                    )
-
-                if clobber_ok == CLOBBER_NEVER:
-                    if name in self.syscfg_dict[tag]:
-                        self._logger.debug(
-                            "Quietly refusing to clobber existing %s %r", tag, name
-                        )
-                        continue
-                if clobber_ok == CLOBBER_PATCH:
-                    if name not in self.syscfg_dict[tag]:
-                        self._logger.debug(
-                            "Ignoring clobber patch for nonexistent %s %r", tag, name
-                        )
-                        continue
-                    self._logger.debug("Applying clobber patch to %s %r", tag, name)
-                elif clobber_ok is None and name in self.syscfg_dict[tag]:
-                    clobber_ok = CLOBBER_FULL
-
-                if "init" in set_dict:
-                    hwinit_found = False
-                    # only allow one hwinit per control
-                    if clobber_ok is not None:
-                        # if we clobbered an alias, look for its hwinit under its
-                        # real name
-                        realname = self.aliases.get(name, name)
-                        for i, (hwinit_name, _unused) in enumerate(self.hwinit):
-                            if hwinit_name == realname:
-                                self.hwinit[i] = (realname, set_dict["init"])
-                                hwinit_found = True
-                                break
-
-                    if not hwinit_found:
-                        self.hwinit.append((name, set_dict["init"]))
-
-                if name in self.syscfg_dict[tag]:
-                    assert clobber_ok is not None
-                    # Always update existing dicts when present, to avoid splitting
-                    # aliases into separate controls.
-                    if clobber_ok == CLOBBER_FULL:
-                        self.syscfg_dict[tag][name]["get_params"].clear()
-                        self.syscfg_dict[tag][name]["set_params"].clear()
-                    self.syscfg_dict[tag][name]["get_params"].update(get_dict)
-                    self.syscfg_dict[tag][name]["set_params"].update(set_dict)
-                    if doc != "undocumented" or clobber_ok == CLOBBER_FULL:
-                        self.syscfg_dict[tag][name]["doc"] = doc
-                else:
-                    self.syscfg_dict[tag][name] = {
-                        "doc": doc,
-                        "get_params": get_dict,
-                        "set_params": set_dict,
-                    }
-                if "drv" not in self.syscfg_dict[tag][name]["get_params"]:
-                    raise SystemConfigError(
-                        'control %r cmd="get" has no driver configured (drv= attribute)'
-                        % (name,)
-                    )
-                if "drv" not in self.syscfg_dict[tag][name]["set_params"]:
-                    raise SystemConfigError(
-                        'control %r cmd="set" has no driver configured (drv= attribute)'
-                        % (name,)
-                    )
+                if tag == CONTROL_TAG and name in self.syscfg_dict[tag]:
+                    # After resolution, ensure interface_prefix is set on both params.
+                    # This handles cases where one was undefined and got the default
+                    # UNDEF_CONTROL_DICT.
+                    get_p = self.syscfg_dict[tag][name]["get_params"]
+                    set_p = self.syscfg_dict[tag][name]["set_params"]
+                    get_p["interface_prefix"] = name_prefix
+                    set_p["interface_prefix"] = name_prefix
 
                 if alias:
-                    # if we clobbered an alias, point our aliases to its real name
-                    realname = self.aliases.get(name, name)
                     for aliasname in alias.split(","):
+                        aliasname = aliasname.strip()
                         if not IDENTIFIER_RE.fullmatch(aliasname):
                             raise SystemConfigError(
                                 "file %r %s element %r invalid "
                                 'alias "%s"' % (filename, tag, name, aliasname)
                             )
-                        self.syscfg_dict[tag][aliasname] = self.syscfg_dict[tag][name]
-                        # Also store what the alias relationship
-                        self.aliases[aliasname] = realname
 
     def finalize(self):
         """Finalize setup, Call this after no more config files will be added.
@@ -661,10 +539,22 @@ class SystemConfig:
                 "No control named %s. All controls:\n%s"
                 % (name, ",".join(sorted(self.syscfg_dict[CONTROL_TAG])))
             )
-        return (
-            self.syscfg_dict[CONTROL_TAG][name]["get_params"],
-            self.syscfg_dict[CONTROL_TAG][name]["set_params"],
-        )
+        get_params = dict(self.syscfg_dict[CONTROL_TAG][name]["get_params"])
+        set_params = dict(self.syscfg_dict[CONTROL_TAG][name]["set_params"])
+
+        if (
+            "interface" in get_params
+            and get_params["interface"] in self.interface_aliases
+        ):
+            get_params["interface"] = self.interface_aliases[get_params["interface"]]
+
+        if (
+            "interface" in set_params
+            and set_params["interface"] in self.interface_aliases
+        ):
+            set_params["interface"] = self.interface_aliases[set_params["interface"]]
+
+        return (get_params, set_params)
 
     def get_all_controls(self):
         """Return an iterable of all controls specified.
@@ -899,6 +789,112 @@ class SystemConfig:
                         )
         return reformat_value
 
+    def dump_to_xml(self, filename):
+        """Dump the parsed system configuration to an XML file.
+
+        Args:
+          filename: string of the file to save to.
+        """
+
+        root = xml.etree.ElementTree.Element("root")
+
+        # Dump maps
+        if MAP_TAG in self.syscfg_dict:
+            for name in sorted(self.syscfg_dict[MAP_TAG]):
+                # Only iterate over primary names, not aliases
+                if name in self.aliases:
+                    continue
+                item_dict = self.syscfg_dict[MAP_TAG][name]
+                map_elem = xml.etree.ElementTree.SubElement(root, MAP_TAG)
+                xml.etree.ElementTree.SubElement(map_elem, "name").text = name
+                if item_dict.get("doc") and item_dict["doc"] != "undocumented":
+                    xml.etree.ElementTree.SubElement(map_elem, "doc").text = item_dict[
+                        "doc"
+                    ]
+
+                aliases = [a for a, r in self.aliases.items() if r == name]
+                if aliases:
+                    xml.etree.ElementTree.SubElement(map_elem, "alias").text = ",".join(
+                        sorted(aliases)
+                    )
+
+                params_elem = xml.etree.ElementTree.SubElement(map_elem, "params")
+                for k, v in sorted(item_dict["map_params"].items()):
+                    if k != "interface_prefix":
+                        params_elem.set(k, str(v))
+
+        # Dump controls
+        if CONTROL_TAG in self.syscfg_dict:
+            for name in sorted(self.syscfg_dict[CONTROL_TAG]):
+                # Only iterate over primary names, not aliases
+                if name in self.aliases:
+                    continue
+                item_dict = self.syscfg_dict[CONTROL_TAG][name]
+                ctrl_elem = xml.etree.ElementTree.SubElement(root, CONTROL_TAG)
+                xml.etree.ElementTree.SubElement(ctrl_elem, "name").text = name
+                if item_dict.get("doc") and item_dict["doc"] != "undocumented":
+                    xml.etree.ElementTree.SubElement(ctrl_elem, "doc").text = item_dict[
+                        "doc"
+                    ]
+
+                aliases = [a for a, r in self.aliases.items() if r == name]
+                if aliases:
+                    xml.etree.ElementTree.SubElement(ctrl_elem, "alias").text = (
+                        ",".join(sorted(aliases))
+                    )
+
+                get_p = item_dict["get_params"]
+                set_p = item_dict["set_params"]
+
+                params_list = []
+                if get_p == set_p:
+                    params_list = [get_p]
+                else:
+                    if get_p.get("drv") != "undefined":
+                        params_list.append(get_p)
+                    if set_p.get("drv") != "undefined":
+                        params_list.append(set_p)
+
+                for p_dict in params_list:
+                    p_elem = xml.etree.ElementTree.SubElement(ctrl_elem, "params")
+                    for k, v in sorted(p_dict.items()):
+                        # We might want to keep cmd, control_name, etc.
+                        if k == "cmd" and len(params_list) == 1:
+                            continue
+                        if k in ["control_name", "interface_prefix"]:
+                            continue
+                        if k == CONTENT_PARAM:
+                            # Handling the content param serialization
+                            content_elem = xml.etree.ElementTree.SubElement(
+                                p_elem, CONTENT_TAG
+                            )
+                            if isinstance(v, dict):
+                                for ck, cv in sorted(v.items()):
+                                    item_elem = xml.etree.ElementTree.SubElement(
+                                        content_elem, CONTENT_ITEM_TAG
+                                    )
+                                    item_elem.set(CONTENT_ITEM_KEY_ATTR, str(ck))
+                                    item_elem.text = str(cv)
+                                    # Very basic type inference for reverse parsing
+                                    if isinstance(cv, int):
+                                        item_elem.set(CONTENT_ITEM_TYPE_ATTR, "int")
+                                    elif isinstance(cv, float):
+                                        item_elem.set(CONTENT_ITEM_TYPE_ATTR, "float")
+                                    else:
+                                        item_elem.set(CONTENT_ITEM_TYPE_ATTR, "str")
+                            continue
+                        p_elem.set(k, str(v))
+
+        rough_string = xml.etree.ElementTree.tostring(root, "utf-8")
+        reparsed = minidom.parseString(rough_string)
+
+        pretty_xml = reparsed.toprettyxml(indent="  ")
+        # Remove extra blank lines
+        pretty_xml = os.linesep.join([s for s in pretty_xml.splitlines() if s.strip()])
+
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(pretty_xml)
+
     def display_config(self, tag_param=None, prefix=None):
         """Display human-readable values of a map or control
 
@@ -915,6 +911,8 @@ class SystemConfig:
         else:
             tag_list = [tag_param]
         for tag in sorted(tag_list):
+            if not self.syscfg_dict[tag]:
+                continue
             prefix_str = ""
             if tag == CONTROL_TAG and prefix:
                 prefix_str = "%s." % prefix
@@ -984,3 +982,28 @@ class SystemConfig:
                     board_config = board_id = None
 
         return board_config, board_id
+
+    def get_available_models(self, board):
+        """Get all available models for a given board.
+
+        Args:
+          board: board name
+
+        Returns:
+          list of model names
+        """
+        if not board:
+            return []
+        default_path = os.path.join(
+            pathlib.Path(__file__).parent.parent.parent.resolve(), "data"
+        )
+        pattern = os.path.join(default_path, "servo_%s_*_overlay.xml" % board)
+        files = glob.glob(pattern)
+        models = []
+        prefix = "servo_%s_" % board
+        suffix = "_overlay.xml"
+        for f in files:
+            basename = os.path.basename(f)
+            model = basename[len(prefix) : -len(suffix)]
+            models.append(model)
+        return sorted(models)
