@@ -362,6 +362,19 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         device.set_disconnect_ok(request.disconnect_ok)
         return empty_pb2.Empty()
 
+    def GetWatchdogReconnectTimeout(self, unused_request, unused_context):
+        """Get the current reconnect timeout from the active watchdog thread."""
+        timeout = -1.0
+        if self.servod._watchdog_thread:
+            timeout = self.servod._watchdog_thread.reconnect_timeout
+        return servo_dev_pb2.ReconnectTimeoutResponse(timeout_sec=timeout)
+
+    def SetWatchdogReconnectTimeout(self, request, unused_context):
+        """Set the reconnect timeout on the active watchdog thread."""
+        if self.servod._watchdog_thread:
+            self.servod._watchdog_thread.reconnect_timeout = request.timeout_sec
+        return empty_pb2.Empty()
+
     def GetCcdState(self, request, context):
         """
         Get ccd_state

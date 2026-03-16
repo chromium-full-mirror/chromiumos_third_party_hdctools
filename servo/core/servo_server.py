@@ -65,6 +65,11 @@ class Servod:
         self._controls: List[str] = []
         # Store state for select_control drivers
         self.selected_controls: Dict[str, Any] = {}
+        self._watchdog_thread = None
+
+    def set_watchdog(self, watchdog):
+        """Set the watchdog thread."""
+        self._watchdog_thread = watchdog
 
     def clear(self):
         """Clear all devices and serialnames."""

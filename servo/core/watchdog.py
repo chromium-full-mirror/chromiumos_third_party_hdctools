@@ -59,28 +59,50 @@ class DeviceWatchdog(threading.Thread):
         self._servod = servod
         self._rate = self.DEFAULT_POLL_RATE
         self._devices = []
+        self._reconnect_timeout = float(reconnect_timeout)
 
         for device in self._servod.get_devices():
             self._devices.append(device)
+
+        self._update_poll_rate()
+
+        # TODO(coconutruben): Here and below in addition to VID/PID also print out
+        # the device type i.e. servo_micro.
+        self._logger.info("Watchdog setup for devices: %s", self._devices)
+
+    @property
+    def reconnect_timeout(self):
+        return self._reconnect_timeout
+
+    @reconnect_timeout.setter
+    def reconnect_timeout(self, new_timeout):
+        self._reconnect_timeout = float(new_timeout)
+        self._update_poll_rate()
+
+    def _update_poll_rate(self):
+        self._rate = self.DEFAULT_POLL_RATE
+        for device in self._devices:
             if device.reinit_ok():
-                if reconnect_timeout <= 0:
+                if self._reconnect_timeout <= 0:
                     self._rate = self.REINIT_POLL_RATE
                     self._logger.info(
                         "Reinit capable device found. Polling rate set to %.2fs.",
                         self._rate,
                     )
                 else:
-                    self._rate = reconnect_timeout / max(device.REINIT_ATTEMPTS, 1)
+                    self._rate = self._reconnect_timeout / max(
+                        device.REINIT_ATTEMPTS, 1
+                    )
                     self._logger.info(
                         "Reinit capable device found. Polling rate set "
                         "to %.2fs for %.2fs reconnect timeout",
                         self._rate,
-                        reconnect_timeout,
+                        self._reconnect_timeout,
                     )
-
-        # TODO(coconutruben): Here and below in addition to VID/PID also print out
-        # the device type i.e. servo_micro.
-        self._logger.info("Watchdog setup for devices: %s", self._devices)
+                # Use the first reinit capable device to determine the polling rate.
+                # This fixes a prior bug where the rate was overwritten by the
+                # last device.
+                break
 
     def deactivate(self):
         """Signal to watchdog to stop polling."""

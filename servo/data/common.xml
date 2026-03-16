@@ -173,6 +173,12 @@
     input_type="str" cmd="get"/>
   </control>
   <control>
+    <name>watchdog_reconnect_timeout</name>
+    <doc>The timeout (in seconds) the watchdog waits for a device to reconnect before giving up.</doc>
+    <params cmd="get" subtype="watchdog_reconnect_timeout" interface="servo" drv="servo_watchdog" input_type="float" />
+    <params cmd="set" subtype="watchdog_reconnect_timeout" interface="servo" drv="servo_watchdog" input_type="float" />
+  </control>
+  <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"

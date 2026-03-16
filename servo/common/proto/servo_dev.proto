@@ -98,6 +98,8 @@ service ServoService {
     rpc IssueCmdGetResult(IssueCmdOnMainDevRequest) returns (google.protobuf.Empty);
     rpc GetWatchdog(google.protobuf.Empty) returns (ServiceResponse);
     rpc UpdateDeviceDisconnectOk(WatchdogRequest) returns (google.protobuf.Empty);
+    rpc GetWatchdogReconnectTimeout(google.protobuf.Empty) returns (ReconnectTimeoutResponse);
+    rpc SetWatchdogReconnectTimeout(ReconnectTimeoutRequest) returns (google.protobuf.Empty);
     rpc GetCcdState(google.protobuf.Empty) returns (CcdStateResponse);
     rpc GetCrosChip(ServiceRequest) returns (ServiceResponse);
     rpc GetUSBHubAddress(google.protobuf.Empty) returns (ServiceResponse);
@@ -223,6 +225,14 @@ message IssueCmdOnMainDevRequest {
 message WatchdogRequest {
     string name = 1;
     bool disconnect_ok = 2;
+}
+
+message ReconnectTimeoutRequest {
+    double timeout_sec = 1;
+}
+
+message ReconnectTimeoutResponse {
+    double timeout_sec = 1;
 }
 
 message CcdStateResponse {

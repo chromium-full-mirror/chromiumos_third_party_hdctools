@@ -30,6 +30,14 @@ class servoWatchdog(hw_driver.HwDriver):
         """Signal a device may be disconnected."""
         self._driver_client.UpdateDeviceDisconnectOk(name=val, disconnect_ok=True)
 
+    def _Get_watchdog_reconnect_timeout(self):
+        """Get the current reconnect timeout from the watchdog."""
+        return self._driver_client.GetWatchdogReconnectTimeout().timeout_sec
+
+    def _Set_watchdog_reconnect_timeout(self, val):
+        """Set the reconnect timeout on the watchdog."""
+        self._driver_client.SetWatchdogReconnectTimeout(timeout_sec=float(val))
+
     def _Get_ccd_state(self):
         """Check the watchdog to see if ccd is enabled.
 

@@ -286,6 +286,7 @@ class ServodStarter:
         self._watchdog_thread = watchdog.DeviceWatchdog(
             self._servod, reconnect_timeout=sopts.reconnect_timeout
         )
+        self._servod.set_watchdog(self._watchdog_thread)
         self._exit_status = 0
 
     def handle_sig(self, signum):
