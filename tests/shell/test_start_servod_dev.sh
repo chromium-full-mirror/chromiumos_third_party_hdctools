@@ -19,7 +19,7 @@ MOCK_BIN_DIR="${TEST_DIR}/bin"
 MOCK_SYS_ROOT="${TEST_DIR}/sys_root" # To simulate /sys and /usr/local/genesys
 MOCK_SYS_DEVICES_DIR="${MOCK_SYS_ROOT}/sys/bus/usb/devices"
 MOCK_FWUPDTOOL_CAB_DIR="${MOCK_SYS_ROOT}/usr/local/genesys"
-MOCK_FWUPDTOOL_CAB_FILE="${MOCK_FWUPDTOOL_CAB_DIR}/GenesysLogic_GL3590_64.17.cab"
+MOCK_FWUPDTOOL_CAB_FILE="${MOCK_FWUPDTOOL_CAB_DIR}/GenesysLogic_Google_Servo_GL3590_64.18.cab"
 
 mkdir -p "${MOCK_BIN_DIR}"
 mkdir -p "${MOCK_SYS_DEVICES_DIR}"
@@ -129,7 +129,7 @@ prepare_script() {
     # Modify path to fwupdtool to use the one in PATH (our mock)
     sed -i "s|/usr/bin/fwupdtool|fwupdtool|g" "${SCRIPT_UNDER_TEST_COPY}"
     # Modify path to the .cab file for fwupdtool
-    sed -i "s|/usr/local/genesys/GenesysLogic_GL3590_64.18.cab|${MOCK_FWUPDTOOL_CAB_FILE}|g" "${SCRIPT_UNDER_TEST_COPY}"
+    sed -i "s|/usr/local/genesys/GenesysLogic_Google_Servo_GL3590_64.18.cab|${MOCK_FWUPDTOOL_CAB_FILE}|g" "${SCRIPT_UNDER_TEST_COPY}"
 }
 
 # Reset mocks and sysfs for each test
@@ -166,7 +166,7 @@ test_no_updatable_device_empty_sysfs() {
 }
 
 test_updatable_device_found() {
-    create_mock_device "1-1.1" "05e3" "0610" "Google" "1234" # bcdDevice != 6417
+    create_mock_device "1-1.1" "05e3" "0610" "Google" "1234" # bcdDevice != 6418
     bash "${SCRIPT_UNDER_TEST_COPY}" "--board=foo --serial=test" >/dev/null 2>&1
 
     assert_true "[ -f \"${TEST_DIR}/fwupdtool.log\" ]" "fwupdtool should be called"
@@ -175,11 +175,11 @@ test_updatable_device_found() {
     assert_file_contains "${TEST_DIR}/servod.log" "servod_called: --host 0.0.0.0 --board=foo --serial=test" "servod called with correct args"
 }
 
-test_device_bcd_is_6417_no_update() {
-    create_mock_device "2-1" "05e3" "0610" "Google" "6417" # bcdDevice == 6417
+test_device_bcd_is_6418_no_update() {
+    create_mock_device "2-1" "05e3" "0610" "Google" "6418" # bcdDevice == 6418
     bash "${SCRIPT_UNDER_TEST_COPY}" "arg_only" >/dev/null 2>&1
 
-    assert_file_not_exists_or_empty "${TEST_DIR}/fwupdtool.log" "fwupdtool should not be called (bcdDevice 6417)"
+    assert_file_not_exists_or_empty "${TEST_DIR}/fwupdtool.log" "fwupdtool should not be called (bcdDevice 6418)"
     assert_true "[ -f \"${TEST_DIR}/servod.log\" ]" "servod should be called"
     assert_file_contains "${TEST_DIR}/servod.log" "servod_called: --host 0.0.0.0 arg_only" "servod called with correct args"
 }
@@ -240,7 +240,7 @@ prepare_script
 # Run all tests
 run_test test_no_updatable_device_empty_sysfs
 run_test test_updatable_device_found
-run_test test_device_bcd_is_6417_no_update
+run_test test_device_bcd_is_6418_no_update
 run_test test_device_vendor_mismatch
 run_test test_device_product_mismatch
 run_test test_device_manufacturer_mismatch

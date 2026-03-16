@@ -8,12 +8,12 @@ for dev in /sys/bus/usb/devices/[0-9]*; do
   grep -q 05e3 "${dev}"/idVendor 2>/dev/null && \
   grep -q 0610 "${dev}"/idProduct && \
   grep -q '^Google$' "${dev}"/manufacturer && \
-  grep -q -v '^6417$' "${dev}"/bcdDevice && \
+  grep -q -v '^6418$' "${dev}"/bcdDevice && \
   found_updatable=1
 done
 if [ "${found_updatable}" -eq 1 ]; then
   /usr/bin/fwupdtool install --plugins genesys --filter="updatable" \
-  /usr/local/genesys/GenesysLogic_GL3590_64.18.cab | tr -d "?"
+  /usr/local/genesys/GenesysLogic_Google_Servo_GL3590_64.18.cab | tr -d "?"
 fi
 
 echo "DEV: starting grpc server ...................."

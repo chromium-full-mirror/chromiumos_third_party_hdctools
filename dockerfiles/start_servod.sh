@@ -10,7 +10,7 @@ log_output() {
   logger -t "${UPSTART_JOB}" "${@}"
 }
 
-/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_GL3590_64.17.cab | tr -d "?"
+/usr/bin/fwupdtool install --filter="updatable" /usr/local/genesys/GenesysLogic_Google_Servo_GL3590_64.18.cab | tr -d "?"
 
 LOG_BACKUP_COUNT=1024
 

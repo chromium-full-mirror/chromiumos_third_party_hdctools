@@ -379,8 +379,6 @@ COPY --link --from=chromiumos_overlays \
 
 # Install genesys hub firmware
 RUN mkdir -p /usr/local/genesys
-RUN wget https://storage.googleapis.com/fwupd-cache/be2c9146ff4cfac5d647376c39ce0b78151e9f1a785a287e93ac3968aff2ed50-GenesysLogic_GL3590_64.17.cab \
-    -O /usr/local/genesys/GenesysLogic_GL3590_64.17.cab
 RUN wget https://storage.googleapis.com/fwupd-cache/GenesysLogic_Google_Servo_GL3590_64.18.cab \
     -O /usr/local/genesys/GenesysLogic_Google_Servo_GL3590_64.18.cab
 COPY --link --from=fwupd-builder /fwupd_*.deb .
