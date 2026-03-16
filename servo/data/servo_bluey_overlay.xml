@@ -112,4 +112,10 @@
     <doc>Bluey does not have any PD ports, so this control is disabled.</doc>
     <params clobber_ok='' port_count="0"/>
   </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
+  </control>
 </root>
