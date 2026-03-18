@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+import os
 import unittest
 import unittest.mock
 
@@ -413,6 +415,53 @@ class TestServod(unittest.TestCase):
             servod.get_config_files(),
             {"dev-p": ["file1", "file2"], "dev2-p": ["file3"]},
         )
+
+    def test_get_metadata_bypass(self):
+        """Test that metadata controls bypass the driver and return directly."""
+        servod = servo_server.Servod()
+        # Mock dependencies
+        servod.get_config_files = unittest.mock.MagicMock(
+            return_value={"main": ["config1.xml"]}
+        )
+        servod._get_version = unittest.mock.MagicMock(return_value="servo_v4p1")
+
+        mock_dev = unittest.mock.MagicMock()
+        mock_dev._serial = "12345"
+        mock_dev.to_json.return_value = '{"serial": "12345"}'
+
+        servod.get_devices = unittest.mock.MagicMock(return_value=[mock_dev])
+        servod.get_root_device = unittest.mock.MagicMock(return_value=mock_dev)
+        servod.get_servo_serials = unittest.mock.MagicMock(
+            return_value={"main": "12345"}
+        )
+
+        # Test config_files
+        res = servod.get("config_files")
+        config = json.loads(res)
+        self.assertEqual(config["main"], ["config1.xml"])
+
+        # Test servo_type
+        res = servod.get("servo_type")
+        self.assertEqual(res, "servo_v4p1")
+
+        # Test serialname
+        res = servod.get("serialname")
+        self.assertEqual(res, "12345")
+
+        # Test serialnames
+        res = servod.get("serialnames")
+        serials = json.loads(res)
+        self.assertEqual(serials["main"], "12345")
+
+        # Test devices
+        res = servod.get("devices")
+        devices = json.loads(res)
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]["serial"], "12345")
+
+        # Test servod_pid
+        res = servod.get("servod_pid")
+        self.assertEqual(res, os.getpid())
 
     def test_get_interface_list(self):
         """Test get_interface_list()."""

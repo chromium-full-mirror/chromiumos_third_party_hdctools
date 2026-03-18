@@ -5,12 +5,15 @@
 """Servo Server."""
 
 import collections
+import json
 import logging
+import os
 import sys
 from typing import Any, Dict, List, Optional, Tuple
 
 from servo.common import servo_dev_templates
 from servo.common import sversion_util
+from servo.common.utils import json_utils
 from servo.core import recovery
 from servo.utils import diagnose
 from servo.utils import usb_hierarchy
@@ -269,6 +272,25 @@ class Servod:
             # connects to multiple servo-micros or CCD, like the controls,
             # 'ccd_serialname', 'servo_micro_serialname', etc.
             return self.get_legacy_serial_number(name)
+
+        if name == "config_files":
+            return json_utils.dumps(self.get_config_files(), sort_keys=True, indent=4)
+        if name == "devices":
+            devices_json = []
+            for device in self.get_devices():
+                devices_json.append(json.loads(device.to_json()))
+            return json_utils.dumps(devices_json, indent=4)
+        if name == "servo_type":
+            return self._get_version()
+        if name == "servod_pid":
+            return os.getpid()
+        if name == "serialname":
+            root_dev = self.get_root_device()
+            if root_dev is not None:
+                return root_dev._serial
+            return self.get_main_device()._serial
+        if name == "serialnames":
+            return json_utils.dumps(self.get_servo_serials(), sort_keys=True, indent=4)
 
         dev, name = self._get_dev_and_name(name)
         try:
