@@ -190,7 +190,6 @@ class Console:
         # Create a unique logger based on the console name
         console_prefix = ("%s - " % (name,)) if name else ""
         logger = logging.getLogger("%sEC3PO.Console" % (console_prefix,))
-        logger.setLevel(logging.INFO)
         self.logger = interpreter.LoggerAdapter(logger, {"pty": user_pty})
         self.controller_pty = controller_pty
         self.user_pty = user_pty
