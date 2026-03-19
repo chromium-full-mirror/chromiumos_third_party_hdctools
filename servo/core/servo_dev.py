@@ -87,7 +87,7 @@ class ServoDevice:
     }
 
     # Available attempts to reconnect a device
-    REINIT_ATTEMPTS = 100
+    REINIT_ATTEMPTS = 200
 
     # Exceptions to count as known or ordinary.  Any errors that aren't instances
     # of these (or their subclasses) will be logged with "Please take a look."

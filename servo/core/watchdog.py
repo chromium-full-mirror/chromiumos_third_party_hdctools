@@ -24,6 +24,9 @@ class DeviceWatchdog(threading.Thread):
     # Rate in seconds used to poll when a reinit capable device is attached.
     REINIT_POLL_RATE = 0.1
 
+    # Grace period in seconds before killing servod for non-reinit devices
+    DISCONNECT_GRACE_PERIOD_SEC = 20.0
+
     class DuplicateFilter(logging.Filter):
         """Prevent duplicate log messages from being logged more than once per
         minute.
@@ -186,7 +189,25 @@ class DeviceWatchdog(threading.Thread):
                     # Device was not found.
                     self._logger.debug("Device - %s not found when polling.", device)
                     if not device.reinit_ok():
-                        self.disconnect(device)
-                        break
+                        # Calculate max allowed failures based on the current
+                        # poll rate to achieve a 20s grace period.
+                        max_allowed_failures = int(
+                            self.DISCONNECT_GRACE_PERIOD_SEC / self._rate
+                        )
+                        if dev_id not in missing_devices:
+                            missing_devices[dev_id] = 1
+                        else:
+                            missing_devices[dev_id] += 1
+
+                        if missing_devices[dev_id] >= max_allowed_failures:
+                            self._logger.error(
+                                "Device - %s - not found for %d consecutive polls. "
+                                "Turning down servod.",
+                                device,
+                                missing_devices[dev_id],
+                            )
+                            self.disconnect(device)
+                            break
+                        continue
                     missing_devices[dev_id] = 1
                     device.disconnect()

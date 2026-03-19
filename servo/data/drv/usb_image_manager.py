@@ -38,7 +38,7 @@ class usbImageManager(hw_driver.HwDriver):
     # servo_sees_usbkey
     _POLLING_DELAY_S = 0.1
     # Timeout to wait before giving up on hoping the image usb dev will enumerate
-    _WAIT_TIMEOUT_S = 10
+    _WAIT_TIMEOUT_S = 30
 
     # Timeout to settle all pending tasks on the device before writing to it.
     _SETTLE_TIMEOUT_S = 60

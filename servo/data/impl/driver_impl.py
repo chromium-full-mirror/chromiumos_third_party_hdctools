@@ -6,6 +6,7 @@ import ast
 import json
 import logging
 import os
+import time
 
 from google.protobuf import empty_pb2
 from google.protobuf import json_format
@@ -212,6 +213,27 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                     request.token_db,
                     self.grpc_data_addr,
                 )
+
+                interface_key = InterfaceUtils.get_interface_key(
+                    request.vid, request.pid, request.serial
+                )
+                _interface_list = InterfaceUtils.get_interface_list(interface_key)
+                for interface in _interface_list:
+                    pty_path = None
+                    try:
+                        if hasattr(interface, "get_control_pty"):
+                            pty_path = interface.get_control_pty()
+                        elif hasattr(interface, "get_pty"):
+                            pty_path = interface.get_pty()
+                    except Exception:
+                        pass
+
+                    if pty_path:
+                        for _ in range(20):
+                            if os.path.exists(pty_path):
+                                break
+                            time.sleep(0.1)
+
                 return driver_pb2.InterfaceResponse(success=True, loglines=loglines)
             except Exception:
                 logging.exception("Failed to initialize interface")

@@ -177,7 +177,7 @@ class TestServoDevice(unittest.TestCase):
 
         self.v4_dev._ifaces_available.clear.assert_called_once()
         self.v4_dev._logger.debug.assert_called_once_with(
-            "%d reinit attempts remaining.", 99
+            "%d reinit attempts remaining.", 199
         )
         self.assertEqual(self.v4_dev._reinit_attempts, self.v4_dev.REINIT_ATTEMPTS - 1)
 
