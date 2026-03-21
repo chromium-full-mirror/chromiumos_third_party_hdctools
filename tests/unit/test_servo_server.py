@@ -409,7 +409,7 @@ class TestServod(unittest.TestCase):
         dev2.prefix = "dev2-p"
         dev.get_config_files = unittest.mock.MagicMock(return_value=["file1", "file2"])
         dev2.get_config_files = unittest.mock.MagicMock(return_value=["file3"])
-        servod.get_devices = unittest.mock.MagicMock(return_value=[dev, dev2])
+        servod._devices = {"dev-p": dev, "dev2-p": dev2}
 
         self.assertEqual(
             servod.get_config_files(),

@@ -562,9 +562,9 @@ class Servod:
     def get_config_files(self):
         """Gets the configuration files used for this servo server invocation"""
         config_files = {}
-        for dev in self.get_devices():
+        for prefix, dev in self._devices.items():
             xml_files = dev.get_config_files()
-            config_files[dev.prefix] = list(xml_files)
+            config_files[prefix] = list(xml_files)
         return config_files
 
     def get_interface_list(self):
