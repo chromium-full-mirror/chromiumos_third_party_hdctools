@@ -4,10 +4,12 @@
 
 """Utility to manage information about different instances."""
 
+import fcntl
 import json
 import logging
 import os
 import socket
+import time
 
 import servo.core.client as client
 
@@ -152,7 +154,7 @@ class Scratch:
         entries = []
         for f in os.listdir(self._dir):
             entryf = os.path.join(self._dir, f)
-            if os.path.islink(entryf):
+            if os.path.islink(entryf) or os.path.isdir(entryf):
                 continue
             with open(entryf, "r", encoding="utf-8") as f:
                 try:
@@ -249,3 +251,65 @@ class Scratch:
                 pass
             finally:
                 testsock.close()
+
+
+class ConcurrencyGuard:
+    """Context manager to limit concurrent servod startups.
+
+    This uses a set of lock files to ensure that no more than |max_concurrency|
+    servod instances are in the noisy hardware-initialization phase at once.
+    """
+
+    def __init__(self, scratch_dir=SERVO_SCRATCH_DIR, max_concurrency=3, timeout=600):
+        """Initialize guard.
+
+        Args:
+          scratch_dir: directory to store lock files.
+          max_concurrency: maximum number of simultaneous startups.
+          timeout: maximum time in seconds to wait for a slot.
+        """
+        self._lock_dir = os.path.join(scratch_dir, "concurrency")
+        self._max_concurrency = max_concurrency
+        self._timeout = timeout
+        self._logger = logging.getLogger(type(self).__name__)
+        self._fds = []
+        os.makedirs(self._lock_dir, exist_ok=True)
+
+    def __enter__(self):
+        """Try to acquire one of the concurrency slots."""
+        start_time = time.time()
+        self._logger.info(
+            "Waiting for concurrency slot (max %d)...", self._max_concurrency
+        )
+        while time.time() - start_time < self._timeout:
+            for i in range(self._max_concurrency):
+                lock_file = os.path.join(self._lock_dir, "startup.%d.lock" % i)
+                try:
+                    fd = os.open(lock_file, os.O_RDWR | os.O_CREAT)
+                except OSError:
+                    continue
+                try:
+                    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    # Success! Write our PID for visibility.
+                    os.ftruncate(fd, 0)
+                    os.lseek(fd, 0, os.SEEK_SET)
+                    os.write(fd, str(os.getpid()).encode())
+                    self._fds.append(fd)
+                    self._logger.info("Acquired concurrency slot %d", i)
+                    return self
+                except OSError:
+                    os.close(fd)
+            time.sleep(2)
+        raise ScratchError(
+            "Timed out waiting for concurrency slot after %d seconds" % self._timeout
+        )
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Release the acquired slot."""
+        for fd in self._fds:
+            try:
+                # We don't delete the file, just unlock it.
+                fcntl.flock(fd, fcntl.LOCK_UN)
+                os.close(fd)
+            except OSError:
+                pass

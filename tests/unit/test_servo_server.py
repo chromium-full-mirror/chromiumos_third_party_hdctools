@@ -405,8 +405,6 @@ class TestServod(unittest.TestCase):
         servod = servo_server.Servod()
         dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
         dev2 = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
-        dev.prefix = "dev-p"
-        dev2.prefix = "dev2-p"
         dev.get_config_files = unittest.mock.MagicMock(return_value=["file1", "file2"])
         dev2.get_config_files = unittest.mock.MagicMock(return_value=["file3"])
         servod._devices = {"dev-p": dev, "dev2-p": dev2}
