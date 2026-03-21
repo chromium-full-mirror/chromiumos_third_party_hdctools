@@ -12,9 +12,21 @@ To test changes, run the script scripts/run-servod-tests
 - **User-Facing Tools (e.g., dut-control):** Never leak raw Python tracebacks, XML-RPC `<Fault>` objects, or unformatted tuples to the user. Catch exceptions and format errors cleanly as readable strings.
 - **Timeouts:** Keep synchronous CLI commands fast-failing. Avoid setting excessively long timeouts (e.g., 1800s) as global defaults; stick to reasonable times (e.g., 60s) unless explicitly overridden by an orchestrator flag.
 - **Banned Terms:** Do not use the word `master` in new variables, docs, or code. Use `primary` or `main`.
-- **XML Dumping:** When running `start-servod --dump-xml /path/file.xml` on a multi-device setup (like a v4.1 with a cr50), it actually creates multiple output files by automatically appending prefixes to the filename (e.g. `/path/file_root.xml` and `/path/file_main.xml`).
+* **XML Dumping:** When running `start-servod --dump-xml /path/file.xml` on a multi-device setup (like a v4.1 with a cr50), it actually creates multiple output files by automatically appending prefixes to the filename (e.g. `/path/file_root.xml` and `/path/file_main.xml`).
+
+## Labstation Stability & Resilience (fizz-labstation)
+
+When working on `servod` improvements for high-density labstations, adhere to these stability patterns:
+
+- **PTY Readiness:** In `InitInterface` (e.g., `servo/data/impl/driver_impl.py`), always implement a polling loop (barrier) to wait for `/dev/pts/*` PTY paths to be instantiated by the OS before attempting to use them. A 2-second timeout with 0.1s sleep is standard.
+- **Watchdog Tolerance:** For reinit-capable devices (CCD), the `REINIT_ATTEMPTS` in `servo/core/servo_dev.py` should be at least 200 to tolerate transient USB bus saturation under heavy concurrent load.
+- **USB Block Devices:** When flipping the image mux in `usb_image_manager.py`, use a timeout of at least 30 seconds to allow the OS to enumerate the new block device nodes (e.g., `/dev/sdX`).
+- **Reserved Keywords:** Never use `timeout` as a field name in `servo/common/proto/servo_dev.proto`. It conflicts with Python's gRPC keyword arguments. Use `timeout_sec` or `timeout_ms`.
+- **USB Autosuspend:** Labstations should have `usbcore.autosuspend=-1` set globally to prevent hubs from sleeping. This is typically implemented via an Upstart script in `project-labstation` or board-specific kernel command line flags.
+- **Watchdog Tuning (Experimental):** For extreme stability on high-density hubs, consider increasing `DEFAULT_POLL_RATE` to 2.0s-5.0s and `MAX_FAILURES` to 10. This provides a ~20s grace period for transient USB resets.
 
 ## Available Skills
+
 
 You have access to the following local skill. You can read the instructions directly from the skill's file when requested.
 

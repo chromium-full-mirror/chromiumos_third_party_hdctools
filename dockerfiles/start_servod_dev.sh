@@ -6,7 +6,7 @@
 found_updatable=0
 for dev in /sys/bus/usb/devices/[0-9]*; do
   grep -q 05e3 "${dev}"/idVendor 2>/dev/null && \
-  grep -q 0610 "${dev}"/idProduct && \
+  (grep -q 0610 "${dev}"/idProduct || grep -q 0625 "${dev}"/idProduct) && \
   grep -q '^Google$' "${dev}"/manufacturer && \
   grep -q -v '^6418$' "${dev}"/bcdDevice && \
   found_updatable=1
