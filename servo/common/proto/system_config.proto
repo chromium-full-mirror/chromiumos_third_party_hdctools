@@ -92,6 +92,7 @@ service SystemConfig {
     rpc DumpToXml (DumpToXmlRequest) returns (DumpToXmlResponse);
     // Get servo interfaces
     rpc GetServoInterfaces (ServoInterfacesRequest) returns (ServoInterfacesResponse);
+    rpc GetControlManifest (ManifestRequest) returns (ManifestResponse);
 }
 
 message ServoInterfacesRequest {
@@ -219,4 +220,23 @@ message AvailableModelsRequest {
 
 message AvailableModelsResponse {
     repeated string models = 1;
+}
+
+message ManifestRequest {
+    int32 VID = 1;
+    int32 PID = 2;
+    string serial = 3;
+}
+
+message ControlDef {
+    string name = 1;
+    string doc = 2;
+    bool read_only = 3;
+    bool write_only = 4;
+    string get_type = 5;
+    string set_type = 6;
+}
+
+message ManifestResponse {
+    repeated ControlDef controls = 1;
 }

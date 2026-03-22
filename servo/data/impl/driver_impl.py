@@ -83,6 +83,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 value = json_format.MessageToDict(driver_request.value)
                 wr_val = syscfg.resolve_val(params, value)
                 drv.set(wr_val)
+            response.success = True
             return response
         except Exception as e:
             # We used to capture tracebacks here, but now ExceptionTruncatingInterceptor

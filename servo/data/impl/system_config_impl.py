@@ -237,3 +237,25 @@ class SystemConfigImpl(system_config_grpc.SystemConfigServicer):
         return system_config_pb2.ServoInterfacesResponse(
             interface_list_json=json.dumps(interfaces)
         )
+
+    def GetControlManifest(self, request, context):
+        scfg = get_system_config(vid=request.VID, pid=request.PID, serial=request.serial)
+        response = system_config_pb2.ManifestResponse()
+        for control_name in scfg.get_all_controls():
+            ctrl_def = response.controls.add()
+            ctrl_def.name = control_name
+            ctrl_def.doc = scfg.get_control_docstring(control_name)
+
+            # Infer readonly/writeonly from syscfg dict
+            get_params, set_params = scfg.lookup_control_params(control_name)
+
+            get_defined = get_params and get_params.get("drv") != "undefined"
+            set_defined = set_params and set_params.get("drv") != "undefined"
+
+            ctrl_def.read_only = get_defined and not set_defined
+            ctrl_def.write_only = set_defined and not get_defined
+
+            ctrl_def.get_type = get_params.get("input_type", "str") if get_params else ""
+            ctrl_def.set_type = set_params.get("input_type", "str") if set_params else ""
+
+        return response

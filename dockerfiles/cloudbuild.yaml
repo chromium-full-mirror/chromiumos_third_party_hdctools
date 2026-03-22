@@ -95,16 +95,49 @@ steps:
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: bash
+  id: 'test-api-version'
+  args:
+    - -c
+    - |
+      set -e
+      git config --global --add safe.directory /workspace
+      python3 /workspace/development_environment/hooks/check_api_version.py
+  waitFor: ['src-prep']
+
+- name: gcr.io/cloud-builders/gcloud
+  entrypoint: bash
   id: 'test-scripts'
   args:
     - -c
     - |
       set -e
-      for script in $(ls /workspace/servo/tests/shell/*); do
+      for script in $(ls /workspace/tests/shell/*); do
          bash ${script}
       done
   waitFor: ['src-prep']
 
+- name: gcr.io/cloud-builders/gcloud
+  id: 'upload-ota-payload'
+  entrypoint: 'bash'
+  args:
+    - '-c'
+    - |
+      set -e
+      # Ensure python3, pip3, and venv are available for the build script
+      if ! command -v python3 >/dev/null 2>&1 || ! command -v pip3 >/dev/null 2>&1 || ! python3 -m venv -h >/dev/null 2>&1; then
+          apt-get update && apt-get install -y python3 python3-pip python3-venv
+      fi
+      # ONLY uploads on non-Gerrit "main" branch builds
+      if [ -n "${_GERRIT_CHANGE_NUMBER:-}" ]; then
+          echo "Presubmit build detected (Gerrit $_GERRIT_CHANGE_NUMBER). Skipping OTA upload."
+          ./scripts/build-data-tarball.sh
+      elif [ "$BRANCH_NAME" = "main" ]; then
+          ./scripts/build-data-tarball.sh --upload
+      else
+          echo "Skipping OTA upload for non-main branch: $BRANCH_NAME"
+          ./scripts/build-data-tarball.sh
+      fi
+  waitFor: ['src-prep']
 
 - name: gcr.io/cloud-builders/gcloud
   entrypoint: bash

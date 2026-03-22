@@ -7,6 +7,8 @@ import errno
 import json
 import socket
 import unittest
+
+# pylint: disable=too-many-function-args
 from unittest import mock
 from unittest.mock import MagicMock
 from unittest.mock import mock_open

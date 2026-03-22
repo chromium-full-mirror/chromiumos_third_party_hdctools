@@ -84,6 +84,7 @@ message DriverRequest {
 
 message DriverResponse {
     // Return driver get/set result
+    bool success = 3;
     oneof response {
         string value = 1;
         google.protobuf.Empty empty_value = 2;

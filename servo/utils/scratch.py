@@ -11,8 +11,6 @@ import os
 import socket
 import time
 
-import servo.core.client as client
-
 
 # This is a well-known path that should be consistent for every servod instance
 # and client in a given runtime environment.
@@ -180,6 +178,9 @@ class Scratch:
           True if entry successfully rebuilt, False otherwise
         """
         # pylint: disable=protected-access
+        # pylint: disable=import-outside-toplevel
+        import servo.core.client as client
+
         msg = "nonsense"
         expected_output = "ECH0ING: %s" % msg
         try:

@@ -230,13 +230,14 @@ class InterfaceUtils:
 
     @staticmethod
     def close_interface(interface_key):
-        """InterfaceUtilsError
-        Close interfaces based on the provided VID, PID, and serial.
-        """
+        """Close interfaces based on the provided VID, PID, and serial."""
         interface_dict = InterfaceUtils._interface_dict
 
         if interface_key not in interface_dict:
-            raise InterfaceUtilsError("Missing interface: {}".format(interface_key))
+            InterfaceUtils._logger.debug(
+                "Missing interface: %s (ignoring close request)", interface_key
+            )
+            return
 
         device = interface_dict[interface_key]
         interface_list = device["interface_list"]
