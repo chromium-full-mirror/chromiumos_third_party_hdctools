@@ -14,6 +14,7 @@ import time
 import usb
 
 from servo.data.drv import hw_driver
+from servo.utils import scratch
 from servo.utils.sys_interface import sys_interface
 import servo.utils.usb_hierarchy as usb_hierarchy
 
@@ -201,95 +202,96 @@ class usbImageManager(hw_driver.HwDriver):
         # Look for own servod usb device
         # pylint: disable=protected-access
 
-        # Need servod information to find own servod instance.
-        # hub device can be the cluster root device, or the main device if there
-        # is only 1 device on this servod instance
-        hub_on_servo = self._driver_client.GetUSBHubAddress().response
-        if len(hub_on_servo) == 0:
-            raise UsbImageManagerError("There is no USB hub device connected.")
-        # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
-        image_location_candidates = [
-            "%s.%s" % (hub_on_servo, p) for p in self._image_usbkey_hub_ports
-        ]
-        # all |image_location_candidates| here assume that the device is on the same
-        # bus as the servo device. If the servo is attached to a usb controller
-        # that has both usb2 and usb3 busses, we need to search both.
-        busnum = usb_hierarchy.Hierarchy.bus_num_from_sysfs(hub_on_servo)
-        usb3_busnum = usb_hierarchy.Hierarchy.complement_bus_num(busnum)
-        if usb3_busnum is not None:
-            # It can be none if the bus only appears in one speed.
-            usb3_location_candidates = [
-                c.replace("/%d-" % busnum, "/%d-" % usb3_busnum)
-                for c in image_location_candidates
+        with scratch.ConcurrencyGuard(max_concurrency=3, name="imaging"):
+            # Need servod information to find own servod instance.
+            # hub device can be the cluster root device, or the main device if there
+            # is only 1 device on this servod instance
+            hub_on_servo = self._driver_client.GetUSBHubAddress().response
+            if len(hub_on_servo) == 0:
+                raise UsbImageManagerError("There is no USB hub device connected.")
+            # Image usb is one of the hub ports |self._image_usbkey_hub_ports|
+            image_location_candidates = [
+                "%s.%s" % (hub_on_servo, p) for p in self._image_usbkey_hub_ports
             ]
-            image_location_candidates.extend(usb3_location_candidates)
-        hub_location_candidates = []
-        if self._supports_hub_on_port:
-            # Here the config says that |image_usbkey_sysfs| might actually have a hub
-            # and not storage attached to it. In that case, the |STORAGE_ON_HUB_PORT|
-            # on that hub will house the storage.
-            hub_location_candidates = [
-                "%s.%d" % (path, STORAGE_ON_HUB_PORT)
-                for path in image_location_candidates
-            ]
-            image_location_candidates.extend(hub_location_candidates)
-        self._logger.debug(
-            "usb image dev file candidates: %s", ", ".join(image_location_candidates)
-        )
-        # Let the device settle first before pushing out any data onto it.
-        sys_interface.call(["udevadm", "settle", "-t", str(self._SETTLE_TIMEOUT_S)])
-        self._logger.debug("All udev events have settled.")
-        end = time.time() + self._WAIT_TIMEOUT_S
-        while image_location_candidates:
-            active_storage_candidate = image_location_candidates.pop(0)
-            if os.path.exists(active_storage_candidate):
-                if self._PathIsHub(active_storage_candidate):
-                    # Do not check the hub, only devices.
-                    continue
-                # Use /sys/block/ entries to see which block device is the |hub_device|.
-                # Use sd* to avoid querying any non-external block devices.
-                for candidate in glob.glob("/sys/block/sd*"):
-                    # |candidate| is a link to a sys hw device file
-                    devicepath = os.path.realpath(candidate)
-                    # |active_storage_candidate| is also a link to a sys hw device file
-                    if devicepath.startswith(
-                        os.path.realpath(active_storage_candidate)
-                    ):
-                        devpath = "/dev/%s" % os.path.basename(candidate)
-                        try:
-                            f = open(devpath, "rb")
-                        except FileNotFoundError:
-                            continue
-                        # ensure that the block device is readable
-                        # by reading the first sector.
-                        read_bytes = 512
-                        read_len = 0
-                        with f:
+            # all |image_location_candidates| here assume that the device is on the same
+            # bus as the servo device. If the servo is attached to a usb controller
+            # that has both usb2 and usb3 busses, we need to search both.
+            busnum = usb_hierarchy.Hierarchy.bus_num_from_sysfs(hub_on_servo)
+            usb3_busnum = usb_hierarchy.Hierarchy.complement_bus_num(busnum)
+            if usb3_busnum is not None:
+                # It can be none if the bus only appears in one speed.
+                usb3_location_candidates = [
+                    c.replace("/%d-" % busnum, "/%d-" % usb3_busnum)
+                    for c in image_location_candidates
+                ]
+                image_location_candidates.extend(usb3_location_candidates)
+            hub_location_candidates = []
+            if self._supports_hub_on_port:
+                # Here the config says that |image_usbkey_sysfs| might actually have a hub
+                # and not storage attached to it. In that case, the |STORAGE_ON_HUB_PORT|
+                # on that hub will house the storage.
+                hub_location_candidates = [
+                    "%s.%d" % (path, STORAGE_ON_HUB_PORT)
+                    for path in image_location_candidates
+                ]
+                image_location_candidates.extend(hub_location_candidates)
+            self._logger.debug(
+                "usb image dev file candidates: %s", ", ".join(image_location_candidates)
+            )
+            # Let the device settle first before pushing out any data onto it.
+            sys_interface.call(["udevadm", "settle", "-t", str(self._SETTLE_TIMEOUT_S)])
+            self._logger.debug("All udev events have settled.")
+            end = time.time() + self._WAIT_TIMEOUT_S
+            while image_location_candidates:
+                active_storage_candidate = image_location_candidates.pop(0)
+                if os.path.exists(active_storage_candidate):
+                    if self._PathIsHub(active_storage_candidate):
+                        # Do not check the hub, only devices.
+                        continue
+                    # Use /sys/block/ entries to see which block device is the |hub_device|.
+                    # Use sd* to avoid querying any non-external block devices.
+                    for candidate in glob.glob("/sys/block/sd*"):
+                        # |candidate| is a link to a sys hw device file
+                        devicepath = os.path.realpath(candidate)
+                        # |active_storage_candidate| is also a link to a sys hw device file
+                        if devicepath.startswith(
+                            os.path.realpath(active_storage_candidate)
+                        ):
+                            devpath = "/dev/%s" % os.path.basename(candidate)
                             try:
-                                read_len = len(f.read(read_bytes))
-                            except OSError as error:
+                                f = open(devpath, "rb")
+                            except FileNotFoundError:
+                                continue
+                            # ensure that the block device is readable
+                            # by reading the first sector.
+                            read_bytes = 512
+                            read_len = 0
+                            with f:
+                                try:
+                                    read_len = len(f.read(read_bytes))
+                                except OSError as error:
+                                    self._logger.warning(
+                                        "open() or read() of {!r} failed with errno {:d} {} ({}), skipping it as a USB mux drive candidate.".format(
+                                            devpath,
+                                            error.errno,
+                                            errno.errorcode.get(error.errno, "UNKNOWN"),
+                                            os.strerror(error.errno),
+                                        )
+                                    )
+                                    continue
+                            if read_len < read_bytes:
                                 self._logger.warning(
-                                    "open() or read() of {!r} failed with errno {:d} {} ({}), skipping it as a USB mux drive candidate.".format(
-                                        devpath,
-                                        error.errno,
-                                        errno.errorcode.get(error.errno, "UNKNOWN"),
-                                        os.strerror(error.errno),
+                                    "read() returned only {:d} bytes out of {:d} requested from {!r}, the drive is likely not functional, skipping it as a USB mux drive candidate.".format(
+                                        read_len, read_bytes, devpath
                                     )
                                 )
                                 continue
-                        if read_len < read_bytes:
-                            self._logger.warning(
-                                "read() returned only {:d} bytes out of {:d} requested from {!r}, the drive is likely not functional, skipping it as a USB mux drive candidate.".format(
-                                    read_len, read_bytes, devpath
-                                )
-                            )
-                            continue
-                        return devpath
-            # Enqueue the candidate again in hopes that it will eventually enumerate.
-            image_location_candidates.append(active_storage_candidate)
-            if time.time() >= end:
-                break
-            time.sleep(self._POLLING_DELAY_S)
+                            return devpath
+                # Enqueue the candidate again in hopes that it will eventually enumerate.
+                image_location_candidates.append(active_storage_candidate)
+                if time.time() >= end:
+                    break
+                time.sleep(self._POLLING_DELAY_S)
         # Split and join to help with error message formatting from XML that might
         # introduce multiple white-spaces.
         self._logger.warning(" ".join(self._error_msg.split()))

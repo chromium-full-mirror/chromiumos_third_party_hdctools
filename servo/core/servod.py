@@ -199,7 +199,7 @@ class ServodStarter:
                 self._logger.info("Successfully fetched EC token database")
                 fcntl.lockf(fd, fcntl.LOCK_UN)
 
-        with scratch.ConcurrencyGuard(max_concurrency=3):
+        with scratch.ConcurrencyGuard(max_concurrency=3, name="startup"):
             (dev_entries, main_dev_entry) = self._discover_servos(sopts, devopts_list)
 
             self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
