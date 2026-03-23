@@ -632,6 +632,45 @@ class TestServod(unittest.TestCase):
             step_init=False,
         )
 
+    @unittest.mock.patch("servo.common.utils.servo_logging.logging.getLogger")
+    def test_get_intercepted_logging(self, mock_get_logger):
+        """Test that intercepted controls in get() are logged."""
+        # Setup mock logger for "Controls"
+        mock_controls_logger = unittest.mock.MagicMock()
+
+        def get_logger_side_effect(name):
+            if name == "Controls":
+                return mock_controls_logger
+            return unittest.mock.MagicMock()
+
+        mock_get_logger.side_effect = get_logger_side_effect
+
+        servod = servo_server.Servod()
+        # Mock servod_pid to be something stable for testing
+        with unittest.mock.patch("os.getpid", return_value=12345):
+            servod.get("servod_pid")
+
+        # Mock get_config_files to return something stable
+        with unittest.mock.patch.object(
+            servod, "get_config_files", return_value={"main": ["config.xml"]}
+        ):
+            servod.get("config_files")
+
+        # Verify logger.debug was called (start and success)
+        self.assertTrue(mock_controls_logger.debug.called)
+
+        # logger.debug is called with (format_string, *args)
+        # We check if 'servod_pid' and 'config_files' were passed as args.
+        all_debug_args = []
+        for call in mock_controls_logger.debug.call_args_list:
+            all_debug_args.extend(call[0])
+
+        self.assertIn("servod_pid", all_debug_args)
+        self.assertIn(12345, all_debug_args)
+        self.assertIn("config_files", all_debug_args)
+        # Check that the JSON response for config_files was logged
+        self.assertTrue(any("config.xml" in str(arg) for arg in all_debug_args))
+
 
 if __name__ == "__main__":
     unittest.main()

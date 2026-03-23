@@ -13,7 +13,9 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from servo.common import servo_dev_templates
 from servo.common import sversion_util
+from servo.common.exceptions import HwDriverError
 from servo.common.utils import json_utils
+from servo.common.utils import servo_logging
 from servo.core import recovery
 from servo.utils import diagnose
 from servo.utils import usb_hierarchy
@@ -32,6 +34,10 @@ class Servod:
     _IS_FLEX_CTRL = "is_flex_board"
     # Message header from gRPC
     GRPC_EXC_MSG = "Exception calling application: "
+
+    # Exceptions that are expected during normal operation and should not be
+    # treated as internal bugs.
+    KNOWN_EXCEPTIONS = (AttributeError, NameError, HwDriverError)
 
     def __init__(self, usbkm232: Optional[str] = None) -> None:
         """Servod constructor.
@@ -276,26 +282,66 @@ class Servod:
             # This route is to retrieve serialnames on servo v4, which
             # connects to multiple servo-micros or CCD, like the controls,
             # 'ccd_serialname', 'servo_micro_serialname', etc.
-            return self.get_legacy_serial_number(name)
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                val = self.get_legacy_serial_number(name)
+                wrapper.got_result(val)
+                return val
 
         if name == "config_files":
-            return json_utils.dumps(self.get_config_files(), sort_keys=True, indent=4)
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                val = json_utils.dumps(
+                    self.get_config_files(), sort_keys=True, indent=4
+                )
+                wrapper.got_result(val)
+                return val
         if name == "devices":
-            devices_json = []
-            for device in self.get_devices():
-                devices_json.append(json.loads(device.to_json()))
-            return json_utils.dumps(devices_json, indent=4)
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                devices_json = []
+                for device in self.get_devices():
+                    devices_json.append(json.loads(device.to_json()))
+                val = json_utils.dumps(devices_json, indent=4)
+                wrapper.got_result(val)
+                return val
         if name == "servo_type":
-            return self._get_version()
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                val = self._get_version()
+                wrapper.got_result(val)
+                return val
         if name == "servod_pid":
-            return os.getpid()
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                val = os.getpid()
+                wrapper.got_result(val)
+                return val
         if name == "serialname":
-            root_dev = self.get_root_device()
-            if root_dev is not None:
-                return root_dev._serial
-            return self.get_main_device()._serial
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                root_dev = self.get_root_device()
+                if root_dev is not None:
+                    val = root_dev._serial
+                else:
+                    val = self.get_main_device()._serial
+                wrapper.got_result(val)
+                return val
         if name == "serialnames":
-            return json_utils.dumps(self.get_servo_serials(), sort_keys=True, indent=4)
+            with servo_logging.WrapGetCall(
+                name, known_exceptions=self.KNOWN_EXCEPTIONS
+            ) as wrapper:
+                val = json_utils.dumps(
+                    self.get_servo_serials(), sort_keys=True, indent=4
+                )
+                wrapper.got_result(val)
+                return val
 
         dev, name = self._get_dev_and_name(name)
         try:
@@ -434,8 +480,13 @@ class Servod:
         Raises:
           NameError: if fails to locate control
         """
-        dev, control = self._get_dev_and_name(name)
-        return dev.doc(control)
+        with servo_logging.WrapGetCall(
+            name, known_exceptions=self.KNOWN_EXCEPTIONS
+        ) as wrapper:
+            dev, control = self._get_dev_and_name(name)
+            val = dev.doc(control)
+            wrapper.got_result(val)
+            return val
 
     def set_get_all(self, cmds):
         """Set &| get one or more control values.
