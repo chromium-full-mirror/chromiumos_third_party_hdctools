@@ -176,15 +176,19 @@ class DeviceWatchdog(threading.Thread):
                                 self._servod.reinitialize()
                             except Exception as e:
                                 # Has to be a broad except because we do not want to
-                                # orphan the watchdog thread, but rather make sure that
-                                # we disconnect or *any* reinit failure
+                                # orphan the watchdog thread. But instead of turning
+                                # down servod instantly, we retry by treating the
+                                # device as still disconnected (e.g. sysfs exists
+                                # but libusb enumeration isn't fully ready yet).
                                 self._logger.debug(
-                                    "Failed to reinit servod: %s",
+                                    "Failed to reinit servod (device may not "
+                                    "be fully enumerated yet): %s",
                                     e,
                                     exc_info=True,
                                     stack_info=True,
                                 )
-                                self.disconnect()
+                                missing_devices[dev_id] = 1
+                                device.disconnect()
                 else:
                     # Device was not found.
                     self._logger.debug("Device - %s not found when polling.", device)
