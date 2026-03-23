@@ -189,24 +189,22 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # Need to clear the flag in secondary (B) copy of the host events if
                 # we're in non-recovery mode.
                 cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
-                with self.quiet_console():
-                    self._driver_client.IssueCmdGetResult(
-                        cmds=cmd,
-                        regex_list=["Events:"],
-                        flush=False,
-                        time_out=DEFAULT_UART_TIMEOUT,
-                    )
+                self._driver_client.IssueCmdGetResult(
+                    cmds=cmd,
+                    regex_list=["Events:"],
+                    flush=True,
+                    time_out=DEFAULT_UART_TIMEOUT,
+                )
             # Tell the EC to tell the CPU we're in recovery mode or non-recovery mode.
             self._logger.debug("Hostevent delay: %s", self._hostevent_delay)
             time.sleep(self._hostevent_delay)
             cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-            with self.quiet_console():
-                self._driver_client.IssueCmdGetResult(
-                    cmds=cmd,
-                    regex_list=["Events:"],
-                    flush=False,
-                    time_out=DEFAULT_UART_TIMEOUT,
-                )
+            self._driver_client.IssueCmdGetResult(
+                cmds=cmd,
+                regex_list=["Events:"],
+                flush=True,
+                time_out=DEFAULT_UART_TIMEOUT,
+            )
             self._logger.debug(
                 "Recovery detection delay: %s", self._RECOVERY_DETECTION_DELAY
             )
