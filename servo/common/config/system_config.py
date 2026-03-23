@@ -650,7 +650,9 @@ class SystemConfig:
           SystemConfigError: mapping issues found
         """
         # its a map
-        err = "Error formatting input value."
+        err_msg_parts = []
+        is_map_error = False
+
         if "map" in params:
             map_dict = self._lookup(MAP_TAG, params["map"])
             if map_dict is None:
@@ -660,20 +662,33 @@ class SystemConfig:
             except KeyError:
                 # Do not raise error yet. This might just be that the input is not
                 # using the map i.e. it's directly writing a raw mapped value.
-                err = "Map '%s' doesn't contain key '%s'\n" % (params["map"], map_vstr)
-                err += "Try one of -> '%s'" % "', '".join(map_dict["map_params"])
+                is_map_error = True
+                err_msg_parts.append(
+                    "Invalid input %r. It is not a valid map key for '%s' "
+                    "(Try one of: '%s')."
+                    % (map_vstr, params["map"], "', '".join(map_dict["map_params"]))
+                )
+
         if "input_type" in params:
             if params["input_type"] in ALLOWABLE_INPUT_TYPES:
                 try:
                     input_type = ALLOWABLE_INPUT_TYPES[params["input_type"]]
                     return input_type(map_vstr)
                 except ValueError as e:
-                    err += "\n%s Input should be 'int' or 'float'." % (
-                        "Or" if "Map" in err else ""
-                    )
-                    raise SystemConfigError(err) from e
+                    if is_map_error:
+                        err_msg_parts.append(
+                            "Additionally, it cannot be cast to the specified "
+                            "input_type '%s'." % params["input_type"]
+                        )
+                    else:
+                        err_msg_parts.append(
+                            "Input %r must be of type '%s'."
+                            % (map_vstr, params["input_type"])
+                        )
+                    raise SystemConfigError(" ".join(err_msg_parts)) from e
             else:
                 self._logger.error("Unrecognized input type.")
+
         # TODO(tbroch): deprecate below once all controls have input_type params
         try:
             # If it's a float that's equivalent to an int, convert it to int.
@@ -691,12 +706,17 @@ class SystemConfig:
         try:
             return float(str(map_vstr))
         except ValueError as e:
-            # No we know that nothing worked, and there was an error.
-            err += (
-                " %r can't be cast to default input type %r or fallback input "
-                "type %r" % (map_vstr, "int", "float")
-            )
-            raise SystemConfigError(err) from e
+            # Now we know that nothing worked, and there was an error.
+            if is_map_error:
+                err_msg_parts.append(
+                    "Additionally, it cannot be cast to a raw int or float."
+                )
+            else:
+                err_msg_parts.append(
+                    "Input %r cannot be cast to default input type 'int' "
+                    "or fallback input type 'float'." % map_vstr
+                )
+            raise SystemConfigError(" ".join(err_msg_parts)) from e
 
     # pylint: disable=invalid-name
     # Naming convention to dynamically find methods based on config parameter

@@ -164,7 +164,7 @@ class TestSystemConfig(unittest.TestCase):
         control_params = {"map": map_name}
         with self.assertRaisesRegex(
             system_config.SystemConfigError,
-            "Map %r doesn't contain key %r" % (map_name, fake_map_key),
+            "Invalid input %r.*valid map key for '%s'" % (fake_map_key, map_name),
         ):
             self.syscfg.resolve_val(control_params, fake_map_key)
 
@@ -789,7 +789,7 @@ class TestSystemConfig(unittest.TestCase):
     def test_resolve_val_input_type_value_error(self):
         syscfg = system_config.SystemConfig()
         with self.assertRaisesRegex(
-            system_config.SystemConfigError, "Input should be 'int' or 'float'"
+            system_config.SystemConfigError, "must be of type 'int'"
         ):
             syscfg.resolve_val({"input_type": "int"}, "not_an_int")
 
@@ -797,9 +797,9 @@ class TestSystemConfig(unittest.TestCase):
         syscfg = system_config.SystemConfig()
         with self.assertRaisesRegex(
             system_config.SystemConfigError,
-            "Unrecognized input type|can't be cast to default",
+            "cannot be cast to default input type 'int' or fallback input type 'float'",
         ):
-            syscfg.resolve_val({"input_type": "invalid_type"}, "test")
+            syscfg.resolve_val({"input_type": "some_random_type"}, "test")
 
     def test_fmt_hex(self):
         syscfg = system_config.SystemConfig()
