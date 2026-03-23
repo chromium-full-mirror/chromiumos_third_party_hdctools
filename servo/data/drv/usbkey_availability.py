@@ -34,15 +34,20 @@ class UsbKeyAvailability(hw_driver.HwDriver):
             self._logger.debug("Failed to get ec_board: %s", e)
 
         if is_ro and board != "grunt":
-            # Attempt to set servo power role to sink, which usually works for all Type-C
-            # to enumerate the USB key in RO mode.
-            if self._servod_has_control("servo_pd_role"):
-                try:
-                    self._servod_set("servo_pd_role", "snk")
-                    self._logger.debug("Set servo_pd_role to snk for USB availability")
-                    return
-                except Exception as e:
-                    self._logger.debug("Failed to set servo_pd_role to snk: %s", e)
+            # Chromeboxes and PDC DUTs don't need servo_pd_role:snk
+            is_chromebox = self._params.get("is_chromebox", "no") == "yes"
+            is_pdc_dut = self._servod_has_control("pdc_ccd_keepalive_en")
+
+            if not is_chromebox and not is_pdc_dut:
+                # Attempt to set servo power role to sink, which usually works for all Type-C
+                # to enumerate the USB key in RO mode.
+                if self._servod_has_control("servo_pd_role"):
+                    try:
+                        self._servod_set("servo_pd_role", "snk")
+                        self._logger.debug("Set servo_pd_role to snk for USB availability")
+                        return
+                    except Exception as e:
+                        self._logger.debug("Failed to set servo_pd_role to snk: %s", e)
 
         # Fallback to pd data swap if snk fails, or for grunt
         if self._servod_has_control("dut_pd_data_role"):
