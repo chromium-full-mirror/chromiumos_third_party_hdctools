@@ -1081,7 +1081,7 @@ def main(cmdline=sys.argv[1:]):
     """Main function for servod."""
     try:
         starter = ServodStarter(cmdline)
-    except ServodError as error:
+    except (ServodError, servo_dev.ServoDeviceError) as error:
         print("Error: %s" % error)
         sys.exit(1)
     starter.serve()

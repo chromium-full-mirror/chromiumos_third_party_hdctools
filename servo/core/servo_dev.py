@@ -283,6 +283,12 @@ class ServoDevice:
         for line in response.loglines:
             self._logger.info(line.strip())
 
+        if not response.success and not fault_tolerant:
+            raise ServoDeviceError(
+                "Failed to initialize interfaces for %s. "
+                "Check the logs for details." % self
+            )
+
     def set_board_and_model(self, board, model=None):
         """Set the board and model (if applicable) for this servo device.
 
