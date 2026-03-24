@@ -8,7 +8,7 @@ import unittest.mock
 
 from packaging import version
 
-from servo.data.drv.servo_firmware_checker import servoFirmwareChecker
+from servo.drv.servo_firmware_checker import servoFirmwareChecker
 
 
 class TestServoFirmwareChecker(unittest.TestCase):
@@ -17,11 +17,9 @@ class TestServoFirmwareChecker(unittest.TestCase):
     def setUp(self):
         """Set up for each unit test."""
         unittest.TestCase.setUp(self)
-        self.patcher_grpc_client = unittest.mock.patch(
-            "servo.data.drv.hw_driver.GrpcClient"
-        )
+        self.patcher_grpc_client = unittest.mock.patch("servo.drv.hw_driver.GrpcClient")
         self.patcher_servo_dev_grpc = unittest.mock.patch(
-            "servo.data.drv.hw_driver.servo_dev_grpc"
+            "servo.drv.hw_driver.servo_dev_grpc"
         )
         self.patcher_grpc_client.start()
         self.patcher_servo_dev_grpc.start()

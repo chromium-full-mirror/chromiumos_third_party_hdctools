@@ -85,7 +85,7 @@ setup(
         "servo.data.config",
         "servo.data.grpc_server",
         "servo.data.impl",
-        "servo.data.drv",
+        "servo.drv",
         "servo.common.interface",
         "servo.tools",
         "servo.utils",

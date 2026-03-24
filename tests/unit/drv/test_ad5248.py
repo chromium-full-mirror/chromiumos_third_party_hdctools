@@ -6,10 +6,10 @@ import unittest
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from servo.data.drv.ad5248 import ad5248
-from servo.data.drv.ad5248 import Ad5248Error
-from servo.data.drv.ad5248 import FULL_RESISTANCE_SPEC
-from servo.data.drv.ad5248 import WIPER_RESISTANCE
+from servo.drv.ad5248 import ad5248
+from servo.drv.ad5248 import Ad5248Error
+from servo.drv.ad5248 import FULL_RESISTANCE_SPEC
+from servo.drv.ad5248 import WIPER_RESISTANCE
 
 
 class TestAd5248(unittest.TestCase):
@@ -31,9 +31,9 @@ class TestAd5248(unittest.TestCase):
 
     def test_constructor_with_valid_params(self):
         # Test the constructor with valid parameters
-        with patch("servo.data.drv.ad5248.ad5248._get_child", return_value=0x34), patch(
-            "servo.data.drv.ad5248.ad5248._get_port", return_value=0
-        ), patch("servo.data.drv.ad5248.ad5248._get_subtype", return_value="r10k"):
+        with patch("servo.drv.ad5248.ad5248._get_child", return_value=0x34), patch(
+            "servo.drv.ad5248.ad5248._get_port", return_value=0
+        ), patch("servo.drv.ad5248.ad5248._get_subtype", return_value="r10k"):
             ad = ad5248(
                 ("localhost", 9999),
                 ("localhost", 9999),
@@ -101,7 +101,7 @@ class TestAd5248(unittest.TestCase):
 
     def test_set_resistance_value_within_range(self):
         # Test setting resistance value within the valid range
-        with patch("servo.data.drv.ad5248.ad5248._set_rdac") as set_rdac_mock:
+        with patch("servo.drv.ad5248.ad5248._set_rdac") as set_rdac_mock:
             self.ad_instance._set_resistance_value(5000)
         set_rdac_mock.assert_called_once()
 

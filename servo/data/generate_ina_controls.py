@@ -185,7 +185,8 @@ class ServoINAConfigGenerator(INAConfigGenerator):
         """
         super().__init__(module_name, ina_pkg)
         if not servo_drv_dir:
-            servo_drv_dir = os.path.join(servo_data_dir, "drv")
+            # The drivers were moved from servo/data/drv to servo/drv
+            servo_drv_dir = os.path.join(os.path.dirname(servo_data_dir), "drv")
         self._servo_drv_dir = servo_drv_dir
         power_tools_cfg = os.path.join(servo_data_dir, "power_tools.xml")
         ina2xx_drv_cfg = os.path.join(servo_data_dir, "ina2xx.xml")
@@ -365,7 +366,7 @@ def GenerateINAControls(
       servo_drv_dir: directory where servo drivers are. Used to verify
                      that defined controls have a driver they can use.
                      If |None|, generator will look for drivers at
-                     servo_data_dir/../drv/
+                     servo_data_dir/../drv/ (i.e. servo/drv/)
       outdir: directory where to dump generated configuration files.
               If |None|, config files are dumped into |servo_data_dir|
       export: if True config files will be exported to |outdir|

@@ -4,7 +4,7 @@
 include $(HDCTOOLS_DIR)/defs/definitions.mk
 include $(HDCTOOLS_DIR)/defs/utilities.mk
 
-SUBDIRS		= core data scripts tools utils common
+SUBDIRS		= core data drv scripts tools utils common
 SUBDIRS_INSTALL	= $(foreach var,$(SUBDIRS),$(var)-install)
 PYTHON_SRC	= $(notdir $(wildcard $(HDCTOOLS_SOURCE_DIR)/*.py))
 PYTHON_DST	= $(addprefix $(THIS_BUILD_DIR)/, $(PYTHON_SRC))

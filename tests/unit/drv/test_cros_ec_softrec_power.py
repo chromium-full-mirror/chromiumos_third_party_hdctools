@@ -6,8 +6,8 @@ import unittest.mock
 
 import mock
 
-from servo.data.drv import cros_ec_softrec_power
-from servo.data.drv.pty_driver import DEFAULT_UART_TIMEOUT
+from servo.drv import cros_ec_softrec_power
+from servo.drv.pty_driver import DEFAULT_UART_TIMEOUT
 
 
 class TestCrosEcSoftrecPower(unittest.TestCase):

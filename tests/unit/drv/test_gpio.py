@@ -5,8 +5,8 @@ import unittest.mock
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-from servo.data.drv.gpio import gpio
-from servo.data.drv.gpio import gpioError
+from servo.drv.gpio import gpio
+from servo.drv.gpio import gpioError
 
 
 class TestGpio(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestGpio(unittest.TestCase):
             params=self.params,
         )
 
-    @patch("servo.data.drv.gpio.gpio._get_common_params")
+    @patch("servo.drv.gpio.gpio._get_common_params")
     def test_get(self, mock_get_common_params):
         mock_get_common_params.return_value = (0, 1)
         self.mock_interface.gpio_wr_rd.return_value = 1
@@ -36,7 +36,7 @@ class TestGpio(unittest.TestCase):
         self.assertEqual(result, 1)
         self.mock_interface.gpio_wr_rd.assert_called_with(0, 1)
 
-    @patch("servo.data.drv.gpio.gpio._get_common_params")
+    @patch("servo.drv.gpio.gpio._get_common_params")
     def test_set(self, mock_get_common_params):
         mock_get_common_params.return_value = (0, 1)
         self.mock_interface.gpio_wr_rd.return_value = 1

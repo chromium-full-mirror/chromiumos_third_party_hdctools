@@ -398,6 +398,10 @@ class LocalSystemConfigClient:
         req = self._get_req(system_config_pb2.ConfigFilesRequest, args, kwargs)
         return self.impl.GetConfigFiles(req, None)
 
+    def GetControlManifest(self, *args, **kwargs):
+        req = self._get_req(system_config_pb2.ManifestRequest, args, kwargs)
+        return self.impl.GetControlManifest(req, None)
+
     def GetServoInterfaces(self, *args, **kwargs):
         req = self._get_req(system_config_pb2.ServoInterfacesRequest, args, kwargs)
         return self.impl.GetServoInterfaces(req, None)

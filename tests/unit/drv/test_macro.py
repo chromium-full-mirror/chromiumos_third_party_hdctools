@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 from unittest.mock import patch
 
 from servo.common.proto.servo_dev_pb2 import BoolResponse
-from servo.data.drv.hw_driver import HwDriverError
-from servo.data.drv.macro import macro
+from servo.drv.hw_driver import HwDriverError
+from servo.drv.macro import macro
 
 
 class TestMacro(unittest.TestCase):
@@ -32,8 +32,8 @@ class TestMacro(unittest.TestCase):
             return_value=response
         )
 
-    @patch("servo.data.drv.macro.macro._servod_get")
-    @patch("servo.data.drv.macro.macro._servod_set")
+    @patch("servo.drv.macro.macro._servod_get")
+    @patch("servo.drv.macro.macro._servod_set")
     def test_set(self, mock_servod_set, mock_servod_get):
         mock_servod_get.return_value = "not_applicable"
         self.instance._set("on")
@@ -43,7 +43,7 @@ class TestMacro(unittest.TestCase):
         mock_servod_set.assert_any_call("subcontrol1", "18")
         mock_servod_set.assert_any_call("subcontrol2", "on")
 
-    @patch("servo.data.drv.macro.macro._servod_get")
+    @patch("servo.drv.macro.macro._servod_get")
     def test_get(self, mock_servod_get):
         mock_servod_get.return_value = "not_applicable"
 

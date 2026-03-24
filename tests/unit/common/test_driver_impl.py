@@ -9,10 +9,10 @@ from servo.common import servo_dev_templates as tmpl
 from servo.common.proto import driver_pb2
 from servo.common.utils.interface_utils import InterfaceUtils
 from servo.data import servo_interfaces
-from servo.data.drv import na
 from servo.data.impl.driver_impl import _drv_dict_all
 from servo.data.impl.driver_impl import DriverImpl
 from servo.data.impl.system_config_service import get_system_config
+from servo.drv import na
 
 
 class TestDriverImpl(unittest.TestCase):
@@ -40,10 +40,10 @@ class TestDriverImpl(unittest.TestCase):
         )
 
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
+        "servo.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
     )
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
+        "servo.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
     )
     def test_get_param_drv_get_no_cache(self):
         """Test _get_param_drv()."""
@@ -87,10 +87,10 @@ class TestDriverImpl(unittest.TestCase):
         self.assertEqual(params, get_params)
 
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
+        "servo.drv.cr50.cr50.__init__", unittest.mock.MagicMock(return_value=None)
     )
     @unittest.mock.patch(
-        "servo.data.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
+        "servo.drv.cr50.cr50.set_complement", unittest.mock.MagicMock()
     )
     def test_get_param_drv_set_no_cache(self):
         """Test _get_param_drv()."""

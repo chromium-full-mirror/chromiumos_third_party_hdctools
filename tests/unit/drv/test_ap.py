@@ -6,8 +6,8 @@ import unittest
 from unittest.mock import Mock
 from unittest.mock import patch
 
-from servo.data.drv import ap
-from servo.data.drv import pty_driver
+from servo.drv import ap
+from servo.drv import pty_driver
 
 
 class TestAp(unittest.TestCase):
@@ -45,7 +45,7 @@ class TestAp(unittest.TestCase):
         self.ap_instance._Set_username("new_username")
         self.assertEqual(self.ap_instance._Get_username(), "new_username")
 
-    @patch("servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results")
+    @patch("servo.drv.pty_driver.PtyDriver._issue_cmd_get_results")
     def test_get_login_success(self, mock_issue_cmd):
         # Test _Get_login method success scenario
         mock_issue_cmd.return_value = ["localhost login:"]
@@ -53,7 +53,7 @@ class TestAp(unittest.TestCase):
         self.assertEqual(result, 0)  # Since "localhost login:" is in the match
 
     @patch(
-        "servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results",
+        "servo.drv.pty_driver.PtyDriver._issue_cmd_get_results",
         side_effect=pty_driver.PtyError("Mocked error"),
     )
     def test_get_login_error(self, mock_issue_cmd):

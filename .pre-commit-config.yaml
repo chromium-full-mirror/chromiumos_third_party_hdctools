@@ -23,7 +23,7 @@ repos:
     name: Black (Docker)
     entry: pyfound/black:25.9.0 black
     language: docker_image
-    exclude: servo/data/.*
+    exclude: ^(servo/data/.*|servo/drv/.*)$
     types:
     - python
   - id: commit-msg-length
@@ -38,6 +38,7 @@ repos:
     name: isort (Docker)
     entry: xcgd/isort isort
     language: docker_image
+    exclude: ^(servo/data/.*|servo/drv/.*)$
     types:
     - python
 - repo: https://github.com/koalaman/shellcheck-precommit
@@ -86,7 +87,8 @@ repos:
             DIR_METADATA|
             PRESUBMIT.cfg|
             .*json|
-            .*requirements.*
+            .*requirements.*|
+            servo/drv/.*
         )$
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.11.2

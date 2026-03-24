@@ -11,13 +11,13 @@ import time
 from google.protobuf import empty_pb2
 from google.protobuf import json_format
 
+from servo import drv as servo_drv
 from servo.common.proto import driver_grpc
 from servo.common.proto import driver_pb2
 from servo.common.utils import json_utils
 from servo.common.utils import string_utils
 from servo.common.utils.grpc_log_capture import LogCaptureContext
 from servo.common.utils.interface_utils import InterfaceUtils
-from servo.data import drv as servo_drv
 from servo.data.impl.system_config_service import get_system_config
 
 

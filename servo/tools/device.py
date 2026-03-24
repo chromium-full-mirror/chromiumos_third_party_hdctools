@@ -11,7 +11,7 @@ import time
 import usb
 
 from servo.common import tiny_servod
-from servo.data.drv.pty_driver import PtyError
+from servo.drv.pty_driver import PtyError
 from servo.tools import tool
 import servo.utils.usb_hierarchy as uh
 

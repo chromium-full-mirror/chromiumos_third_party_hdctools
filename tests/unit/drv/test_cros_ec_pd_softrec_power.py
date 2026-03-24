@@ -8,8 +8,8 @@ from unittest.mock import call
 import mock
 
 from servo.common.interface import interface
-from servo.data.drv import cros_ec_pd_softrec_power
-from servo.data.drv import hw_driver
+from servo.drv import cros_ec_pd_softrec_power
+from servo.drv import hw_driver
 
 
 class TestCrosEcPdSoftrecPower(unittest.TestCase):

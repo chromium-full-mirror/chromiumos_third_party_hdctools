@@ -5,8 +5,8 @@ import unittest.mock
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-from servo.data.drv.ec3po_driver import ec3poDriver
-from servo.data.drv.ec3po_driver import NO_UART_ERR
+from servo.drv.ec3po_driver import ec3poDriver
+from servo.drv.ec3po_driver import NO_UART_ERR
 
 
 class TestEs3poDriver(unittest.TestCase):

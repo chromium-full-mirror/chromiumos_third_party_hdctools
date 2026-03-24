@@ -5,9 +5,9 @@
 import unittest
 
 from servo.common.interface.empty import Empty
-from servo.data.drv.pty_driver import PtyDriver
-from servo.data.drv.pty_driver import ptyDriverError
-from servo.data.drv.uart import uart
+from servo.drv.pty_driver import PtyDriver
+from servo.drv.pty_driver import ptyDriverError
+from servo.drv.uart import uart
 
 
 class TestEmptyPty(unittest.TestCase):

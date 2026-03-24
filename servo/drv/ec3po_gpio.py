@@ -1,0 +1,141 @@
+# Copyright 2016 The ChromiumOS Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+"""Driver for gpio controls through ec3po.
+
+Provides the following console controlled function:
+  _Get_single, _Set_single, _Get_multi, _Set_multi
+"""
+
+from servo.drv import ec3po_servo
+from servo.drv import pty_driver
+
+
+# servod numeric translation for GPIO state.
+GPIO_STATE = {0: "0", 1: "1", 2: "IN", 3: "A", 4: "ALT"}
+
+
+class ec3poGpioError(pty_driver.PtyError):
+    """Exception class for ec."""
+
+
+class ec3poGpio(ec3po_servo.ec3poServo):
+    """Object to access drv=ec3po_gpio controls.
+
+    Note, instances of this object get dispatched via base class,
+    HwDriver's get/set method. That method ultimately calls:
+      "_[GS]et_{}".format(params['subtype']) below.
+
+    For example, a control to read kbd_en would be dispatched to
+    call _Get_kbd_en.
+    """
+
+    def _drv_init(self):
+        """Driver specific initializer.
+
+        Required params:
+            Must contain name:"GPIO_NAME" or names:"GPIO_b0,GPIO_b1"
+            Must contain subtype=single or multi.
+            May contain ioex:"false" (default if absent) or ioex:"true" to indicate
+            whether the GPIO is on an I/O expander and therefore needs to be
+            accessed via ioexget/ioexset instead of gpioget/gpioset.
+
+        Raises:
+          ec3poGpioError: on init failure
+        """
+        super()._drv_init()
+
+        if "name" in self._params:
+            self._gpio_name = self._params["name"]
+        elif "names" in self._params:
+            self._gpio_names = []
+            for name in self._params["names"].split(","):
+                self._gpio_names.insert(0, name.strip())
+        else:
+            raise ec3poGpioError("No GPIO name specified")
+
+        ioex = self._params.get("ioex", "false")
+        if ioex == "false":
+            self._get_cmd = "gpioget"
+            self._set_cmd = "gpioset"
+        elif ioex == "true":
+            self._get_cmd = "ioexget"
+            self._set_cmd = "ioexset"
+        else:
+            raise ec3poGpioError("invalid ioex parameter: {!r}".format(ioex))
+
+    def set_gpio(self, name, value):
+        """Set the requested GPIO to the specified value.
+
+        Uses the console gpioset command.
+
+        Args:
+          name: name of the GPIO to modify
+          value: the state to set into the GPIO
+        """
+        cmd = "{} {} {}".format(self._set_cmd, name, GPIO_STATE[value])
+        self._issue_cmd(cmd)
+
+    def get_gpio(self, name):
+        """Get the requested GPIO logical value.
+
+        Args:
+          name: name of the GPIO to query
+        Returns:
+          0 or 1
+        """
+        cmd = "{} {}\r".format(self._get_cmd, name)
+        regex = r"  ([01])[ *] .*{}".format(name)
+
+        results = self._issue_safe_cmd_get_results(cmd, [regex])[0]
+        res_value = int(results[1])
+        return res_value
+
+    def _Set_single(self, value):
+        """Set the configured GPIO.
+
+        Args:
+          value: the state to set into the GPIO
+        """
+        self.set_gpio(self._gpio_name, value)
+
+    def _Get_single(self):
+        """Get the configured GPIO logical value.
+
+        Returns:
+          0 or 1
+        """
+        value = self.get_gpio(self._gpio_name)
+        return value
+
+    def _Set_multi(self, value):
+        """Set several GPIOs according to a mask
+
+        Assigns the GPIOs specified in "names" to the bit values
+        specified in value.
+
+        Args:
+          value: An integer value, where each bit will be assigned to a GPIO.
+        """
+        if value >> len(self._gpio_names):
+            raise ec3poGpioError(
+                "Extra bits left over in v:{:d} on {}".format(value, self._gpio_names)
+            )
+        offset = len(self._gpio_names) - 1
+        for gpio in self._gpio_names:
+            bit = (value >> offset) & 0x1
+            self.set_gpio(gpio, bit)
+            offset -= 1
+
+    def _Get_multi(self):
+        """Get each listed gpio and provide a bit array of values.
+
+        Returns:
+          an integer with each bit set according to the state of its GPIO.
+        """
+        value = 0
+        for gpio in self._gpio_names:
+            bit = self.get_gpio(gpio)
+            value = value << 1
+            value = value | (bit & 0x1)
+        return value

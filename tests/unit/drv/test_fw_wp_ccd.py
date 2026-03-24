@@ -5,8 +5,8 @@ import unittest.mock
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
-from servo.data.drv.fw_wp_ccd import fwWpCcd
-from servo.data.drv.fw_wp_ccd import fwWpCcdError
+from servo.drv.fw_wp_ccd import fwWpCcd
+from servo.drv.fw_wp_ccd import fwWpCcdError
 
 
 class TestFwWpCcd(unittest.TestCase):
@@ -20,25 +20,25 @@ class TestFwWpCcd(unittest.TestCase):
             params={"cmd": "set"},
         )
 
-    @patch("servo.data.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
+    @patch("servo.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
     def test_force_on(self, mock_issue_cmd_get_results):
         self.instance._params = {"atboot": "no"}
         self.instance._force_on()
         mock_issue_cmd_get_results.assert_called_with("wp on", [])
 
-    @patch("servo.data.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
+    @patch("servo.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
     def test_force_off(self, mock_issue_cmd_get_results):
         self.instance._params = {"atboot": "no"}
         self.instance._force_off()
         mock_issue_cmd_get_results.assert_called_with("wp off", [])
 
-    @patch("servo.data.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
+    @patch("servo.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
     def test_reset(self, mock_issue_cmd_get_results):
         self.instance._params = {"atboot": "no"}
         self.instance._reset()
         mock_issue_cmd_get_results.assert_called_with("wp follow_batt_pres", [])
 
-    @patch("servo.data.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
+    @patch("servo.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
     def test_get_state(self, mock_issue_cmd_get_results):
         # Mocking the result for the _issue_cmd_get_results method
         mock_issue_cmd_get_results.return_value = [["Flash WP: enabled", "fwmp"]]
@@ -48,7 +48,7 @@ class TestFwWpCcd(unittest.TestCase):
 
         self.assertEqual(state, self.instance._STATE_OFF)
 
-    @patch("servo.data.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
+    @patch("servo.drv.fw_wp_ccd.fwWpCcd._issue_cmd_get_results")
     def test_get_state_with_error(self, mock_issue_cmd_get_results):
         # Mocking the result for the _issue_cmd_get_results method
         mock_issue_cmd_get_results.return_value = [None]

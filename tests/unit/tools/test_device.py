@@ -10,7 +10,7 @@ import unittest.mock
 
 import usb
 
-import servo.data.drv.pty_driver as pty_driver
+import servo.drv.pty_driver as pty_driver
 from servo.tools import device
 from servo.utils import usb_hierarchy
 
@@ -105,11 +105,11 @@ class TestDevice(unittest.TestCase):
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.data.drv.pty_driver.PtyDriver.__init__",
+        "servo.drv.pty_driver.PtyDriver.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results",
+        "servo.drv.pty_driver.PtyDriver._issue_cmd_get_results",
         unittest.mock.MagicMock(),
     )
     @unittest.mock.patch(
@@ -257,11 +257,11 @@ class TestDevice(unittest.TestCase):
         unittest.mock.MagicMock(return_value=1),
     )
     @unittest.mock.patch(
-        "servo.data.drv.pty_driver.PtyDriver.__init__",
+        "servo.drv.pty_driver.PtyDriver.__init__",
         unittest.mock.MagicMock(return_value=None),
     )
     @unittest.mock.patch(
-        "servo.data.drv.pty_driver.PtyDriver._issue_cmd_get_results",
+        "servo.drv.pty_driver.PtyDriver._issue_cmd_get_results",
         unittest.mock.MagicMock(
             side_effect=[None, pty_driver.PtyError("No data was sent from the pty")]
         ),

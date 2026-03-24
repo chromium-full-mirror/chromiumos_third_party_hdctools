@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from servo.data.drv.maui import maui
+from servo.drv.maui import maui
 
 
 @pytest.fixture
@@ -21,12 +21,12 @@ def maui_driver():
         "group": "1",
         "cmd": "get",
     }
-    with patch("servo.data.drv.pty_driver.PtyDriver._refresh_pty_path"):
+    with patch("servo.drv.pty_driver.PtyDriver._refresh_pty_path"):
         driver = maui(("localhost", 9999), ("localhost", 9998), mock_interface, params)
     return driver
 
 
-@patch("servo.data.drv.maui.maui._issue_cmd_get_results")
+@patch("servo.drv.maui.maui._issue_cmd_get_results")
 def test_maui_get_text(mock_issue, maui_driver):
     mock_issue.return_value = ["123"]
     assert maui_driver._Get_text() == "123"
@@ -34,7 +34,7 @@ def test_maui_get_text(mock_issue, maui_driver):
 
 
 def test_maui_issue_cmd_get_results_first_time(maui_driver):
-    with patch("servo.data.drv.uart.uart._issue_cmd_get_results") as mock_super_issue:
+    with patch("servo.drv.uart.uart._issue_cmd_get_results") as mock_super_issue:
         mock_super_issue.return_value = [("match",)]
 
         maui_driver._issue_cmd_get_results("test_cmd", ["regex"])
@@ -50,7 +50,7 @@ def test_maui_issue_cmd_get_results_first_time(maui_driver):
 def test_maui_issue_cmd_get_results_second_time(maui_driver):
     maui_driver._prompt_found = True
 
-    with patch("servo.data.drv.uart.uart._issue_cmd_get_results") as mock_super_issue:
+    with patch("servo.drv.uart.uart._issue_cmd_get_results") as mock_super_issue:
         mock_super_issue.return_value = [("match",)]
 
         maui_driver._issue_cmd_get_results("test_cmd", ["regex"])
