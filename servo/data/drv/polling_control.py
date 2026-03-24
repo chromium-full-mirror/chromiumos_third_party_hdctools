@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 import time
 
+import grpc
+
 from servo.data.drv.hw_driver import HwDriverError
 
 
@@ -24,8 +26,8 @@ class PollingControl:
         """
         try:
             value = hw_driver._servod_get(control)
-        except HwDriverError as hw_error:
-            # If a HwDriverError is raised during the get command, just continue
+        except (HwDriverError, grpc.RpcError) as hw_error:
+            # If a HwDriverError or RpcError is raised during the get command, just continue
             # polling until the timeout.
             # It can be expected as when polling for `ec_system_powerstate` and the
             # ec is temporarily not accessible.
