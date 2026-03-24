@@ -88,5 +88,6 @@ from servo.data.drv import uart
 from servo.data.drv import undefined
 from servo.data.drv import usb_downloader
 from servo.data.drv import usb_image_manager
+from servo.data.drv import usbkey_availability
 from servo.data.drv import veyron_chromebox_power
 from servo.data.drv import veyron_power
