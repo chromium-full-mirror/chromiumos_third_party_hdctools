@@ -25,63 +25,88 @@ class PollingControl:
           expected_results: a list of the expected values for the control
         """
         try:
-            value = hw_driver._servod_get(control)
-        except (HwDriverError, grpc.RpcError) as hw_error:
-            # If a HwDriverError or RpcError is raised during the get command, just continue
-            # polling until the timeout.
-            # It can be expected as when polling for `ec_system_powerstate` and the
-            # ec is temporarily not accessible.
-            if logger is not None:
-                logger.debug(
-                    "Error raised while trying to get control '%s': %s"
-                    % (control, hw_error)
-                )
-            return False
-        return value in expected_results
+            res = hw_driver._issue_cmd_get_results(control, [])
+            if res in expected_results:
+                return True
+        except HwDriverError as e:
+            logger.debug(
+                "PollingControl encountered HwDriverError "
+                "while getting control %s: %s",
+                control,
+                str(e),
+            )
+        except grpc.RpcError as e:
+            logger.debug(
+                "PollingControl encountered gRPC error " "while getting control %s: %s",
+                control,
+                str(e),
+            )
+        return False
 
-    def _start_polling_timer(self):
-        """Get the start time of polling to be able to know when to timeout"""
-        self.start_polling_time = time.time()
+    def poll_for_expected_result(
+        self,
+        hw_driver,
+        control,
+        expected_results,
+        timeout=DEFAULT_POLLING_TIMEOUT,
+        poll_interval=DEFAULT_POLLING_INTERVAL,
+        logger=None,
+    ):
+        """
+        Polls a servod control until it reaches one of the expected results
 
-    def _get_polling_timer(self):
-        """Return the time since the beginning of the polling"""
-        return time.time() - self.start_polling_time
+        Args:
+          hw_driver: a hwDriver object
+          control: the control to poll
+          expected_results: a list of the expected values for the control
+          timeout: time in seconds to stop polling and return False.
+                   A value of None means the polling will never time out
+                   A value of 0 means the polling will only check the value once
+          poll_interval: time in seconds to wait between polling
+          logger: a logger object
+        """
+        import logging
 
-    def _polling_timeout(self, polling_timeout):
-        """Return whether or not we have timeout while polling"""
-        return (
-            self._get_polling_timer() > polling_timeout
-            if polling_timeout is not None
-            else False
+        if logger is None:
+            logger = logging.getLogger(__name__)
+
+        logger.debug(
+            "PollingControl waiting %ss for %s to reach %s",
+            timeout,
+            control,
+            expected_results,
         )
+
+        poll_indefinitely = False
+        if timeout is None:
+            poll_indefinitely = True
+            timeout = 0
+
+        timeout_time = time.time() + timeout
+        while poll_indefinitely or time.time() <= timeout_time:
+            if self._found_expected_result(
+                hw_driver, control, expected_results, logger
+            ):
+                return True
+            time.sleep(poll_interval)
+
+        return False
 
     def poll(
         self,
         hw_driver,
         control,
         expected_results,
-        logger=None,
-        polling_interval=DEFAULT_POLLING_INTERVAL,
         polling_timeout=DEFAULT_POLLING_TIMEOUT,
+        polling_interval=DEFAULT_POLLING_INTERVAL,
+        logger=None,
     ):
-        """
-        Poll a control until either the control is at the expected values or it timeouts
-
-        Args:
-          control: the control to get
-          expected_results: a list of the expected outputs for the control
-          logger: an object to log errors when trying to get the control
-          polling_interval: the time to wait between 2 polling (default: 0s)
-          polling_timeout: the time after which to timeout (default: do not timeout)
-
-        Returns:
-          True when the expected result is found
-          False when timeout
-        """
-        self._start_polling_timer()
-        while True:
-            if self._found_expected_result(hw_driver, control, expected_results, logger):
-                return True
-            if self._polling_timeout(polling_timeout):
-                return False
-            time.sleep(polling_interval)
+        """Legacy backwards-compatible method."""
+        return self.poll_for_expected_result(
+            hw_driver,
+            control,
+            expected_results,
+            timeout=polling_timeout,
+            poll_interval=polling_interval,
+            logger=logger,
+        )
