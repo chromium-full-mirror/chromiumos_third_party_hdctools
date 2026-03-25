@@ -18,6 +18,7 @@ from servo.common.utils import json_utils
 from servo.common.utils import servo_logging
 from servo.core import recovery
 from servo.utils import diagnose
+from servo.utils import scratch
 from servo.utils import usb_hierarchy
 
 
@@ -248,21 +249,22 @@ class Servod:
 
     def hwinit(self, verbose=True, step_init=False):
         """Initialize controls for servo devices."""
-        for servo_device in self.get_devices():
-            skip_controls = set()
-            for dev in servo_device.get_child_devices():
-                skip_controls.update(
-                    set(
-                        control_name
-                        for control_name, _unused in dev.get_hwinit_controls()
+        with scratch.ConcurrencyGuard(max_concurrency=3, name="hwinit"):
+            for servo_device in self.get_devices():
+                skip_controls = set()
+                for dev in servo_device.get_child_devices():
+                    skip_controls.update(
+                        set(
+                            control_name
+                            for control_name, _unused in dev.get_hwinit_controls()
+                        )
                     )
+                servo_device.hwinit(
+                    verbose=verbose, skip_controls=skip_controls, step_init=step_init
                 )
-            servo_device.hwinit(
-                verbose=verbose, skip_controls=skip_controls, step_init=step_init
-            )
 
-        # Autotest directly uses this method, so we have to return True
-        return True
+            # Autotest directly uses this method, so we have to return True
+            return True
 
     def get(self, name):
         """Get control value.
