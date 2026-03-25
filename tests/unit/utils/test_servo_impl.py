@@ -18,6 +18,7 @@ from servo.common.proto.servo_dev_pb2 import IssueCmdOnMainDevRequest
 from servo.common.proto.servo_dev_pb2 import KeyboardRequest
 from servo.common.proto.servo_dev_pb2 import KeyRequest
 from servo.common.proto.servo_dev_pb2 import ListRequest
+from servo.common.proto.servo_dev_pb2 import PrefixDeviceRequest
 from servo.common.proto.servo_dev_pb2 import ServiceRequest
 from servo.common.proto.servo_dev_pb2 import SetKeyboard
 from servo.common.proto.servo_dev_pb2 import SetRequest
@@ -336,7 +337,8 @@ class TestServoImpl(unittest.TestCase):
 
     def test_limit_ec_driver_channel(self):
         """Test LimitEcDriverChannel."""
-        request = empty_pb2.Empty()
+        # Test fallback to main device
+        request = PrefixDeviceRequest(prefix="")
         self._servod.get_main_device = unittest.mock.MagicMock(
             return_value=self._micro_dev
         )
@@ -345,10 +347,18 @@ class TestServoImpl(unittest.TestCase):
         servo_impl.LimitEcDriverChannel(request, None)
         self._micro_dev.limit_ec_driver_channel.assert_called_once_with("ec_gpio")
 
+        # Test explicit prefix routing
+        request_with_prefix = PrefixDeviceRequest(prefix="my_dev")
+        mock_specific_dev = unittest.mock.MagicMock()
+        self._servod._devices = {"my_dev": mock_specific_dev}
+        servo_impl.LimitEcDriverChannel(request_with_prefix, None)
+        mock_specific_dev.limit_ec_driver_channel.assert_called_once_with("ec_gpio")
+
     def test_issue_cmd_get_result(self):
         """Test IssueCmdGetResult."""
+        # Test fallback to main device
         request = IssueCmdOnMainDevRequest(
-            cmds="cmd", regex_list=[], flush=True, time_out=10
+            cmds="cmd", regex_list=[], flush=True, time_out=10, prefix=""
         )
         self._servod.get_main_device = unittest.mock.MagicMock(
             return_value=self._micro_dev
@@ -360,9 +370,21 @@ class TestServoImpl(unittest.TestCase):
             "cmd", [], flush=True, timeout=10
         )
 
+        # Test explicit prefix routing
+        request_with_prefix = IssueCmdOnMainDevRequest(
+            cmds="cmd2", regex_list=["ok"], flush=False, time_out=5, prefix="my_dev"
+        )
+        mock_specific_dev = unittest.mock.MagicMock()
+        self._servod._devices = {"my_dev": mock_specific_dev}
+        servo_impl.IssueCmdGetResult(request_with_prefix, None)
+        mock_specific_dev.issue_cmd_get_results.assert_called_once_with(
+            "cmd2", ["ok"], flush=False, timeout=5
+        )
+
     def test_restore_ec_driver_channel(self):
         """Test RestoreEcDriverChannel."""
-        request = empty_pb2.Empty()
+        # Test fallback to main device
+        request = PrefixDeviceRequest(prefix="")
         self._servod.get_main_device = unittest.mock.MagicMock(
             return_value=self._micro_dev
         )
@@ -370,6 +392,13 @@ class TestServoImpl(unittest.TestCase):
         servo_impl = ServoImpl(self.grpc_core_addr, self._servod)
         servo_impl.RestoreEcDriverChannel(request, None)
         self._micro_dev.restore_ec_driver_channel.assert_called_once_with("ec_gpio")
+
+        # Test explicit prefix routing
+        request_with_prefix = PrefixDeviceRequest(prefix="my_dev")
+        mock_specific_dev = unittest.mock.MagicMock()
+        self._servod._devices = {"my_dev": mock_specific_dev}
+        servo_impl.RestoreEcDriverChannel(request_with_prefix, None)
+        mock_specific_dev.restore_ec_driver_channel.assert_called_once_with("ec_gpio")
 
     def test_get_watchdog(self):
         """Test GetWatchdog."""

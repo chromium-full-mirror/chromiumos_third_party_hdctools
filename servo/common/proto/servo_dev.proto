@@ -91,9 +91,9 @@ service ServoService {
     rpc SetArbKeysConfig (KeyRequest) returns (google.protobuf.Empty);
     // limit chanel for ec driver on main servod device
     // Limit EC channels on main servo
-    rpc LimitEcDriverChannel(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc LimitEcDriverChannel(PrefixDeviceRequest) returns (google.protobuf.Empty);
     // Restore EC channels on main servo
-    rpc RestoreEcDriverChannel(google.protobuf.Empty) returns (google.protobuf.Empty);
+    rpc RestoreEcDriverChannel(PrefixDeviceRequest) returns (google.protobuf.Empty);
     // Execute EC command on main servo
     rpc IssueCmdGetResult(IssueCmdOnMainDevRequest) returns (google.protobuf.Empty);
     rpc GetWatchdog(google.protobuf.Empty) returns (ServiceResponse);
@@ -220,6 +220,7 @@ message IssueCmdOnMainDevRequest {
     repeated string regex_list = 2;
     bool flush = 3;
     int32 time_out = 4;
+    string prefix = 5;
 }
 
 message WatchdogRequest {
@@ -238,3 +239,4 @@ message ReconnectTimeoutResponse {
 message CcdStateResponse {
     int32 state = 1;
 }
+message PrefixDeviceRequest { string prefix = 1; }

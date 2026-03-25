@@ -43,6 +43,7 @@ class TestCrosEcSoftrecPower(unittest.TestCase):
             regex_list=["Events:"],
             flush=True,
             time_out=DEFAULT_UART_TIMEOUT,
+            prefix=self.drv._prefix,
         )
 
         # Verify RestoreEcDriverChannel is called
@@ -59,6 +60,7 @@ class TestCrosEcSoftrecPower(unittest.TestCase):
             regex_list=["Events:"],
             flush=True,
             time_out=DEFAULT_UART_TIMEOUT,
+            prefix=self.drv._prefix,
         )
 
         # Verify REC_OFF is sent with flush=True
@@ -67,4 +69,5 @@ class TestCrosEcSoftrecPower(unittest.TestCase):
             regex_list=["Events:"],
             flush=True,
             time_out=DEFAULT_UART_TIMEOUT,
+            prefix=self.drv._prefix,
         )

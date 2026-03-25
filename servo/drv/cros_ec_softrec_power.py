@@ -116,7 +116,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
 
     def _power_on_bytype(self, rec_mode, rec_type=_REC_TYPE_REC_ON):
         # ec_gpio is known to use the ec drv
-        self._driver_client.LimitEcDriverChannel()
+        self._driver_client.LimitEcDriverChannel(prefix=self._prefix)
         try:
             if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
                 # Need to retrieve ec_feat before warm_reset to avoid doing that while
@@ -142,7 +142,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # Before proceeding, we should really check that the EC has reset from
                     # our command.  Pexpect is minimally greedy so we won't be able to match
                     # the exact reset cause string.  But, this should be good enough.
-                    self._driver_client.IssueCmdGetResult(
+                    self._driver_client.IssueCmdGetResult(prefix=self._prefix,
                         cmds="reboot wait-ext %s" % ap_off_option,
                         regex_list=["Waiting"],
                         flush=True,
@@ -172,7 +172,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # EC and AP when rebooting. However, the reboot will be triggered
                     # internally by the EC watchdog, and there is no external reset
                     # signal.
-                    self._driver_client.IssueCmdGetResult(
+                    self._driver_client.IssueCmdGetResult(prefix=self._prefix,
                         cmds="reboot %s" % ap_off_option,
                         regex_list=["Rebooting!"],
                         flush=False,
@@ -189,7 +189,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # Need to clear the flag in secondary (B) copy of the host events if
                 # we're in non-recovery mode.
                 cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
-                self._driver_client.IssueCmdGetResult(
+                self._driver_client.IssueCmdGetResult(prefix=self._prefix,
                     cmds=cmd,
                     regex_list=["Events:"],
                     flush=True,
@@ -199,7 +199,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
             self._logger.debug("Hostevent delay: %s", self._hostevent_delay)
             time.sleep(self._hostevent_delay)
             cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-            self._driver_client.IssueCmdGetResult(
+            self._driver_client.IssueCmdGetResult(prefix=self._prefix,
                 cmds=cmd,
                 regex_list=["Events:"],
                 flush=True,
@@ -223,7 +223,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # than automatically swapping data roles here. This prevents unwanted
                 # side-effects during non-USB recovery flows (e.g. FAFT).
         finally:
-            self._driver_client.RestoreEcDriverChannel()
+            self._driver_client.RestoreEcDriverChannel(prefix=self._prefix)
 
     def _power_on(self, rec_mode):
         if rec_mode == self.REC_ON:

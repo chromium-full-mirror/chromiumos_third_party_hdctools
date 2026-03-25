@@ -296,23 +296,38 @@ class ServoImpl(servo_dev_grpc.ServoServiceServicer):
         return empty_pb2.Empty()
 
     def LimitEcDriverChannel(self, request, context):
-        """limit chanel for ec driver on main servod device"""
+        """limit channel for ec driver on specific servod device"""
         self.logger.debug("Handle request for %s, in context %s", request, context)
 
-        self.servod.get_main_device().limit_ec_driver_channel("ec_gpio")
+        prefix = getattr(request, "prefix", "")
+        if prefix and prefix in self.servod._devices:
+            dev = self.servod._devices[prefix]
+        else:
+            dev = self.servod.get_main_device()
+        dev.limit_ec_driver_channel("ec_gpio")
         return empty_pb2.Empty()
 
     def RestoreEcDriverChannel(self, request, context):
-        """restore chanel for ec driver on main servod device"""
+        """restore channel for ec driver on specific servod device"""
         self.logger.debug("Handle request for %s, in context %s", request, context)
 
-        self.servod.get_main_device().restore_ec_driver_channel("ec_gpio")
+        prefix = getattr(request, "prefix", "")
+        if prefix and prefix in self.servod._devices:
+            dev = self.servod._devices[prefix]
+        else:
+            dev = self.servod.get_main_device()
+        dev.restore_ec_driver_channel("ec_gpio")
         return empty_pb2.Empty()
 
     def IssueCmdGetResult(self, request, context):
         self.logger.debug("Handle request for %s, in context %s", request, context)
 
-        self.servod.get_main_device().issue_cmd_get_results(
+        prefix = getattr(request, "prefix", "")
+        if prefix and prefix in self.servod._devices:
+            dev = self.servod._devices[prefix]
+        else:
+            dev = self.servod.get_main_device()
+        dev.issue_cmd_get_results(
             request.cmds,
             request.regex_list,
             flush=request.flush,
