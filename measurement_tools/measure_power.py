@@ -604,7 +604,7 @@ class PowerMeasurement:
                 if board != "not_applicable":
                     self._board = board
             except client.ServoClientError:
-                self._logger.warning(
+                self._logger.debug(
                     "Failed to get ec_board, setting to %r.", self._board
                 )
         self._processing_done = False
@@ -673,7 +673,7 @@ class PowerMeasurement:
                 try:
                     tracker.verify()
                 except PowerTrackerError:
-                    self._logger.warning(
+                    self._logger.debug(
                         "Tracker %s failed verification. Not using it.", tracker.title
                     )
                     continue
@@ -755,7 +755,7 @@ class PowerMeasurement:
                     # provide real information.
                     powerstate = ecpowerstate
             except client.ServoClientError:
-                self._logger.warning("Failed to get powerstate from EC.")
+                self._logger.debug("Failed to get powerstate from EC.")
         for power_tracker in self._power_trackers:
             power_tracker.prepare(self._fast, powerstate)
         ts = time.strftime("%Y%m%d-%H%M%S", time.localtime(time.time()))
