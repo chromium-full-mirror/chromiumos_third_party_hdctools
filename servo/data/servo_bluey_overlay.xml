@@ -105,6 +105,7 @@
       <content>
         <item key="macro_map">
           <item key="execute_expect_reboot">
+            <item>ec_uart_regexp:None</item>
             <item>servo_suzyq_mode_at_poweron:on</item>
             <!-- Below should be always last command in the sequence -->
             <item>servo_uart_cmd:reboot</item>

@@ -14,6 +14,7 @@
         <item key="macro_map">
           <item key="1">
             <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <item>ec_uart_regexp:None</item>
             <item>ec_uart_cmd:reboot cancel</item>
             <!-- Shutdown AP so that it enters G3 state. -->
             <item>ec_uart_cmd:apshutdown</item>
@@ -49,6 +50,7 @@
         <item key="macro_map">
           <item key="1">
             <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <item>ec_uart_regexp:None</item>
             <item>ec_uart_cmd:reboot cancel</item>
             <!-- Shutdown AP so that it enters G3 state. -->
             <item>ec_uart_cmd:apshutdown</item>
