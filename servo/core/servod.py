@@ -42,7 +42,6 @@ from servo.core import watchdog
 from servo.core.grpc_server.impl import servo_impl
 from servo.utils import scratch
 from servo.utils import servo_dev_hierarchy
-from servo.utils import servo_dev_prober
 
 
 # If user does not specify a log directory, use this one.
@@ -207,7 +206,6 @@ class ServodStarter:
 
                 self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
 
-                prober = servo_dev_prober.DeviceProber()
                 self._logger.info("Connecting to gRPC")
                 while True:
                     try:
@@ -215,7 +213,6 @@ class ServodStarter:
                         self._setup_servos(
                             dev_entries,
                             main_dev_entry,
-                            prober,
                             (sopts.grpc_data_host, sopts.grpc_data_port),
                         )
                         break
@@ -691,13 +688,12 @@ class ServodStarter:
         finder.validate_devopts(dev_entries)
         return (dev_entries, main_dev_entry)
 
-    def _setup_servos(self, dev_entries, _main_dev_entry, prober, grpc_data_addr):
+    def _setup_servos(self, dev_entries, _main_dev_entry, grpc_data_addr):
         """Setup servo devices for this servod instance.
 
         Args:
           dev_entries: all the devices' ServoDeviceEntry
           main_dev_entry: the main device's ServoDeviceEntry
-          prober: a ServoDeviceProber to probe the board and model information
           grpc_data_addr: tuple of host and port of data grpc service
         """
 
@@ -749,19 +745,11 @@ class ServodStarter:
             model_supplied = getattr(devopts, "model_supplied_by_user", False)
 
             if servo_device.template.DUT_CONTROLLER and not board_supplied:
-                # Initialize all interfaces already possible to see if the board
-                # can be probed
-                servo_device.init_servo_interfaces(fault_tolerant=True)
-                ec_board = prober.get_board_from_ec(servo_device)
-                if not ec_board:
-                    self._logger.warning(
-                        "Cannot probe board for DUT controller %s."
-                        "Start device without board specific config.",
-                        servo_device,
-                    )
-                else:
-                    devopts.board = ec_board
-                devopts.model = prober.get_model_from_ec(servo_device)
+                self._logger.warning(
+                    "No board provided for DUT controller %s. "
+                    "Start device without board specific config.",
+                    servo_device,
+                )
                 servo_device.set_base_board(devopts.board)
 
             if getattr(devopts, "noboard", False) and board_supplied:
@@ -773,9 +761,9 @@ class ServodStarter:
             if not getattr(devopts, "noboard", False):
                 if not getattr(devopts, "board", ""):
                     raise ServodError(
-                        "No board provided and probing failed. Please provide "
-                        "--board <board> or use --noboard to allow implicit "
-                        "probed board."
+                        "No board provided. Please provide "
+                        "--board <board> or use --noboard to explicitly "
+                        "indicate no board is intended."
                     )
 
                 if (

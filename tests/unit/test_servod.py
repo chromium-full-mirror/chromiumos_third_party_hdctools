@@ -18,14 +18,12 @@ from servo.common import servo_parsing
 from servo.core import servo_dev_finder
 from servo.core import servod
 from servo.utils import scratch
-from servo.utils import servo_dev_prober
 
 
 class TestServoStarter(unittest.TestCase):
     """Test ServoStarter."""
 
     @patch("servo.utils.scratch.Scratch.__init__", return_value=None)
-    @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
     @patch("servo.core.servod.ServodStarter._init_parsers_and_option_helpers")
     @patch("servo.core.servod.ServodStarter._start_xml_server", return_value=9999)
     @patch(
@@ -56,7 +54,6 @@ class TestServoStarter(unittest.TestCase):
         mock_discover_servos,
         mock_start_xml_server,
         mock_init_parsers,
-        _mock_prober_init,
         _mock_scratch_init,
     ):
         """Test __init__()."""
@@ -467,7 +464,6 @@ class TestServoStarter(unittest.TestCase):
         self.assertEqual(result.exception.code, -1)
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
     @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
     @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True)
     @patch("servo.core.servo_dev.ServoDevice.set_base_board")
@@ -479,8 +475,7 @@ class TestServoStarter(unittest.TestCase):
         _mock_grpc_client,
         mock_set_base,
         mock_set_board,
-        mock_init_interfaces,
-        _mock_prober_init,
+        _mock_init_interfaces,
         _mock_init,
     ):
         """Test _setup_servos()."""
@@ -511,10 +506,6 @@ class TestServoStarter(unittest.TestCase):
         mock_interfaces.interface_list_json = json.dumps(["interface1"])
         mock_client.GetServoInterfaces.return_value = mock_interfaces
 
-        prober = servo_dev_prober.DeviceProber()
-        prober.get_board_from_ec = MagicMock(return_value="atlas")
-        prober.get_model_from_ec = MagicMock(return_value="nuvoton")
-
         # Setup dev entries
         main_dev_entry = MagicMock()
 
@@ -522,7 +513,7 @@ class TestServoStarter(unittest.TestCase):
         dev_entry_1.devopts.noautoconfig = False
         dev_entry_1.devopts.config = ["extraconfig1"]
         dev_entry_1.devopts.prefix = [""]
-        dev_entry_1.devopts.board = None
+        dev_entry_1.devopts.board = "atlas"
         dev_entry_1.devopts.model = None
         dev_entry_1.devopts.noboard = False
         dev_entry_1.devopts.nomodel = False
@@ -555,28 +546,18 @@ class TestServoStarter(unittest.TestCase):
         dev_entries = [dev_entry_1, dev_entry_2]
 
         # Call with fake grpc address
-        starter._setup_servos(dev_entries, main_dev_entry, prober, ("localhost", 9992))
-
-        self.assertEqual(mock_init_interfaces.call_count, 3)
-        mock_init_interfaces.assert_has_calls(
-            [
-                mock.call(fault_tolerant=True),  # ccd_cr50 only
-                mock.call(),
-                mock.call(),
-            ]
-        )
+        starter._setup_servos(dev_entries, main_dev_entry, ("localhost", 9992))
         self.assertEqual(dev_entry_1.devopts.board, "atlas")
         mock_set_base.assert_called_once_with("atlas")
         mock_set_board.assert_has_calls(
             [
-                mock.call("atlas", "nuvoton"),
+                mock.call("atlas", None),
                 mock.call("testing", "testing"),
             ]
         )
         self.assertEqual(starter._servod.update_known_ctrls.call_count, 2)
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
-    @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
     @patch("servo.core.servo_dev.ServoDevice.init_servo_interfaces")
     @patch("servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True)
     @patch("servo.core.servo_dev.ServoDevice.set_base_board")
@@ -588,8 +569,7 @@ class TestServoStarter(unittest.TestCase):
         mock_sys_config_grpc,
         mock_set_base,
         mock_set_board,
-        mock_init_interfaces,
-        _mock_prober_init,
+        _mock_init_interfaces,
         _mock_init,
     ):
         """Test _setup_servos()."""
@@ -598,16 +578,14 @@ class TestServoStarter(unittest.TestCase):
         starter.opts.debug = True
         starter._logger = MagicMock()
         starter._servod = MagicMock()
-        prober = servo_dev_prober.DeviceProber()
-        prober.get_board_from_ec = MagicMock(return_value="atlas")
-        prober.get_model_from_ec = MagicMock(return_value="nuvoton")
         main_dev_entry = MagicMock()
 
         dev_entry_1 = MagicMock()
         dev_entry_1.devopts.noautoconfig = False
         dev_entry_1.devopts.config = ["extraconfig1", "extraconfig2"]
         dev_entry_1.devopts.prefix = [""]
-        dev_entry_1.devopts.board = dev_entry_1.devopts.model = None
+        dev_entry_1.devopts.board = "atlas"
+        dev_entry_1.devopts.model = None
         dev_entry_1.devopts.noboard = False
         dev_entry_1.devopts.nomodel = False
         dev_entry_1.devopts.board_supplied_by_user = False
@@ -656,15 +634,10 @@ class TestServoStarter(unittest.TestCase):
             servod.ServodError,
             "No automatic config found, and no config specified with -c <file>",
         ):
-            starter._setup_servos(
-                dev_entries, main_dev_entry, prober, ("localhost", 9999)
-            )
-
-        mock_init_interfaces.assert_called_once_with(fault_tolerant=True)
+            starter._setup_servos(dev_entries, main_dev_entry, ("localhost", 9999))
         self.assertEqual(dev_entry_1.devopts.board, "atlas")
-        self.assertEqual(dev_entry_1.devopts.model, "nuvoton")
         mock_set_base.assert_called_once_with("atlas")
-        mock_set_board.assert_called_once_with("atlas", "nuvoton")
+        mock_set_board.assert_called_once_with("atlas", None)
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     def test_cleanup(self, _mock_init):
@@ -898,20 +871,16 @@ class TestServodValidation(unittest.TestCase):
 
         # Test 1: No board, no noboard, probing fails (empty board)
         dev_entry = create_dev_entry(board="", noboard=False)
-        # Mock prober to return nothing
-        prober = MagicMock()
-        prober.get_board_from_ec.return_value = ""
-
         with self.assertRaisesRegex(
-            servod.ServodError, "No board provided and probing failed"
+            servod.ServodError, "No board provided. Please provide"
         ):
-            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+            starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 2: No board, but --noboard is provided. Should NOT raise.
         dev_entry = create_dev_entry(board="", noboard=True)
         # We need to mock other things to avoid failure later in _setup_servos
         starter._servod.add_device = MagicMock()
-        starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+        starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 3: Board provided, has models, but no --model provided.
         dev_entry = create_dev_entry(board="brya", model="", noboard=False)
@@ -922,14 +891,14 @@ class TestServodValidation(unittest.TestCase):
         with self.assertRaisesRegex(
             servod.ServodError, "Board brya has models: banshee, vell"
         ):
-            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+            starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 4: Both board and noboard provided.
         dev_entry = create_dev_entry(board="brya", noboard=True)
         with self.assertRaisesRegex(
             servod.ServodError, "Cannot provide both --board and --noboard"
         ):
-            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+            starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 5: Board provided, has models, and model is provided. Should NOT raise.
         dev_entry = create_dev_entry(board="brya", model="banshee", noboard=False)
@@ -939,7 +908,7 @@ class TestServodValidation(unittest.TestCase):
         with patch(
             "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True
         ):
-            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+            starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 6: Board provided, but XML config not found. Should raise.
         dev_entry = create_dev_entry(
@@ -951,7 +920,7 @@ class TestServodValidation(unittest.TestCase):
             with self.assertRaisesRegex(
                 servod.ServodError, "Cannot find XML overlay for board fakeboard"
             ):
-                starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+                starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 7: Board provided, has models, --nomodel provided. Should NOT raise.
         dev_entry = create_dev_entry(board="brya", model="", noboard=False)
@@ -962,7 +931,7 @@ class TestServodValidation(unittest.TestCase):
         with patch(
             "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True
         ):
-            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+            starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
         # Test 8: Board and model provided, has models, model not found.
         # Should NOT raise. (This implicitly tests the graceful fallback in
@@ -974,7 +943,7 @@ class TestServodValidation(unittest.TestCase):
         with patch(
             "servo.core.servo_dev.ServoDevice.set_board_and_model", return_value=True
         ):
-            starter._setup_servos([dev_entry], None, prober, ("localhost", 9999))
+            starter._setup_servos([dev_entry], None, ("localhost", 9999))
 
 
 if __name__ == "__main__":

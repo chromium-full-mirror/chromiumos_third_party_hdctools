@@ -2657,33 +2657,6 @@ syscfg_dict = {
                 "subtype": "loglevel",
             },
         },
-        "ec_model": {
-            "doc": "The model name of the EC image",
-            "get_params": {
-                "CONTENT": None,
-                "cmd": "get",
-                "control_name": "ec_model",
-                "drv": "simple_ec",
-                "fmt": "lowercase",
-                "group": "1",
-                "interface": 10,
-                "interface_prefix": "servo_micro",
-                "regex": "Chip:\\s+(\\S+)\\s+",
-                "uart_cmd": "version",
-            },
-            "set_params": {
-                "CONTENT": None,
-                "cmd": "set",
-                "control_name": "ec_model",
-                "drv": "simple_ec",
-                "fmt": "lowercase",
-                "group": "1",
-                "interface": 10,
-                "interface_prefix": "servo_micro",
-                "regex": "Chip:\\s+(\\S+)\\s+",
-                "uart_cmd": "version",
-            },
-        },
         "ec_system_powerstate": {
             "doc": "The current power state according to the EC.",
             "get_params": {
