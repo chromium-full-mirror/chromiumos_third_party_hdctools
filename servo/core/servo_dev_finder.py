@@ -411,6 +411,11 @@ class ServoDeviceFinder:
         known_prefixes = set()
         # a dictionary of devices keyed by device type
         dev_type_map = collections.defaultdict(lambda: [])
+
+        logical_root = (
+            main_dev.cluster_root if main_dev.cluster_root in devs else main_dev
+        )
+
         for dev in devs:
             dev_type_map[dev.dev_template.TYPE].append(dev)
             dev_prefix = set(dev.devopts.prefix) - known_prefixes
@@ -426,7 +431,7 @@ class ServoDeviceFinder:
                 # prevent non-main device from having main device prefixes
                 dev_prefix.difference_update(servo_dev_templates.MAIN_DEV_PREFIXES)
 
-            if dev == main_dev.cluster_root:
+            if dev == logical_root:
                 self._logger.debug(
                     "Device %s is the root device and is given prefix %r",
                     dev,

@@ -618,7 +618,8 @@ class TestServoDeviceFinder(unittest.TestCase):
 
         finder.generate_prefixes(devs, test_entry)
         assert set(test_entry.devopts.prefix) == set(
-            dev_templates.MAIN_DEV_PREFIXES.copy() + ["servo_micro"]
+            dev_templates.MAIN_DEV_PREFIXES.copy()
+            + [dev_templates.ROOT_DEV_PREFIX, "servo_micro"]
         )
         assert test_entry2.devopts.prefix == ["servo_v4"]
 
@@ -674,7 +675,8 @@ class TestServoDeviceFinder(unittest.TestCase):
 
         finder.generate_prefixes(devs, test_entry)
         assert set(test_entry.devopts.prefix) == set(
-            dev_templates.MAIN_DEV_PREFIXES.copy() + ["servo_micro-s"]
+            dev_templates.MAIN_DEV_PREFIXES.copy()
+            + [dev_templates.ROOT_DEV_PREFIX, "servo_micro-s"]
         )
         assert test_entry2.devopts.prefix == ["servo_micro-h"]
         assert set(test_entry3.devopts.prefix) == set(
