@@ -199,57 +199,67 @@ class ServodStarter:
                 self._logger.info("Successfully fetched EC token database")
                 fcntl.lockf(fd, fcntl.LOCK_UN)
 
-        with scratch.ConcurrencyGuard(max_concurrency=3, name="startup"):
-            (dev_entries, main_dev_entry) = self._discover_servos(sopts, devopts_list)
+        try:
+            with scratch.ConcurrencyGuard(max_concurrency=3, name="startup"):
+                (dev_entries, main_dev_entry) = self._discover_servos(
+                    sopts, devopts_list
+                )
 
-            self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
+                self._servod = servo_server.Servod(usbkm232=sopts.usbkm232)
 
-            prober = servo_dev_prober.DeviceProber()
-            self._logger.info("Connecting to gRPC")
-            while True:
-                try:
-                    self._servod.clear()
-                    self._setup_servos(
-                        dev_entries,
-                        main_dev_entry,
-                        prober,
-                        (sopts.grpc_data_host, sopts.grpc_data_port),
-                    )
-                    break
-                except grpc.RpcError as e:
-                    if e.code() != grpc.StatusCode.UNAVAILABLE:
-                        raise
-                    time.sleep(1)
+                prober = servo_dev_prober.DeviceProber()
+                self._logger.info("Connecting to gRPC")
+                while True:
+                    try:
+                        self._servod.clear()
+                        self._setup_servos(
+                            dev_entries,
+                            main_dev_entry,
+                            prober,
+                            (sopts.grpc_data_host, sopts.grpc_data_port),
+                        )
+                        break
+                    except grpc.RpcError as e:
+                        if e.code() != grpc.StatusCode.UNAVAILABLE:
+                            raise
+                        time.sleep(1)
 
-            options = [
-                ("grpc.keepalive_permit_without_calls", True),
-                ("grpc.http2.min_recv_ping_interval_without_data_ms", 5000),
-                ("grpc.http2.max_ping_strikes", 0),
-                ("grpc.max_metadata_size", 64 * 1024),
-            ]
+                options = [
+                    ("grpc.keepalive_permit_without_calls", True),
+                    ("grpc.http2.min_recv_ping_interval_without_data_ms", 5000),
+                    ("grpc.http2.max_ping_strikes", 0),
+                    ("grpc.max_metadata_size", 64 * 1024),
+                ]
 
-            self._grpc_server = grpc.server(
-                futures.ThreadPoolExecutor(max_workers=10),
-                options=options,
-                interceptors=(
-                    grpc_server_interceptor.ExceptionTruncatingInterceptor(),
-                ),
-            )
-            servo = servo_impl.ServoImpl(
-                ("localhost", sopts.grpc_core_port), self._servod
-            )
-            servo_dev_grpc.add_ServoServiceServicer_to_server(servo, self._grpc_server)
-            self._grpc_server.add_insecure_port(
-                "0.0.0.0:{}".format(sopts.grpc_core_port)
-            )
-            self._grpc_server.start()
-            self._logger.info("Core Server started....")
+                self._grpc_server = grpc.server(
+                    futures.ThreadPoolExecutor(max_workers=10),
+                    options=options,
+                    interceptors=(
+                        grpc_server_interceptor.ExceptionTruncatingInterceptor(),
+                    ),
+                )
+                servo = servo_impl.ServoImpl(
+                    ("localhost", sopts.grpc_core_port), self._servod
+                )
+                servo_dev_grpc.add_ServoServiceServicer_to_server(
+                    servo, self._grpc_server
+                )
+                self._grpc_server.add_insecure_port(
+                    "0.0.0.0:{}".format(sopts.grpc_core_port)
+                )
+                self._grpc_server.start()
+                self._logger.info("Core Server started....")
 
-            # Small timeout to allow interface threads to initialize.
-            time.sleep(0.5)
+                # Small timeout to allow interface threads to initialize.
+                time.sleep(0.5)
 
-            self._servod.validate_dut_controller()
-            self._servod.hwinit(verbose=True, step_init=sopts.step_init)
+                self._servod.validate_dut_controller()
+                self._servod.hwinit(verbose=True, step_init=sopts.step_init)
+        except servo_dev_finder.ServoDeviceFinderError as e:
+            self._logger.fatal("-" * 60)
+            self._logger.fatal("FATAL: %s", e)
+            self._logger.fatal("-" * 60)
+            sys.exit(-1)
 
         if sopts.dump_xml:
             devices = self._servod.get_devices()
@@ -675,16 +685,10 @@ class ServodStarter:
             servo_scratch=self._scratchutil,
             discover_mode=discover_mode,
         )
-        try:
-            dev_entries = finder.discover_servos()
-            main_dev_entry = finder.choose_main_device(dev_entries)
-            finder.generate_prefixes(dev_entries, main_dev_entry)
-            finder.validate_devopts(dev_entries)
-        except servo_dev_finder.ServoDeviceFinderError as exception:
-            self._logger.fatal(
-                "Failure during discovering servo devices: %s", exception
-            )
-            sys.exit(-1)
+        dev_entries = finder.discover_servos()
+        main_dev_entry = finder.choose_main_device(dev_entries)
+        finder.generate_prefixes(dev_entries, main_dev_entry)
+        finder.validate_devopts(dev_entries)
         return (dev_entries, main_dev_entry)
 
     def _setup_servos(self, dev_entries, _main_dev_entry, prober, grpc_data_addr):

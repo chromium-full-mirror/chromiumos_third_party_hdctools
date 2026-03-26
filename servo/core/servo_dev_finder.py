@@ -210,10 +210,11 @@ class ServoDeviceFinder:
           ServoDeviceFinderError: multiple devices are found and user fail to pick
                                   one from them
         """
-        input_str = "vid: %s pid: %s serial: %s" % (vid, pid, serial)
         if (not vid) and (not pid) and (not serial):
+            input_str = "any servo device"
             candidates = sorted(self._dev_hierarchy.get_all_entries().values())
         else:
+            input_str = "vid: %s pid: %s serial: %s" % (vid, pid, serial)
             candidates = sorted(self._dev_hierarchy.get_entries(vid, pid, serial))
         self._logger.info(
             "Servo candidates:\n%s", "\n".join(repr(c) for c in candidates)

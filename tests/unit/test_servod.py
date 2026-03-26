@@ -426,13 +426,45 @@ class TestServoStarter(unittest.TestCase):
         sopts = argparse.Namespace()
         sopts.device_discovery = "full"
 
-        with self.assertRaises(SystemExit) as result:
+        with self.assertRaises(servo_dev_finder.ServoDeviceFinderError):
             starter._discover_servos(sopts, None)
 
-        self.assertEqual(result.exception.code, -1)
-        starter._logger.fatal.assert_called_once_with(
-            "Failure during discovering servo devices: %s", unittest.mock.ANY
+    @patch("servo.core.servod.ServodStarter._init_parsers_and_option_helpers")
+    @patch("servo.core.servod.ServodStarter._parse_args")
+    @patch("servo.core.servod.ServodStarter._start_xml_server", return_value=9999)
+    @patch("servo.core.servod.ServodStarter._discover_servos")
+    @patch("servo.common.utils.servo_logging.setup")
+    @patch("servo.utils.scratch.Scratch.__init__", return_value=None)
+    def test_init_discover_error(
+        self,
+        _mock_scratch_init,
+        _mock_logging_setup,
+        mock_discover_servos,
+        _mock_start_xml_server,
+        mock_parse_args,
+        _mock_init_parsers,
+    ):
+        """Test __init__() in the case of error during _discover_servos."""
+        sopts = MagicMock()
+        sopts.host = "localhost"
+        sopts.servo_recovery = False
+        sopts.usbkm232 = None
+        sopts.step_init = False
+        sopts.fetch_token_db = False
+        sopts.log_dir = None
+        sopts.debug = False
+        sopts.log_dir_backup_count = 0
+        sopts.reconnect_timeout = 10.0
+        mock_parse_args.return_value = (sopts, [])
+
+        mock_discover_servos.side_effect = servo_dev_finder.ServoDeviceFinderError(
+            "Error message"
         )
+
+        with self.assertRaises(SystemExit) as result:
+            servod.ServodStarter([])
+
+        self.assertEqual(result.exception.code, -1)
 
     @patch("servo.core.servod.ServodStarter.__init__", return_value=None)
     @patch("servo.utils.servo_dev_prober.DeviceProber.__init__", return_value=None)
