@@ -25,7 +25,7 @@ class PollingControl:
           expected_results: a list of the expected values for the control
         """
         try:
-            res = hw_driver._issue_cmd_get_results(control, [])
+            res = hw_driver._servod_get(control)
             if res in expected_results:
                 return True
         except HwDriverError as e:
