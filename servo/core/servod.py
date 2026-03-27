@@ -251,7 +251,10 @@ class ServodStarter:
                 time.sleep(0.5)
 
                 self._servod.validate_dut_controller()
-                self._servod.hwinit(verbose=True, step_init=sopts.step_init)
+                if sopts.no_hwinit:
+                    self._logger.info("Skipping hwinit as requested by --no-hwinit")
+                else:
+                    self._servod.hwinit(verbose=True, step_init=sopts.step_init)
         except servo_dev_finder.ServoDeviceFinderError as e:
             self._logger.fatal("-" * 60)
             self._logger.fatal("FATAL: %s", e)
@@ -387,6 +390,14 @@ class ServodStarter:
             action="store_true",
             dest="servo_recovery",
             help="DEPRECATED. Old name for --servo-recovery",
+        )
+        server_pars.add_argument(
+            "--no-hwinit",
+            default=False,
+            action="store_true",
+            help="Skip the hardware initialization (hwinit) phase during startup. "
+            "Useful for starting servod quickly when the DUT is unresponsive "
+            "or in hibernate.",
         )
         server_pars.add_argument(
             "--step-init",

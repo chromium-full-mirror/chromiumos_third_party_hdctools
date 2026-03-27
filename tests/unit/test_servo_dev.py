@@ -510,7 +510,7 @@ class TestServoDevice(unittest.TestCase):
 
         self.v4_dev.hwinit(True, ["control1"])
 
-        self.v4_dev._logger.debug.assert_called_once_with(
+        self.v4_dev._logger.debug.assert_any_call(
             "Skip initializing control %r because it is already initialized "
             "for a child device.",
             "control1",
@@ -521,8 +521,8 @@ class TestServoDevice(unittest.TestCase):
         self.v4_dev.set.assert_any_call("control3", "value3")
         self.v4_dev._logger.info.assert_has_calls(
             [
-                unittest.mock.call("Initialized %s to %s", "control2", "value2"),
-                unittest.mock.call("Initialized %s to %s", "control3", "value3"),
+                unittest.mock.call("Initializing %s to %s", "control2", "value2"),
+                unittest.mock.call("Initializing %s to %s", "control3", "value3"),
             ]
         )
         self.v4_dev._logger.error.assert_not_called()
@@ -550,7 +550,7 @@ class TestServoDevice(unittest.TestCase):
 
         self.v4_dev.hwinit(True, ["control1"])
 
-        self.v4_dev._logger.debug.assert_called_once_with(
+        self.v4_dev._logger.debug.assert_any_call(
             "Skip initializing control %r because it is already initialized "
             "for a child device.",
             "control1",
@@ -559,8 +559,11 @@ class TestServoDevice(unittest.TestCase):
             [unittest.mock.call("control2"), unittest.mock.call("control3")]
         )
         self.v4_dev.set.assert_called_once_with("active_dut_controller", "default")
-        self.v4_dev._logger.info.assert_called_once_with(
-            "Initialized %s to %s", "control2", "value2"
+        self.v4_dev._logger.info.assert_has_calls(
+            [
+                unittest.mock.call("Initializing %s to %s", "control2", "value2"),
+                unittest.mock.call("Initializing %s to %s", "control3", "value3"),
+            ]
         )
         self.v4_dev._logger.error.assert_has_calls(
             [

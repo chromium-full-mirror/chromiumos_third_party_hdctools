@@ -72,6 +72,7 @@ class TestServoStarter(unittest.TestCase):
         sopts.grpc_data_host = "localhost"
         sopts.grpc_data_port = 9992
         sopts.reconnect_timeout = 10.0
+        sopts.no_hwinit = False
 
         with patch(
             "servo.core.servod.ServodStarter._parse_args", return_value=(sopts, [])

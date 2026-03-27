@@ -599,13 +599,17 @@ class ServoDevice:
                     control_name,
                 )
                 continue
+            if verbose:
+                self._logger.info("Initializing %s to %s", control_name, value)
             try:
                 # Workaround for bug chrome-os-partner:42349. Without this check, the
                 # gpio will briefly pulse low if we set it from high to high.
                 if self.get(control_name) != value:
                     self.set(control_name, value)
                 if verbose:
-                    self._logger.info("Initialized %s to %s", control_name, value)
+                    self._logger.debug(
+                        "Successfully initialized %s to %s", control_name, value
+                    )
             except Exception as error:
                 self._logger.error("Problem initializing %s -> %s", control_name, value)
                 self._logger.error(str(error))
