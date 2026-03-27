@@ -32,15 +32,72 @@ of ec3po off of this shim and then delete this file.  IMPORTANT: This should
 wait until after completing the TODO above to stop using multiprocessing.Pipe!
 """
 
-# Imports to bring objects into this namespace for users of this module.
-# pylint: disable=unused-import
-from multiprocessing import Pipe
-from queue import Queue
-from threading import Thread as ThreadOrProcess
+from queue import Queue  # pylint: disable=unused-import
+import select
+import socket
+from threading import Thread as ThreadOrProcess  # pylint: disable=unused-import
 
 
 # True if this module has ec3po using subprocesses, False if using threads.
 USING_SUBPROCS = False
+
+
+class SocketConnection:
+    """A socket-based mock of multiprocessing.connection.Connection.
+
+    It sends bytes directly without the pickling/unpickling serialization overhead
+    of multiprocessing.Pipe, which is highly resource-intensive and unnecessary
+    for cross-thread communication.
+    """
+
+    def __init__(self, sock, readable=True, writable=True):
+        self._sock = sock
+        self._readable = readable
+        self._writable = writable
+
+    def send(self, data):
+        """Sends bytes via the underlying socket."""
+        if not self._writable:
+            raise OSError("Connection is not writable")
+        if not isinstance(data, bytes):
+            raise TypeError(
+                "SocketConnection only supports sending bytes (to bypass pickling)."
+            )
+        self._sock.sendall(data)
+
+    def recv(self, maxsize=4096):
+        """Receives bytes from the underlying socket."""
+        if not self._readable:
+            raise OSError("Connection is not readable")
+        data = self._sock.recv(maxsize)
+        if not data:
+            raise EOFError
+        return data
+
+    def poll(self, timeout=0.0):
+        """Returns True if there is data available to read."""
+        if not self._readable:
+            raise OSError("Connection is not readable")
+        r, _w, _x = select.select([self._sock], [], [], timeout)
+        return bool(r)
+
+    def fileno(self):
+        """Returns the file descriptor for epoll integration."""
+        return self._sock.fileno()
+
+    def close(self):
+        """Closes the underlying socket."""
+        self._sock.close()
+
+
+# pylint: disable=invalid-name
+def Pipe(duplex=True):
+    """Returns a pair of connected SocketConnection objects."""
+    s1, s2 = socket.socketpair()
+    if duplex:
+        return SocketConnection(s1), SocketConnection(s2)
+    # A non-duplex Pipe returns (read_only, write_only)
+    return SocketConnection(s1, writable=False), SocketConnection(s2, readable=False)
 
 
 def _do_nothing():
