@@ -18,6 +18,11 @@
     <doc>Different levels of sleep the GSC enters during idle time</doc>
     <params active="wfi" sleep="sleep" />
   </map>
+  <control>
+    <name>gsc_fw_type</name>
+    <doc>Name of GSC fw</doc>
+    <params cmd="get" drv="echo" interface="servo" value="cr50"/>
+  </control>
   <!-- gsc is also named 'usbpd' and 'cr50' for compatibility with previous
        scripts -->
   <control>
