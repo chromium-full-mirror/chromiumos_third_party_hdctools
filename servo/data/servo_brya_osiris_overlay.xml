@@ -5,14 +5,14 @@
   <!-- Controls -->
   <control>
     <name>dut_pd_data_role</name>
-    <params clobber_ok="" port_count="2" />
+    <params clobber_ok="patch" port_count="2" />
   </control>
   <!-- Osiris has a unique keyboard matrix -->
   <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
-      subtype="init_default_keyboard" handler_type="ChromeECOsiris" clobber_ok="">
+      subtype="init_default_keyboard" handler_type="ChromeECOsiris" clobber_ok="patch">
     </params>
   </control>
 </root>

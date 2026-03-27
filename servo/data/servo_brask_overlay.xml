@@ -10,6 +10,6 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="" pb_init_idle="yes" reset_delay="3"/>
+    <params clobber_ok="patch" pb_init_idle="yes" reset_delay="3"/>
   </control>
 </root>

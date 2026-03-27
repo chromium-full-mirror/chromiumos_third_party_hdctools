@@ -11,7 +11,7 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="it8xxx2"/>
   </control>
 </root>

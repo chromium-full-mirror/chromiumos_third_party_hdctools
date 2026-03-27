@@ -9,8 +9,8 @@
     <doc>Emulated lid switch on ec</doc>
     <params cmd="get" uart_cmd="lidstate" regex="lid state: (open|closed)"
     group="1" retries="3" formatting="map_open" interface="10"
-    drv="simple_ec" map="yesno" clobber_ok=""></params>
+    drv="simple_ec" map="yesno" clobber_ok="patch"></params>
     <params cmd="set" subtype="lid_open" interface="10"
-    drv="ec" map="yesno" clobber_ok=""></params>
+    drv="ec" map="yesno" clobber_ok="patch"></params>
   </control>
 </root>

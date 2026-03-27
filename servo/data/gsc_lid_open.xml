@@ -4,9 +4,9 @@
     <name>lid_open</name>
     <params cmd="get" uart_cmd="gpioget CCD_REC_LID_SWITCH"
     regex="\s+([01])\*?\s+CCD_REC_LID_SWITCH" group="1" interface="9" drv="cr50"
-    map="yesno" clobber_ok="" init="yes"></params>
+    map="yesno" clobber_ok="patch" init="yes"></params>
     <params cmd="set" uart_cmd="gpioset CCD_REC_LID_SWITCH"
     interface="9" drv="cr50" input_type="str" choices="^(0|1)$"
-    map="yesno" clobber_ok="" init="yes"></params>
+    map="yesno" clobber_ok="patch" init="yes"></params>
   </control>
 </root>

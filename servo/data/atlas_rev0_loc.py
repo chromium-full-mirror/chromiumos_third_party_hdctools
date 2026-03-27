@@ -9,13 +9,13 @@ inline = """
     <name>adc_mux</name>
     <doc>valid mux values for DUT's two banks of INA219 off PCA9540
     ADCs</doc>
-    <params clobber_ok="" none="0" bank0="4" bank1="5"></params>
+    <params clobber_ok="patch" none="0" bank0="4" bank1="5"></params>
   </map>
   <control>
     <name>adc_mux</name>
     <doc>4 to 1 mux to steer remote i2c i2c_mux:rem to two sets of
     16 INA219 ADCs. Note they are only on leg0 and leg1</doc>
-    <params clobber_ok="" interface="2" drv="pca9546" child="0x70"
+    <params clobber_ok="patch" interface="2" drv="pca9546" child="0x70"
     map="adc_mux"></params>
   </control>
 """

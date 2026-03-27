@@ -33,7 +33,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params drv="cros_ec_softrec_power" clobber_ok=""
+    <params drv="cros_ec_softrec_power" clobber_ok="patch"
       shutdown_delay="11.0" boot_to_rec_screen_delay="10.0"
       warm_reset_can_hold_ap="yes"
       reset_hold="1" />
@@ -72,7 +72,7 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="ite_spi_ccd_uart"/>
   </control>
   <control>

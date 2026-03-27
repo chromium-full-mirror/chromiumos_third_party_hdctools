@@ -4,6 +4,6 @@
   </include>
   <control>
     <name>dut_pd_data_role</name>
-    <params clobber_ok="" port_count="1" />
+    <params clobber_ok="patch" port_count="1" />
   </control>
 </root>
