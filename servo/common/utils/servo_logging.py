@@ -33,6 +33,7 @@ import logging.handlers
 import os
 import re
 import tarfile
+import uuid
 
 
 # Format strings used for servod logging in files.
@@ -344,9 +345,13 @@ class ServodRotatingFileHandler(logging.handlers.RotatingFileHandler):
     def updateConvenienceLink(self):
         """Generate a symbolic link to the latest file."""
         linkfile = self._getLinkpath()
-        if os.path.lexists(linkfile):
-            os.remove(linkfile)
-        os.symlink(os.path.basename(self.baseFilename), linkfile)
+        tmplink = f"{linkfile}.{uuid.uuid4().hex}.tmp"
+        try:
+            os.symlink(os.path.basename(self.baseFilename), tmplink)
+            os.replace(tmplink, linkfile)
+        finally:
+            if os.path.lexists(tmplink):
+                os.remove(tmplink)
 
     def _buildFilename(self, ts):
         """Helper to build the active log file's filename.
