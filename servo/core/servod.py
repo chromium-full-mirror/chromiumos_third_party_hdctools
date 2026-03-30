@@ -1086,7 +1086,12 @@ def main(cmdline=sys.argv[1:]):
     try:
         starter = ServodStarter(cmdline)
     except (ServodError, servo_dev.ServoDeviceError) as error:
-        print("Error: %s" % error)
+        logging.getLogger(os.path.basename(sys.argv[0])).error("Error: %s", error)
+        sys.exit(1)
+    except Exception as error:
+        logging.getLogger(os.path.basename(sys.argv[0])).exception(
+            "Fatal error during servod startup: %s", error
+        )
         sys.exit(1)
     starter.serve()
 
