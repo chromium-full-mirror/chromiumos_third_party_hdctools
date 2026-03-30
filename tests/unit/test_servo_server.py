@@ -532,7 +532,7 @@ class TestServod(unittest.TestCase):
         servod._logger.error.assert_has_calls(
             [
                 unittest.mock.call(
-                    "No Servo Micro, C2D2, or CCD detected for board %s", "atlas"
+                    "No Servo Micro, C2D2, or CCD detected for %s", "board atlas"
                 ),
                 unittest.mock.call(
                     (
@@ -582,7 +582,7 @@ class TestServod(unittest.TestCase):
         servod._logger.error.assert_has_calls(
             [
                 unittest.mock.call(
-                    "No Servo Micro, C2D2, or CCD detected for board %s", "atlas"
+                    "No Servo Micro, C2D2, or CCD detected for %s", "board atlas"
                 ),
                 unittest.mock.call(
                     (

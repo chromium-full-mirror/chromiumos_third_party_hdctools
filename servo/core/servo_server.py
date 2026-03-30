@@ -666,8 +666,16 @@ class Servod:
             # is valid for both ccd and for servo micro: a controller is missing
             self.set("dut_controller_missing_fault", "on")
 
+            board_name = self.get_board()
+            model_name = getattr(self.get_main_device(), "model", None)
+            if model_name and board_name.endswith("_" + model_name):
+                board_name = board_name[: -len(model_name) - 1]
+                description = "board %s model %s" % (board_name, model_name)
+            else:
+                description = "board %s" % board_name
+
             self._logger.error(
-                "No Servo Micro, C2D2, or CCD detected for board %s", self.get_board()
+                "No Servo Micro, C2D2, or CCD detected for %s", description
             )
             self._logger.error(
                 "Try flipping the USB type C cable if you were using "
