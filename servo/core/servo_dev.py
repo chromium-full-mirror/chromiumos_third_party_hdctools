@@ -414,9 +414,6 @@ class ServoDevice:
             drv = self._get_param_drv(name)
             params = json.loads(drv.value)
             rd_val = params["response"]
-            # If it's a float that's equivalent to an int, convert it to int.
-            # This is common after gRPC/JSON serialization.
-            rd_val = json_utils.ensure_int(rd_val)
             wrapper.got_result(rd_val)
             return rd_val
 
