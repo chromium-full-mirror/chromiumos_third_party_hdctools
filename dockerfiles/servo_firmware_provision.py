@@ -9,7 +9,7 @@ import subprocess
 # TODO (anhdle): Update to track servo-firmware ebuild instead of hardcoding.
 # stable channel firmware
 C2D2_NAME = "c2d2_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
-SERVO_MICRO_NAME = "servo_micro_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
+SERVO_MICRO_NAME = "servo_micro_v2.4.85-0480cc7379"  # servo branch builder 03/04/2026
 SERVO_V4_NAME = "servo_v4_v2.4.83-5e9611ca0c"  # servo branch builder 08/28/24
 SERVO_V4P1_NAME = "servo_v4p1_v2.0.29298-4d4a4e980"  # EC ToT from 23/09/2025
 SWEETBERRY_NAME = "sweetberry_v2.4.76-01f828e3a6"  # servo-firmware-R81-12768.204.0
@@ -17,7 +17,7 @@ SWEETBERRY_NAME = "sweetberry_v2.4.76-01f828e3a6"  # servo-firmware-R81-12768.20
 # Prev channel firmware
 C2D2_NAME_PREV = "c2d2_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.40.0
 SERVO_MICRO_NAME_PREV = (
-    "servo_micro_v2.4.73-d771c18ba9"  # servo-firmware-R81-12768.71.0
+    "servo_micro_v2.4.82-dbed085877"  # servo branch builder 05/30/2024
 )
 SERVO_V4_NAME_PREV = "servo_v4_v2.4.58-c37246f9c"  # servo-firmware-R81-12768.74.0
 SERVO_V4P1_NAME_PREV = "servo_v4p1_v2.0.27354-3eeb06336"  # EC ToT from 01/27/2025
