@@ -32,6 +32,11 @@ You have access to the following local skill. You can read the instructions dire
 
 <available_skills>
   <skill>
+    <name>labstation-dev</name>
+    <description>Use this skill for developing, building, flashing, and debugging servod and labstation components on ChromeOS. It provides workflows for multi-process architecture, concurrency locks, upstart services, and USB stability issues, as well as instructions on filing bugs via the CLI.</description>
+    <location>skills/labstation-dev/SKILL.md</location>
+  </skill>
+  <skill>
     <name>test-labstation</name>
     <description>Use this skill to build, flash, and test a labstation image. It handles building a generic labstation board (e.g., fizz, brask), flashing it to a specific hardware device via ssh, and running bare-metal servod tests using test_servod.sh. Use whenever the user asks to test a labstation or run labstation tests on hardware.</description>
     <location>skills/test-labstation/SKILL.md</location>
