@@ -106,6 +106,9 @@ class activeV4Device(hw_driver.HwDriver):
                     device = gsc[0]
         # Check again after a potential override for ccd_gsc
         if device not in devices:
+            if not devices:
+                self._logger.info("No usable devices available. Cannot set active device to %r", device)
+                return
             raise activeV4DeviceError("Invalid device %r. Try %r" % (device, devices))
         use_servo = self.V4_DEVICES[device]
 
