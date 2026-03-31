@@ -587,12 +587,20 @@ class PtyDriver(hw_driver.HwDriver):
         Args:
           cmd: an int, 1 of on, 0 for off
         """
-        self._interface.set_capture_active(cmd)
+        if hasattr(self._interface, "set_capture_active"):
+            self._interface.set_capture_active(cmd)
+        else:
+            self._logger.warning("Interface %s does not support UART capture.",
+                                 self._interface)
 
     def _Get_uart_capture(self):
         """Get the UART capture mode (on or off)."""
-        return self._interface.get_capture_active()
+        if hasattr(self._interface, "get_capture_active"):
+            return self._interface.get_capture_active()
+        return 0
 
     def _Get_uart_stream(self):
         """Get uart stream generated since last time."""
-        return self._interface.get_stream()
+        if hasattr(self._interface, "get_stream"):
+            return self._interface.get_stream()
+        return ""
