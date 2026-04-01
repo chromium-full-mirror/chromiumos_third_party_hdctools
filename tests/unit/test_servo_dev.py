@@ -284,6 +284,36 @@ class TestServoDevice(unittest.TestCase):
                 token_db=self.v4_dev._token_db,
             )
 
+    def test_init_servo_interfaces_resource_busy(self):
+        """Test init_servo_interfaces() when device is busy."""
+        with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
+            mock_resp = unittest.mock.MagicMock()
+            mock_resp.success = False
+            mock_resp.loglines = [
+                "2026-04-01 20:31:12,394 - root - ERROR - [Errno 16] Resource busy"
+            ]
+            mock_driver_client.InitInterface.return_value = mock_resp
+
+            with self.assertRaisesRegex(
+                servo_dev.ServoDeviceError,
+                r"Resource busy\. Is another servod instance running\?",
+            ):
+                self.v4_dev.init_servo_interfaces()
+
+    def test_init_servo_interfaces_no_such_device(self):
+        """Test init_servo_interfaces() when device is missing."""
+        with patch.object(self.v4_dev, "_driver_client") as mock_driver_client:
+            mock_resp = unittest.mock.MagicMock()
+            mock_resp.success = False
+            mock_resp.loglines = ["USBError: [Errno 2] No such device"]
+            mock_driver_client.InitInterface.return_value = mock_resp
+
+            with self.assertRaisesRegex(
+                servo_dev.ServoDeviceError,
+                r"No such device\. Is the device still connected\?",
+            ):
+                self.v4_dev.init_servo_interfaces()
+
     def test_set_board_and_model(self):
         """Test set_board_and_model()."""
         v2_entry = servo_dev_hierarchy.ServoDeviceEntry(

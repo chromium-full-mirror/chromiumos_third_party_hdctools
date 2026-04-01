@@ -284,9 +284,29 @@ class ServoDevice:
             self._logger.info(line.strip())
 
         if not response.success and not fault_tolerant:
+            error_hint = ""
+            for line in response.loglines:
+                if "Resource busy" in line:
+                    error_hint = " Resource busy. Is another servod instance running?"
+                    break
+                if "No such device" in line:
+                    error_hint = " No such device. Is the device still connected?"
+                    break
+                if (
+                    "Access denied" in line
+                    or "insufficient permissions" in line.lower()
+                ):
+                    error_hint = (
+                        " Access denied. Do you have proper permissions (udev rules)?"
+                    )
+                    break
+                if "run out of endpoints" in line:
+                    error_hint = " Run out of USB endpoints. See crbug.com/652373."
+                    break
+
             raise ServoDeviceError(
-                "Failed to initialize interfaces for %s. "
-                "Check the logs for details." % self
+                "Failed to initialize interfaces for %s.%s "
+                "Check the logs for details." % (self, error_hint)
             )
 
     def set_board_and_model(self, board, model=None):
