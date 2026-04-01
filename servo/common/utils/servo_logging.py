@@ -269,15 +269,22 @@ def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUN
             raise OSError(1, "Log directory not owned by user", instance_logdir)
         for level in LOGLEVEL_FILES:
             fh_level, fh_fmt = LOGLEVEL_MAP[level]
-            fh = ServodRotatingFileHandler(
-                logdir=instance_logdir,
-                ts=logging_ts,
-                fmt=fh_fmt,
-                backup_count=backup_count,
-                level=fh_level,
-            )
-            # Ensure that the global backup limit is kept across instances.
-            fh.pruneOldLogsAcrossInstances()
+            if module == "data":
+                fh = logging.handlers.WatchedFileHandler(
+                    os.path.join(logdir, f"latest.{level}")
+                )
+                fh.setLevel(fh_level)
+                fh.setFormatter(UTCFormatter(fmt=fh_fmt))
+            else:
+                fh = ServodRotatingFileHandler(
+                    logdir=instance_logdir,
+                    ts=logging_ts,
+                    fmt=fh_fmt,
+                    backup_count=backup_count,
+                    level=fh_level,
+                )
+                # Ensure that the global backup limit is kept across instances.
+                fh.pruneOldLogsAcrossInstances()
             root_logger.addHandler(fh)
 
 

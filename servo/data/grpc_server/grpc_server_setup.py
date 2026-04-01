@@ -63,8 +63,14 @@ def serve():
 
     args = parser.parse_args()
 
+    logs_dir = args.logs_dir
+    if logs_dir is None:
+        port_str = str(args.grpc_data_port)
+        base_port = port_str[1:] if port_str.startswith("2") else port_str
+        logs_dir = f"{DEFAULT_LOG_DIR}/servod_{base_port}"
+
     servo_logging.setup(
-        logdir=(args.logs_dir if args.logs_dir is not None else DEFAULT_LOG_DIR),
+        logdir=logs_dir,
         module="data",
         port=args.grpc_data_port,
         debug_stderr=True,
