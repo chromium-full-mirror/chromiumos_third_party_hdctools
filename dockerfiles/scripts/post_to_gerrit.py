@@ -13,19 +13,52 @@ import urllib.error
 import urllib.request
 
 
-def get_gcp_token():
-    """Gets an OAuth2 token from the GCP Metadata server (works in Cloud Build)."""
+try:
+    import google.auth
+    from google.auth import impersonated_credentials
+    from google.auth.transport.requests import Request
+except ImportError:
+    print(
+        "Missing required libraries. Please run: pip3 install google-auth requests",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
+def get_current_service_account():
+    """Gets the current service account email from the GCP Metadata server."""
     try:
         req = urllib.request.Request(
             "http://metadata.google.internal/computeMetadata/v1"
-            "/instance/service-accounts/default/token",
+            "/instance/service-accounts/default/email",
             headers={"Metadata-Flavor": "Google"},
         )
         with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            return data["access_token"]
-    except urllib.error.URLError as e:
-        print(f"Failed to get GCP token from metadata server: {e}", file=sys.stderr)
+            return response.read().decode("utf-8").strip()
+    except Exception as e:
+        print(f"Failed to get current service account email: {e}", file=sys.stderr)
+        return None
+
+
+def get_gerrit_scoped_token(service_account_email):
+    """Gets an OAuth2 token explicitly scoped for Gerrit."""
+    try:
+        # Get the default Cloud Build credentials (cloud-platform scoped)
+        default_creds, _project = google.auth.default()
+
+        # Impersonate the same service account, but ask for the gerrit scope
+        scoped_creds = impersonated_credentials.Credentials(
+            source_credentials=default_creds,
+            target_principal=service_account_email,
+            target_scopes=["https://www.googleapis.com/auth/gerritcodereview"],
+        )
+
+        # Refresh to actually fetch the token from the GCP API
+        scoped_creds.refresh(Request())
+        return scoped_creds.token
+
+    except Exception as e:
+        print(f"Failed to get Gerrit-scoped token: {e}", file=sys.stderr)
         return None
 
 
@@ -82,6 +115,10 @@ def main():
         help="Base URL of the Gerrit instance.",
     )
     parser.add_argument("--change-id", help="Gerrit Change-Id (e.g. I... or numeric).")
+    parser.add_argument(
+        "--service-account",
+        help="The Cloud Build SA email. Fetched automatically if omitted.",
+    )
 
     args = parser.parse_args()
 
@@ -111,7 +148,15 @@ def main():
 
     print(f"Using Change-Id: {change_id}", file=sys.stderr)
 
-    auth_token = get_gcp_token()
+    # Resolve service account identity
+    service_account = args.service_account or get_current_service_account()
+    if not service_account:
+        print("Could not determine service account identity.", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Authenticating as: {service_account}", file=sys.stderr)
+
+    auth_token = get_gerrit_scoped_token(service_account)
     if not auth_token:
         msg = "Could not obtain token. Are you running in Cloud Build?"
         print(msg, file=sys.stderr)

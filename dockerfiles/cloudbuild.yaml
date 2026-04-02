@@ -169,6 +169,7 @@ steps:
           git fetch origin main || true
           BASE_COMMIT=$$(git merge-base origin/main HEAD || echo "HEAD~1")
 
+          export PYTHONPATH="$$PYTHONPATH:/workspace"
           python3 dockerfiles/scripts/analyze_xml_impact.py \
             --base-commit "$$BASE_COMMIT" \
             --target-commit "HEAD" \
@@ -185,8 +186,17 @@ steps:
                  # Upload HTML diffs to GCS.
                  gsutil -m -h "Content-Type:text/html" cp -r /workspace/html_diffs/* "$$BUCKET_PATH/" || echo "Warning: Failed to upload diffs to GCS"
 
+                 # Install auth libraries
+                 (python3 -m pip install --user google-auth requests || \
+                  (apt-get update && apt-get install -y python3-pip && \
+                   python3 -m pip install --user google-auth requests)) || \
+                 echo "Warning: Failed to install auth libs"
+
                  # Post to Gerrit
-                 python3 dockerfiles/scripts/post_to_gerrit.py --change-id "$$GERRIT_NUM" /workspace/impact_report.md || echo "Warning: Failed to post to Gerrit"
+                 python3 dockerfiles/scripts/post_to_gerrit.py \
+                   --change-id "$$GERRIT_NUM" \
+                   --service-account "hdctools-ci-bot@chromeos-hw-tools-dev.iam.gserviceaccount.com" \
+                   /workspace/impact_report.md || echo "Warning: Failed to post to Gerrit"
               fi
           else
               echo "No XML changes detected. Skipping report generation and upload."
