@@ -349,9 +349,15 @@
     map="onoff" init="off"></params>
   </control>
   <control>
-    <name>gsc_clear_rollback</name>
-    <doc>Clear rollback protection on GSC by executing a sequence of CCD commands.</doc>
-    <params cmd="set" subtype="clear_rollback" interface="9" drv="cr50"
-    input_type="str"></params>
+    <name>gsc_open_no_dev_mode</name>
+    <doc>Query CCD OpenNoDevMode capability.</doc>
+    <params cmd="get" uart_cmd="ccd"
+    regex="OpenNoDevMode\s+[YN-]\s+[0-9]+=(?:Default \()?([A-Za-z]+)" group="1" interface="9" drv="cr50" input_type="str"></params>
+  </control>
+  <control>
+    <name>gsc_open_from_usb</name>
+    <doc>Query CCD OpenFromUSB capability.</doc>
+    <params cmd="get" uart_cmd="ccd"
+    regex="OpenFromUSB\s+[YN-]\s+[0-9]+=(?:Default \()?([A-Za-z]+)" group="1" interface="9" drv="cr50" input_type="str"></params>
   </control>
 </root>

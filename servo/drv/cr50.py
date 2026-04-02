@@ -368,29 +368,3 @@ class cr50(pty_driver.PtyDriver):
     def _Set_rec_mode(self, value):
         self._issue_cmd("gpioset CCD_REC_LID_SWITCH %d" % value)
         self._Set_rec_btn_force(value == 0)
-
-    def _Set_clear_rollback(self, value):
-        """Clear rollback protection by executing CCD commands.
-
-        Args:
-          value: ignored.
-        """
-        self._logger.info("Clearing rollback protection...")
-        # 1) (gsc console) ccd testlab open
-        self._issue_cmd("ccd testlab open")
-        # 2) (gsc console) ccd reset factory
-        self._issue_cmd("ccd reset factory")
-        # 3) (gsc console) ccd set OpenNoTPMWipe ifopened
-        self._issue_cmd("ccd set OpenNoTPMWipe ifopened")
-        # 4) (gsc console) ccd lock
-        self._issue_cmd("ccd lock")
-        # 5) (gsc console) ccd open
-        # This will erase all TPM spaces - GSC console has prints indicating this.
-        # It might take some time, so we increase the timeout.
-        self._issue_cmd_get_results(
-            "ccd open", [r"(State: Open|TPM erased)"], timeout=60
-        )
-        # 6) (gsc console) ccd reset
-        # resetting and locking reverts the CCD cap to the normal settings.
-        self._issue_cmd("ccd reset")
-        self._logger.info("Rollback protection cleared.")
