@@ -87,6 +87,11 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         except Exception as e:
             # We used to capture tracebacks here, but now ExceptionTruncatingInterceptor
             # handles all gRPC exception truncation automatically at the server boundary.
+            if hasattr(e, "details"):
+                msg = e.details()
+                if msg.startswith("Exception calling application: "):
+                    msg = msg[len("Exception calling application: ") :]
+                raise DriverImplError(msg.split("\n")[0])
             raise DriverImplError(str(e))
 
     def _get_param_drv(
