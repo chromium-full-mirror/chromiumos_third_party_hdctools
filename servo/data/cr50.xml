@@ -65,7 +65,7 @@
     <name>ec3po_gsc_uart</name>
     <alias>ec3po_cr50_uart,cr50_uart_pty,ec3po_usbpd_uart_pty,usbpd_uart_pty,gsc_uart_pty</alias>
     <doc>gsc UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart" >
+    <params cmd="get" subtype="pty" interface="9" drv="uart">
     </params>
   </control>
   <control>

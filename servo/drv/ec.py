@@ -56,6 +56,7 @@ class ec(pty_driver.PtyDriver):
         """Driver specific initializer."""
         super()._drv_init()
 
+        self._has_chan = self._interface._uart_state.get("has_chan", True)
         self._role_swap_delay = float(self._params.get("role_swap_delay", 1.0))
         # Add locals to the values dictionary.
         if "kbd" not in self._interface._uart_state:
@@ -68,11 +69,15 @@ class ec(pty_driver.PtyDriver):
         Raises:
           ecError: when failing to retrieve channel settings
         """
+        if not self._has_chan:
+            return
         self._issue_cmd("chan save")
         self._issue_cmd("chan %d" % COMMAND_CHANNEL_MASK)
 
     def _restore_channel(self):
         """Load saved channel setting"""
+        if not self._has_chan:
+            return
         self._issue_cmd("chan restore")
 
     def _set_key_pressed(self, key_rc, pressed):

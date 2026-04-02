@@ -17,6 +17,10 @@
     <alias>ti50_version</alias>
     <params clobber_ok="patch" />
   </control>
+  <control>
+    <name>ec3po_gsc_uart</name>
+    <params has_chan="no" clobber_ok="patch" />
+  </control>
   <!-- Use Ti50 to drive the write protect signal. Reset the servo flex wp signal -->
   <control>
     <name>fw_wp_state</name>

@@ -64,6 +64,8 @@ class ec3poServo(pty_driver.PtyDriver):
         """
         super()._drv_init()
 
+        self._has_chan = self._interface._uart_state.get("has_chan", True)
+
         if "console" in self._params:
             if (
                 self._params["console"] == "enhanced"
@@ -82,11 +84,15 @@ class ec3poServo(pty_driver.PtyDriver):
         EC output from higher priority tasks that might corrupt the command's
         output. The old setting is saved for restoring later.
         """
+        if not self._has_chan:
+            return
         self._issue_cmd("chan save")
         self._issue_cmd("chan %d" % COMMAND_CHANNEL_MASK)
 
     def _restore_channel(self):
         """Load saved channel setting."""
+        if not self._has_chan:
+            return
         self._issue_cmd("chan restore")
 
     def _issue_safe_cmd_get_results(self, cmd, rx):

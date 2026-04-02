@@ -31,6 +31,7 @@ UART_PARAMS = {
     "uart_multicmd": None,
     "uart_regexp": None,
     "uart_timeout": DEFAULT_UART_TIMEOUT,
+    "has_chan": True,
 }
 
 
@@ -58,6 +59,13 @@ class PtyDriver(hw_driver.HwDriver):
         # setting anything for the ec uart to affect the ap uart state.
         if not hasattr(self._interface, "_uart_state"):
             self._interface._uart_state = UART_PARAMS.copy()
+
+        # Update the interface state if 'has_chan' was passed as a parameter
+        # to the driver configuring the PTY (e.g. ec3po_gsc_uart).
+        if "has_chan" in self._params:
+            self._interface._uart_state["has_chan"] = (
+                self._params.get("has_chan").lower() != "no"
+            )
 
     def _refresh_pty_path(self):
         """Refresh the PTY path from the interface."""
