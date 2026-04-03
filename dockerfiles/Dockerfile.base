@@ -411,6 +411,10 @@ RUN mkdir -p /usr/share/ec-devutils
 
 COPY --link --from=ec-builder /ec/util/openocd/* /usr/share/ec-devutils/
 
+# Microchip EC flash support
+RUN mkdir -p /util/mchp
+COPY --link --from=ec-builder /ec/util/mchp/crisis_rcvry_util.py /util/mchp
+
 # Fetch NPCX monitor from GCS
 RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/npcx_monitor/npcx_monitor-2025.02.11.bin \
     -O /usr/share/ec-devutils/npcx_monitor.bin
