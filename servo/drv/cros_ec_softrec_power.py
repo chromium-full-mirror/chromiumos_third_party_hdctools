@@ -121,14 +121,27 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
             if rec_mode == self.REC_ON or rec_mode == self.REC_ON_FORCE_MRC:
                 # Need to retrieve ec_feat before warm_reset to avoid doing that while
                 # EC is jumping to RW with EFS2.
-                efs2 = bool(
-                    int(self._servod_get("ec_feat"), 16)
-                    & crosEcSoftrecPower._EC_FEATURE_EFS2
-                )
+                ec_feat = None
+                for attempt in range(3):
+                    try:
+                        ec_feat = int(self._servod_get("ec_feat"), 16)
+                        break
+                    except Exception as e:
+                        self._logger.warning(
+                            "Failed to retrieve ec_feat (attempt %d/3), retrying: %s",
+                            attempt + 1, e
+                        )
+                        self._reinitialize_interfaces("ec_feat_retry")
+
+                if ec_feat is None:
+                    raise Exception("Failed to retrieve ec_feat after retries.")
+
+                efs2 = bool(ec_feat & crosEcSoftrecPower._EC_FEATURE_EFS2)
                 if self._warm_reset_can_hold_ap:
                     # Hold warm reset so the AP doesn't boot when EC reboots.
                     # Note that this only seems to work reliably for ARM devices.
                     self._servod_set("warm_reset", "on")
+                    self._reinitialize_interfaces("warm_reset:on")
                     if efs2:
                         self._logger.debug(
                             "Delay %s after warm_reset for EC to jump to RW (EFS2)",
@@ -185,6 +198,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 if self._warm_reset_can_hold_ap:
                     # Release warm reset after a potential cold reset settles.
                     self._servod_set("warm_reset", "off")
+                    self._reinitialize_interfaces("warm_reset:off")
             else:
                 # Need to clear the flag in secondary (B) copy of the host events if
                 # we're in non-recovery mode.

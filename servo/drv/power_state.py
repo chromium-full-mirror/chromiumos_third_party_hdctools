@@ -82,6 +82,32 @@ class PowerStateDriver(hw_driver.HwDriver):
             and cold_reset == "default_cold_reset"
         )
 
+    def _reinitialize_interfaces(self, reason):
+        """Reinitialize interfaces to recover from a USB reset.
+
+        Args:
+            reason: String identifying the cause of the reset (e.g. 'cold_reset')
+        """
+        # Wait long enough for usb to have dropped out
+        time.sleep(0.3)
+        # Attempt to reinitialize the device in case the device reenumerated quicker
+        # than the polling resolution. By now, if the device did not reenumerate,
+        # the Watchdog should be attempting to catch & reinitialize it.
+        try:
+            self._data_client.ReinitializeInterfaces()
+        except grpc.RpcError as e:
+            self._logger.info(
+                "Ignoring expected gRPC error during ReinitializeInterfaces after %s: %s",
+                reason,
+                e,
+            )
+        except Exception as e:
+            self._logger.info(
+                "Ignoring expected error during ReinitializeInterfaces after %s: %s",
+                reason,
+                e,
+            )
+
     def _cold_reset(self):
         """Apply cold reset to the DUT.
 
@@ -94,8 +120,10 @@ class PowerStateDriver(hw_driver.HwDriver):
         if self._ccd_pulse_cold_reset or self._cold_reset_set_to_gsc_reset():
             return self._ccd_cold_reset()
         self._servod_set("cold_reset", "on")
+        self._reinitialize_interfaces("cold_reset:on")
         time.sleep(self._reset_hold_time)
         self._servod_set("cold_reset", "off")
+        self._reinitialize_interfaces("cold_reset:off")
         # After the reset, give the EC the time it needs to
         # re-initialize.
         time.sleep(self._reset_recovery_time)
@@ -108,10 +136,12 @@ class PowerStateDriver(hw_driver.HwDriver):
         """
         # The ccd_cold_reset_pulse signal asserts and deasserts ecrst on its own
         self._servod_set("gsc_ecrst_pulse", "on")
+        self._reinitialize_interfaces("gsc_ecrst_pulse:on")
         # After the reset, give the EC and CCD the time it needs to
         # re-initialize.
         time.sleep(self._reset_recovery_time)
         self._servod_set("gsc_ecrst_pulse", "off")
+        self._reinitialize_interfaces("gsc_ecrst_pulse:off")
         time.sleep(self._reset_recovery_time)
 
     def _warm_reset(self):
@@ -122,8 +152,10 @@ class PowerStateDriver(hw_driver.HwDriver):
 
         """
         self._servod_set("warm_reset", "on")
+        self._reinitialize_interfaces("warm_reset:on")
         time.sleep(self._reset_hold_time)
         self._servod_set("warm_reset", "off")
+        self._reinitialize_interfaces("warm_reset:off")
         # After the reset, give the EC the time it needs to
         # re-initialize.
         time.sleep(self._reset_recovery_time)
@@ -179,24 +211,7 @@ class PowerStateDriver(hw_driver.HwDriver):
         Reboot GSC and reset ccd to recover from the usb reset.
         """
         self._servod_set("gsc_reboot", "on")
-        # Wait long enough for gsc to reboot and for usb to have dropped out,
-        # and ServoWatchdog to have reinitialized gsc interfaces.
-        time.sleep(0.3)
-        # Attempt to reinitialize the device in case the gsc reenumerated quicker
-        # than the polling resolution. By now, if the device did not reenumerate,
-        # the Watchdog should be attempting to catch & reinitialize it.
-        try:
-            self._data_client.ReinitializeInterfaces()
-        except grpc.RpcError as e:
-            self._logger.info(
-                "Ignoring expected gRPC error during ReinitializeInterfaces after gsc_reboot: %s",
-                e,
-            )
-        except Exception as e:
-            self._logger.info(
-                "Ignoring expected error during ReinitializeInterfaces after gsc_reboot: %s",
-                e,
-            )
+        self._reinitialize_interfaces("gsc_reboot")
 
     def _set(self, statename):
         """Set power state according to `statename`."""

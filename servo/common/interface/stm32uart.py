@@ -173,17 +173,33 @@ class Suart(uart.Uart):
                                 try:
                                     self._susb.write_ep(r, self._susb.TIMEOUT_MS)
                                 except (IOError, usb.core.USBTimeoutError) as e:
-                                    self._logger.exception(
-                                        "uarttx %s: %s", self.get_pty(), e
-                                    )
-                                    if e.errno == errno.ENODEV:
+                                    if getattr(e, "errno", None) in (
+                                        errno.ENODEV,
+                                        errno.EIO,
+                                    ):
                                         self._logger.error(
-                                            "USB disconnected 0x%04x:%04x:%d",
+                                            "USB disconnected/I/O error "
+                                            "(errno %s) 0x%04x:%04x:%d",
+                                            getattr(e, "errno", None),
                                             self._susb._vendor,
                                             self._susb._product,
                                             self._susb._interface,
                                         )
-                                        self._susb.release()
+                                        try:
+                                            self._susb.release()
+                                        except usb.core.USBError as release_e:
+                                            if getattr(
+                                                release_e, "errno", None
+                                            ) not in (errno.ENODEV, errno.EIO):
+                                                self._logger.exception(
+                                                    "tx release %s: %s",
+                                                    self.get_pty(),
+                                                    release_e,
+                                                )
+                                    else:
+                                        self._logger.exception(
+                                            "uarttx %s: %s", self.get_pty(), e
+                                        )
                     except OSError as e:
                         if e.errno == errno.EIO:
                             self._logger.debug(
