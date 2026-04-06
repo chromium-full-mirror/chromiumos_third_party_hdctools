@@ -34,6 +34,7 @@ class CrosECPower(power_state.PowerStateDriver):
         else:
             self._servod_set("ec_uart_regexp", "None")
             self._servod_set("ec_uart_multicmd", self._apreset_ec_commands)
+            self._reinitialize_interfaces("ec_uart_multicmd:warm_reset")
             # After the reset, give the EC the time it needs to
             # re-initialize.
             time.sleep(self._reset_recovery_time)
@@ -42,6 +43,7 @@ class CrosECPower(power_state.PowerStateDriver):
         """Power off the DUT."""
         self._servod_set("ec_uart_regexp", "None")
         self._servod_set("ec_uart_multicmd", self._shutdown_ec_commands)
+        self._reinitialize_interfaces("ec_uart_multicmd:power_off")
 
         if manage_delay:
             if not polling_control.PollingControl().poll(
