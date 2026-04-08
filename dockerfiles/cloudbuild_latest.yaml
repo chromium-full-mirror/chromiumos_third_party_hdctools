@@ -27,6 +27,7 @@ steps:
   id: 'build'
   args:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:latest
+  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$_COMMIT_SHA
   - --cache=true
   - --cache-ttl=24h
   - --build-arg=BUILDER_BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest-inline
