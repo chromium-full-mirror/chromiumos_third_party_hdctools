@@ -271,7 +271,7 @@ def setup(logdir, module, port, debug_stderr=False, backup_count=LOG_BACKUP_COUN
             fh_level, fh_fmt = LOGLEVEL_MAP[level]
             if module == "data":
                 fh = logging.handlers.WatchedFileHandler(
-                    os.path.join(logdir, f"latest.{level}")
+                    os.path.join(logdir, f"latest.{level.upper()}")
                 )
                 fh.setLevel(fh_level)
                 fh.setFormatter(UTCFormatter(fmt=fh_fmt))
