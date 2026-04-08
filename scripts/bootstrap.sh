@@ -45,7 +45,13 @@ if [ -f "${HOME}/.servodrc" ]; then
   SERVODRC="${HOME}/.servodrc"
 fi
 
-docker run -it --rm -e SERVODRC="${SERVODRC}" \
+if [ -t 1 ]; then
+  TTY_FLAG="-t"
+else
+  TTY_FLAG=""
+fi
+
+docker run -i ${TTY_FLAG} --rm -e SERVODRC="${SERVODRC}" \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v /tmp:/tmp:rw servod-bootstrap "./${script_name}.py" "$@"
 exit $?
