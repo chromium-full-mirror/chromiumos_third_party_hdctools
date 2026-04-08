@@ -45,7 +45,7 @@ if [ -f "${HOME}/.servodrc" ]; then
   SERVODRC="${HOME}/.servodrc"
 fi
 
-if [ -t 1 ]; then
+if [ -t 0 ] && [ -t 1 ]; then
   TTY_FLAG="-t"
 else
   TTY_FLAG=""
