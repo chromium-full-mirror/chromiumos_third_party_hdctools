@@ -201,9 +201,9 @@ class Suart(uart.Uart):
                                             "uarttx %s: %s", self.get_pty(), e
                                         )
                     except OSError as e:
-                        if e.errno == errno.EIO:
+                        if e.errno in (errno.EIO, errno.EBADF):
                             self._logger.debug(
-                                "tx %s: PTY closed (EIO)", self.get_pty()
+                                "tx %s: PTY closed (%s)", self.get_pty(), e.strerror
                             )
                         else:
                             self._logger.exception("tx %s: %s", self.get_pty(), e)
