@@ -10,14 +10,11 @@ import time
 
 import usb
 
+from servo.common import servo_dev_templates
 from servo.common import tiny_servod
 from servo.drv.pty_driver import PtyError
 from servo.tools import tool
 import servo.utils.usb_hierarchy as uh
-
-
-# VID to find all servo devices.
-SERVO_VID = 0x18D1
 
 
 class DeviceError(Exception):
@@ -65,7 +62,7 @@ class Device(tool.Tool):
           /sys/bus/usb/devices/ path to servo with |serial| or None if not found
         """
         # This list is used to find all servos on the system.
-        vid_pid_list = [(SERVO_VID, None)]
+        vid_pid_list = list(servo_dev_templates.SERVO_ID_DEFAULTS)
         devs = uh.Hierarchy.get_all_usb_device_sysfs_paths(vid_pid_list)
         for dev_path in devs:
             dev_serial = uh.Hierarchy.serial_from_sysfs(dev_path)
