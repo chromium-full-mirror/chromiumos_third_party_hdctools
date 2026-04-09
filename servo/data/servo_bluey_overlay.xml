@@ -20,6 +20,16 @@
   <include>
     <name>gsc_reset_pch_disable.xml</name>
   </include>
+  <include>
+    <!-- This specific board is incompatible with servo + USB3 so we need
+      to overwrite init value of this control and keep USB3 disabled.
+      Please refer to b/254857085.
+
+      TODO(b/501193442) - delete this control if proper
+      fixes are upreved on all models from this family, including Fleet
+      recovery OS/FW version. -->
+    <name>dut_usb3_disabled.xml</name>
+  </include>
     <!-- ******** Controls ******** -->
   <control>
     <name>fw_wp_state</name>
