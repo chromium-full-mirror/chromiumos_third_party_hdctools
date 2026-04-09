@@ -22,10 +22,6 @@
   </include>
     <!-- ******** Controls ******** -->
   <control>
-    <name>reinit_dut_usb3_en</name>
-    <params clobber_ok="patch" init="enabled"/>
-  </control>
-  <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
     <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
