@@ -36,7 +36,7 @@ class TestDevice(unittest.TestCase):
         res = d._usb_path("id")
 
         usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths.assert_called_once_with(
-            [(device.SERVO_VID, None)]
+            list(device.servo_dev_templates.SERVO_ID_DEFAULTS)
         )
         usb_hierarchy.Hierarchy.serial_from_sysfs.assert_has_calls(
             [unittest.mock.call("/path/1/a/b/c"), unittest.mock.call("/path/2/a/b/c")]
@@ -57,7 +57,7 @@ class TestDevice(unittest.TestCase):
         res = d._usb_path("id")
 
         usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths.assert_called_once_with(
-            [(device.SERVO_VID, None)]
+            list(device.servo_dev_templates.SERVO_ID_DEFAULTS)
         )
         usb_hierarchy.Hierarchy.serial_from_sysfs.assert_has_calls(
             [unittest.mock.call("/path/1/a/b/c"), unittest.mock.call("/path/2/a/b/c")]
