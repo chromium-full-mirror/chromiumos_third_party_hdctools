@@ -18,6 +18,11 @@
     <doc>Different levels of sleep the GSC enters during idle time</doc>
     <params active="wfi" sleep="sleep" />
   </map>
+  <map>
+    <name>yesno_yn</name>
+    <doc>Map Y/N to yes/no</doc>
+    <params yes="Y" no="[N\-]"></params>
+  </map>
   <control>
     <name>gsc_fw_type</name>
     <doc>Name of GSC fw</doc>
@@ -352,12 +357,12 @@
     <name>gsc_open_no_dev_mode</name>
     <doc>Query CCD OpenNoDevMode capability.</doc>
     <params cmd="get" uart_cmd="ccd"
-    regex="OpenNoDevMode\s+[YN-]\s+[0-9]+=(?:Default \()?([A-Za-z]+)" group="1" interface="9" drv="cr50" input_type="str"></params>
+    regex="OpenNoDevMode\s+([YN-])" group="1" interface="9" drv="cr50" map="yesno_yn"></params>
   </control>
   <control>
     <name>gsc_open_from_usb</name>
     <doc>Query CCD OpenFromUSB capability.</doc>
     <params cmd="get" uart_cmd="ccd"
-    regex="OpenFromUSB\s+[YN-]\s+[0-9]+=(?:Default \()?([A-Za-z]+)" group="1" interface="9" drv="cr50" input_type="str"></params>
+    regex="OpenFromUSB\s+([YN-])" group="1" interface="9" drv="cr50" map="yesno_yn"></params>
   </control>
 </root>
