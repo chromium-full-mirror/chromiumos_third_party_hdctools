@@ -42,8 +42,8 @@ This augments the `ccd_keepalive_en` control to perform these two functions:
     <control>
         <name>gsc_ccd_keepalive_en</name>
         <doc>Internal-only command to set rddkeepalive on the GSC</doc>
-        <params cmd="get" subtype="ccd_keepalive_en" interface="9" drv="cr50" map="onoff" />
-        <params cmd="set" subtype="ccd_keepalive_en" interface="9" drv="cr50" map="onoff" />
+        <params cmd="get" subtype="ccd_keepalive_en" interface="GSC_CONSOLE" drv="cr50" map="onoff" />
+        <params cmd="set" subtype="ccd_keepalive_en" interface="GSC_CONSOLE" drv="cr50" map="onoff" />
     </control>
     <!--
     For devices with PDC CCD the GSC chip ( particularly the Ti50 NT chip ) disconnects from
@@ -57,8 +57,8 @@ This augments the `ccd_keepalive_en` control to perform these two functions:
             Internal-only command to set PDC SBU mux mode for CCD.
             Use `ccd_keepalive_en` instead.
         </doc>
-        <params cmd="get" subtype="pdc_ccd_keepalive_en" interface="10" drv="ec" map="onoff" />
-        <params cmd="set" subtype="pdc_ccd_keepalive_en" interface="10" drv="ec" map="onoff" />
+        <params cmd="get" subtype="pdc_ccd_keepalive_en" interface="EC_CONSOLE" drv="ec" map="onoff" />
+        <params cmd="set" subtype="pdc_ccd_keepalive_en" interface="EC_CONSOLE" drv="ec" map="onoff" />
     </control>
     <control>
         <name>servo_pd_role</name>

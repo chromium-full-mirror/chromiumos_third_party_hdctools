@@ -3,7 +3,7 @@
   <control>
     <name>ec_board</name>
     <doc>The board name of the EC image</doc>
-    <params interface="10" drv="simple_ec" uart_cmd="version"
+    <params interface="EC_CONSOLE" drv="simple_ec" uart_cmd="version"
       regex="RO:\s+(\S+?)[-_]v?\d+\..*$" group="1" formatting="strip"/>
     <!-- Sample version strings
 RO: fleex_v2.0.786-8928ffebb
@@ -20,13 +20,13 @@ RO: magolor_v2.0.21919-9347314528
   <control>
     <name>ec_active_copy</name>
     <doc>The active copy of the EC image</doc>
-    <params interface="10" drv="simple_ec" uart_cmd="sysinfo"
+    <params interface="EC_CONSOLE" drv="simple_ec" uart_cmd="sysinfo"
       regex="Copy:\s+(\S+)\s" group="1" formatting="strip"/>
   </control>
   <control>
     <name>ec_system_powerstate</name>
     <doc>The current power state according to the EC.</doc>
-    <params interface="10" drv="simple_ec" uart_cmd="powerinfo"
+    <params interface="EC_CONSOLE" drv="simple_ec" uart_cmd="powerinfo"
       regex="power state \d+ = ([^,]*), in" group="1" formatting="strip"
       debug_info="Cannot retrieve the power state on EC console."/>
   </control>

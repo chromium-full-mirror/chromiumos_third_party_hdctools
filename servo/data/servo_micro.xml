@@ -324,7 +324,7 @@
     <name>uart2_pty</name>
     <alias>raw_cpu_uart_pty</alias>
     <doc>UART console. USART3: PB10/PB11 - Servo header UART2</doc>
-    <params cmd="get" subtype="pty" interface="8" drv="uart">
+    <params cmd="get" subtype="pty" interface="RAW_AP_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
@@ -332,14 +332,14 @@
     <alias>cpu_uart_parity</alias>
     <doc>Parity for uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    interface="8" map="uart_parity"></params>
+    interface="RAW_AP_CONSOLE" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_baudrate</name>
     <alias>cpu_uart_baudrate</alias>
     <doc>Baudrate for EC's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="8"></params>
+    interface="RAW_AP_CONSOLE"></params>
   </control>
   <control>
     <name>uart1_pty</name>
@@ -479,21 +479,21 @@
     <alias>usbpd_uart_pty</alias>
     <doc>USB PD UART console provided via EC-3PO console
     interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    <params cmd="get" subtype="pty" interface="GSC_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
     <name>usbpd_ec3po_interp_connect</name>
     <doc>State indicating if interpreter is listening to the usb pd
     UART.</doc>
-    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    <params interface="GSC_CONSOLE" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
   <control>
     <name>jtag_vref_sel0</name>
     <alias>jtag_vref_sel1</alias>
     <doc>Fake control. No way to change it.</doc>
-    <params interface="9" drv="na" input_type="str"/>
+    <params interface="GSC_CONSOLE" drv="na" input_type="str"/>
   </control>
   <!-- Debug helper controls -->
   <control>

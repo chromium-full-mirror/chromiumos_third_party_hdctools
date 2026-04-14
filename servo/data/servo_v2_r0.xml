@@ -666,7 +666,7 @@
     <alias>raw_cpu_uart_pty</alias>
     <doc>Psuedo-terminal (pty) thats connected to CPU's uart
     console</doc>
-    <params cmd="get" subtype="pty" interface="8" drv="uart">
+    <params cmd="get" subtype="pty" interface="RAW_AP_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
@@ -674,28 +674,28 @@
     <alias>cpu_uart_baudrate</alias>
     <doc>Baudrate for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="8"></params>
+    interface="RAW_AP_CONSOLE"></params>
   </control>
   <control>
     <name>uart2_parity</name>
     <alias>cpu_uart_parity</alias>
     <doc>Parity for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    interface="8" map="uart_parity"></params>
+    interface="RAW_AP_CONSOLE" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_sbits</name>
     <alias>cpu_uart_sbits</alias>
     <doc>Number of stop bits for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-    interface="8" map="uart_sbits"></params>
+    interface="RAW_AP_CONSOLE" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart2_bits</name>
     <alias>cpu_uart_bits</alias>
     <doc>Number of data bits for CPU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="bits"
-    interface="8" map="uart_bits"></params>
+    interface="RAW_AP_CONSOLE" map="uart_bits"></params>
   </control>
   <control>
     <name>fw_wp_state</name>

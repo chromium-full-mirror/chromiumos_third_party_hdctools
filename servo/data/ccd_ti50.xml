@@ -27,31 +27,31 @@
     <name>ec3po_fpmcu_console</name>
     <alias>fpmcu_uart_pty</alias>
     <doc>FPMCU UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="12" drv="uart">
+    <params cmd="get" subtype="pty" interface="FPMCU_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
     <name>fpmcu_ec3po_interp_connect</name>
     <doc>State indicating if interpreter is listening to the FPMCU UART.</doc>
-    <params interface="12" drv="ec3po_driver" map="onoff" init="on"
+    <params interface="FPMCU_CONSOLE" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect"></params>
   </control>
   <control>
     <name>fpmcu_loglevel</name>
     <doc>FPMCU console loglevel</doc>
-    <params interface="12" drv="ec3po_driver" input_type="str"
+    <params interface="FPMCU_CONSOLE" drv="ec3po_driver" input_type="str"
     subtype="loglevel"></params>
   </control>
   <control>
     <name>fpmcu_uart_raw_debug</name>
     <doc>Turn on per-message-received logs to the FPMCU console messages.</doc>
-    <params interface="12" drv="ec3po_driver" map="onoff" init="off"
+    <params interface="FPMCU_CONSOLE" drv="ec3po_driver" map="onoff" init="off"
     subtype="raw_debug"></params>
   </control>
   <control>
     <name>fpmcu_uart_timestamp</name>
     <doc>Add timestamps to FPMCU console messages</doc>
-    <params interface="12" drv="ec3po_driver" map="onoff" init="off"
+    <params interface="FPMCU_CONSOLE" drv="ec3po_driver" map="onoff" init="off"
     subtype="timestamp"></params>
   </control>
 </root>

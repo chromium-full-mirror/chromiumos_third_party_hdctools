@@ -11,7 +11,7 @@
   </control>
   <control>
     <name>rec_mode</name>
-    <params subtype="rec_mode" interface="9" drv="cr50"
+    <params subtype="rec_mode" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i" clobber_ok="never" init="off"></params>
   </control>
   <control>

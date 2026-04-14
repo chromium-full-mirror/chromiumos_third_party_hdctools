@@ -1,5 +1,25 @@
 <?xml version="1.0"?>
 <root>
+  <interface_alias>
+    <name>RAW_AP_CONSOLE</name>
+    <id>8</id>
+  </interface_alias>
+  <interface_alias>
+    <name>GSC_CONSOLE</name>
+    <id>9</id>
+  </interface_alias>
+  <interface_alias>
+    <name>EC_CONSOLE</name>
+    <id>10</id>
+  </interface_alias>
+  <interface_alias>
+    <name>AP_CONSOLE</name>
+    <id>11</id>
+  </interface_alias>
+  <interface_alias>
+    <name>FPMCU_CONSOLE</name>
+    <id>12</id>
+  </interface_alias>
   <map>
     <name>onoff</name>
     <doc>assertive high map for on/off</doc>

@@ -33,21 +33,21 @@
     <name>ti50_aprv_latch_state</name>
     <doc>ti50 ap ro verification latch state</doc>
     <params cmd="get" uart_cmd="ap_ro_verify" regex="Latched: (No|Yes)" group="1" fmt="lowercase"
-    interface="9" drv="cr50"
+    interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
   <control>
     <name>ti50_aprv_status</name>
     <doc>ti50 ap ro verification status</doc>
     <params cmd="get" uart_cmd="ap_ro_verify" regex="APRV status: ([^\(]+) *\("
-    group="1" fmt="lowercase" interface="9" drv="cr50"
+    group="1" fmt="lowercase" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
   <control>
     <name>ti50_aprv_status_detailed</name>
     <doc>ti50 detailed ap ro verification status</doc>
     <params cmd="get" uart_cmd="ap_ro_verify" regex="APRV status: .*\((0x\S+)\)"
-    group="1" fmt="lowercase" interface="9" drv="cr50"
+    group="1" fmt="lowercase" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
 </root>

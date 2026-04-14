@@ -28,7 +28,7 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
+    <params clobber_ok="full" interface="GSC_CONSOLE" drv="fw_wp_ccd" input_type="str"
     init="force_off"/>
   </control>
   <control>
@@ -54,7 +54,7 @@
   <control>
     <name>warm_reset</name>
     <doc>warm_reset</doc>
-    <params subtype="warm_reset" interface="10" drv="ec"
+    <params subtype="warm_reset" interface="EC_CONSOLE" drv="ec"
     map="onoff_i" clobber_ok="patch"></params>
   </control>
   <!--
@@ -63,7 +63,7 @@
   <control>
     <name>ap_flash_select</name>
     <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
-    <params subtype="ap_flash_select" interface="9" drv="cr50"
+    <params subtype="ap_flash_select" interface="GSC_CONSOLE" drv="cr50"
       map="onoff" init="off" clobber_ok="patch"/>
   </control>
   <control>

@@ -81,13 +81,13 @@
   <control>
     <name>ap_flash_select</name>
     <doc>AP_FLASH_SELECT GPIO pin.</doc>
-    <params subtype="ap_flash_select" interface="9" drv="cr50"
+    <params subtype="ap_flash_select" interface="GSC_CONSOLE" drv="cr50"
     map="onoff" init="off" />
   </control>
   <control>
     <name>ec_flash_select</name>
     <doc>EC_FLASH_SELECT GPIO pin.</doc>
-    <params subtype="ec_boot_mode" interface="9" drv="cr50"
+    <params subtype="ec_boot_mode" interface="GSC_CONSOLE" drv="cr50"
     map="onoff" init="off" />
   </control>
   <!-- UART and CONSOLE settings -->
@@ -116,7 +116,7 @@
     <name>uart2_pty</name>
     <alias>raw_cpu_uart_pty</alias>
     <doc>Raw CPU UART console. USART3: PB10/PB11</doc>
-    <params cmd="get" subtype="pty" interface="8" drv="uart">
+    <params cmd="get" subtype="pty" interface="RAW_AP_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
@@ -124,14 +124,14 @@
     <alias>cpu_uart_parity</alias>
     <doc>Parity for CPU uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-    interface="8" map="uart_parity"></params>
+    interface="RAW_AP_CONSOLE" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_baudrate</name>
     <alias>cpu_uart_baudrate</alias>
     <doc>Baudrate for CPU uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-    interface="8"></params>
+    interface="RAW_AP_CONSOLE"></params>
   </control>
   <control>
     <name>uart1_pty</name>
@@ -279,19 +279,19 @@
     <doc>warm_reset (active low)</doc>
     <params cmd="get" uart_cmd="sysrst"
     regex="SYS_RST_L is (asserted|deasserted)" group="1"
-    interface="9" drv="cr50" map="asserted_re"></params>
-    <params cmd="set" subtype="warm_reset" interface="9" drv="cr50"
+    interface="GSC_CONSOLE" drv="cr50" map="asserted_re"></params>
+    <params cmd="set" subtype="warm_reset" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i"></params>
   </control>
   <control>
     <name>rec_mode</name>
-    <params subtype="rec_mode" interface="9" drv="cr50"
+    <params subtype="rec_mode" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i" init="off"></params>
   </control>
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    <params interface="GSC_CONSOLE" drv="fw_wp_ccd" input_type="str"
     init="force_off" gsc_only="yes" />
   </control>
   <control>

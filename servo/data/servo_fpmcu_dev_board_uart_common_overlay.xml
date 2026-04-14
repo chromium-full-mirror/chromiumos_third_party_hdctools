@@ -29,7 +29,7 @@
     <name>uart2_pty</name>
     <alias>raw_fpmcu_platform_uart_pty</alias>
     <doc>Pseudo-terminal (pty) that's connected to FP MCU's AP UART</doc>
-    <params cmd="get" subtype="pty" interface="8" drv="uart"
+    <params cmd="get" subtype="pty" interface="RAW_AP_CONSOLE" drv="uart"
         clobber_ok="full"></params>
   </control>
   <!-- EC-3PO console interpreter for FP MCU -->
@@ -39,7 +39,7 @@
     <doc>FP MCU UART console provided via EC-3PO console
       interpreter.
     </doc>
-    <params cmd="get" subtype="pty" interface="10" drv="uart">
+    <params cmd="get" subtype="pty" interface="EC_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
@@ -48,19 +48,19 @@
     <doc>FP MCU AP UART provided via EC-3PO console
       interpreter.
     </doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    <params cmd="get" subtype="pty" interface="GSC_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
     <name>fpmcu_ec3po_interp_connect</name>
     <doc>State indicating if interpreter is listening to the EC UART.</doc>
-    <params interface="9" drv="ec3po_driver" map="onoff" init="off"
+    <params interface="GSC_CONSOLE" drv="ec3po_driver" map="onoff" init="off"
         subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
     <name>fpmcu_ec3po_interp_connect_1</name>
     <doc>State indicating if interpreter is listening to the EC UART.</doc>
-    <params interface="10" drv="ec3po_driver" map="onoff" init="off"
+    <params interface="EC_CONSOLE" drv="ec3po_driver" map="onoff" init="off"
         subtype="interp_connect" clobber_ok="full"></params>
   </control>
   <control>
@@ -101,28 +101,28 @@
     <alias>fpmcu_platform_uart_baudrate</alias>
     <doc>Baudrate for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-        clobber_ok="full" interface="8"></params>
+        clobber_ok="full" interface="RAW_AP_CONSOLE"></params>
   </control>
   <control>
     <name>uart2_parity</name>
     <alias>fpmcu_platform_uart_parity</alias>
     <doc>Parity for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-        clobber_ok="full" interface="8" map="uart_parity"></params>
+        clobber_ok="full" interface="RAW_AP_CONSOLE" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_sbits</name>
     <alias>fpmcu_platform_uart_sbits</alias>
     <doc>Number of stop bits for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-        clobber_ok="full" interface="8" map="uart_sbits"></params>
+        clobber_ok="full" interface="RAW_AP_CONSOLE" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart2_bits</name>
     <alias>fpmcu_platform_uart_bits</alias>
     <doc>Number of data bits for FP MCU's uart to AP</doc>
     <params drv="uart" subtype="props" line_prop="bits" clobber_ok="full"
-        interface="8" map="uart_bits"></params>
+        interface="RAW_AP_CONSOLE" map="uart_bits"></params>
   </control>
   <!-- FP MCU UART Automation Controls -->
   <control>
@@ -130,42 +130,42 @@
     <doc>Set to send command to FP MCU UART. Get to obtain the
       matched results with the regular expression of
       fpmcu_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="9" drv="uart"
+    <params subtype="uart_cmd" interface="GSC_CONSOLE" drv="uart"
         input_type="str"></params>
   </control>
   <control>
     <name>fpmcu_uart_multicmd</name>
     <doc>Set to send multiple commands to FP MCU UART.</doc>
-    <params interface="9" drv="na" cmd="get"></params>
-    <params subtype="uart_multicmd" interface="9" drv="uart"
+    <params interface="GSC_CONSOLE" drv="na" cmd="get"></params>
+    <params subtype="uart_multicmd" interface="GSC_CONSOLE" drv="uart"
         input_type="str" cmd="set"></params>
   </control>
   <control>
     <name>fpmcu_uart_regexp</name>
     <doc>List of regular expressions to match the response of
       fpmcu_uart_cmd.</doc>
-    <params subtype="uart_regexp" interface="9" drv="uart"
+    <params subtype="uart_regexp" interface="GSC_CONSOLE" drv="uart"
         input_type="str"></params>
   </control>
   <control>
     <name>fpmcu_uart_timeout</name>
     <doc>Timeout value for a response after issuing a command on
       fpmcu_uart_cmd.</doc>
-    <params subtype="uart_timeout" interface="9" drv="uart"
+    <params subtype="uart_timeout" interface="GSC_CONSOLE" drv="uart"
         input_type="float"></params>
   </control>
   <control>
     <name>fpmcu_uart_capture</name>
     <doc>Enables capture of FP MCU console via
       fpmcu_uart_stream</doc>
-    <params subtype="uart_capture" interface="9" drv="uart"
+    <params subtype="uart_capture" interface="GSC_CONSOLE" drv="uart"
         map="onoff"></params>
   </control>
   <control>
     <name>fpmcu_uart_stream</name>
     <doc>FP MCU console stream captured while fpmcu_uart_capture is
       set to 'on'</doc>
-    <params cmd="get" subtype="uart_stream" interface="9" drv="uart">
+    <params cmd="get" subtype="uart_stream" interface="GSC_CONSOLE" drv="uart">
     </params>
   </control>
   <!-- FP MCU UART Buffers & VREF Controls -->

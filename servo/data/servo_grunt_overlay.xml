@@ -34,7 +34,7 @@
   <control>
     <name>c0_ppc_pp1_en</name>
     <doc>Used to turn on/off the pp1 on the c0 ppc on grunt (ccd port)</doc>
-    <params interface="10" bus="1" addr="0x40" offset="0x52" mask="0x1"
+    <params interface="EC_CONSOLE" bus="1" addr="0x40" offset="0x52" mask="0x1"
       drv="ec_i2c_pin" map="onoff"/>
   </control>
   <control>

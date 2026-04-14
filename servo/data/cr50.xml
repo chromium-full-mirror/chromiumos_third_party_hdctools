@@ -49,35 +49,35 @@
     <name>gsc_loglevel</name>
     <alias>cr50_loglevel</alias>
     <doc>gsc console loglevel</doc>
-    <params interface="9" drv="ec3po_driver" input_type="str"
+    <params interface="GSC_CONSOLE" drv="ec3po_driver" input_type="str"
     subtype="loglevel" ></params>
   </control>
   <control>
     <name>gsc_uart_raw_debug</name>
     <alias>cr50_uart_raw_debug</alias>
     <doc>Turn on per-message-received logs to the gsc console messages.</doc>
-    <params interface="9" drv="ec3po_driver" map="onoff" init="off"
+    <params interface="GSC_CONSOLE" drv="ec3po_driver" map="onoff" init="off"
     subtype="raw_debug" ></params>
   </control>
   <control>
     <name>gsc_uart_timestamp</name>
     <alias>cr50_uart_timestamp</alias>
     <doc>Add timestamps to the GSC console messages</doc>
-    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    <params interface="GSC_CONSOLE" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp" ></params>
   </control>
   <control>
     <name>ec3po_gsc_uart</name>
     <alias>ec3po_cr50_uart,cr50_uart_pty,ec3po_usbpd_uart_pty,usbpd_uart_pty,gsc_uart_pty</alias>
     <doc>gsc UART console provided via EC-3PO console interpreter.</doc>
-    <params cmd="get" subtype="pty" interface="9" drv="uart">
+    <params cmd="get" subtype="pty" interface="GSC_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
     <name>gsc_ec3po_interp_connect</name>
     <alias>cr50_ec3po_interp_connect,usbpd_ec3po_interp_connect</alias>
     <doc>State indicating if interpreter is listening to the gsc UART.</doc>
-    <params interface="9" drv="ec3po_driver" map="onoff" init="on"
+    <params interface="GSC_CONSOLE" drv="ec3po_driver" map="onoff" init="on"
     subtype="interp_connect" ></params>
   </control>
   <control>
@@ -113,7 +113,7 @@
     <alias>cr50_uart_timeout</alias>
     <doc>Timeout value for waiting gsc console response of issuing an EC
     command.</doc>
-    <params subtype="uart_timeout" interface="9" drv="uart" input_type="float"
+    <params subtype="uart_timeout" interface="GSC_CONSOLE" drv="uart" input_type="float"
     ></params>
   </control>
   <!-- GSC Console Automation Controls -->
@@ -122,15 +122,15 @@
     <alias>cr50_uart_cmd</alias>
     <doc>Set to send command to the gsc console. Get to obtain the matched
     results with the regular expression of gsc_uart_regexp.</doc>
-    <params subtype="uart_cmd" interface="9" drv="uart" input_type="str"
+    <params subtype="uart_cmd" interface="GSC_CONSOLE" drv="uart" input_type="str"
     ></params>
   </control>
   <control>
     <name>gsc_uart_multicmd</name>
     <alias>cr50_uart_multicmd</alias>
     <doc>Set to send multiple commands to the GSC console.</doc>
-    <params interface="9" drv="na" cmd="get" ></params>
-    <params subtype="uart_multicmd" interface="9" drv="uart" input_type="str"
+    <params interface="GSC_CONSOLE" drv="na" cmd="get" ></params>
+    <params subtype="uart_multicmd" interface="GSC_CONSOLE" drv="uart" input_type="str"
     cmd="set" ></params>
   </control>
   <control>
@@ -138,29 +138,29 @@
     <alias>cr50_uart_regexp</alias>
     <doc>List of regular expressions to match the response of
     gsc_uart_cmd.</doc>
-    <params subtype="uart_regexp" interface="9" drv="uart" input_type="str"
+    <params subtype="uart_regexp" interface="GSC_CONSOLE" drv="uart" input_type="str"
     ></params>
   </control>
   <control>
     <name>gsc_uart_capture</name>
     <alias>cr50_uart_capture</alias>
     <doc>Enable gsc uart capture</doc>
-    <params subtype="uart_capture" interface="9" drv="uart" map="onoff"
+    <params subtype="uart_capture" interface="GSC_CONSOLE" drv="uart" map="onoff"
     ></params>
   </control>
   <control>
     <name>gsc_uart_stream</name>
     <alias>cr50_uart_stream</alias>
     <doc>GSC console stream collected while gsc_uart_capture on</doc>
-    <params cmd="get" subtype="uart_stream" interface="9" drv="uart" ></params>
+    <params cmd="get" subtype="uart_stream" interface="GSC_CONSOLE" drv="uart" ></params>
   </control>
   <!-- gsc controls -->
   <control>
     <name>gsc_reboot</name>
     <alias>cr50_reboot</alias>
     <doc>reboot the gsc</doc>
-    <params cmd="get" interface="9" drv="na" ></params>
-    <params cmd="set" subtype="gsc_reboot" interface="9" drv="cr50"
+    <params cmd="get" interface="GSC_CONSOLE" drv="na" ></params>
+    <params cmd="set" subtype="gsc_reboot" interface="GSC_CONSOLE" drv="cr50"
     map="onoff" ></params>
   </control>
   <control>
@@ -168,7 +168,7 @@
     <alias>cr50_ccd_level</alias>
     <doc>State of CCD, which can be lock, unlock, or open based on the current
     ccd privilege level.</doc>
-    <params cmd="get" uart_cmd="ccd" regex="State:\s+(Lock|Unlock|Open)" group="1" fmt="lowercase" interface="9" drv="cr50" input_type="str" ></params>
+    <params cmd="get" uart_cmd="ccd" regex="State:\s+(Lock|Unlock|Open)" group="1" fmt="lowercase" interface="GSC_CONSOLE" drv="cr50" input_type="str" ></params>
   </control>
   <control>
     <name>ccd_i2c_en</name>
@@ -177,7 +177,7 @@
     'UnlessLocked' means Enabled unless CCD is locked.
     'IfOpened' means Enabled if CCD is opened.</doc>
     <params cmd="get" uart_cmd="ccd"
-    regex="\s+I2C\s+[Y-]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)" group="1" interface="9" drv="cr50" ></params>
+    regex="\s+I2C\s+[Y-]\s+[0-3]=(Default|Always|UnlessLocked|IfOpened)" group="1" interface="GSC_CONSOLE" drv="cr50" ></params>
   </control>
   <control>
     <name>gsc_testlab</name>
@@ -185,25 +185,25 @@
     <doc>gsc testlab state</doc>
     <params cmd="get" uart_cmd="ccd testlab"
     regex="(CCD test lab mode (ena|dis)|Access Denied)" group="1"
-    interface="9" drv="cr50" map="enabled_re" ></params>
-    <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="9"
+    interface="GSC_CONSOLE" drv="cr50" map="enabled_re" ></params>
+    <params cmd="set" uart_cmd="ccd testlab" choices="^(open)$" interface="GSC_CONSOLE"
     drv="cr50" input_type="str" init="open" ></params>
   </control>
   <control>
     <name>gsc_ecrst_pulse</name>
     <doc>Send the gsc 'ecrst pulse' command</doc>
-    <params cmd="get" subtype="cold_reset" interface="9" drv="cr50"
+    <params cmd="get" subtype="cold_reset" interface="GSC_CONSOLE" drv="cr50"
     map="asserted_re"></params>
-    <params cmd="set" subtype="ecrst_pulse" interface="9" drv="cr50"
+    <params cmd="set" subtype="ecrst_pulse" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i"></params>
   </control>
   <control>
     <name>gsc_cold_reset</name>
     <alias>gsc_ec_reset</alias>
     <doc>send the gsc ec_reset command to reset the EC.</doc>
-    <params cmd="get" subtype="cold_reset" interface="9" drv="cr50"
+    <params cmd="get" subtype="cold_reset" interface="GSC_CONSOLE" drv="cr50"
     map="asserted_re"></params>
-    <params cmd="set" subtype="cold_reset" interface="9" drv="cr50"
+    <params cmd="set" subtype="cold_reset" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i" init="off"></params>
   </control>
   <control>
@@ -231,7 +231,7 @@
     <alias>cr50_reset_count</alias>
     <doc>GSC reset count</doc>
     <params cmd="get" uart_cmd="sysinfo"
-    regex="Reset count: (\d+)" group="1" interface="9" drv="cr50"
+    regex="Reset count: (\d+)" group="1" interface="GSC_CONSOLE" drv="cr50"
     input_type="str" ></params>
   </control>
   <control>
@@ -239,7 +239,7 @@
     <alias>cr50_devid</alias>
     <doc>current gsc devid</doc>
     <params cmd="get" uart_cmd="sysinfo"
-    regex="DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})" group="1" interface="9"
+    regex="DEV_ID:\s+(0x[0-9a-z]{8} 0x[0-9a-z]{8})" group="1" interface="GSC_CONSOLE"
     drv="cr50" input_type="str" ></params>
   </control>
   <control>
@@ -248,7 +248,7 @@
     <doc>Get the servo state from gsc ccdstate. Can be 'undetectable',
     'disconnected', or 'connected'</doc>
     <params cmd="get" uart_cmd="ccdstate" regex="Servo:\s+(\S+)\s" group="1"
-    interface="9" drv="cr50" input_type="str" >
+    interface="GSC_CONSOLE" drv="cr50" input_type="str" >
     </params>
   </control>
   <control>
@@ -256,8 +256,8 @@
     <alias>cr50_force_servo_detect</alias>
     <doc>Control ccdblock to control detecting servo.</doc>
     <params cmd="get" uart_cmd="ccdstate" regex="CCD ports blocked:([\S ]+)[\n\r]"
-    group="1" interface="9" drv="cr50" map="servo_re" ></params>
-    <params cmd="set" subtype="detect_servo" interface="9" drv="cr50" map="onoff"
+    group="1" interface="GSC_CONSOLE" drv="cr50" map="servo_re" ></params>
+    <params cmd="set" subtype="detect_servo" interface="GSC_CONSOLE" drv="cr50" map="onoff"
     ></params>
   </control>
   <control>
@@ -265,9 +265,9 @@
     <alias>cr50_idle_level</alias>
     <doc>Controls the level of sleep the gsc will enter when idling.</doc>
     <params cmd="get" uart_cmd="idle"
-    regex="idle action:\s+(\w+)" group="1" fmt="lowercase" interface="9"
+    regex="idle action:\s+(\w+)" group="1" fmt="lowercase" interface="GSC_CONSOLE"
     drv="cr50" input_type="str" map="idle_states"></params>
-    <params cmd="set" uart_cmd="idle" interface="9" drv="cr50" input_type="str"
+    <params cmd="set" uart_cmd="idle" interface="GSC_CONSOLE" drv="cr50" input_type="str"
     map="idle_states"></params>
   </control>
   <!-- gsc UART Buffers & VREF Controls -->
@@ -288,7 +288,7 @@
     <alias>cr50_version</alias>
     <doc>current gsc version</doc>
     <params cmd="get" uart_cmd="version"
-    regex="RW_(A|B):\s+\*\s+([\S ]+)\s" group="2" interface="9" drv="cr50"
+    regex="RW_(A|B):\s+\*\s+([\S ]+)\s" group="2" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
   <control>
@@ -296,35 +296,35 @@
     <alias>cr50_brdprop</alias>
     <doc>current gsc board properties</doc>
     <params cmd="get" uart_cmd="brdprop"
-    regex="properties = (\S+)\s" group="1" interface="9" drv="cr50" ></params>
+    regex="properties = (\S+)\s" group="1" interface="GSC_CONSOLE" drv="cr50" ></params>
   </control>
   <control>
     <name>gsc_chip</name>
     <alias>cr50_chip</alias>
     <doc>gsc chip type</doc>
     <params cmd="get" uart_cmd="sysinfo"
-    regex="Chip:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="9" drv="cr50"
+    regex="Chip:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
   <control>
     <name>gsc_device_state</name>
     <doc>List the GSC device state using the ccdstate output</doc>
     <params cmd="get" uart_cmd="ccdstate"
-    regex="(.*)>" group="1" interface="9" drv="cr50"
+    regex="(.*)>" group="1" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
   <control>
     <name>gsc_fw_wp_atboot_state</name>
     <alias>fw_wp_atboot_state</alias>
     <doc>Used to update GSC's the write protection state at GSC boot</doc>
-    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    <params interface="GSC_CONSOLE" drv="fw_wp_ccd" input_type="str"
     atboot="yes" />
   </control>
   <control>
     <name>gsc_device_state_pcr0</name>
     <doc>Get the current pcr0 value from gsc</doc>
     <params cmd="get" uart_cmd="ccdstate"
-    regex="pcr0:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="9" drv="cr50"
+    regex="pcr0:\s+([[\S ]*)[\r\n]" group="1" fmt="lowercase" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
   <control>
@@ -332,12 +332,12 @@
     <alias>cr50_ccd_state_flags</alias>
     <doc>CCD state flags that are currently enabled.</doc>
     <params cmd="get" uart_cmd="ccdstate" regex="State flags:([\S ]*)[\n\r]"
-    group="1" interface="9" drv="cr50" ></params>
+    group="1" interface="GSC_CONSOLE" drv="cr50" ></params>
   </control>
   <control>
     <name>gsc_fw_wp_state</name>
     <doc>Used to turn fw wp off and on through GSC</doc>
-    <params interface="9" drv="fw_wp_ccd" input_type="str" />
+    <params interface="GSC_CONSOLE" drv="fw_wp_ccd" input_type="str" />
   </control>
   <!-- gsc I2C controls -->
   <control>
@@ -350,19 +350,19 @@
   <control>
     <name>ccd_keepalive_en</name>
     <doc>Enable/disable keepalive on CCD</doc>
-    <params subtype="ccd_keepalive_en" interface="9" drv="cr50"
+    <params subtype="ccd_keepalive_en" interface="GSC_CONSOLE" drv="cr50"
     map="onoff" init="off"></params>
   </control>
   <control>
     <name>gsc_open_no_dev_mode</name>
     <doc>Query CCD OpenNoDevMode capability.</doc>
     <params cmd="get" uart_cmd="ccd"
-    regex="OpenNoDevMode\s+([YN-])" group="1" interface="9" drv="cr50" map="yesno_yn"></params>
+    regex="OpenNoDevMode\s+([YN-])" group="1" interface="GSC_CONSOLE" drv="cr50" map="yesno_yn"></params>
   </control>
   <control>
     <name>gsc_open_from_usb</name>
     <doc>Query CCD OpenFromUSB capability.</doc>
     <params cmd="get" uart_cmd="ccd"
-    regex="OpenFromUSB\s+([YN-])" group="1" interface="9" drv="cr50" map="yesno_yn"></params>
+    regex="OpenFromUSB\s+([YN-])" group="1" interface="GSC_CONSOLE" drv="cr50" map="yesno_yn"></params>
   </control>
 </root>

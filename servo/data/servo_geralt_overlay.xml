@@ -38,7 +38,7 @@
     Use CCD to control WP instead. -->
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params clobber_ok="full" interface="9" drv="fw_wp_ccd" input_type="str"
+    <params clobber_ok="full" interface="GSC_CONSOLE" drv="fw_wp_ccd" input_type="str"
     init="force_off"/>
   </control>
   <control>

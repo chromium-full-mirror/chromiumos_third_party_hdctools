@@ -4,31 +4,31 @@
     <name>kbd_en</name>
     <doc>Enable servo to assert certain keypresses via kbd_m1 and
     kbd_m2</doc>
-    <params subtype="kbd_en" interface="10" drv="ec" map="onoff"
+    <params subtype="kbd_en" interface="EC_CONSOLE" drv="ec" map="onoff"
     clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m1_a0</name>
     <doc>kbd_m1_a0</doc>
-    <params subtype="kbd_m1_a0" interface="10" drv="ec" map="onoff"
+    <params subtype="kbd_m1_a0" interface="EC_CONSOLE" drv="ec" map="onoff"
     clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m1_a1</name>
     <doc>kbd_m1_a1</doc>
-    <params subtype="kbd_m1_a1" interface="10" drv="ec" map="onoff"
+    <params subtype="kbd_m1_a1" interface="EC_CONSOLE" drv="ec" map="onoff"
     clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m2_a0</name>
     <doc>kbd_m2_a0</doc>
-    <params subtype="kbd_m2_a0" interface="10" drv="ec" map="onoff"
+    <params subtype="kbd_m2_a0" interface="EC_CONSOLE" drv="ec" map="onoff"
     clobber_ok="full"/>
   </control>
   <control>
     <name>kbd_m2_a1</name>
     <doc>kbd_m2_a1</doc>
-    <params subtype="kbd_m2_a1" interface="10" drv="ec" map="onoff"
+    <params subtype="kbd_m2_a1" interface="EC_CONSOLE" drv="ec" map="onoff"
     clobber_ok="full"/>
   </control>
   <control>
@@ -37,94 +37,94 @@
     (charging/negative) to the battery. 1 minute running
     average</doc>
     <params cmd="get" uart_cmd="pwr_avg" regex="ma = (-?\d+)[\r\n]+"
-    group="1" formatting="int,negative" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int,negative" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>avg_ppvar_vbat_mv</name>
     <doc>millivolts of the battery. 1 minute running average</doc>
     <params cmd="get" uart_cmd="pwr_avg" regex="mv = (-?\d+)[\r\n]+"
-    group="1" formatting="int" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>avg_ppvar_vbat_mw</name>
     <doc>milliwatts being consumed (discharging) or supplied
     (charging) to the battery. 1 minute running average</doc>
     <params cmd="get" uart_cmd="pwr_avg" regex="mw = (-?\d+)[\r\n]+|%s"
-    group="1" formatting="int,negative" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int,negative" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>ppvar_vbat_ma</name>
     <doc>milliamps being consumed (discharging/positive) or supplied
     (charging/negative) to the battery</doc>
     <params cmd="get" uart_cmd="battery" regex="I:[\s0-9a-fx]*= (-*\d+) mA"
-    group="1" formatting="int,negative" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int,negative" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>ppvar_vbat_mv</name>
     <doc>millivolts of the battery</doc>
     <params cmd="get" uart_cmd="battery" regex="V:[\s0-9a-fx]*= (-*\d+) mV"
-    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>ppvar_vbat_mw</name>
     <doc>milliwatts being consumed (discharging) or supplied
     (charging) to the battery</doc>
-    <params cmd="get" subtype="milliwatts" interface="10" drv="ec">
+    <params cmd="get" subtype="milliwatts" interface="EC_CONSOLE" drv="ec">
     </params>
   </control>
   <control>
     <name>charger_attached</name>
     <doc>whether an AC charger is attached</doc>
     <params cmd="get" uart_cmd="chgstate" regex="ac = (\d)[\r\n]+"
-    group="1" formatting="int,bool" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int,bool" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_tempc</name>
     <doc>battery temperature in degrees Celsius</doc>
     <params cmd="get" uart_cmd="battery" regex="Temp:[\s0-9a-fx]*= \d+\.\d+ K \((-*\d+\.\d+)"
-    group="1" formatting="float" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="float" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_charge_percent</name>
     <doc>battery charge in percent</doc>
     <params cmd="get" uart_cmd="battery" regex="Charge:\s*(\d+) %"
-    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_charge_mah</name>
     <doc>battery charge in mAh</doc>
     <params cmd="get" uart_cmd="battery" regex="Remaining:\s*(\d+) mAh"
-    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_full_charge_mah</name>
     <doc>battery last full charge in mAh</doc>
     <params cmd="get" uart_cmd="battery" regex="Cap-full:\s*(\d+) mAh"
-    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_full_design_mah</name>
     <doc>battery design full capacity in mAh</doc>
     <params cmd="get" uart_cmd="battery" regex="Design:\s*(\d+) mAh"
-    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_is_charging</name>
     <doc>Whether the battery is charging.</doc>
     <params cmd="get" uart_cmd="chgstate" regex="batt_is_charging = (\d)[\r\n]+"
-    group="1" formatting="int,bool" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int,bool" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>battery_voltage_design_mv</name>
     <doc>Battery design voltage in mV</doc>
     <params cmd="get" uart_cmd="battery" regex="V-design:[\s0-9a-fx]*= (\d+) mV"
-    group="1" formatting="int" retries="3" interface="10" drv="simple_ec"></params>
+    group="1" formatting="int" retries="3" interface="EC_CONSOLE" drv="simple_ec"></params>
   </control>
   <control>
     <name>pwr_button_hold</name>
     <doc>milliseconds to hold the power button</doc>
-    <params cmd="get" interface="10" drv="na" />
-    <params cmd="set" subtype='button_hold' interface="10"
+    <params cmd="get" interface="EC_CONSOLE" drv="na" />
+    <params cmd="set" subtype='button_hold' interface="EC_CONSOLE"
     drv="ec" input_type="int" ec_cmd="powerbtn"/>
   </control>
   <control>
@@ -154,7 +154,7 @@
   <control>
     <name>dut_pd_data_role</name>
     <doc>The USB PD data role from the perspective of the DUT. It is not possible to set to UFP when servo_pd_role is SNK.</doc>
-    <params interface="10" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" pdc="no"/>
+    <params interface="EC_CONSOLE" drv="ec" port_count="2" subtype="dut_pd_data_role" input_type="str" pdc="no"/>
   </control>
   <control>
     <name>cpu_fw_spi_depends_on_ec_fw</name>

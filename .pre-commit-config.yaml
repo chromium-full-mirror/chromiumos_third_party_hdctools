@@ -88,7 +88,8 @@ repos:
             PRESUBMIT.cfg|
             .*json|
             .*requirements.*|
-            servo/drv/.*
+            servo/drv/.*|
+            .*\.version
         )$
 - repo: https://github.com/pre-commit/mirrors-mypy
   rev: v1.11.2
@@ -107,3 +108,17 @@ repos:
             servo/core/servo_server\.py|
             servo/core/servod\.py
         )$
+- repo: local
+  hooks:
+  - id: forbid-hardcoded-interfaces
+    name: Forbid hardcoded interface IDs (use RAW_CPU_CONSOLE, etc)
+    entry: 'interface=(["'\''])(8|9|10|11|12)\\1'
+    language: pygrep
+    types: [xml]
+    files: ^servo/data/
+  - id: check-api-version
+    name: check API version on core changes
+    entry: development_environment/hooks/check_api_version.py
+    language: python
+    pass_filenames: false
+    always_run: true

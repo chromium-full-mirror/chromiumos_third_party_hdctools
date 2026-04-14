@@ -25,13 +25,13 @@
   <control>
     <name>raw_cpu_uart_pty</name>
     <doc>CCD AP console.</doc>
-    <params cmd="get" subtype="pty" interface="8" drv="uart">
+    <params cmd="get" subtype="pty" interface="RAW_AP_CONSOLE" drv="uart">
     </params>
   </control>
   <control>
     <name>ec_uart_bitbang_en</name>
     <doc>Enable bit banging for the EC UART.</doc>
-    <params subtype="ec_uart_bitbang_en" interface="9" drv="cr50"
+    <params subtype="ec_uart_bitbang_en" interface="GSC_CONSOLE" drv="cr50"
     map="onoff" init="off"></params>
   </control>
   <control>
@@ -39,14 +39,14 @@
     <alias>ec_uart_parity</alias>
     <doc>Parity setting for the EC UART console forwarded over
     CCD.</doc>
-    <params subtype="ccd_ec_uart_parity" interface="9" drv="cr50"
+    <params subtype="ccd_ec_uart_parity" interface="GSC_CONSOLE" drv="cr50"
     input_type="str"></params>
   </control>
   <control>
     <name>ccd_ec_uart_baudrate</name>
     <alias>ec_uart_baudrate</alias>
     <doc>Baud rate for the EC UART console forwarded over CCD.</doc>
-    <params subtype="ccd_ec_uart_baudrate" interface="9" drv="cr50"
+    <params subtype="ccd_ec_uart_baudrate" interface="GSC_CONSOLE" drv="cr50"
     input_type="str"></params>
   </control>
   <control>
@@ -77,8 +77,8 @@
     <doc>warm_reset (active low)</doc>
     <params cmd="get" uart_cmd="sysrst"
     regex="SYS_RST_L is (asserted|deasserted)" group="1"
-    interface="9" drv="cr50" map="asserted_re"></params>
-    <params cmd="set" subtype="warm_reset" interface="9" drv="cr50"
+    interface="GSC_CONSOLE" drv="cr50" map="asserted_re"></params>
+    <params cmd="set" subtype="warm_reset" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i"></params>
   </control>
   <control>
@@ -86,17 +86,17 @@
     <doc>Power button GPIO</doc>
     <params cmd="get" uart_cmd="powerbtn"
     regex="powerbtn: (forced press|pressed|released)" group="1"
-    interface="9" drv="cr50" map="press_re"></params>
-    <params cmd="set" subtype="pwr_button" interface="9" drv="cr50"
+    interface="GSC_CONSOLE" drv="cr50" map="press_re"></params>
+    <params cmd="set" subtype="pwr_button" interface="GSC_CONSOLE" drv="cr50"
     map="press"></params>
   </control>
   <control>
     <name>lid_open</name>
     <doc>Emulated lid switch on ec</doc>
     <params cmd="get" uart_cmd="lidstate" regex="lid state: (open|closed)"
-    group="1" retries="3" formatting="map_open" interface="10"
+    group="1" retries="3" formatting="map_open" interface="EC_CONSOLE"
     drv="simple_ec" map="yesno"></params>
-    <params cmd="set" subtype="lid_open" interface="10"
+    <params cmd="set" subtype="lid_open" interface="EC_CONSOLE"
     drv="ec" map="yesno"></params>
   </control>
   <control>
@@ -107,7 +107,7 @@
   <control>
     <name>fw_wp_state</name>
     <doc>Used to turn fw wp off and on</doc>
-    <params interface="9" drv="fw_wp_ccd" input_type="str"
+    <params interface="GSC_CONSOLE" drv="fw_wp_ccd" input_type="str"
     init="force_off" gsc_only="yes" clobber_ok="full" />
   </control>
   <control>
@@ -146,14 +146,14 @@
     <name>ccd_ec_boot_mode_uut</name>
     <alias>ec_boot_mode_uut</alias>
     <doc>UUT boot mode GPIO.</doc>
-    <params subtype="uut_boot_mode" interface="9" drv="cr50"
+    <params subtype="uut_boot_mode" interface="GSC_CONSOLE" drv="cr50"
     map="onoff_i" init="off" />
   </control>
   <control>
     <name>ccd_ec_boot_mode_bitbang</name>
     <alias>ec_boot_mode,fw_up</alias>
     <doc>EC boot mode GPIO.</doc>
-    <params subtype="ec_boot_mode" interface="9" drv="cr50"
+    <params subtype="ec_boot_mode" interface="GSC_CONSOLE" drv="cr50"
     map="onoff" init="off" />
   </control>
   <control>
@@ -170,7 +170,7 @@
   <control>
     <name>servo_adcs_enabled</name>
     <doc>Configure the servod device to read ADCs.</doc>
-    <params interface="9" drv="ec3po_gpio" name="EN_PP3300_INA_L"
+    <params interface="GSC_CONSOLE" drv="ec3po_gpio" name="EN_PP3300_INA_L"
     subtype="single" map="onoff_i" clobber_ok="full"></params>
   </control>
   <!-- TODO(b/418796156): remove futility_gbb_flags when we have a replacement. -->
