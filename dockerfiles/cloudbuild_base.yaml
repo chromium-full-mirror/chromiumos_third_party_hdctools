@@ -11,6 +11,7 @@ steps:
   - --target=hdctools-builder-base
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - -f=/workspace/dockerfiles/Dockerfile.base
 
 - name: 'gcr.io/kaniko-project/executor:latest'
@@ -20,6 +21,7 @@ steps:
   - --target=base
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - -f=/workspace/dockerfiles/Dockerfile.base
 
 options:

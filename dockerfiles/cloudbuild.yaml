@@ -27,6 +27,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - --build-arg=BUILDER_BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest
   - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:latest
   - -f=/workspace/dockerfiles/Dockerfile
@@ -38,6 +39,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servodtest:$COMMIT_SHA
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
   - -f=/workspace/dockerfiles/Dockerfile.test
   waitFor: ['build']

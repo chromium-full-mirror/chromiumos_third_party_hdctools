@@ -27,6 +27,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:pigweed_$COMMIT_SHA
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - --build-arg=PIGWEED_BRANCH=$COMMIT_SHA
   - -f=/workspace/dockerfiles/Dockerfile
   waitFor: ['src-prep']
@@ -37,6 +38,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servodtest:pigweed_$COMMIT_SHA
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - --build-arg=PIGWEED_BRANCH=$COMMIT_SHA
   - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod:pigweed_$COMMIT_SHA
   - -f=/workspace/dockerfiles/Dockerfile.test

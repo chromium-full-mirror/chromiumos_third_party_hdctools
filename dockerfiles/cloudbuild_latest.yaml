@@ -11,6 +11,7 @@ steps:
   - --target=hdctools-builder-base
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - -f=/workspace/dockerfiles/Dockerfile.base
 
 - name: 'gcr.io/kaniko-project/executor:latest'
@@ -20,6 +21,7 @@ steps:
   - --target=base
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - -f=/workspace/dockerfiles/Dockerfile.base
   waitFor: ['build-builder-base']
 
@@ -30,6 +32,7 @@ steps:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$_COMMIT_SHA
   - --cache=true
   - --cache-ttl=24h
+  - --reproducible=true
   - --build-arg=BUILDER_BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest-inline
   - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:latest-inline
   - -f=/workspace/dockerfiles/Dockerfile

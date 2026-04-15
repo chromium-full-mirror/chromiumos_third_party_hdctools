@@ -9,6 +9,7 @@ steps:
   args:
   - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$_BRANCH_NAME-$_SPIN_NUMBER
   - --cache=false
+  - --reproducible=true
   - -f=/workspace/dockerfiles/Dockerfile
 
 options:
