@@ -21,17 +21,72 @@ steps:
     git config --global user.email "someone@example.com"
     git rebase
 
-- name: 'gcr.io/kaniko-project/executor:latest'
-  id: 'build'
+    git fetch origin main || true
+    BASE_COMMIT=$$(git merge-base origin/main HEAD || echo "HEAD~1")
+    if git diff --name-only $$BASE_COMMIT HEAD | grep -q "dockerfiles/"; then
+      echo "Files in dockerfiles/ changed, creating flag file."
+      touch /workspace/base_changed
+    fi
+
+- name: 'gcr.io/kaniko-project/executor:debug'
+  id: 'build-builder-base'
+  entrypoint: 'sh'
   args:
-  - --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA
-  - --cache=true
-  - --cache-ttl=24h
-  - --reproducible=true
-  - --build-arg=BUILDER_BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest
-  - --build-arg=BASE_IMG=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:latest
-  - -f=/workspace/dockerfiles/Dockerfile
+  - '-c'
+  - |
+    if [ -f /workspace/base_changed ]; then
+      /kaniko/executor \
+        --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:$COMMIT_SHA \
+        --target=hdctools-builder-base \
+        --cache=true \
+        --cache-ttl=24h \
+        --reproducible=true \
+        -f=/workspace/dockerfiles/Dockerfile.base
+    else
+      echo "Base unchanged, skipping builder base build."
+    fi
   waitFor: ['src-prep']
+
+- name: 'gcr.io/kaniko-project/executor:debug'
+  id: 'build-base'
+  entrypoint: 'sh'
+  args:
+  - '-c'
+  - |
+    if [ -f /workspace/base_changed ]; then
+      /kaniko/executor \
+        --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:$COMMIT_SHA \
+        --target=base \
+        --cache=true \
+        --cache-ttl=24h \
+        --reproducible=true \
+        -f=/workspace/dockerfiles/Dockerfile.base
+    else
+      echo "Base unchanged, skipping base build."
+    fi
+  waitFor: ['build-builder-base']
+
+- name: 'gcr.io/kaniko-project/executor:debug'
+  id: 'build'
+  entrypoint: 'sh'
+  args:
+  - '-c'
+  - |
+    BUILDER_IMG="us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest"
+    BASE_IMG="us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:latest"
+    if [ -f /workspace/base_changed ]; then
+      BUILDER_IMG="us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:$COMMIT_SHA"
+      BASE_IMG="us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:$COMMIT_SHA"
+    fi
+    /kaniko/executor \
+      --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod:$COMMIT_SHA \
+      --cache=true \
+      --cache-ttl=24h \
+      --reproducible=true \
+      --build-arg=BUILDER_BASE_IMG=$$BUILDER_IMG \
+      --build-arg=BASE_IMG=$$BASE_IMG \
+      -f=/workspace/dockerfiles/Dockerfile
+  waitFor: ['build-base']
 
 - name: 'gcr.io/kaniko-project/executor:latest'
   id: 'test-build'

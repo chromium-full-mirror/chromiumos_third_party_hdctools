@@ -220,6 +220,7 @@ WORKDIR /
 RUN git clone https://chromium.googlesource.com/chromiumos/platform/vboot_reference
 WORKDIR /vboot_reference
 RUN sed -i 's/%" PRIi64 "/%ld/g' futility/cmd_gbb_utility.c
+RUN sed -i 's/-Werror//g' Makefile
 RUN make && make install
 
 RUN strip /usr/bin/futility

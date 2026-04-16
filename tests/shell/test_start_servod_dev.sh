@@ -39,6 +39,14 @@ echo "Mock fwupdtool update successful???"
 EOF
 chmod +x "${MOCK_BIN_DIR}/fwupdtool"
 
+# Mock python3
+cat << 'EOF' > "${MOCK_BIN_DIR}/python3"
+#!/bin/bash
+echo "python3_called: $*" >> "${TEST_DIR}/python3.log"
+sleep 10
+EOF
+chmod +x "${MOCK_BIN_DIR}/python3"
+
 # Mock servod
 cat << 'EOF' > "${MOCK_BIN_DIR}/servod"
 #!/bin/bash
@@ -128,6 +136,8 @@ prepare_script() {
     sed -i "s|/sys/bus/usb/devices|${MOCK_SYS_DEVICES_DIR}|g" "${SCRIPT_UNDER_TEST_COPY}"
     # Modify path to fwupdtool to use the one in PATH (our mock)
     sed -i "s|/usr/bin/fwupdtool|fwupdtool|g" "${SCRIPT_UNDER_TEST_COPY}"
+    # Modify path to python3 to use the mock
+    sed -i "s|/usr/bin/python3|python3|g" "${SCRIPT_UNDER_TEST_COPY}"
     # Modify path to the .cab file for fwupdtool
     sed -i "s|/usr/local/genesys/GenesysLogic_Google_Servo_GL3590_64.18.cab|${MOCK_FWUPDTOOL_CAB_FILE}|g" "${SCRIPT_UNDER_TEST_COPY}"
 }
