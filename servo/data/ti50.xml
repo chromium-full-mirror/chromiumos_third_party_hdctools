@@ -50,4 +50,10 @@
     group="1" fmt="lowercase" interface="GSC_CONSOLE" drv="cr50"
     ></params>
   </control>
+  <control>
+    <name>ap_flash_select</name>
+    <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
+    <params subtype="ap_flash_select" interface="GSC_CONSOLE" drv="cr50"
+      map="onoff" init="off" clobber_ok="full"/>
+  </control>
 </root>
