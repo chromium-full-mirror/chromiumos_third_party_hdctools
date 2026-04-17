@@ -974,7 +974,11 @@ class ServodStarter:
         Returns:
             bool: True if in chroot and orchestration is requested, False otherwise.
         """
-        if os.environ.get("CROS_WORKON_SRCROOT"):
+        in_chroot = os.environ.get("CROS_WORKON_SRCROOT") is not None or os.path.exists(
+            "/etc/cros_chroot_version"
+        )
+
+        if in_chroot:
             if os.environ.get("I_NEED_SERVOD") == "1":
                 self._logger.info(
                     "Running in cros_sdk with I_NEED_SERVOD=1. "

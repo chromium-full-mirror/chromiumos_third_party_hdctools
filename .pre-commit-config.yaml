@@ -112,7 +112,7 @@ repos:
   hooks:
   - id: forbid-hardcoded-interfaces
     name: Forbid hardcoded interface IDs (use RAW_CPU_CONSOLE, etc)
-    entry: 'interface=(["'\''])(8|9|10|11|12)\\1'
+    entry: 'interface=(["''])(8|9|10|11|12)\\1'
     language: pygrep
     types: [xml]
     files: ^servo/data/
