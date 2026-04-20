@@ -46,9 +46,6 @@
           <item key="0">
             <item>ap_flash_select:off</item>
             <item>gsc_ec_reset:off</item>
-            <!-- Additional reset pulse as a workaround to bring the dut back on. -->
-            <item>sleep:2</item>
-            <item>gsc_ecrst_pulse:on</item>
           </item>
         </item>
       </content>
