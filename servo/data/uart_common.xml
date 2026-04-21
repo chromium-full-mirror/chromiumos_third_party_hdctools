@@ -172,6 +172,12 @@
     input_type="str"></params>
   </control>
   <control>
+    <name>cpu_uart_flush</name>
+    <doc>Enable flushing the console before sending an AP command.</doc>
+    <params subtype="uart_flush" interface="AP_CONSOLE" drv="uart"
+    map="onoff" init="on"></params>
+  </control>
+  <control>
     <name>cpu_uart_regexp</name>
     <doc>List of regular expressions which matches the response of
     cpu_uart_cmd.</doc>
