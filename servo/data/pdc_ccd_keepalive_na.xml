@@ -1,0 +1,13 @@
+<root>
+  <!-- Used to skip pdc keepalive commands to work around hardware issues.
+
+       This should not be included in official overlays.
+       Include this manually in your servo command or servo config.
+	  -c pdc_ccd_keepalive_na.xml
+          CONFIG=pdc_ccd_keepalive_na.xml
+	-->
+  <control>
+    <name>pdc_ccd_keepalive_en</name>
+    <params clobber_ok="patch" drv="na" />
+  </control>
+</root>
