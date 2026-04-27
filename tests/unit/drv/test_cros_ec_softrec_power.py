@@ -33,8 +33,8 @@ class TestCrosEcSoftrecPower(unittest.TestCase):
         """Test that REC_ON sends hostevent with flush=True to avoid console chatter interference."""
         self.drv._power_on_bytype(self.drv.REC_ON, self.drv._REC_TYPE_REC_ON)
 
-        # Verify LimitEcDriverChannel is called
-        self.drv._driver_client.LimitEcDriverChannel.assert_called_once()
+        # Verify LimitEcDriverChannel is called twice (once at start, once after reboot)
+        self.assertEqual(self.drv._driver_client.LimitEcDriverChannel.call_count, 2)
 
         # Verify IssueCmdGetResult is called for hostevent with flush=True
         # This asserts our regression fix (b:494270575) stays in place
@@ -53,6 +53,9 @@ class TestCrosEcSoftrecPower(unittest.TestCase):
     def test_power_on_rec_off_flushes_hostevents(self, mock_sleep):
         """Test that REC_OFF sends hostevents with flush=True."""
         self.drv._power_on_bytype(self.drv.REC_OFF, self.drv._REC_TYPE_REC_OFF)
+
+        # Verify LimitEcDriverChannel is called once
+        self.drv._driver_client.LimitEcDriverChannel.assert_called_once()
 
         # Verify REC_OFF_CLEARB is sent with flush=True
         self.drv._driver_client.IssueCmdGetResult.assert_any_call(

@@ -129,7 +129,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     except Exception as e:
                         self._logger.warning(
                             "Failed to retrieve ec_feat (attempt %d/3), retrying: %s",
-                            attempt + 1, e
+                            attempt + 1,
+                            e,
                         )
                         self._reinitialize_interfaces("ec_feat_retry")
 
@@ -155,7 +156,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # Before proceeding, we should really check that the EC has reset from
                     # our command.  Pexpect is minimally greedy so we won't be able to match
                     # the exact reset cause string.  But, this should be good enough.
-                    self._driver_client.IssueCmdGetResult(prefix=self._prefix,
+                    self._driver_client.IssueCmdGetResult(
+                        prefix=self._prefix,
                         cmds="reboot wait-ext %s" % ap_off_option,
                         regex_list=["Waiting"],
                         flush=True,
@@ -185,7 +187,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                     # EC and AP when rebooting. However, the reboot will be triggered
                     # internally by the EC watchdog, and there is no external reset
                     # signal.
-                    self._driver_client.IssueCmdGetResult(prefix=self._prefix,
+                    self._driver_client.IssueCmdGetResult(
+                        prefix=self._prefix,
                         cmds="reboot %s" % ap_off_option,
                         regex_list=["Rebooting!"],
                         flush=False,
@@ -195,6 +198,11 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 self._logger.debug("Reset recovery wait: %s", self._reset_recovery_time)
                 time.sleep(self._reset_recovery_time)
 
+                # chan commands use EC RAM which is lost after a reboot.
+                # So after the reboot, we call this again to silence EC console spam.
+                # With the spam, certain output like "AP_FW 200" can be lost.
+                self._driver_client.LimitEcDriverChannel(prefix=self._prefix)
+
                 if self._warm_reset_can_hold_ap:
                     # Release warm reset after a potential cold reset settles.
                     self._servod_set("warm_reset", "off")
@@ -203,7 +211,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                 # Need to clear the flag in secondary (B) copy of the host events if
                 # we're in non-recovery mode.
                 cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[self._REC_TYPE_REC_OFF_CLEARB]
-                self._driver_client.IssueCmdGetResult(prefix=self._prefix,
+                self._driver_client.IssueCmdGetResult(
+                    prefix=self._prefix,
                     cmds=cmd,
                     regex_list=["Events:"],
                     flush=True,
@@ -213,7 +222,8 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
             self._logger.debug("Hostevent delay: %s", self._hostevent_delay)
             time.sleep(self._hostevent_delay)
             cmd = self._REC_TYPE_HOSTEVENT_CMD_DICT[rec_type]
-            self._driver_client.IssueCmdGetResult(prefix=self._prefix,
+            self._driver_client.IssueCmdGetResult(
+                prefix=self._prefix,
                 cmds=cmd,
                 regex_list=["Events:"],
                 flush=True,
