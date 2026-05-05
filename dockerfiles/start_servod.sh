@@ -119,6 +119,7 @@ data_args+=" --grpc-core-host localhost"
 data_args+=" --grpc-core-port 50052"
 data_args+=" --grpc-data-port 50051"
 data_args+=" --logs /var/log/servod_${PORT}"
+data_args+=" ${DEBUG_FLAG}"
 
 IFS=" " read -r -a dargs <<< "${data_args}"
 /usr/bin/python3 "${dargs[@]}" &

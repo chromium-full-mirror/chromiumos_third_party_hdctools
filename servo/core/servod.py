@@ -875,6 +875,9 @@ class ServodStarter:
             nested_logdir,
         ]
 
+        if sopts.debug:
+            cmd.append("--debug")
+
         env = os.environ.copy()
         env["GRPC_POLL_STRATEGY"] = "epoll1"
 

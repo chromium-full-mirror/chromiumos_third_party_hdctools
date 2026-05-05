@@ -93,6 +93,9 @@ start-servod
         Verbose output. Instead of printing pluses, all output of docker library is
         printed. Allows to verify the reason of long start times.
 
+    [--debug]
+        Enable debug logging for servod and the gRPC data service.
+
     [--allow_offline]
         Every time you run start-servod the code will check for a newer version of the
         servod docker image.   If you are not connected to the internet this check will
@@ -246,6 +249,7 @@ def start_servod(
     noboard,
     nomodel,
     dump_xml,
+    debug,
 ):
     try:
         # Just in case someone manages to press ctrl-c before the container object
@@ -264,6 +268,8 @@ def start_servod(
             servod_params += "--noboard "
         if nomodel:
             servod_params += "--nomodel "
+        if debug:
+            servod_params += "--debug "
 
         volumes = ["/dev:/dev", "/sys:/sys"]
 
@@ -556,6 +562,10 @@ def parse_args():
         "passthrough", nargs=argparse.REMAINDER, help="Arguments for subcommand"
     )
     parser.add_argument(
+        "--debug",
+        action=argparse.BooleanOptionalAction,
+    )
+    parser.add_argument(
         "--allow_offline",
         action=argparse.BooleanOptionalAction,
     )
@@ -651,6 +661,7 @@ def main():
         noboard=args.noboard,
         nomodel=args.nomodel,
         dump_xml=args.dump_xml,
+        debug=args.debug,
     )
 
 

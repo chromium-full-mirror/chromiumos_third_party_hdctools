@@ -32,7 +32,9 @@ def serve():
     """
     default_handler = logging.StreamHandler()
     default_handler.setLevel(logging.INFO)
-    default_handler.formatter = servo_logging.ShortUTCFormatter(fmt=servo_logging.SHORT_DEBUG_FMT_STRING)
+    default_handler.formatter = servo_logging.ShortUTCFormatter(
+        fmt=servo_logging.SHORT_DEBUG_FMT_STRING
+    )
     logging.basicConfig(level=logging.INFO, handlers=[default_handler])
 
     parser = argparse.ArgumentParser()
@@ -60,6 +62,11 @@ def serve():
         help="Directory where logs will be stored",
         dest="logs_dir",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Turn on debug logging for stderr",
+    )
 
     args = parser.parse_args()
 
@@ -73,7 +80,7 @@ def serve():
         logdir=logs_dir,
         module="data",
         port=args.grpc_data_port,
-        debug_stderr=True,
+        debug_stderr=args.debug,
         backup_count=1,
     )
     setup_global_capture()
@@ -87,10 +94,11 @@ def serve():
         ("grpc.max_metadata_size", 64 * 1024),
     ]
     from servo.common import grpc_server_interceptor
+
     server = grpc.server(
         futures.ThreadPoolExecutor(max_workers=10),
         options=options,
-        interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),)
+        interceptors=(grpc_server_interceptor.ExceptionTruncatingInterceptor(),),
     )
 
     # Add the SystemConfigServicer implementation to the gRPC server

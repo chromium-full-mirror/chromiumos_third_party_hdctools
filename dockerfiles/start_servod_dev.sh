@@ -17,10 +17,15 @@ if [ "${found_updatable}" -eq 1 ]; then
 fi
 
 echo "DEV: starting grpc server ...................."
+DEBUG_ARG=""
+if [[ " ${1} " =~ " --debug " ]] || [[ " ${1} " =~ " -d " ]]; then
+  DEBUG_ARG="--debug"
+fi
+
 /usr/bin/python3 \
   /usr/local/lib/python3.13/dist-packages/servo/data/grpc_server/grpc_server_setup.py \
   --grpc-core-host localhost --grpc-core-port 50052 --grpc-data-port 50051 \
-  --logs /var/log/servod_9999 &
+  --logs /var/log/servod_9999 ${DEBUG_ARG} &
 
 echo "$(date --utc +\"%Y-%m-%dT%H:%M:%S.%3N%:z\")" "DEV: Starting servod"
 IFS=" " read -r -a args <<< "${1}"
