@@ -49,11 +49,11 @@ start-servod
     [--docker-label label]
         Like -c, but allows specifying any valid docker label.
 
-    [-b BOARD]
-       DUT board the servo is connected to.  Not required but strongly suggested.
+    [-b BOARD | --noboard]
+       DUT board the servo is connected to. If not provided, must use --noboard flag.
 
-    [-m MODEL]
-       DUT model the servo is connected to.  Not required.
+    [-m MODEL | --nomodel]
+       DUT model the servo is connected to. If not provided, must use --nomodel flag.
 
     [-s SERIAL]
        Servo serial number you want to connect to.
@@ -241,6 +241,7 @@ def start_servod(
     token_db,
     logs_dir,
     noboard,
+    nomodel,
     dump_xml,
 ):
     try:
@@ -258,6 +259,8 @@ def start_servod(
             servod_params += "--serialname %s " % serial_no
         if noboard:
             servod_params += "--noboard "
+        if nomodel:
+            servod_params += "--nomodel "
 
         volumes = ["/dev:/dev", "/sys:/sys"]
 
@@ -577,6 +580,10 @@ def parse_args():
         "--noboard",
         action=argparse.BooleanOptionalAction,
     )
+    parser.add_argument(
+        "--nomodel",
+        action=argparse.BooleanOptionalAction,
+    )
     args = parser.parse_args()
     if args.help:
         parser.print_usage()
@@ -639,6 +646,7 @@ def main():
         token_db=args.token_db,
         logs_dir=args.logs_dir,
         noboard=args.noboard,
+        nomodel=args.nomodel,
         dump_xml=args.dump_xml,
     )
 
