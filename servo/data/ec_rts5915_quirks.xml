@@ -1,0 +1,30 @@
+<root>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <!-- [RTK EC] disable watchdog b/502343064 -->
+            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+            <!-- Reset the EC; see b/375444551 comment #50 -->
+            <item>gsc_uart_regexp:None</item>
+            <item>gsc_ec_reset:on</item>
+            <item>gsc_uart_cmd:gpioset AP_FLASH_SELECT 1</item>
+            <!-- Sleep to ensure the SoC rails get chance to discharge enough. -->
+            <item>sleep:1</item>
+          </item>
+          <item key="0">
+            <item>gsc_ec_reset:off</item>
+            <item>gsc_uart_cmd:gpioset AP_FLASH_SELECT 0</item>
+            <!--Additional reset pulse as kick start to boot DUT -->
+            <item>sleep:2</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+</root>
