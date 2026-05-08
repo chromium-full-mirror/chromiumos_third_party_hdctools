@@ -51,7 +51,7 @@ else
   TTY_FLAG=""
 fi
 
-docker run -i ${TTY_FLAG} --rm -e SERVODRC="${SERVODRC}" \
+docker run -i ${TTY_FLAG} --rm -e SERVODRC="${SERVODRC}" -e HOST_PWD="${PWD}" \
     -v /var/run/docker.sock:/var/run/docker.sock:rw \
     -v /tmp:/tmp:rw servod-bootstrap "./${script_name}.py" "$@"
 exit $?
