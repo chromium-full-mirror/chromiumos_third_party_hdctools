@@ -8,16 +8,16 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="it8xxx2"/>
   </control>
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="patch" pb_init_idle="yes" reset_delay="8.0"/>
+    <params clobber_ok="" pb_init_idle="yes" reset_delay="8.0"/>
   </control>
   <control>
     <name>dut_pd_data_role</name>
-    <params clobber_ok="patch" port_count="1" />
+    <params clobber_ok="" port_count="1" />
   </control>
 </root>

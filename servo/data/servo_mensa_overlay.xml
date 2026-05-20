@@ -34,7 +34,7 @@
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params  drv="cros_ec_softrec_power" clobber_ok="patch" shutdown_delay="4.5"
+    <params  drv="cros_ec_softrec_power" clobber_ok="" shutdown_delay="4.5"
     apreset_ec_commands="apreset"/>
   </control>
   <!--
@@ -44,7 +44,7 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_uut"/>
   </control>
   <!--
@@ -55,7 +55,7 @@
     <name>warm_reset</name>
     <doc>warm_reset</doc>
     <params subtype="warm_reset" interface="EC_CONSOLE" drv="ec"
-    map="onoff_i" clobber_ok="patch"></params>
+    map="onoff_i" clobber_ok=""></params>
   </control>
   <!--
      TODO: check if this is still valid for bluey
@@ -64,7 +64,7 @@
     <name>ap_flash_select</name>
     <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
     <params subtype="ap_flash_select" interface="GSC_CONSOLE" drv="cr50"
-      map="onoff" init="off" clobber_ok="patch"/>
+      map="onoff" init="off" clobber_ok=""/>
   </control>
   <control>
     <name>cpu_fw_spi</name>
@@ -110,7 +110,7 @@
   <control>
     <name>dut_pd_data_role</name>
     <doc>Bluey does not have any PD ports, so this control is disabled.</doc>
-    <params clobber_ok="patch" port_count="0"/>
+    <params clobber_ok="" port_count="0"/>
   </control>
   <control>
     <name>init_keyboard</name>

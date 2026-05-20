@@ -161,11 +161,6 @@ class ConfigResolver:
             self._logger.debug("Applying clobber patch to %s %r", tag, name)
         elif clobber_ok is None and name in self.syscfg_dict[tag]:
             clobber_ok = CLOBBER_FULL
-        elif clobber_ok not in (CLOBBER_PATCH, CLOBBER_FULL, CLOBBER_NEVER, None):
-            raise ConfigError(
-                "config file %r %s %r uses invalid clobber_ok=%r"
-                % (filename, tag, name, clobber_ok)
-            )
 
         if "init" in set_dict:
             hwinit_found = False

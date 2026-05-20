@@ -3,7 +3,7 @@
   <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
-    <params handler_type="usb" clobber_ok="patch"></params>
+    <params handler_type="usb" clobber_ok=""></params>
   </control>
   <!-- Unlike other devices the usb kb init here should be on by default.
        Not doing so risks that the default turning off of the usb keyboard
@@ -12,7 +12,7 @@
        when the goal was to have servod come up with the keyboard.-->
   <control>
     <name>init_usb_keyboard</name>
-    <params clobber_ok="patch" map="onoff" init="on" drv="kb_handler_init"
+    <params clobber_ok="" map="onoff" init="on" drv="kb_handler_init"
     subtype="init_usb_keyboard" interface="servo"/>
   </control>
 </root>
