@@ -421,7 +421,7 @@ RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/n
     -O /usr/share/ec-devutils/npcx_monitor.bin
 
 # Fetch Realtek monitor from GCS
-RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/rtk_flame/rts5915_flash_upload-2026.05.08.bin \
+RUN wget https://storage.googleapis.com/chromeos-localmirror/distfiles/cros_ec/rtk_flame/rts5915_flash_upload-16687.0.0.bin \
     -O /usr/share/ec-devutils/rts5915_flash_upload.bin
 
 RUN mkdir -p /usr/share/cros_ec/tokens
