@@ -12,7 +12,7 @@
   <control>
     <name>init_keyboard</name>
     <doc>initialize keyboard handler</doc>
-    <params handler_type="usb" clobber_ok="patch"></params>
+    <params handler_type="usb" clobber_ok=""></params>
   </control>
   <!-- lid open has to go through the EC always on kukui with stm EC
        irrespective of servo type. -->
@@ -21,8 +21,8 @@
     <doc>Emulated lid switch on ec</doc>
     <params cmd="get" uart_cmd="lidstate" regex="lid state: (open|closed)"
     group="1" retries="3" formatting="map_open" interface="EC_CONSOLE"
-    drv="simple_ec" map="yesno" clobber_ok="patch"></params>
+    drv="simple_ec" map="yesno" clobber_ok=""></params>
     <params cmd="set" subtype="lid_open" interface="EC_CONSOLE"
-    drv="ec" map="yesno" clobber_ok="patch"></params>
+    drv="ec" map="yesno" clobber_ok=""></params>
   </control>
 </root>

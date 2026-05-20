@@ -15,7 +15,7 @@
     <doc>Pseudo-terminal (pty) thats connected to FP MCU's uart
       console</doc>
     <params cmd="get" subtype="pty" interface="RAW_AP_CONSOLE" drv="uart"
-        clobber_ok="patch"></params>
+        clobber_ok=""></params>
   </control>
   <!-- EC-3PO console interpreter for FP MCU -->
   <control>
@@ -32,39 +32,39 @@
     <doc>State indicating if interpreter is listening to the EC
       UART.</doc>
     <params interface="GSC_CONSOLE" drv="ec3po_driver" map="onoff" init="off"
-        subtype="interp_connect" clobber_ok="patch"></params>
+        subtype="interp_connect" clobber_ok=""></params>
   </control>
   <control>
     <name>cpu_ec3po_interp_connect</name>
     <doc>Turn off the cpu ec3po interpreter </doc>
-    <params map="alwaysoff" init="off" clobber_ok="patch"></params>
+    <params map="alwaysoff" init="off" clobber_ok=""></params>
   </control>
   <control>
     <name>uart2_baudrate</name>
     <alias>fpmcu_uart_baudrate,usbpd_uart_baudrate</alias>
     <doc>Baudrate for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="baudrate"
-        clobber_ok="patch" interface="RAW_AP_CONSOLE"></params>
+        clobber_ok="" interface="RAW_AP_CONSOLE"></params>
   </control>
   <control>
     <name>uart2_parity</name>
     <alias>fpmcu_uart_parity,usbpd_uart_parity</alias>
     <doc>Parity for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="parity"
-        clobber_ok="patch" interface="RAW_AP_CONSOLE" map="uart_parity"></params>
+        clobber_ok="" interface="RAW_AP_CONSOLE" map="uart_parity"></params>
   </control>
   <control>
     <name>uart2_sbits</name>
     <alias>fpmcu_uart_sbits,usbpd_uart_sbits</alias>
     <doc>Number of stop bits for FP MCU's uart console</doc>
     <params drv="uart" subtype="props" line_prop="sbits"
-        clobber_ok="patch" interface="RAW_AP_CONSOLE" map="uart_sbits"></params>
+        clobber_ok="" interface="RAW_AP_CONSOLE" map="uart_sbits"></params>
   </control>
   <control>
     <name>uart2_bits</name>
     <alias>fpmcu_uart_bits,usbpd_uart_bits</alias>
     <doc>Number of data bits for FP MCU's uart console</doc>
-    <params drv="uart" subtype="props" line_prop="bits" clobber_ok="patch"
+    <params drv="uart" subtype="props" line_prop="bits" clobber_ok=""
         interface="RAW_AP_CONSOLE" map="uart_bits"></params>
   </control>
   <!-- FP MCU UART Automation Controls -->

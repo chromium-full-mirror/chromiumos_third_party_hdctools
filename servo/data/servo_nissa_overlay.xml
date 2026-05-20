@@ -10,7 +10,7 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="patch" cmd="get" interface="EC_CONSOLE" drv="simple_ec" uart_cmd="version"
+    <params clobber_ok="" cmd="get" interface="EC_CONSOLE" drv="simple_ec" uart_cmd="version"
       regex="Chip:\s+\S+\s+(npcx|it81302)\S*\s" group="1" map="ec_chip_map"/>
   </control>
 </root>
