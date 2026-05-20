@@ -22,13 +22,13 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="npcx_int_spi" chip_for_ccd_cr50="npcx_uut"/>
   </control>
   <control>
     <name>power_state</name>
     <doc>Used to turn the DUT off and on</doc>
-    <params clobber_ok="patch" cmd="set" drv="cros_ec_softrec_power"
+    <params clobber_ok="" cmd="set" drv="cros_ec_softrec_power"
       ccd_pulse_cold_reset="yes"/>
   </control>
   <control>

@@ -18,7 +18,7 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="patch" cmd="get" subtype="chip" interface="servo"
+    <params clobber_ok="" cmd="get" subtype="chip" interface="servo"
     drv="cros_chip" chip="stm32" />
   </control>
   <control>
@@ -32,7 +32,7 @@
     <doc>Used to turn the DUT off and on</doc>
     <!-- b/131856041: Kukui tablets boot only after power button
 	 pressed > 1.0s.  -->
-    <params clobber_ok="patch" reset_recovery="0.6" drv="cros_ec_softrec_power"
+    <params clobber_ok="" reset_recovery="0.6" drv="cros_ec_softrec_power"
             warm_reset_can_hold_ap="no" usb_power_restore="yes"
             power_key="press"/>
   </control>
