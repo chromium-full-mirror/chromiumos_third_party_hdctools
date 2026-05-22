@@ -72,6 +72,8 @@ RUN ./bootstrap.sh && ./configure --with-pic --disable-udev && make -j$(nproc) &
 # Change the package config to have pthread for linking.
 RUN sed -i 's/Libs: -L\${libdir} -lusb-1.0/Libs: -L\${libdir} -lusb-1.0 -lpthread /g' /libusb/libusb-1.0.pc
 
+RUN echo "libusb $(git rev-parse HEAD)" >> /version.txt
+
 #####################################################################
 FROM clang-builder as libftdi
 
@@ -117,6 +119,7 @@ RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashmap
 
 WORKDIR /flashmap
 RUN make && make install
+RUN echo "flashmap $(git rev-parse HEAD)" >> /version.txt
 
 # Install libusb.
 COPY --from=libusb-builder /usr/local/include/libusb-1.0/libusb.h /usr/local/include/libusb-1.0/
@@ -147,6 +150,7 @@ RUN strip /ec/extra/usb_updater/usb_updater2 \
     /ec/build/host/util/rtkupdate
 
 RUN strip --strip-unneeded /usr/lib/libfmap.so* /usr/lib/libftdi*
+RUN echo "ec $(git rev-parse HEAD)" >> /version.txt
 
 WORKDIR /
 RUN tar cvf libs.tar /usr/lib/libfmap.so* /usr/lib/libftdi*
@@ -163,6 +167,8 @@ RUN git fetch ${PIGWEED_URL} ${PIGWEED_BRANCH}
 RUN git checkout ${PIGWEED_BRANCH}
 COPY dockerfiles/setup_pigweed.py .
 RUN python3 setup_pigweed.py bdist_wheel
+
+RUN echo "pigweed $(git rev-parse HEAD)" >> /version.txt
 
 ######################################################################
 FROM libftdi as gcstool-builder
@@ -207,6 +213,7 @@ RUN git clone https://chromium.googlesource.com/chromiumos/third_party/flashrom
 WORKDIR /flashrom
 RUN meson builddir && cd builddir && meson install
 RUN strip /usr/local/sbin/flashrom
+RUN echo "flashrom $(git rev-parse HEAD)" >> /version.txt
 
 ######################################################################
 FROM flashrom-builder as futility-builder
@@ -224,6 +231,7 @@ RUN sed -i 's/-Werror//g' Makefile
 RUN make && make install
 
 RUN strip /usr/bin/futility
+RUN echo "futility $(git rev-parse HEAD)" >> /version.txt
 
 ######################################################################
 FROM futility-builder as coreboot
@@ -234,6 +242,9 @@ RUN cd /coreboot/util/cbfstool && make VBOOT_SOURCE=/vboot_reference
 RUN strip /coreboot/util/cbfstool/cbfstool
 RUN cd /coreboot/util/ifdtool && make
 RUN strip /coreboot/util/ifdtool/ifdtool
+
+WORKDIR /coreboot
+RUN echo "coreboot $(git rev-parse HEAD)" >> /version.txt
 
 ######################################################################
 FROM libftdi as fwupd-builder
@@ -490,3 +501,12 @@ RUN apt-get remove --purge -y \
 
 RUN rm -rf /usr/share/doc/* /usr/share/man/* /usr/share/locale/*
 RUN find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name "en" -exec rm -rf {} +
+
+# Copy versions files
+COPY --link --from=coreboot /version.txt /version-coreboot.txt
+COPY --link --from=ec-builder /version.txt /version-ec.txt
+COPY --link --from=flashrom-builder /version.txt /version-flashrom.txt
+COPY --link --from=futility-builder /version.txt /version-futility.txt
+COPY --link --from=libusb-builder /version.txt /version-libusb.txt
+COPY --link --from=pigweed-builder /version.txt /version-pigweed.txt
+RUN bash -c "cat /version-*.txt | sort | uniq > /versions.txt && rm /version-*.txt"
