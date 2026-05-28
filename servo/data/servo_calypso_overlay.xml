@@ -87,7 +87,7 @@
   </control>
   <control>
     <name>ec_boot_mode</name>
-    <params clobber_ok="patch" od="PP" map="onoff_i"></params>
+    <params clobber_ok="patch" od="PU" map="onoff_i" init="off"></params>
   </control>
 
   <control>
