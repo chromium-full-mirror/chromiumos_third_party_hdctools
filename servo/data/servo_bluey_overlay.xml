@@ -86,13 +86,18 @@
     <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
       set_value_1="cold_reset:on sleep:2 gsc_idle_level:active spi2_buf_en:on
                    spi2_buf_on_flex_en:on spi2_vref:off ap_flash_select:on
-                   spi_hold:off"
+                   spi_hold:off dev_mode:on"
       set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
-                   ap_flash_select:off cold_reset:off spi_hold:off"
+                   ap_flash_select:off cold_reset:off spi_hold:off dev_mode:off"
       />
   </control>
   <control>
     <name>ec_boot_mode</name>
+    <params clobber_ok="patch" od="PP" map="onoff"></params>
+  </control>
+
+  <control>
+    <name>dev_mode</name>
     <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>
 

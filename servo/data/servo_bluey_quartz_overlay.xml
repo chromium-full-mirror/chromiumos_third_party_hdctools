@@ -9,8 +9,4 @@
     <params clobber_ok="patch" od="PU" map="onoff_i" init="off"></params>
   </control>
 
-  <control>
-    <name>dev_mode</name>
-    <params clobber_ok="patch" od="PP" map="onoff"></params>
-  </control>
 </root>
