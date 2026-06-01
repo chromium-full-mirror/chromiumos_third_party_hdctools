@@ -123,4 +123,16 @@
     <params  map="onoff" init="on" drv="kb_handler_init" interface="servo"
       subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"></params>
   </control>
+  <control>
+    <name>uart_gsc_tx_fpmcu_rx</name>
+    <doc>UART_GSC_TX_FPMCU_RX GPIO state queryable from GSC console</doc>
+    <params interface="GSC_CONSOLE" drv="ec3po_gpio" name="UART_GSC_TX_FPMCU_RX"
+    subtype="single" map="onoff"/>
+  </control>
+  <control>
+    <name>uart_fpmcu_tx_gsc_rx</name>
+    <doc>UART_FPMCU_TX_GSC_RX GPIO state queryable from GSC console</doc>
+    <params interface="GSC_CONSOLE" drv="ec3po_gpio" name="UART_FPMCU_TX_GSC_RX"
+    subtype="single" map="onoff"/>
+  </control>
 </root>
