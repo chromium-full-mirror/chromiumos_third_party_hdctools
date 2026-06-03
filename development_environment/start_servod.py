@@ -169,11 +169,11 @@ def pull_newest_image(client, image, allow_offline, verbose):
             else:
                 print("+", end="", flush=True)
         print("", flush=True)
-        update_check_timestamp()
+        return True
     except (docker.errors.APIError, docker.errors.DockerException) as e:
         if client.images.list(filters={"reference": image}):
             print("\nWarning: Failed to pull newest image, using local version.\n")
-            return
+            return False
 
         if isinstance(e, docker.errors.APIError) and (
             e.is_server_error()
@@ -213,8 +213,11 @@ def get_image(client, channel, allow_offline, force_update, verbose):
         logging.info(
             "Checking docker image is up to date and downloading updates as necessary."
         )
-        pull_newest_image(client, image, allow_offline, verbose)
+        is_updated = pull_newest_image(client, image, allow_offline, verbose)
         logging.info("Image check complete.")
+
+        if is_updated and channel == "release":
+            update_check_timestamp()
     else:
         logging.info("Docker image version verified earlier today, no updates needed.")
     return image
