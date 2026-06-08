@@ -528,16 +528,29 @@ If this didn't help, please file an issue.
 
 ### How can I get the servod logs?
 
-The logs are in a docker volume named ${container_name}_logs. You can see the
-path by running:
+By default, servod logs are saved on the host machine under `/tmp/servod_logs/`.
+
+> ***Note***
+> Directory `/tmp` may be mounted as tmpfs on your system and be
+> cleaned with every reboot of your system. If you need to keep your old
+> log files, you may need to copy them to some other location.
+
+For each running instance, a directory named `servod_<port>_<timestamp>` is created.
+You can find the logs (including `latest.DEBUG`) directly in that directory.
 
 ```bash
-# Run servod-ps to see the container name
-container_name=1700772381
-docker volume inspect ${container_name}_log
-# Using the path from the previous command
-sudo less /usr/local/google/docker/volumes/1700772381_log/_data/latest.DEBUG
+# Example path
+cat /tmp/servod_logs/servod_9999_1700772381/latest.DEBUG
 ```
 
-Alternatively, you can enter the container and look at the logs directly, but
-there is no `less` command there.
+If you want to customize the log directory, you can use the `--logs` flag when starting servod:
+
+```bash
+start-servod --logs /path/to/custom/log/dir -b <board> ...
+```
+
+This will save logs under `/path/to/custom/log/dir/servod_<port>_<timestamp>/`.
+Note that the path provided to `--logs` must be an absolute path on the host.
+
+Alternatively, you can enter the container and look at the logs directly
+under `/var/log/servod_9999/` and use `more` command for easy scroll.
