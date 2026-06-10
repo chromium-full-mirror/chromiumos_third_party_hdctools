@@ -442,6 +442,21 @@ class DetokenizeWithCollisions(unittest.TestCase):
         self.assertEqual("#0 -1", str(unambiguous))
         self.assertIn("#0 -1", repr(unambiguous))
 
+    def test_collision_tie_for_highest_score_is_not_ok(self) -> None:
+        token = 0xBAAD
+        detok = detokenize.Detokenizer(
+            tokens.Database(
+                [
+                    tokens.TokenizedStringEntry(token, "alternative"),
+                    tokens.TokenizedStringEntry(token, "newer"),
+                ]
+            )
+        )
+        result = detok.detokenize(b"\xad\xba\0\0")
+        self.assertFalse(result.ok())
+        self.assertEqual(len(result.successes), 2)
+        self.assertEqual(str(result), "alternative")
+
 
 class ManualPoolExecutor(concurrent.futures.Executor):
     """A stubbed pool executor that captures the most recent work request
