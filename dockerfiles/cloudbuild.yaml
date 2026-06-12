@@ -22,7 +22,11 @@ steps:
     git rebase
 
     git fetch origin main || true
-    BASE_COMMIT=$$(git merge-base origin/main HEAD || echo "HEAD~1")
+    BASE_COMMIT=$$(git merge-base origin/main HEAD || echo "")
+    if [ -z "$$BASE_COMMIT" ] || [ "$$BASE_COMMIT" = "$$(git rev-parse HEAD)" ]; then
+      echo "Merge base is HEAD or empty, falling back to HEAD~1"
+      BASE_COMMIT="HEAD~1"
+    fi
     if git diff --name-only $$BASE_COMMIT HEAD | grep -q "dockerfiles/"; then
       echo "Files in dockerfiles/ changed, creating flag file."
       touch /workspace/base_changed
@@ -35,8 +39,13 @@ steps:
   - '-c'
   - |
     if [ -f /workspace/base_changed ]; then
+      DESTINATIONS="--destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:$COMMIT_SHA"
+      if [ "$BRANCH_NAME" = "main" ] && [ -z "${_GERRIT_CHANGE_NUMBER:-}" ]; then
+        echo "Postsubmit build on main branch detected. Adding latest tag."
+        DESTINATIONS="$$DESTINATIONS --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:latest"
+      fi
       /kaniko/executor \
-        --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-builder-base:$COMMIT_SHA \
+        $$DESTINATIONS \
         --target=hdctools-builder-base \
         --cache=true \
         --cache-ttl=24h \
@@ -54,8 +63,13 @@ steps:
   - '-c'
   - |
     if [ -f /workspace/base_changed ]; then
+      DESTINATIONS="--destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:$COMMIT_SHA"
+      if [ "$BRANCH_NAME" = "main" ] && [ -z "${_GERRIT_CHANGE_NUMBER:-}" ]; then
+        echo "Postsubmit build on main branch detected. Adding latest tag."
+        DESTINATIONS="$$DESTINATIONS --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:latest"
+      fi
       /kaniko/executor \
-        --destination=us-docker.pkg.dev/$PROJECT_ID/servod/servod-base:$COMMIT_SHA \
+        $$DESTINATIONS \
         --target=base \
         --cache=true \
         --cache-ttl=24h \
