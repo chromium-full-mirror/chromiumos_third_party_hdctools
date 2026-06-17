@@ -69,7 +69,7 @@ class FwWpStateDriver(hw_driver.HwDriver):
         else:
             raise ValueError(
                 "Invalid fw_wp_state setting: '%s'. Try one of "
-                "'%s', '%s', or '%s'."
+                "'%s', '%s', '%s', '%s', or '%s'."
                 % (
                     statename,
                     self._STATE_FORCE_ON,
