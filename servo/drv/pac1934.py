@@ -220,6 +220,24 @@ class pac1934(ina2xx.ina2xx):
         # It's sufficient to report one, since we made sure it's the same one.
         return int(c_signed)
 
+    def _Get_millivolts(self):
+        """Retrieve voltage measurement for ADC in millivolts.
+
+        Overridden to handle signed bus voltage.
+        """
+        busv = self._read_reg("busv") >> self.BUSV_MV_OFFSET
+        _unused, v_signed = self._signed()
+        if v_signed:
+            # 16-bit sign extension
+            if busv & 0x8000:
+                busv -= 0x10000
+        millivolts = busv * self.millivolts_per_lsb
+        if abs(millivolts) >= self.BUSV_MAX:
+            self._logger.error(
+                "bus voltage measurement exceeded maximum %f", millivolts
+            )
+        return millivolts
+
     def _read_reg(self, name, refresh="v"):
         """Specify whether we need to call refresh (and what kind) before read.
 
