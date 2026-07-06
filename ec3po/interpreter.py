@@ -305,10 +305,11 @@ class Interpreter:
         if self.cmd_retries < COMMAND_RETRIES:
             cmd = self.last_cmd
         else:
-            # If we're not retrying, we should not be writing to the EC if we have no
-            # items in our command queue.
-            assert not self.ec_cmd_queue.empty()
-            # Get the command to send.
+            # If we're not retrying, check if we have items in our command queue.
+            if self.ec_cmd_queue.empty():
+                if self.ec_uart_pty in self.outputs:
+                    self.outputs.remove(self.ec_uart_pty)
+                return
             cmd = self.ec_cmd_queue.get()
 
         # Send the command.
@@ -450,12 +451,41 @@ def start_loop(interp, shutdown_pipe=None):
                                     "probably it is closed."
                                 )
                             )
+                            if interp.connected:
+                                interp.logger.debug(
+                                    "Reopening closed ec_uart_pty %s automatically...",
+                                    interp.ec_uart_pty_name,
+                                )
+                                try:
+                                    interp.ec_uart_pty = open(
+                                        interp.ec_uart_pty_name, "r+b", buffering=0
+                                    )
+                                    ec_uart_pty_fileno = interp.ec_uart_pty.fileno()
+                                    if interp.ec_uart_pty not in interp.inputs:
+                                        interp.inputs.append(interp.ec_uart_pty)
+                                except OSError as reopen_err:
+                                    interp.logger.debug(
+                                        "Failed auto-reopening ec_uart_pty: %s",
+                                        reopen_err,
+                                    )
                         # Handle any debug prints from the EC.
                         if fileno == ec_uart_pty_fileno:
                             try:
                                 interp.handle_ec_data()
-                            except (EOFError, ConnectionResetError, BrokenPipeError):
-                                continue_looping = False
+                            except (EOFError, OSError) as e:
+                                interp.logger.debug(
+                                    "ec_uart_pty read error (%s). "
+                                    "Closing for auto-reopen.",
+                                    e,
+                                )
+                                try:
+                                    if interp.ec_uart_pty in interp.inputs:
+                                        interp.inputs.remove(interp.ec_uart_pty)
+                                    if interp.ec_uart_pty in interp.outputs:
+                                        interp.outputs.remove(interp.ec_uart_pty)
+                                    interp.ec_uart_pty.close()
+                                except Exception:
+                                    pass
 
                         # Handle any commands from the user.
                         elif fileno == interp.cmd_pipe.fileno():
@@ -479,8 +509,26 @@ def start_loop(interp, shutdown_pipe=None):
 
                     if event & select.EPOLLOUT and fileno in output_filenos:
                         # Send a command to the EC.)
-                        if fileno == ec_uart_pty_fileno:
-                            interp.send_cmd_to_ec()
+                        if (
+                            fileno == ec_uart_pty_fileno
+                            and interp.ec_uart_pty in interp.outputs
+                        ):
+                            try:
+                                interp.send_cmd_to_ec()
+                            except (EOFError, OSError) as e:
+                                interp.logger.debug(
+                                    "ec_uart_pty write error (%s). "
+                                    "Closing for auto-reopen.",
+                                    e,
+                                )
+                                try:
+                                    if interp.ec_uart_pty in interp.inputs:
+                                        interp.inputs.remove(interp.ec_uart_pty)
+                                    if interp.ec_uart_pty in interp.outputs:
+                                        interp.outputs.remove(interp.ec_uart_pty)
+                                    interp.ec_uart_pty.close()
+                                except Exception:
+                                    pass
 
     except KeyboardInterrupt:
         pass

@@ -111,6 +111,18 @@ class cr50(pty_driver.PtyDriver):
                         "read/write access to the Cr50 UART console."
                     )
                     raise cr50Error("cr50 uart is unresponsive") from e
+                if hasattr(self._interface, "set_interp_connect"):
+                    self._logger.debug(
+                        "Attempting automatic ec3po reconnect for cr50 console..."
+                    )
+                    try:
+                        self._interface.set_interp_connect(0)
+                        time.sleep(0.1)
+                        self._interface.set_interp_connect(1)
+                    except Exception as reconnect_err:
+                        self._logger.debug(
+                            "Failed to toggle ec3po interp_connect: %s", reconnect_err
+                        )
                 time.sleep(self.PROMPT_DETECTION_INTERVAL)
 
         return super()._issue_cmd_get_results(

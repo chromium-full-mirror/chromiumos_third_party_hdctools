@@ -1069,10 +1069,16 @@ class Console:
             )
         self.log_console_output(data)
         if controller_connected:
-            self.send_to_controller(data)
+            try:
+                self.send_to_controller(data)
+            except OSError as e:
+                self.logger.debug("Failed sending to controller_pty: %s", e)
 
         if command_active:
-            sys_interface.write(self.interface_pty, data)
+            try:
+                sys_interface.write(self.interface_pty, data)
+            except OSError as e:
+                self.logger.debug("Failed writing to interface_pty: %s", e)
 
 
 def canonicalize_time_string(timestr):
@@ -1191,34 +1197,37 @@ def start_loop(console, command_active, shutdown_pipe=None):
 
                     elif fileno == console.interface_pty:
                         if command_active.value:
-                            # Convert to bytes so we can look for non-printable
-                            # chars such as Ctrl+A, Ctrl+E, etc.
-                            line = bytearray(
-                                sys_interface.read(
-                                    console.interface_pty, CONSOLE_MAX_READ
-                                )
-                            )
-                            console.logger.debug(
-                                "Input from interface: %s, locked:%s",
-                                str(line).strip(),
-                                command_active.value,
-                            )
-                            for i in line:
-                                try:
-                                    # Handle each character as it arrives.
-                                    console.handle_char(i)
-                                except (
-                                    EOFError,
-                                    ConnectionResetError,
-                                    BrokenPipeError,
-                                ):
-                                    console.logger.debug(
-                                        "ec3po console received EOF from dbg_pipe "
-                                        "in handle_char()"
-                                        " while reading console.interface_pty"
+                            try:
+                                line = bytearray(
+                                    sys_interface.read(
+                                        console.interface_pty, CONSOLE_MAX_READ
                                     )
-                                    continue_looping = False
-                                    break
+                                )
+                                console.logger.debug(
+                                    "Input from interface: %s, locked:%s",
+                                    str(line).strip(),
+                                    command_active.value,
+                                )
+                                for i in line:
+                                    try:
+                                        console.handle_char(i)
+                                    except (
+                                        EOFError,
+                                        ConnectionResetError,
+                                        BrokenPipeError,
+                                    ):
+                                        console.logger.debug(
+                                            "ec3po console received EOF from dbg_pipe "
+                                            "in handle_char()"
+                                            " while reading console.interface_pty"
+                                        )
+                                        continue_looping = False
+                                        break
+                            except OSError as e:
+                                console.logger.debug(
+                                    "ec3po console read error on " "interface_pty: %s",
+                                    e,
+                                )
 
                     elif fileno == console.cmd_pipe.fileno():
                         try:
@@ -1238,9 +1247,19 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                 data.strip(),
                             )
                         if controller_connected:
-                            sys_interface.write(console.controller_pty, data)
+                            try:
+                                sys_interface.write(console.controller_pty, data)
+                            except OSError as e:
+                                console.logger.debug(
+                                    "Failed writing controller_pty: %s", e
+                                )
                         if command_active.value:
-                            sys_interface.write(console.interface_pty, data)
+                            try:
+                                sys_interface.write(console.interface_pty, data)
+                            except OSError as e:
+                                console.logger.debug(
+                                    "Failed writing interface_pty: %s", e
+                                )
 
                     elif fileno == console.dbg_pipe.fileno():
                         try:
