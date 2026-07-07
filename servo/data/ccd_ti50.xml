@@ -7,11 +7,6 @@
     <name>ccd_cr50.xml</name>
   </include>
   <control>
-    <name>ccd_cpu_fw_spi</name>
-    <doc>Enable SPI mode for flashing CPU firmware over CCD</doc>
-    <params interface="servo" drv="na" clobber_ok="full" />
-  </control>
-  <control>
     <name>servo_adcs_enabled</name>
     <doc>Configure the servod device to read ADCs.</doc>
     <params name="EN_I2C_DBG_PWR_L" clobber_ok="patch"></params>
