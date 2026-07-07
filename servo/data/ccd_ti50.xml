@@ -9,8 +9,7 @@
   <control>
     <name>ccd_cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over CCD</doc>
-    <params interface="servo" drv="ni" input_type="str"
-            message="Default setting is unsafe on Ti50. Please define a board-specific override in your overlay." />
+    <params interface="servo" drv="na" />
   </control>
   <control>
     <name>servo_adcs_enabled</name>

@@ -55,7 +55,6 @@ from servo.drv import m24c02
 from servo.drv import macro
 from servo.drv import maui
 from servo.drv import na
-from servo.drv import ni
 from servo.drv import pac1934
 from servo.drv import pac1954
 from servo.drv import pac1954_gpio
