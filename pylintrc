@@ -51,6 +51,7 @@ ignore=CVS
 # format. Because '\\' represents the directory delimiter on Windows systems,
 # it can't be used as an escape character.
 ignore-paths=
+    .*/servo/common/proto/.*,
     .*/data/.*,
     .*/drv/.*,
     .*syscfg_atlas.py,
