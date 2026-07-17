@@ -80,8 +80,12 @@
     <params clobber_ok="full" interface="servo" drv="macro" map="onoff"
       set_value_1="cold_reset:on sleep:2 gsc_idle_level:active spi2_buf_en:on
                    spi2_buf_on_flex_en:on spi2_vref:off ap_flash_select:on
-                   spi_hold:off dev_mode:on"
-      set_value_0="spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
+                   spi_hold:off dev_mode:on
+                   cpu_ec3po_interp_connect:off ec_ec3po_interp_connect:off
+                   fpmcu_ec3po_interp_connect:off gsc_ec3po_interp_connect:off"
+      set_value_0="cpu_ec3po_interp_connect:on ec_ec3po_interp_connect:on
+                   fpmcu_ec3po_interp_connect:on gsc_ec3po_interp_connect:on
+                   spi2_buf_en:off spi2_buf_on_flex_en:off spi2_vref:off
                    ap_flash_select:off cold_reset:off spi_hold:off dev_mode:off"
       />
   </control>

@@ -42,8 +42,18 @@
           <item key="1">
             <item>gsc_ec_reset:on</item>
             <item>ap_flash_select:on</item>
+            <!-- Disconnect consoles to prevent TT congestion -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>fpmcu_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
           </item>
           <item key="0">
+            <!-- Reconnect consoles first so GSC command works -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>fpmcu_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
             <item>ap_flash_select:off</item>
             <item>gsc_ec_reset:off</item>
           </item>
