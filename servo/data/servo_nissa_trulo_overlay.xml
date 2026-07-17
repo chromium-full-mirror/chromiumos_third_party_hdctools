@@ -18,25 +18,6 @@
   <!-- ******** Controls ******** -->
 
   <control>
-    <name>ccd_cpu_fw_spi</name>
-    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
-    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
-      <content>
-        <item key="macro_map">
-          <item key="1">
-            <item>cold_reset:on</item>
-            <item>ap_flash_select:on</item>
-          </item>
-          <item key="0">
-            <item>ap_flash_select:off</item>
-            <item>cold_reset:off</item>
-          </item>
-        </item>
-      </content>
-    </params>
-  </control>
-
-  <control>
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing AP firmware over direct SPI connection</doc>
     <params drv="macro" interface="servo" map="onoff" clobber_ok="full">

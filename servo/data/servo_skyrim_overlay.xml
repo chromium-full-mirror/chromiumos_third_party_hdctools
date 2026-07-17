@@ -26,8 +26,18 @@
             <item>ec_uart_cmd:reboot cancel</item>
             <item>ec_uart_cmd:apshutdown</item>
             <item>sleep:5</item>
+            <!-- Disconnect consoles to prevent TT congestion -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>fpmcu_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
           </item>
           <item key="0">
+            <!-- Reconnect consoles first so GSC command works -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>fpmcu_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
             <item>power_state:reset</item>
           </item>
         </item>

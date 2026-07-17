@@ -41,8 +41,18 @@
             <item>gsc_uart_cmd:gpioset AP_FLASH_SELECT 1</item>
             <!-- Sleep to ensure the SoC rails get chance to discharge enough. -->
             <item>sleep:1</item>
+            <!-- Disconnect consoles to prevent TT congestion -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>fpmcu_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
           </item>
           <item key="0">
+            <!-- Reconnect consoles first so GSC command works -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>fpmcu_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
             <item>gsc_ec_reset:off</item>
             <item>gsc_uart_cmd:gpioset AP_FLASH_SELECT 0</item>
             <!--Additional reset pulse as kick start to boot DUT -->
