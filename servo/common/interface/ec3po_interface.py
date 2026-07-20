@@ -23,12 +23,14 @@ from google.protobuf import empty_pb2
 from ec3po import console
 from ec3po import interpreter
 from ec3po import threadproc_shim
+from servo.common import servo_dev_templates
 from servo.common.grpc_client import GrpcClient
 from servo.common.interface import common as c
 from servo.common.interface import empty
 from servo.common.interface import uart
 from servo.common.proto import driver_grpc
 from servo.common.proto import system_config_grpc
+from servo.common.utils.interface_utils import InterfaceUtils
 from servo.data import servo_interfaces
 from servo.utils.sys_interface import sys_interface
 
@@ -397,6 +399,52 @@ class EC3PO(uart.Uart):
             self._cmd_pipe_int.send(b"reconnect")
         else:
             self._cmd_pipe_int.send(b"disconnect")
+
+    def reinitialize(self, reset_device=False):
+        """Reinitialize the EC3PO interface."""
+        self._logger.info(
+            "Reinitializing EC3PO interface (reset_device=%s)...", reset_device
+        )
+        if reset_device:
+            is_reinit_capable = False
+            try:
+                template = servo_dev_templates.get_template_class(
+                    self._device_info.vid,
+                    self._device_info.pid,
+                    self._device_info.serialname,
+                )
+                if (
+                    template
+                    and template.TYPE in servo_dev_templates.REINIT_CAPABLE_TYPES
+                ):
+                    is_reinit_capable = True
+            except Exception as e:
+                self._logger.warning("Error checking device template: %s", e)
+
+            if not is_reinit_capable:
+                self._logger.info(
+                    "Device is not reinit capable. Disabling reset_device."
+                )
+                reset_device = False
+
+        interface_key = InterfaceUtils.get_interface_key(
+            self._device_info.vid, self._device_info.pid, self._device_info.serialname
+        )
+        if interface_key in InterfaceUtils._interface_dict:
+            interfaces = InterfaceUtils._interface_dict[interface_key]["interface_list"]
+            for interface in interfaces:
+                if interface.name() == "stm32_uart":
+                    if (
+                        hasattr(interface, "get_pty")
+                        and interface.get_pty() == self._raw_ec_uart
+                    ):
+                        self._logger.info(
+                            "Found matching Suart interface, reinitializing it..."
+                        )
+                        try:
+                            interface.reinitialize(reset_device=reset_device)
+                        except TypeError:
+                            interface.reinitialize()
 
     def get_interp_connect(self):
         """Get the state of the interpreter connection to the UART."""

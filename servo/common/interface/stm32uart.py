@@ -117,13 +117,37 @@ class Suart(uart.Uart):
         del self._susb
         sys_interface.close(self._ptym)
 
-    def reinitialize(self):
+    def reinitialize(self, reset_device=False):
         """Reinitialize the usb endpoint"""
-        self._susb.reset_usb()
+        self._susb.reset_usb(force=True, reset_device=reset_device)
 
     def get_device_info(self):
         """The usb device information."""
         return self._susb.get_device_info()
+
+    def _handle_usb_error(self, e, context):
+        """Handle USB errors and try to recover if appropriate.
+
+        Args:
+            e: The exception that occurred.
+            context: String indicating where it occurred ('rx' or 'tx').
+        """
+        self._logger.warning("%s error on %s: %s", context, self.get_pty(), e)
+        now = time.time()
+        if not hasattr(self, "_last_reinit_time"):
+            self._last_reinit_time = 0
+
+        if now - self._last_reinit_time > 10:  # limit to once per 10s
+            self._last_reinit_time = now
+            self._logger.info("Attempting recovery reinitialization...")
+            try:
+                # Force reinit to clear potential lockups
+                self._susb.reset_usb(force=True)
+                self._logger.info("Recovery reinitialization successful.")
+            except Exception as reinit_e:
+                self._logger.error("Recovery reinitialization failed: %s", reinit_e)
+        else:
+            self._logger.debug("Skipping recovery reinit (throttled).")
 
     def run_rx_thread(self):
         self._logger.debug("rx thread started on %s", self.get_pty())
@@ -138,12 +162,13 @@ class Suart(uart.Uart):
                         r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
                         if r:
                             sys_interface.write(self._ptym, r)
-                    except (OSError, usb.core.USBError):
+                    except usb.core.USBTimeoutError:
                         # Expected and forgiven here, just pass
                         pass
+                    except (OSError, usb.core.USBError) as e:
+                        self._handle_usb_error(e, "rx")
                     except Exception as e:
                         # If we miss some characters on pty disconnect, that's fine.
-                        # ep.read() also throws USBError on timeout, which we discard.
                         self._logger.debug("rx %s: %s", self.get_pty(), e)
                 else:
                     self._done.wait(0.1)
@@ -172,7 +197,9 @@ class Suart(uart.Uart):
                             if r:
                                 try:
                                     self._susb.write_ep(r, self._susb.TIMEOUT_MS)
-                                except (IOError, usb.core.USBTimeoutError) as e:
+                                except usb.core.USBTimeoutError as e:
+                                    self._handle_usb_error(e, "tx_timeout")
+                                except (IOError, usb.core.USBError) as e:
                                     if getattr(e, "errno", None) in (
                                         errno.ENODEV,
                                         errno.EIO,
@@ -196,10 +223,9 @@ class Suart(uart.Uart):
                                                     self.get_pty(),
                                                     release_e,
                                                 )
+                                        self._handle_usb_error(e, "tx_disconnect")
                                     else:
-                                        self._logger.exception(
-                                            "uarttx %s: %s", self.get_pty(), e
-                                        )
+                                        self._handle_usb_error(e, "tx")
                     except OSError as e:
                         if e.errno in (errno.EIO, errno.EBADF):
                             self._logger.debug(

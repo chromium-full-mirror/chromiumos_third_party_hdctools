@@ -404,6 +404,20 @@ class PtyDriver(hw_driver.HwDriver):
             except pexpect.TIMEOUT:
                 self._logger.debug("Before: ^%s^", self._child.before)
                 self._logger.debug("After: ^%s^", self._child.after)
+
+                self._logger.warning(
+                    "PTY timeout. Attempting interface reinitialization with device reset..."
+                )
+                try:
+                    try:
+                        self._interface.reinitialize(reset_device=True)
+                    except TypeError:
+                        self._interface.reinitialize()
+                except Exception as reinit_ex:
+                    self._logger.error(
+                        "Interface reinitialization failed: %s", reinit_ex
+                    )
+
                 if self._child.before:
                     # TODO(crbug.com/1043408): this needs more granular error detection
                     # to distinguish whether the console is read-only, or if the control
@@ -598,8 +612,9 @@ class PtyDriver(hw_driver.HwDriver):
         if hasattr(self._interface, "set_capture_active"):
             self._interface.set_capture_active(cmd)
         else:
-            self._logger.warning("Interface %s does not support UART capture.",
-                                 self._interface)
+            self._logger.warning(
+                "Interface %s does not support UART capture.", self._interface
+            )
 
     def _Get_uart_capture(self):
         """Get the UART capture mode (on or off)."""

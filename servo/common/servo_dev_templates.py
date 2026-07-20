@@ -233,3 +233,14 @@ _init_maps(device_templates)
 # Servo types used to categorize servo devices
 DEBUG_HEADER_SERVO_TYPES = set(["servo_micro", "servo_v2", "c2d2"])
 CCD_SERVO_TYPES = set(["ccd_cr50", "ccd_gsc", "ccd_gsc_nt"])
+REINIT_CAPABLE_TYPES = set(
+    [
+        "ccd_cr50",
+        "ccd_gsc",
+        "ccd_gsc_nt",
+        "servo_v4",
+        "servo_v4p1",
+        "servo_micro",
+        "c2d2",
+    ]
+)

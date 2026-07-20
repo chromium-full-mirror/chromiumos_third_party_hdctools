@@ -95,7 +95,7 @@ class TestServoDevice(unittest.TestCase):
         self.assertEqual(self.v4_dev.model, "default")
         self.assertTrue(self.v4_dev._ifaces_available.is_set())
         self.assertEqual(self.v4_dev._reinit_attempts, self.v4_dev.REINIT_ATTEMPTS)
-        self.assertFalse(self.v4_dev._reinit_capable)
+        self.assertTrue(self.v4_dev._reinit_capable)
         self.assertFalse(self.v4_dev._disconnect_ok)
         self.assertEqual(self.v4_dev._sysfs_path, "/sys/bus/usb/devices/-2-1.2")
         self.assertEqual(self.v4_dev.dev_entry, self.v4_entry)

@@ -137,14 +137,23 @@ class Susb(interface.Interface):
                 % self.get_device_info()
             )
 
-    def reset_usb(self):
+    def reset_usb(self, force=False, reset_device=False):
         """Reinitialize USB based on the device based settings from __init__"""
         # Signal that resetting is about to happen.
         self.REINIT_DONE_EVENTS[self.get_device_info()].clear()
         # Reading and writing is unavailable until the reset has finished.
         with self._hold_lock(self._read_ep_lock):
             with self._hold_lock(self._write_ep_lock):
-                self._find_device()
+                if reset_device and self._dev:
+                    try:
+                        self._logger.info("Forcing USB device hardware reset...")
+                        self._dev.reset()
+                        time.sleep(1.0)
+                        # Force is implied if we reset the device
+                        force = True
+                    except usb.core.USBError as e:
+                        self._logger.warning("USB device hardware reset failed: %s", e)
+                self._find_device(force=force)
         # Signal that resetting is done.
         self.REINIT_DONE_EVENTS[self.get_device_info()].set()
 
@@ -152,7 +161,7 @@ class Susb(interface.Interface):
         """Returns a tuple (vid, pid, serialname)."""
         return DeviceInfo(self._vendor, self._product, self._serialname)
 
-    def _find_device(self):
+    def _find_device(self, force=False):
         """Find device, setup configuration, and set up the usb endpoint"""
         # Find the stm32.
         devid = self.get_device_info()
@@ -177,9 +186,15 @@ class Susb(interface.Interface):
         # leak this many file descriptors for once system, and if there is a better
         # way to clean up the resources than the way/workaround implemented here.
         if self._dev:
-            if self._dev.address != dev.address:
+            if self._dev.address != dev.address or force:
                 # Dispose of the resources of the previously found device.
+                try:
+                    usb.util.release_interface(self._dev, self._interface)
+                except usb.core.USBError:
+                    pass
                 usb.util.dispose_resources(self._dev)
+                self._dev = None
+                self.DEV_EP_STORE[devid].pop(self._interface, None)
             else:
                 # The device did not reenumerate. No need to reinitialize it, it's still
                 # valid.

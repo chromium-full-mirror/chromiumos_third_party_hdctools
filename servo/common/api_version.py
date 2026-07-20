@@ -4,4 +4,4 @@
 
 """API version for the servod core vs data compatibility."""
 
-CORE_API_VERSION = 3
+CORE_API_VERSION = 4
