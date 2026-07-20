@@ -98,3 +98,69 @@ class TestEC3PO:
     def test_send_shutdown(self):
         mock_pipe = MagicMock()
         ec3po_interface._send_shutdown(mock_pipe)
+
+    @patch("servo.common.interface.ec3po_interface.EC3PO.__init__", return_value=None)
+    @patch("servo.common.interface.ec3po_interface.InterfaceUtils")
+    @patch("servo.common.interface.ec3po_interface.servo_dev_templates")
+    def test_reinitialize_reinit_capable(
+        self, mock_templates, mock_utils, unused_mock_init
+    ):
+        # Setup EC3PO instance
+        ec3po_instance = ec3po_interface.EC3PO()
+        ec3po_instance._logger = MagicMock()
+        ec3po_instance._raw_ec_uart = "/dev/pts/1"
+        ec3po_instance._device_info = MagicMock(
+            vid=0x18D1, pid=0x520D, serialname="123"
+        )  # servo_v4p1
+
+        # Mock template class to be reinit capable
+        mock_template = MagicMock()
+        mock_template.TYPE = "servo_v4p1"
+        mock_templates.get_template_class.return_value = mock_template
+        mock_templates.REINIT_CAPABLE_TYPES = {"servo_v4p1"}
+
+        # Mock InterfaceUtils
+        mock_utils.get_interface_key.return_value = "key"
+        mock_interface = MagicMock()
+        mock_interface.name.return_value = "stm32_uart"
+        mock_interface.get_pty.return_value = "/dev/pts/1"
+        mock_utils._interface_dict = {"key": {"interface_list": [mock_interface]}}
+
+        # Call reinitialize with reset_device=True
+        ec3po_instance.reinitialize(reset_device=True)
+
+        # Verify interface.reinitialize was called with reset_device=True
+        mock_interface.reinitialize.assert_called_once_with(reset_device=True)
+
+    @patch("servo.common.interface.ec3po_interface.EC3PO.__init__", return_value=None)
+    @patch("servo.common.interface.ec3po_interface.InterfaceUtils")
+    @patch("servo.common.interface.ec3po_interface.servo_dev_templates")
+    def test_reinitialize_non_reinit_capable(
+        self, mock_templates, mock_utils, unused_mock_init
+    ):
+        # Setup EC3PO instance
+        ec3po_instance = ec3po_interface.EC3PO()
+        ec3po_instance._logger = MagicMock()
+        ec3po_instance._raw_ec_uart = "/dev/pts/1"
+        ec3po_instance._device_info = MagicMock(
+            vid=0x18D1, pid=0x5020, serialname="123"
+        )  # sweetberry (not reinit capable)
+
+        # Mock template class to be non-reinit-capable
+        mock_template = MagicMock()
+        mock_template.TYPE = "sweetberry"
+        mock_templates.get_template_class.return_value = mock_template
+        mock_templates.REINIT_CAPABLE_TYPES = {"servo_v4p1"}
+
+        # Mock InterfaceUtils
+        mock_utils.get_interface_key.return_value = "key"
+        mock_interface = MagicMock()
+        mock_interface.name.return_value = "stm32_uart"
+        mock_interface.get_pty.return_value = "/dev/pts/1"
+        mock_utils._interface_dict = {"key": {"interface_list": [mock_interface]}}
+
+        # Call reinitialize with reset_device=True
+        ec3po_instance.reinitialize(reset_device=True)
+
+        # Verify interface.reinitialize was called with reset_device=False (overridden)
+        mock_interface.reinitialize.assert_called_once_with(reset_device=False)

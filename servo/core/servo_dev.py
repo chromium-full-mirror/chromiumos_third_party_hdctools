@@ -81,9 +81,8 @@ class ServoDevice:
 
     # Reinit capable devices.
     REINIT_CAPABLE = {
-        servo_dev_templates.get_id("ccd_cr50"),
-        servo_dev_templates.get_id("ccd_gsc"),
-        servo_dev_templates.get_id("ccd_gsc_nt"),
+        servo_dev_templates.get_id(name)
+        for name in servo_dev_templates.REINIT_CAPABLE_TYPES
     }
 
     # Available attempts to reconnect a device
