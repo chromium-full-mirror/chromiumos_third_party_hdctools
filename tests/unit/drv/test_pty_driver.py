@@ -150,5 +150,53 @@ def test_pty_driver_issue_cmd_get_results_timeout(
     # Setup mock to timeout
     mock_child.expect.side_effect = pexpect.TIMEOUT("timeout")
 
-    with pytest.raises(PtyError, match="Timeout waiting for response"):
+    with pytest.raises(PtyError, match="No expected output was received"):
         pty_driver._issue_cmd_get_results("test_cmd", ["regex1"])
+
+    pty_driver._interface.reinitialize.assert_called_once_with(reset_device=True)
+
+
+@patch("servo.drv.pty_driver.fdpexpect.fdspawn")
+@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
+@patch("servo.drv.pty_driver.PtyDriver._flush")
+@patch("servo.drv.pty_driver.PtyDriver._send")
+def test_pty_driver_issue_cmd_get_results_timeout_with_prompt(
+    mock_send, mock_flush, mock_open, mock_fdspawn, pty_driver
+):
+    mock_child = MagicMock()
+    mock_fdspawn.return_value = mock_child
+    mock_child.sendline.return_value = 1
+    mock_child.before = b"partial output ec:> "
+
+    import pexpect
+
+    # Setup mock to timeout
+    mock_child.expect.side_effect = pexpect.TIMEOUT("timeout")
+
+    with pytest.raises(PtyError, match="No expected output was received"):
+        pty_driver._issue_cmd_get_results("test_cmd", ["regex1"])
+
+    pty_driver._interface.reinitialize.assert_not_called()
+
+
+@patch("servo.drv.pty_driver.fdpexpect.fdspawn")
+@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
+@patch("servo.drv.pty_driver.PtyDriver._flush")
+@patch("servo.drv.pty_driver.PtyDriver._send")
+def test_pty_driver_issue_cmd_get_results_timeout_disconnect_cmd(
+    mock_send, mock_flush, mock_open, mock_fdspawn, pty_driver
+):
+    mock_child = MagicMock()
+    mock_fdspawn.return_value = mock_child
+    mock_child.sendline.return_value = 1
+    mock_child.before = b"Disconnecting..."
+
+    import pexpect
+
+    # Setup mock to timeout
+    mock_child.expect.side_effect = pexpect.TIMEOUT("timeout")
+
+    with pytest.raises(PtyError, match="No expected output was received"):
+        pty_driver._issue_cmd_get_results("fakedisconnect 100 1000", ["regex1"])
+
+    pty_driver._interface.reinitialize.assert_not_called()
