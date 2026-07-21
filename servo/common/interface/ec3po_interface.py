@@ -402,9 +402,10 @@ class EC3PO(uart.Uart):
 
     def reinitialize(self, reset_device=False):
         """Reinitialize the EC3PO interface."""
-        self._logger.info(
-            "Reinitializing EC3PO interface (reset_device=%s)...", reset_device
-        )
+        if reset_device:
+            self._logger.info("Reinitializing EC3PO interface (reset_device=True)...")
+        else:
+            self._logger.debug("Reinitializing EC3PO interface (reset_device=False)...")
         if reset_device:
             is_reinit_capable = False
             try:
@@ -438,9 +439,15 @@ class EC3PO(uart.Uart):
                         hasattr(interface, "get_pty")
                         and interface.get_pty() == self._raw_ec_uart
                     ):
-                        self._logger.info(
-                            "Found matching Suart interface, reinitializing it..."
-                        )
+                        if reset_device:
+                            self._logger.info(
+                                "Found matching Suart interface, reinitializing it"
+                                " (with reset)..."
+                            )
+                        else:
+                            self._logger.debug(
+                                "Found matching Suart interface, reinitializing it..."
+                            )
                         try:
                             interface.reinitialize(reset_device=reset_device)
                         except TypeError:

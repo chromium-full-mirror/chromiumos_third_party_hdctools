@@ -92,8 +92,8 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
                 msg = e.details()
                 if msg.startswith("Exception calling application: "):
                     msg = msg[len("Exception calling application: ") :]
-                raise DriverImplError(msg.split("\n")[0])
-            raise DriverImplError(str(e))
+                raise DriverImplError(msg.split("\n")[0]) from e
+            raise DriverImplError(str(e)) from e
 
     def _get_param_drv(
         self, control_name, device_type, syscfg, interface_key, is_get=True
@@ -193,6 +193,7 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         return self._get_param_drv(
             control_name, device_type, syscfg, interface_key, is_get
         )
+
     def InitInterface(self, request, context):
         """
         Service to init interfaces list for servo device
@@ -410,5 +411,6 @@ class DriverImpl(driver_grpc.DriverServiceServicer):
         import os
 
         from google.protobuf import wrappers_pb2
+
         exists = os.path.exists(request.sysfs_path)
         return wrappers_pb2.BoolValue(value=exists)

@@ -405,17 +405,46 @@ class PtyDriver(hw_driver.HwDriver):
                 self._logger.debug("Before: ^%s^", self._child.before)
                 self._logger.debug("After: ^%s^", self._child.after)
 
-                self._logger.warning(
-                    "PTY timeout. Attempting interface reinitialization with device reset..."
-                )
-                try:
+                is_disconnect_cmd = False
+                cmd_str = ""
+                if isinstance(cmds, list):
+                    cmd_str = " ".join(cmds)
+                elif isinstance(cmds, str):
+                    cmd_str = cmds
+
+                if any(x in cmd_str for x in ["fakedisconnect", "reboot"]):
+                    is_disconnect_cmd = True
+
+                has_prompt = False
+                if self._child.before:
+                    output_str = self._child.before.decode("utf-8", errors="ignore")
+                    if re.search(r"[>#$]\s*$", output_str):
+                        has_prompt = True
+                        self._logger.debug(
+                            "Timeout occurred, but prompt was detected in output."
+                        )
+
+                if is_disconnect_cmd:
+                    self._logger.warning(
+                        "PTY timeout occurred for disconnecting command %r. Skipping reinitialization.",
+                        cmd_str,
+                    )
+                elif not has_prompt:
+                    self._logger.warning(
+                        "PTY timeout. Attempting interface reinitialization with device reset..."
+                    )
                     try:
-                        self._interface.reinitialize(reset_device=True)
-                    except TypeError:
-                        self._interface.reinitialize()
-                except Exception as reinit_ex:
-                    self._logger.error(
-                        "Interface reinitialization failed: %s", reinit_ex
+                        try:
+                            self._interface.reinitialize(reset_device=True)
+                        except TypeError:
+                            self._interface.reinitialize()
+                    except Exception as reinit_ex:
+                        self._logger.error(
+                            "Interface reinitialization failed: %s", reinit_ex
+                        )
+                else:
+                    self._logger.warning(
+                        "PTY timeout (mismatch). Console is responsive. Skipping reinitialization."
                     )
 
                 if self._child.before:
@@ -433,7 +462,9 @@ class PtyDriver(hw_driver.HwDriver):
                     output = self._make_xml_friendly(output, error=False)
                     # Print it here again to see what garbage was in the output if any.
                     self._logger.debug("Before (cleaned): ^%s^", output)
-                    msg = "Timeout waiting for response. There was output: %s" % output
+                    msg = (
+                        "No expected output was received. There was output: %s" % output
+                    )
                 else:
                     msg = "No data was sent from the pty."
                 if hasattr(self._interface, "_source"):

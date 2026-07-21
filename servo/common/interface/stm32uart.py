@@ -148,6 +148,7 @@ class Suart(uart.Uart):
                 self._logger.error("Recovery reinitialization failed: %s", reinit_e)
         else:
             self._logger.debug("Skipping recovery reinit (throttled).")
+        time.sleep(0.5)
 
     def run_rx_thread(self):
         self._logger.debug("rx thread started on %s", self.get_pty())
@@ -160,16 +161,27 @@ class Suart(uart.Uart):
                 if not events:
                     try:
                         r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
-                        if r:
-                            sys_interface.write(self._ptym, r)
                     except usb.core.USBTimeoutError:
-                        # Expected and forgiven here, just pass
-                        pass
+                        r = None
                     except (OSError, usb.core.USBError) as e:
                         self._handle_usb_error(e, "rx")
+                        r = None
                     except Exception as e:
                         # If we miss some characters on pty disconnect, that's fine.
                         self._logger.debug("rx %s: %s", self.get_pty(), e)
+                        r = None
+
+                    if r:
+                        try:
+                            sys_interface.write(self._ptym, r)
+                        except OSError as e:
+                            if e.errno == errno.EIO:
+                                self._logger.debug(
+                                    "PTY closed, discarding rx data: %r", r
+                                )
+                                time.sleep(0.1)
+                            else:
+                                self._logger.exception("rx write to PTY failed: %s", e)
                 else:
                     self._done.wait(0.1)
         finally:

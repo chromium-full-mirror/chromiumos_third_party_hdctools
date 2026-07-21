@@ -36,13 +36,15 @@ class TestSuart:
     @patch("servo.common.interface.stm32uart.stm32usb.Susb")
     @patch("servo.common.interface.stm32uart.sys_interface", create=True)
     @patch("servo.common.interface.stm32uart.tty")
-    def test_build(self, unused_mock_tty, mock_sys, unused_mock_susb):
+    @patch("servo.common.interface.stm32uart.threading.Thread")
+    def test_build(self, mock_thread, unused_mock_tty, mock_sys, unused_mock_susb):
         mock_sys.openpty.return_value = (3, 4)
         mock_sys.ttyname.return_value = "/dev/pts/1"
         res = stm32uart.Suart.build(
             0x18D1, 0x501A, "serial123", {"interface": 1, "endpoints": [1, 2]}
         )
         assert res.__class__.__name__ == "Suart"
+        assert mock_thread.call_count == 2
 
     def test_name(self):
         assert stm32uart.Suart.name() == "stm32_uart"

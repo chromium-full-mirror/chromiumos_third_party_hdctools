@@ -41,8 +41,10 @@ class TestServoStarter(unittest.TestCase):
     @patch("servo.common.proto.system_config_grpc")
     @patch("grpc.insecure_channel")
     @patch("threading.Thread")
+    @patch("servo.core.servod.grpc.server")
     def test_init(
         self,
+        mock_grpc_server,
         mock_thread,
         _mock_insecure_channel,
         _mock_sys_config_grpc,
