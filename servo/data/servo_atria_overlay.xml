@@ -23,15 +23,15 @@
     warm_reset_can_hold_ap="no"/>
   </control>
   <map>
-    <name>ec_chip_map</name>
+    <name>ec_chip_map_re</name>
     <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
-    <params npcx_uut="npcx9m7f" ite_uart="it82102" mchp_int_uart="MEC172X" rtk_uart="RTS5915"></params>
+    <params npcx_uut="npcx9m7f" ite_uart="it82102" mchp_int_uart="MEC172X" rtk_uart="rts5915.*"></params>
   </map>
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="" cmd="get" interface="EC_CONSOLE" drv="simple_ec" uart_cmd="version"
-      regex="Chip:\s+\S+\s+(npcx9m7f|it82102|MEC172X|RTS5915)\S*\s" group="1" map="ec_chip_map"/>
+      regex="Chip:\s+\S+\s+(npcx9m7f|it82102|MEC172X|rts5915\S*)\s" group="1" map="ec_chip_map_re"/>
   </control>
   <control>
     <name>ccd_cpu_fw_spi</name>
