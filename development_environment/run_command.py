@@ -74,9 +74,9 @@ def output_logs(output):
 
 
 class RunCommandBase:
-    def __init__(self, command, example_msg=None):
+    def __init__(self, command, example_msg=None, help_message_base=HELP_MESSAGE_BASE):
         self.command = command
-        self.message = HELP_MESSAGE_BASE.format(command)
+        self.message = help_message_base.format(command)
         if example_msg is not None:
             self.message = self.message + HELP_MESSAGE_ADV.format(command, example_msg)
 

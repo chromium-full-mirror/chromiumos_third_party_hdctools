@@ -110,17 +110,25 @@ class RunInsteadBase:
             cont = containers[0]
             exit_code, output = cont.exec_run(entrypoint, stream=True, tty=True)
         else:
-            cont = self.client.containers.run(
-                image,
-                privileged=True,
-                stderr=True,
-                tty=True,
-                name=self.name,
-                hostname=self.name,
-                detach=True,
-                volumes=self.volumes,
-                entrypoint=entrypoint,
-            )
+            run_kwargs = {
+                "image": image,
+                "privileged": True,
+                "stderr": True,
+                "tty": True,
+                "name": self.name,
+                "detach": True,
+                "volumes": self.volumes,
+                "entrypoint": entrypoint,
+            }
+            # If host networking is requested (e.g. to connect to local SSH
+            # port tunnels or use the host DNS resolver), pass network_mode="host".
+            # Note that Docker disallows specifying hostname together with host
+            # networking mode.
+            if getattr(self, "network_mode", None) == "host":
+                run_kwargs["network_mode"] = "host"
+            else:
+                run_kwargs["hostname"] = self.name
+            cont = self.client.containers.run(**run_kwargs)
             output = cont.attach(stdout=True, stderr=True, stream=True, logs=True)
 
         # Setting the tty parameter to True causes the output to
