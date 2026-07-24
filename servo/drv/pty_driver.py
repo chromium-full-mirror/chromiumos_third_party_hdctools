@@ -101,6 +101,7 @@ class PtyDriver(hw_driver.HwDriver):
                 "Cannot open PTY: No PTY path available for this interface."
             )
 
+        yielded = False
         max_tries = 3
         for i in range(max_tries):
             try:
@@ -116,6 +117,7 @@ class PtyDriver(hw_driver.HwDriver):
                         # so we'll change delaybeforesend from 0.1 to 0.001
                         # to speed things up.
                         self._child.delaybeforesend = 0.001
+                        yielded = True
                         yield
                         return
                     finally:
@@ -137,12 +139,15 @@ class PtyDriver(hw_driver.HwDriver):
                             # so we'll change delaybeforesend from 0.1 to 0.001
                             # to speed things up.
                             self._child.delaybeforesend = 0.001
+                            yielded = True
                             yield
                             return
                         finally:
                             if self._fd is not None:
                                 self._close()
             except (FileNotFoundError, OSError) as e:
+                if yielded:
+                    raise
                 if i == max_tries - 1:
                     raise
                 self._logger.warning(

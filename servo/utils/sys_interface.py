@@ -5,6 +5,7 @@
 """System Interface wrapper for mocking."""
 
 import contextlib
+import fcntl
 import os
 import pty
 import subprocess
@@ -13,6 +14,9 @@ from typing import Any, BinaryIO, Iterator, TextIO, Tuple, Union
 
 class SysInterface:
     """Wrapper class for system calls to facilitate testing."""
+
+    def fcntl(self, fd: Union[int, Any], op: int, arg: Union[int, Any] = 0) -> Any:
+        return fcntl.fcntl(fd, op, arg)
 
     @contextlib.contextmanager
     def managed_pty(self) -> Iterator[Tuple[int, int]]:

@@ -10,6 +10,7 @@ from servo.common.interface import ec3po_interface
 
 
 class TestEC3PO:
+    @patch("ec3po.console.sys_interface")
     @patch("servo.common.interface.ec3po_interface.sys_interface")
     @patch("servo.common.interface.ec3po_interface.termios")
     @patch("servo.common.interface.ec3po_interface.tty")
@@ -28,6 +29,7 @@ class TestEC3PO:
         mock_tty,
         unused_mock_termios,
         mock_sys,
+        mock_console_sys,
     ):
         mock_raw_uart = MagicMock()
         mock_raw_uart.get_pty.return_value = "/dev/pts/1"

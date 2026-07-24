@@ -38,6 +38,7 @@ class TestEnhancedECBehavior(unittest.TestCase):
 
         # Mock the open() function so we can inspect reads/writes to the EC.
         self.ec_uart_pty = mock.mock_open()
+        self.ec_uart_pty.return_value.closed = False
 
         with mock.patch(get_builtins("open"), self.ec_uart_pty):
             # Create an interpreter.
@@ -285,6 +286,7 @@ class TestUARTDisconnection(unittest.TestCase):
 
         # Mock the open() function so we can inspect reads/writes to the EC.
         self.ec_uart_pty = mock.mock_open()
+        self.ec_uart_pty.return_value.closed = False
 
         with mock.patch(get_builtins("open"), self.ec_uart_pty):
             # Create an interpreter.

@@ -41,18 +41,24 @@ class TestConsoleMore(unittest.TestCase):
     def test_canonicalize_time_string(self):
         self.assertEqual(console.canonicalize_time_string("12:34567"), b"12:34 ")
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_print_history(self, mock_write):
         self.console.history = [b"first", b"second"]
         self.console.print_history()
         mock_write.assert_called()
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_print_oobm_help(self, mock_write):
         self.console.print_oobm_help()
         mock_write.assert_called()
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_move_cursor(self, mock_write):
         self.console.input_buffer = b"123456"
         self.console.input_buffer_pos = 3
@@ -64,7 +70,9 @@ class TestConsoleMore(unittest.TestCase):
         # So seq is built with original count.
         mock_write.assert_called_with(self.primary_pty, b"\x1b[2C")
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_kill_line(self, mock_write):
         self.console.input_buffer = b"12345"
         self.console.input_buffer_pos = 2
@@ -74,7 +82,9 @@ class TestConsoleMore(unittest.TestCase):
         # Just check it called write (will be called multiple times)
         self.assertTrue(mock_write.called)
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_send_to_controller(self, mock_write):
         self.console.send_to_controller(b"hello")
         mock_write.assert_called_with(self.primary_pty, b"hello")
@@ -90,7 +100,9 @@ class TestConsoleMore(unittest.TestCase):
         self.console.check_buffer_for_enhanced_image(b"regular console output")
         self.assertFalse(self.console.enhanced_ec)
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_handle_esc(self, unused_mock_write):
         # Escape sequence logic:
         # ESC -> BRACKET -> char
@@ -105,7 +117,9 @@ class TestConsoleMore(unittest.TestCase):
         self.assertEqual(self.console.esc_state, 0)
         self.assertEqual(self.console.input_buffer[:5], b"hist1")
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     def test_handle_debug_pipe_data(self, mock_write):
         class MockCommandActive:
             value = True
@@ -116,7 +130,9 @@ class TestConsoleMore(unittest.TestCase):
         mock_write.assert_any_call(self.console.controller_pty, b"some debug data")
         mock_write.assert_any_call(self.console.interface_pty, b"some debug data")
 
-    @mock.patch("ec3po.console.sys_interface.write")
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
     @mock.patch.object(
         console.Console, "check_for_enhanced_ec_image", return_value=True
     )

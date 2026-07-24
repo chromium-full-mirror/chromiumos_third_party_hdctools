@@ -108,7 +108,8 @@ class Susb(interface.Interface):
     @contextlib.contextmanager
     def _hold_lock(self, lock):
         """Helper to manage |lock|."""
-        lock.acquire(timeout=self.LOCK_TIMEOUT_S)
+        if not lock.acquire(timeout=self.LOCK_TIMEOUT_S):
+            raise SusbError(f"Timeout acquiring lock after {self.LOCK_TIMEOUT_S}s")
         try:
             yield
         finally:
