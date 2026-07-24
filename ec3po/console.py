@@ -14,8 +14,11 @@ import argparse
 import binascii
 import ctypes
 from datetime import datetime
+import errno
+import fcntl
 import logging
 import multiprocessing.connection
+import os
 import pathlib
 import re
 import select
@@ -221,8 +224,40 @@ class Console:
         self.is_tokenized = False
         self.token_db = None
 
+        # Set non-blocking flags on the PTYs to prevent deadlocks on write.
+        for fd in [self.controller_pty, self.interface_pty]:
+            flags = sys_interface.fcntl(fd, fcntl.F_GETFL)
+            sys_interface.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
         if token_db:
             self.load_token_database(token_db)
+
+    def _write(self, fd: int, data: bytes) -> int:
+        """Write data to fd, handling non-blocking writes.
+
+        If the write blocks (EAGAIN/EWOULDBLOCK), it will discard the remaining
+        data to prevent deadlocking the console process.
+
+        Returns:
+            The number of bytes written.
+        """
+        written = 0
+        try:
+            while data:
+                n = sys_interface.write(fd, data)
+                if n == 0:
+                    break
+                written += n
+                data = data[n:]
+        except OSError as e:
+            if e.errno in (errno.EAGAIN, errno.EWOULDBLOCK):
+                if fd == self.interface_pty:
+                    self.logger.warning(
+                        "Write to interface PTY blocked. Dropping data: %r", data
+                    )
+            else:
+                raise
+        return written
 
     def __str__(self):
         """Show internal state of Console object as a string."""
@@ -397,7 +432,7 @@ class Console:
         wide = (len(self.history) // 10) + 1
         for i in range(len(self.history)):
             line = b" %*d %s\r\n" % (wide, i, self.history[i])
-            sys_interface.write(fd, line)
+            self._write(fd, line)
 
     def show_previous_command(self):
         """Shows the previous command from the history list."""
@@ -434,7 +469,7 @@ class Console:
         )
         fd = self.controller_pty
         prev_cmd = self.history[self.history_pos]
-        sys_interface.write(fd, prev_cmd)
+        self._write(fd, prev_cmd)
         # Update the input buffer.
         self.input_buffer = prev_cmd
         self.input_buffer_pos = len(prev_cmd)
@@ -459,7 +494,7 @@ class Console:
             for _unused in range(self.input_buffer_pos):
                 self.send_backspace()
             # Print the partially entered command if any.
-            sys_interface.write(fd, self.partial_cmd)
+            self._write(fd, self.partial_cmd)
             self.input_buffer = self.partial_cmd
             self.input_buffer_pos = len(self.input_buffer)
             # Now that we've printed it, clear the partial cmd storage.
@@ -486,7 +521,7 @@ class Console:
             self.history[self.history_pos],
         )
         next_cmd = self.history[self.history_pos]
-        sys_interface.write(fd, next_cmd)
+        self._write(fd, next_cmd)
         # Update the input buffer.
         self.input_buffer = next_cmd
         self.input_buffer_pos = len(next_cmd)
@@ -501,9 +536,9 @@ class Console:
             + self.input_buffer[self.input_buffer_pos + 1 :]
         )
         # Write the rest of the line
-        moved_col = sys_interface.write(fd, self.input_buffer[self.input_buffer_pos :])
+        moved_col = self._write(fd, self.input_buffer[self.input_buffer_pos :])
         # Write a space to clear out the last char
-        moved_col += sys_interface.write(fd, b" ")
+        moved_col += self._write(fd, b" ")
         # Update the input buffer position.
         self.input_buffer_pos += moved_col
         # Reset the cursor
@@ -700,7 +735,7 @@ class Console:
             self.logger.debug("Begin OOBM command.")
             self.receiving_oobm_cmd = True
             # Print a "prompt".
-            sys_interface.write(self.controller_pty, b"\r\n% ")
+            self._write(self.controller_pty, b"\r\n% ")
             return
 
         # Add chars to the pending OOBM command if we're currently receiving one.
@@ -708,7 +743,7 @@ class Console:
             tmp_bytes = bytes([byte])
             self.pending_oobm_cmd += tmp_bytes
             self.logger.debug("%s", tmp_bytes)
-            sys_interface.write(self.controller_pty, tmp_bytes)
+            self._write(self.controller_pty, tmp_bytes)
             return
 
         if byte == ControlKey.CARRIAGE_RETURN:
@@ -723,7 +758,7 @@ class Console:
                     )
 
                 # Reset the state.
-                sys_interface.write(self.controller_pty, b"\r\n" + self.prompt)
+                self._write(self.controller_pty, b"\r\n" + self.prompt)
                 self.input_buffer = b""
                 self.input_buffer_pos = 0
                 self.receiving_oobm_cmd = False
@@ -775,14 +810,14 @@ class Console:
         if byte == ControlKey.CARRIAGE_RETURN:
             self.logger.debug("Enter key pressed.")
             # Put a carriage return/newline and the print the prompt.
-            sys_interface.write(fd, b"\r\n")
+            self._write(fd, b"\r\n")
 
             # TODO(aaboagye): When we control the printing of all output, print the
             # prompt AFTER printing all the output.  We can't do it yet because we
             # don't know how much is coming from the EC.
 
             # Print the prompt.
-            sys_interface.write(fd, self.prompt)
+            self._write(fd, self.prompt)
             # Process the input.
             self.process_input()
             # Now, clear the buffer.
@@ -858,9 +893,9 @@ class Console:
                 self.logger.debug("Dropped char: %c(%d)", byte, byte)
                 return
             # Print the character.
-            sys_interface.write(fd, bytes([byte]))
+            self._write(fd, bytes([byte]))
             # Print the rest of the line (if any).
-            extra_bytes_written = sys_interface.write(
+            extra_bytes_written = self._write(
                 fd, self.input_buffer[self.input_buffer_pos :]
             )
 
@@ -917,7 +952,7 @@ class Console:
         self.logger.debug("input_buffer_pos: %d", self.input_buffer_pos)
         # Move the cursor.
         if count != 0:
-            sys_interface.write(fd, seq)
+            self._write(fd, seq)
 
     def kill_line(self):
         """Kill the rest of the line based on the input buffer position."""
@@ -942,7 +977,7 @@ class Console:
 
     def send_backspace(self):
         """Backspace a character on the console."""
-        sys_interface.write(self.controller_pty, b"\033[1D \033[1D")
+        self._write(self.controller_pty, b"\033[1D \033[1D")
 
     def process_oobm_queue(self):
         """Retrieve an item from the OOBM queue and process it."""
@@ -1038,13 +1073,13 @@ class Console:
     def print_oobm_help(self):
         """Prints out the OOBM help."""
         # Print help syntax.
-        sys_interface.write(self.controller_pty, b"\r\n" + b"Known OOBM commands:\r\n")
-        sys_interface.write(
+        self._write(self.controller_pty, b"\r\n" + b"Known OOBM commands:\r\n")
+        self._write(
             self.controller_pty,
             b"  interrogate <never | always | auto> " b"[enhanced]\r\n",
         )
-        sys_interface.write(self.controller_pty, b"  loglevel <int>\r\n")
-        sys_interface.write(self.controller_pty, b"  tokens <off | on [path]>\r\n")
+        self._write(self.controller_pty, b"  loglevel <int>\r\n")
+        self._write(self.controller_pty, b"  tokens <off | on [path]>\r\n")
 
     def check_buffer_for_enhanced_image(self, data):
         """Adds data to a look buffer and checks to see for enhanced EC image.
@@ -1092,7 +1127,7 @@ class Console:
             if self.tm_req:
                 now = datetime.now()
                 tm = canonicalize_time_string(now.strftime(HOST_STRFTIME))
-                sys_interface.write(self.controller_pty, tm)
+                self._write(self.controller_pty, tm)
                 self.tm_req = False
 
             # Insert timestamps into the middle where appropriate
@@ -1107,7 +1142,7 @@ class Console:
         # timestamp required on next input
         if data[-1:] == b"\n":
             self.tm_req = True
-        sys_interface.write(self.controller_pty, data_tm)
+        self._write(self.controller_pty, data_tm)
 
     def handle_debug_pipe_data(self, data: bytes, controller_connected, command_active):
         """Handle data coming from debug pipe.
@@ -1132,7 +1167,7 @@ class Console:
 
         if command_active:
             try:
-                sys_interface.write(self.interface_pty, data)
+                self._write(self.interface_pty, data)
             except OSError as e:
                 self.logger.debug("Failed writing to interface_pty: %s", e)
 
@@ -1304,14 +1339,14 @@ def start_loop(console, command_active, shutdown_pipe=None):
                             )
                         if controller_connected:
                             try:
-                                sys_interface.write(console.controller_pty, data)
+                                console._write(console.controller_pty, data)
                             except OSError as e:
                                 console.logger.debug(
                                     "Failed writing controller_pty: %s", e
                                 )
                         if command_active.value:
                             try:
-                                sys_interface.write(console.interface_pty, data)
+                                console._write(console.interface_pty, data)
                             except OSError as e:
                                 console.logger.debug(
                                     "Failed writing interface_pty: %s", e

@@ -172,7 +172,9 @@ def test_start_loop_read_interface_pty(mock_sys_intf, mock_epoll, console_mock_f
 
 @unittest.mock.patch("ec3po.console.select.epoll")
 @unittest.mock.patch("ec3po.console.sys_interface")
-def test_start_loop_read_cmd_pipe(mock_sys_intf, mock_epoll, console_mock_fixture):
+def test_start_loop_read_cmd_pipe(
+    unused_mock_sys_intf, mock_epoll, console_mock_fixture
+):
     command_active = multiprocessing.Value("b", False)
 
     epoll_outer = unittest.mock.MagicMock()
@@ -192,7 +194,7 @@ def test_start_loop_read_cmd_pipe(mock_sys_intf, mock_epoll, console_mock_fixtur
     console_mock_fixture.cmd_pipe.recv.side_effect = [b"cmd_data", EOFError()]
 
     console.start_loop(console_mock_fixture, command_active)
-    mock_sys_intf.write.assert_called_with(11, b"cmd_data")
+    console_mock_fixture._write.assert_called_with(11, b"cmd_data")
 
 
 @unittest.mock.patch("ec3po.console.select.epoll")

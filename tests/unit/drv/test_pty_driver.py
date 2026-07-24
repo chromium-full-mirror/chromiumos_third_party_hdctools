@@ -26,7 +26,10 @@ def pty_driver():
         driver = PtyDriver(
             ("localhost", 9999), ("localhost", 9998), mock_interface, params
         )
-    return driver
+    with patch("servo.drv.pty_driver.sys_interface.open", return_value=1), patch(
+        "servo.drv.pty_driver.sys_interface.close"
+    ):
+        yield driver
 
 
 @patch("servo.drv.pty_driver.PtyDriver._Get_uart_timeout", return_value=3)
@@ -112,11 +115,10 @@ def test_pty_driver_make_xml_friendly(pty_driver):
 
 
 @patch("servo.drv.pty_driver.fdpexpect.fdspawn")
-@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
 @patch("servo.drv.pty_driver.PtyDriver._flush")
 @patch("servo.drv.pty_driver.PtyDriver._send")
 def test_pty_driver_issue_cmd_get_results(
-    mock_send, mock_flush, mock_open, mock_fdspawn, pty_driver
+    mock_send, mock_flush, mock_fdspawn, pty_driver
 ):
     mock_child = MagicMock()
     mock_fdspawn.return_value = mock_child
@@ -134,11 +136,10 @@ def test_pty_driver_issue_cmd_get_results(
 
 
 @patch("servo.drv.pty_driver.fdpexpect.fdspawn")
-@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
 @patch("servo.drv.pty_driver.PtyDriver._flush")
 @patch("servo.drv.pty_driver.PtyDriver._send")
 def test_pty_driver_issue_cmd_get_results_timeout(
-    mock_send, mock_flush, mock_open, mock_fdspawn, pty_driver
+    mock_send, mock_flush, mock_fdspawn, pty_driver
 ):
     mock_child = MagicMock()
     mock_fdspawn.return_value = mock_child
@@ -157,11 +158,10 @@ def test_pty_driver_issue_cmd_get_results_timeout(
 
 
 @patch("servo.drv.pty_driver.fdpexpect.fdspawn")
-@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
 @patch("servo.drv.pty_driver.PtyDriver._flush")
 @patch("servo.drv.pty_driver.PtyDriver._send")
 def test_pty_driver_issue_cmd_get_results_timeout_with_prompt(
-    mock_send, mock_flush, mock_open, mock_fdspawn, pty_driver
+    mock_send, mock_flush, mock_fdspawn, pty_driver
 ):
     mock_child = MagicMock()
     mock_fdspawn.return_value = mock_child
@@ -180,11 +180,10 @@ def test_pty_driver_issue_cmd_get_results_timeout_with_prompt(
 
 
 @patch("servo.drv.pty_driver.fdpexpect.fdspawn")
-@patch("servo.drv.pty_driver.sys_interface.open", return_value=1)
 @patch("servo.drv.pty_driver.PtyDriver._flush")
 @patch("servo.drv.pty_driver.PtyDriver._send")
 def test_pty_driver_issue_cmd_get_results_timeout_disconnect_cmd(
-    mock_send, mock_flush, mock_open, mock_fdspawn, pty_driver
+    mock_send, mock_flush, mock_fdspawn, pty_driver
 ):
     mock_child = MagicMock()
     mock_fdspawn.return_value = mock_child

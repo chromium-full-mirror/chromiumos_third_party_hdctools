@@ -147,7 +147,11 @@ class Interpreter:
         self.logger.log(1, "Commands now in queue: %d", self.ec_cmd_queue.qsize())
 
         # Add the EC UART as an output to be serviced.
-        if self.connected and self.ec_uart_pty not in self.outputs:
+        if (
+            self.connected
+            and not self.ec_uart_pty.closed
+            and self.ec_uart_pty not in self.outputs
+        ):
             self.outputs.append(self.ec_uart_pty)
 
     def pack_command(self, raw_cmd):
