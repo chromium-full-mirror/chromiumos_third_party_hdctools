@@ -211,6 +211,9 @@ dut-control
     [-n CONTAINER_NAME]
         If you are running multiple servod containers use this to address a
         specific instance.
+    [-p|--port PORT]
+        Connect to the servod running on this port, either a local servod
+        instance or a remote servod, via an ssh-forwarded port.
 
     --
         Everything after the -- is passed to the dut-control command in
@@ -341,6 +344,13 @@ stop-servod -n 1700778745
 
 Until you have only one servod container running. If you wish to have multiple
 containers it is best to explicitly name them with the -n parameter.
+
+Note that you can also use the -p parameter to specify the servod instance, for
+example:
+
+```bash
+stop-servod -p 9997
+```
 
 ### I want to flash firmware - how do I do that ?
 

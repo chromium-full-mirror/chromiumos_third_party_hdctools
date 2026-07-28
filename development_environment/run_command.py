@@ -18,6 +18,9 @@ HELP_MESSAGE_BASE = """
 [-n|--container_name CONTAINER_NAME]
     If you are running multiple servod containers use this to address a
     specific instance.
+[-p|--port PORT]
+    If you are running multiple servod containers, use this to address a
+    specific instance on the given port. Can't be used with -n parameter.
 """.strip()
 
 HELP_MESSAGE_ADV = """
@@ -73,6 +76,19 @@ def output_logs(output):
             print(output.decode("utf-8"), flush=True, end="")
 
 
+def container_has_port(container, port) -> bool:
+    """Check if the container maps any port to the specified host port."""
+    if not container.ports:
+        return False
+    for bindings in container.ports.values():
+        if not bindings:
+            continue
+        for binding in bindings:
+            if binding.get("HostPort") == str(port):
+                return True
+    return False
+
+
 class RunCommandBase:
     def __init__(self, command, example_msg=None, help_message_base=HELP_MESSAGE_BASE):
         self.command = command
@@ -82,9 +98,16 @@ class RunCommandBase:
 
     def parse_args(self):
         self.parser = CustomArgHelpParser(self.message)
-        self.parser.add_argument(
+        # The name and port parameters are mutually exclusive.
+        name_port_group = self.parser.add_mutually_exclusive_group()
+        name_port_group.add_argument(
             "-n",
             "--container_name",
+            type=str,
+        )
+        name_port_group.add_argument(
+            "-p",
+            "--port",
             type=str,
         )
         self.parser.add_argument(
@@ -111,16 +134,31 @@ class RunCommandBase:
         args = self.parse_args()
         client = docker.from_env()
 
+        containers = []
         name_search = "docker_servod"
         if args.container_name:
             name_search = "%s-%s" % (args.container_name, name_search)
+            containers = client.containers.list(filters={"name": name_search})
+        elif args.port:
+            for cont in client.containers.list(all=True):
+                if container_has_port(cont, args.port):
+                    containers.append(cont)
+                    break
+        else:
+            # If not using the container_name or port parameters, get all.
+            containers = client.containers.list(filters={"name": name_search})
 
-        containers = client.containers.list(filters={"name": name_search})
         if not containers:
-            print(
-                "Can not find a container that matches name %s" % name_search,
-                file=sys.stderr,
-            )
+            if args.port:
+                print(
+                    f"Cannot find a matching container on port {args.port}",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    "Can not find a container that matches name %s" % name_search,
+                    file=sys.stderr,
+                )
             sys.exit(5)
         elif len(containers) == 1:
             output_thread = None
@@ -170,7 +208,7 @@ class RunCommandBase:
             print(
                 (
                     "More than one container matches %s, "
-                    "please re-run with --container_name"
+                    "please re-run with --container_name or --port"
                 )
                 % name_search,
                 file=sys.stderr,
