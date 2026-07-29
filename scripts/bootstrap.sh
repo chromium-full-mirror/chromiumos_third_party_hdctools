@@ -24,6 +24,24 @@ if [ -f "/usr/bin/glinux-updater" ]; then
   fi
 fi
 
+token_db_path="${TOKEN_DB}"
+prev=""
+for arg in "$@"; do
+  if [[ "$arg" == --token_db=* ]]; then
+    token_db_path="${arg#*=}"
+  elif [ "$prev" = "--token_db" ]; then
+    token_db_path="$arg"
+  fi
+  prev="$arg"
+done
+
+if [ -n "${token_db_path}" ]; then
+  if [ ! -e "${token_db_path}" ]; then
+    echo "Token DB file '${token_db_path}' does not exist." >&2
+    exit 1
+  fi
+fi
+
 pushd "$(dirname "$(readlink -f "$0")")" > /dev/null
 checksum=$(tar cfP - ../development_environment/ | md5sum)
 script_name=$(basename "$0")
