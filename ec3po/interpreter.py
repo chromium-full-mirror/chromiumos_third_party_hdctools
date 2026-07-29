@@ -113,6 +113,7 @@ class Interpreter:
         self.enhanced_ec = False
         self.interrogating = False
         self.connected = True
+        self.explicitly_disconnected = False
 
     def __str__(self):
         """Show internal state of the Interpreter object.
@@ -221,6 +222,7 @@ class Interpreter:
                 fileobj.close()
                 # Mark the interpreter as disconnected now.
                 self.connected = False
+                self.explicitly_disconnected = True
                 self.logger.debug("Disconnected from %s.", self.ec_uart_pty_name)
             return
 
@@ -239,6 +241,7 @@ class Interpreter:
                 self.logger.debug("fileobj added. curr inputs: %r", self.inputs)
                 # Mark the interpreter as connected now.
                 self.connected = True
+                self.explicitly_disconnected = False
                 self.logger.debug("Connected to %s.", self.ec_uart_pty_name)
             return
 
@@ -442,7 +445,30 @@ def start_loop(interp, shutdown_pipe=None):
                     if fileno not in input_filenos:
                         poller.register(fileno, select.EPOLLOUT)
 
-                events = poller.poll()
+                events = poller.poll(5.0)
+                if not events:
+                    if not interp.explicitly_disconnected and interp.ec_uart_pty.closed:
+                        interp.logger.debug(
+                            "Periodic check: Reopening closed ec_uart_pty %s "
+                            "automatically...",
+                            interp.ec_uart_pty_name,
+                        )
+                        try:
+                            interp.ec_uart_pty = open(
+                                interp.ec_uart_pty_name, "r+b", buffering=0
+                            )
+                            interp.connected = True
+                            interp.logger.debug(
+                                "Periodic check: Reopened %s", interp.ec_uart_pty_name
+                            )
+                            if interp.ec_uart_pty not in interp.inputs:
+                                interp.inputs.append(interp.ec_uart_pty)
+                        except OSError as reopen_err:
+                            interp.logger.debug(
+                                "Periodic check: Failed auto-reopening ec_uart_pty: %s",
+                                reopen_err,
+                            )
+
                 for fileno, event in events:
                     if event & select.EPOLLIN and fileno in input_filenos:
                         ec_uart_pty_fileno = None
@@ -455,23 +481,25 @@ def start_loop(interp, shutdown_pipe=None):
                                     "probably it is closed."
                                 )
                             )
-                            if interp.connected:
-                                interp.logger.debug(
-                                    "Reopening closed ec_uart_pty %s automatically...",
-                                    interp.ec_uart_pty_name,
+                            interp.logger.debug(
+                                "Reopening closed ec_uart_pty %s automatically on "
+                                "input...",
+                                interp.ec_uart_pty_name,
+                            )
+                            try:
+                                interp.ec_uart_pty = open(
+                                    interp.ec_uart_pty_name, "r+b", buffering=0
                                 )
-                                try:
-                                    interp.ec_uart_pty = open(
-                                        interp.ec_uart_pty_name, "r+b", buffering=0
-                                    )
-                                    ec_uart_pty_fileno = interp.ec_uart_pty.fileno()
-                                    if interp.ec_uart_pty not in interp.inputs:
-                                        interp.inputs.append(interp.ec_uart_pty)
-                                except OSError as reopen_err:
-                                    interp.logger.debug(
-                                        "Failed auto-reopening ec_uart_pty: %s",
-                                        reopen_err,
-                                    )
+                                interp.connected = True
+                                interp.explicitly_disconnected = False
+                                ec_uart_pty_fileno = interp.ec_uart_pty.fileno()
+                                if interp.ec_uart_pty not in interp.inputs:
+                                    interp.inputs.append(interp.ec_uart_pty)
+                            except OSError as reopen_err:
+                                interp.logger.debug(
+                                    "Failed auto-reopening ec_uart_pty: %s",
+                                    reopen_err,
+                                )
                         # Handle any debug prints from the EC.
                         if fileno == ec_uart_pty_fileno:
                             try:
