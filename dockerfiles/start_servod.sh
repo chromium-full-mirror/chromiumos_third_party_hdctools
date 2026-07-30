@@ -74,6 +74,15 @@ if [ -n "${CONFIG}" ]; then
     CONFIG_FLAG="--config ${CONFIG}"
 fi
 
+TOKEN_DB_FLAG=""
+if [ -n "${TOKEN_DB}" ]; then
+    if [ ! -e "${TOKEN_DB}" ]; then
+        log_output "Token DB file '${TOKEN_DB}' does not exist."
+        exit 1
+    fi
+    TOKEN_DB_FLAG="--token-db ${TOKEN_DB}"
+fi
+
 REC_MODE_FLAG=""
 if [ -n "${REC_MODE}" ]; then
     REC_MODE_FLAG="--servo-recovery"
@@ -137,6 +146,7 @@ servod_args+=" ${NOBOARD_FLAG}"
 servod_args+=" ${DUMP_XML_FLAG}"
 servod_args+=" ${REC_MODE_FLAG}"
 servod_args+=" ${CONFIG_FLAG}"
+servod_args+=" ${TOKEN_DB_FLAG}"
 servod_args+=" ${NAME_FLAG}"
 servod_args+=" ${DEVICE_DISCOVERY_FLAG}"
 servod_args+=" --grpc-core-port 50052"
