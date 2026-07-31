@@ -30,6 +30,7 @@ PW_TOKENIZER_SUPPORTED = sys.version_info >= (3, 11)
 if PW_TOKENIZER_SUPPORTED:
     from pw_tokenizer import detokenize
 else:
+    detokenize = None  # pylint: disable=invalid-name
     print(
         f"Pigweed tokenizer not supported with python {sys.version_info[0:2]}"
         " - requires python >= (3,11)",
@@ -259,38 +260,92 @@ class Console:
         Args:
           token_path: path to the token database to load.
                       if None, reload last used token_db path.
+
+        Returns:
+          bool: True if token database was loaded successfully, False otherwise.
         """
-        if PW_TOKENIZER_SUPPORTED:
-            self.is_tokenized = True
+        if not PW_TOKENIZER_SUPPORTED:
+            self.is_tokenized = False
+            return False
 
-            if token_path is not None:
+        if token_path is not None:
+            token_path_obj = (
+                token_path
+                if isinstance(token_path, pathlib.Path)
+                else pathlib.Path(
+                    token_path.decode()
+                    if isinstance(token_path, bytes)
+                    else str(token_path)
+                )
+            )
+            if str(token_path) == TOKEN_PREINST_DB or token_path_obj.is_file():
                 self.token_db = token_path
+            else:
+                self.logger.error("Token database file does not exist: %s", token_path)
 
-            token_files = []
+        token_files = []
 
-            if pathlib.Path(TOKEN_LABSTATION_DB).is_file():
-                token_files.append(TOKEN_LABSTATION_DB)
+        if pathlib.Path(TOKEN_LABSTATION_DB).is_file():
+            token_files.append(TOKEN_LABSTATION_DB)
 
-            if (
-                self.token_db == TOKEN_PREINST_DB
-                and pathlib.Path(TOKEN_FETCHED_DB).is_file()
-            ):
-                token_files.append(TOKEN_FETCHED_DB)
+        if (
+            self.token_db == TOKEN_PREINST_DB
+            and pathlib.Path(TOKEN_FETCHED_DB).is_file()
+        ):
+            token_files.append(TOKEN_FETCHED_DB)
 
-            if self.token_db:
-                token_files.append(self.token_db)
+        if self.token_db and pathlib.Path(self.token_db).is_file():
+            token_files.append(self.token_db)
 
-            if len(token_files) > 0:
+        if len(token_files) > 0:
+            try:
                 self.logger.info(
                     "Tokenized logging enabled - See https://chromium.googlesource.com/chromiumos/platform/ec/+/HEAD/docs/zephyr/zephyr_tokenized_logging.md"  # pylint: disable=line-too-long
                 )
                 self.logger.info(f"Loading detokenizer database(s): {token_files}")
-                self.z_detokenizer = detokenize.AutoUpdatingDetokenizer(
+                z_detokenizer = detokenize.AutoUpdatingDetokenizer(
                     *token_files,
                     prefix=TOKEN_PREFIX,
                 )
-                self.z_detokenizer.show_errors = True
+                z_detokenizer.show_errors = True
                 self.decoder = detokenize.NestedMessageParser(TOKEN_PREFIX)
+                self.z_detokenizer = z_detokenizer
+                self.is_tokenized = True
+                return True
+            except Exception as e:
+                self.logger.error("Failed to load detokenizer database: %s", e)
+
+        self.is_tokenized = False
+        self.z_detokenizer = None
+        self.decoder = None
+        return False
+
+    def enable_tokens(self, token_path=None):
+        """Enable tokenized decoding and optionally set token database path.
+
+        Args:
+          token_path: Path or string path to token database file, or None.
+        """
+        if not PW_TOKENIZER_SUPPORTED:
+            self.logger.error("Tokenizer not supported")
+            return
+        if token_path is not None and not isinstance(token_path, pathlib.Path):
+            token_path = pathlib.Path(
+                token_path.decode()
+                if isinstance(token_path, bytes)
+                else str(token_path)
+            )
+        if self.load_token_database(token_path):
+            self.is_tokenized = True
+            self.logger.debug("Updated is_tokenized to True.")
+        else:
+            self.is_tokenized = False
+            self.logger.error("Failed to enable tokenized decoding.")
+
+    def disable_tokens(self):
+        """Disable tokenized decoding."""
+        self.is_tokenized = False
+        self.logger.debug("Updated is_tokenized to False.")
 
     def log_console_output(self, data):
         """Log to debug user MCU output to controller_pty when line is filled.
@@ -966,15 +1021,16 @@ class Console:
                 return
 
             mode = cmd[1].lower()
-            self.is_tokenized = TOKEN_MODES.get(mode)
-            if self.is_tokenized is None:
+            is_tok = TOKEN_MODES.get(mode)
+            if is_tok is None:
                 self.logger.error("Unexpected mode for %r command: %r", cmd[0], cmd[1])
                 return
 
-            self.logger.debug("Updated is_tokenized to %s.", self.is_tokenized)
-            if self.is_tokenized:
-                token_path = pathlib.Path(cmd[2].decode()) if len(cmd) == 3 else None
-                self.load_token_database(token_path)
+            if is_tok:
+                token_path = cmd[2].decode() if len(cmd) == 3 else None
+                self.enable_tokens(token_path)
+            else:
+                self.disable_tokens()
 
         else:
             self.print_oobm_help()

@@ -145,3 +145,35 @@ class TestConsole(unittest.TestCase):
         with mock.patch.object(self.console.cmd_pipe, "send") as mock_send:
             self.console.process_oobm_queue()
             mock_send.assert_called_with(b"loglevel 10")
+
+    def test_enable_and_disable_tokens_api(self):
+        with mock.patch.object(
+            self.console, "load_token_database", return_value=True
+        ) as mock_load:
+            self.console.enable_tokens("/tmp/tokens.bin")
+            self.assertTrue(self.console.is_tokenized)
+            mock_load.assert_called_once()
+
+        self.console.disable_tokens()
+        self.assertFalse(self.console.is_tokenized)
+
+    def test_enable_tokens_failure_nonexistent_file(self):
+        self.console.enable_tokens("/nonexistent/file.bin")
+        self.assertFalse(self.console.is_tokenized)
+        self.assertIsNone(self.console.z_detokenizer)
+
+    def test_load_token_database_failure(self):
+        res = self.console.load_token_database("/nonexistent/file.bin")
+        self.assertFalse(res)
+        self.assertFalse(self.console.is_tokenized)
+        self.assertIsNone(self.console.z_detokenizer)
+
+    def test_load_token_database_exception(self):
+        with mock.patch("pathlib.Path.is_file", return_value=True), mock.patch(
+            "ec3po.console.detokenize.AutoUpdatingDetokenizer",
+            side_effect=Exception("Failed to parse"),
+        ):
+            res = self.console.load_token_database("/tmp/tokens.bin")
+            self.assertFalse(res)
+            self.assertFalse(self.console.is_tokenized)
+            self.assertIsNone(self.console.z_detokenizer)

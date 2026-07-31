@@ -436,6 +436,33 @@ class EC3PO(uart.Uart):
         # Use an int, so the onoff map can handle it.
         return int(self._console.timestamp_enabled)
 
+    def set_token_db(self, path):
+        """Set token DB path or toggle tokenized decoding.
+
+        Args:
+          path: A string path to token DB file, or 'off' / 'on' / None.
+        """
+        if not path or path.lower() == "off":
+            self._logger.debug("EC3PO tokens set to off")
+            self._console.disable_tokens()
+        elif path.lower() == "on":
+            self._logger.debug("EC3PO tokens set to on")
+            self._console.enable_tokens()
+        else:
+            self._logger.debug("EC3PO tokens set to path: %s", path)
+            self._console.enable_tokens(path)
+
+    def get_token_db(self):
+        """Get current token DB path or status.
+
+        Returns:
+          A string of the token DB path if tokenized, or 'off' if disabled.
+        """
+        if getattr(self._console, "is_tokenized", False):
+            token_db = getattr(self._console, "token_db", None)
+            return str(token_db) if token_db else "on"
+        return "off"
+
     def close(self):
         """Turn down the ec3po interface by terminating interpreter & console."""
         # Notify subprocesses/threads of desire to shutdown.

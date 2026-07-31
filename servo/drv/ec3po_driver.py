@@ -136,3 +136,26 @@ class ec3poDriver(hw_driver.HwDriver):
             # interface is not supported on the current servo host.  There's not much
             # we can really do.
             self._logger.debug(NO_UART_ERR)
+
+    def _Set_token_db(self, path):
+        """Set the token database path and configure EC3PO detokenization.
+
+        Args:
+          path: A string containing the token DB file path, or 'off'/'on'.
+        """
+        if self._interface is not None:
+            self._interface.set_token_db(path)
+        else:
+            self._logger.debug(NO_UART_ERR)
+
+    def _Get_token_db(self):
+        """Get whether tokenization is enabled and current token DB path.
+
+        Returns:
+          A string of the token DB path if tokenized, or 'off' if disabled.
+        """
+        if self._interface is not None:
+            return self._interface.get_token_db()
+        else:
+            self._logger.debug(NO_UART_ERR)
+            return "off"

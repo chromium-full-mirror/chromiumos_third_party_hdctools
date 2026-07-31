@@ -71,6 +71,14 @@
     <params interface="EC_CONSOLE" drv="ec3po_driver" map="onoff" init="on"
     subtype="timestamp"></params>
   </control>
+  <control>
+    <name>ec_token_db</name>
+    <doc>Set/get path to EC token database for EC-3PO detokenization. Set to
+    'off' to disable token algorithm, 'on' to enable it with last used token
+    database, or use a file path to enable tokenization with a custom token database.</doc>
+    <params interface="EC_CONSOLE" drv="ec3po_driver" input_type="str"
+    subtype="token_db"></params>
+  </control>
   <!-- UART Command Controls -->
   <control>
     <name>ec_uart_capture</name>

@@ -90,3 +90,21 @@ class TestEs3poDriver(unittest.TestCase):
         result = self.instance._Get_raw_debug()
         self.assertIsNone(result)
         self.mock_logger.debug.assert_called_with(NO_UART_ERR)
+
+    def test_set_token_db_path(self):
+        self.instance._Set_token_db("/tmp/tokens.bin")
+        self.mock_interface.set_token_db.assert_called_with("/tmp/tokens.bin")
+
+    def test_set_token_db_none_interface(self):
+        self.instance._interface = None
+        self.instance._Set_token_db("/tmp/tokens.bin")
+        self.mock_logger.debug.assert_called_with(NO_UART_ERR)
+
+    def test_get_token_db_with_interface(self):
+        self.mock_interface.get_token_db.return_value = "/tmp/tokens.bin"
+        self.assertEqual(self.instance._Get_token_db(), "/tmp/tokens.bin")
+
+    def test_get_token_db_none_interface(self):
+        self.instance._interface = None
+        self.assertEqual(self.instance._Get_token_db(), "off")
+        self.mock_logger.debug.assert_called_with(NO_UART_ERR)
