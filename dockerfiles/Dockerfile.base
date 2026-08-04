@@ -220,7 +220,7 @@ FROM flashrom-builder as futility-builder
 
 RUN apt-get update \
     && apt-get install -y \
-    libnss3-dev libzip-dev
+    libnss3-dev
 
 # Install vboot.
 WORKDIR /
