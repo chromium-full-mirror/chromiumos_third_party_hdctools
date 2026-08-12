@@ -9,6 +9,7 @@ import os
 import sys
 
 import docker
+import docker_utils
 
 
 DEFAULT_IMAGE = "servod:dev"
@@ -37,32 +38,40 @@ class RunInsteadBase:
         if len(_servodrc) > 0:
             self.volumes.append(f"{_servodrc}:/root/.servodrc:ro")
 
-    def get_image(self, channel):
+    def get_image(self, channel, force_update):
         if channel != "local":
             image = ARTIFACT_URL_TEMPLATE % channel
-            try:
-                self.client.images.pull(image)
-            except (docker.errors.APIError, docker.errors.DockerException) as e:
-                if self.client.images.list(filters={"reference": image}):
-                    print("Warning: Failed to pull newest image, using local version.")
-                    return image
+            if force_update or docker_utils.needs_update_check(
+                self.client, image, self.command, channel
+            ):
+                try:
+                    self.client.images.pull(image)
+                    docker_utils.update_check_timestamp(self.command, channel)
+                except (docker.errors.APIError, docker.errors.DockerException) as e:
+                    if self.client.images.list(filters={"reference": image}):
+                        print(
+                            "Warning: Failed to pull newest image, using local version."
+                        )
+                        return image
 
-                if isinstance(e, docker.errors.APIError) and (
-                    e.is_server_error()
-                    and e.response is not None
-                    and str(e.response.content).find("unauthorized") > 0
-                ):
-                    print(
-                        "!!!\nUnexpected authentication failure. Please try running: \n"
-                        "\ngcloud auth login\n\n"
-                        "Refresh the credentials and try again.\n"
-                        "More reading: https://chromium.googlesource.com/chromiumos/"
-                        "third_party/hdctools/+/main/docs/servod_outside_chroot.md#"
-                        "start_servod"
-                        "-sent-me-here-after-authenticating-with-the-registry-failed"
-                    )
-                    sys.exit(1)
-                raise
+                    if isinstance(e, docker.errors.APIError) and (
+                        e.is_server_error()
+                        and e.response is not None
+                        and str(e.response.content).find("unauthorized") > 0
+                    ):
+                        print(
+                            "!!!\nUnexpected authentication failure. Please "
+                            "try running: \n"
+                            "\ngcloud auth login\n\n"
+                            "Refresh the credentials and try again.\n"
+                            "More reading: "
+                            "https://chromium.googlesource.com/chromiumos/"
+                            "third_party/hdctools/+/main/docs/servod_outside_chroot.md#"
+                            "start_servod-sent-me-here-after-authenticating-"
+                            "with-the-registry-failed"
+                        )
+                        sys.exit(1)
+                    raise
             return image
         return DEFAULT_IMAGE
 
@@ -88,6 +97,12 @@ class RunInsteadBase:
             "--name",
             help="Name of existing container if command should attach to it",
             default=None,
+        )
+        parser.add_argument(
+            "--force_update",
+            action=argparse.BooleanOptionalAction,
+            help="Force checking if there is an update to docker image.",
+            default=False,
         )
 
         if hasattr(self, "add_custom_args"):
@@ -169,7 +184,7 @@ class RunInsteadBase:
             self.override_args(args, passthrough_args)
 
         print("Getting docker image...")
-        image = self.get_image(args.channel)
+        image = self.get_image(args.channel, args.force_update)
         print("Starting docker container...")
         res = self.execute(
             image=image, passthrough_args=passthrough_args, container_name=args.name

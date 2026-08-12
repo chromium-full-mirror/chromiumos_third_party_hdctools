@@ -12,16 +12,15 @@ import re
 import shlex
 import signal
 import sys
-import tempfile
 import threading
 
 import docker
+import docker_utils
 import run_command
 
 
 DEFAULT_IMAGE = "servod:dev"
 ARTIFACT_URL_TEMPLATE = "us-docker.pkg.dev/chromeos-hw-tools/servod/servod:%s"
-UPDATE_CHECKER_FILE = os.path.join(tempfile.gettempdir(), "start-servod-timestamp")
 
 
 FW_WARNING_STRING_FMT = (
@@ -145,24 +144,6 @@ def setup():
         raise StartServodException(error_message) from e
 
 
-def needs_update_check():
-    if os.path.exists(UPDATE_CHECKER_FILE) is False:
-        return True
-
-    with open(UPDATE_CHECKER_FILE, "r", encoding="utf-8") as file:
-        date = file.read().strip()
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        if date == current_date:
-            return False
-        return True
-
-
-def update_check_timestamp():
-    with open(UPDATE_CHECKER_FILE, "w", encoding="utf-8") as file:
-        current_date = datetime.now().strftime("%Y-%m-%d")
-        file.write(current_date)
-
-
 def pull_newest_image(client, image, allow_offline, verbose):
     try:
         resp = client.api.pull(image, stream=True, decode=True)
@@ -210,8 +191,7 @@ def get_image(client, channel, allow_offline, force_update, verbose):
     if (
         channel != "release"
         or force_update is True
-        or needs_update_check()
-        or len(client.images.list(filters={"reference": image})) == 0
+        or docker_utils.needs_update_check(client, image, "start-servod", channel)
     ):
         logging.info(
             "Checking docker image is up to date and downloading updates as necessary."
@@ -220,7 +200,7 @@ def get_image(client, channel, allow_offline, force_update, verbose):
         logging.info("Image check complete.")
 
         if is_updated and channel == "release":
-            update_check_timestamp()
+            docker_utils.update_check_timestamp("start-servod", channel)
     else:
         logging.info("Docker image version verified earlier today, no updates needed.")
     return image

@@ -25,7 +25,7 @@ class TestStartServod(unittest.TestCase):
             "start_servod.os.path.exists", return_value=True
         ).start()
         self.mock_needs_update = patch(
-            "start_servod.needs_update_check", return_value=False
+            "docker_utils.needs_update_check", return_value=False
         ).start()
         self.mock_get_image = patch(
             "start_servod.get_image", return_value="servod:dev"
