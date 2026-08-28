@@ -183,6 +183,9 @@ def resolve_clobbers(root):
                 # Restore content if it was there
                 cmd = p_dict.get("cmd", "both")
                 content = content_tags.get((tag, name, cmd))
+                if content is None:
+                    # Fall back to 'both' if cmd was split into 'get'/'set'
+                    content = content_tags.get((tag, name, "both"))
                 if content is None and len(params_list) == 1:
                     # try "both" or one of them
                     content = content_tags.get((tag, name, "get")) or content_tags.get(
