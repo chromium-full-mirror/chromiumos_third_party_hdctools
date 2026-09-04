@@ -2,6 +2,9 @@
   <include>
     <name>kukui_common.xml</name>
   </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
   <!-- lid open has to go through the EC always on kukui with stm EC
        irrespective of servo type. -->
   <control>
