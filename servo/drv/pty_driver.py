@@ -417,7 +417,7 @@ class PtyDriver(hw_driver.HwDriver):
                 elif isinstance(cmds, str):
                     cmd_str = cmds
 
-                if any(x in cmd_str for x in ["fakedisconnect", "reboot"]):
+                if re.search(r"\b(fakedisconnect|reboot)\b", cmd_str):
                     is_disconnect_cmd = True
 
                 has_prompt = False
