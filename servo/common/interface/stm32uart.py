@@ -142,7 +142,7 @@ class Suart(uart.Uart):
             self._logger.info("Attempting recovery reinitialization...")
             try:
                 # Force reinit to clear potential lockups
-                self._susb.reset_usb(force=True)
+                self._susb.reset_usb(force=True, reset_device=True)
                 self._logger.info("Recovery reinitialization successful.")
             except Exception as reinit_e:
                 self._logger.error("Recovery reinitialization failed: %s", reinit_e)
