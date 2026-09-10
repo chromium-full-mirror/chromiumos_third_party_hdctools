@@ -235,6 +235,7 @@ class Suart(uart.Uart):
                                                     self.get_pty(),
                                                     release_e,
                                                 )
+                                        self._last_reinit_time = 0
                                         self._handle_usb_error(e, "tx_disconnect")
                                     else:
                                         self._handle_usb_error(e, "tx")

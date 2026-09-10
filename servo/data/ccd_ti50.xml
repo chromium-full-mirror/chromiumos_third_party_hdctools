@@ -27,6 +27,8 @@
             <item>ec_ec3po_interp_connect:on</item>
             <item>fpmcu_ec3po_interp_connect:on</item>
             <item>gsc_ec3po_interp_connect:on</item>
+            <!-- Delay to allow Ti50 USB endpoint to settle before UART traffic -->
+            <item>sleep:1</item>
             <item>ap_flash_select:off</item>
             <item>cold_reset:off</item>
           </item>
