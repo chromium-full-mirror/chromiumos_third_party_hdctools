@@ -377,6 +377,29 @@ start-servod --channel=release --mount=chromiumos/src/platform/ec:/tmp/ec -n
 flashing_servod docker exec -it flashing_servod-docker_servod
 /tmp/ec/util/flash_ec --board atlas`
 
+### How do I import a servo config (XML), like `servod -c config.xml` ?
+
+Pass it **after** `--`, everything before `--` belongs to the wrapper script.
+
+> ***NOTE:*** `-c` on `start-servod` means `--channel`, not `--config`.
+
+Configs shipped with servod (files from `hdctools/servo/data`) are already inside
+the image, so the file name is enough:
+
+```bash
+start-servod -c latest -b brya --model redrix -f -- --config pdc_ccd_keepalive_na.xml
+```
+
+Your own config file is not visible in the container, so mount its directory and
+use the container path (repeat `--config` to load more than one):
+
+```bash
+start-servod -c release -b brya --mount=$HOME/my_configs:/tmp/configs -f \
+    -- --config /tmp/configs/my_config.xml
+```
+
+Keep any `<include>`d files in the same mounted directory.
+
 ### I want to run TAST/FAFT tests locally - how do I do that ?
 
 Start your servod container with -p [PORT] parameter, which would map internal
