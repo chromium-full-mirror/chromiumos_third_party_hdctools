@@ -143,13 +143,15 @@
   </control>
 
   <!-- USB ports settings -->
+  <!-- Top port is used for USB recovery in the lab. Its init values intentionally
+       override poweron_conf on every servod start, since servo is rarely rebooted. -->
   <control>
     <name>usb3_mux_sel</name>
     <alias>top_usb_mux_sel,usb_mux_sel1,image_usbkey_mux,top_usbkey_mux</alias>
     <doc>(top) muxable usb port mux. Designated for recovery images
       in the lab.</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="USB3_A0_MUX_SEL" ioex="true" map="usbkey"></params>
+     name="USB3_A0_MUX_SEL" ioex="true" map="usbkey" init="dut_sees_usbkey"></params>
   </control>
   <control>
     <name>usb3_mux_sel_at_poweron</name>
@@ -167,7 +169,7 @@
     <alias>top_usb_mux_en,usb_mux_oe1</alias>
     <doc>USB3.0_TYPEA_MUX_EN_L</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="USB3_A0_MUX_EN_L" ioex="true" map="onoff_i"></params>
+     name="USB3_A0_MUX_EN_L" ioex="true" map="onoff_i" init="on"></params>
   </control>
   <control>
     <name>usb3_mux_en_at_poweron</name>
@@ -184,7 +186,7 @@
     <doc>(top) muxable usb port power enable. Designated for recovery images
       in the lab.</doc>
     <params interface="26" drv="ec3po_gpio" subtype="single"
-     name="USB3_A0_PWR_EN" ioex="true" map="onoff"></params>
+     name="USB3_A0_PWR_EN" ioex="true" map="onoff" init="on"></params>
   </control>
   <control>
     <name>usb3_pwr_en_at_poweron</name>
