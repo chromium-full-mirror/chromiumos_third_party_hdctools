@@ -277,8 +277,6 @@ class Susb(interface.Interface):
         with self._hold_lock(self._read_ep_lock):
             with self._hold_lock(self._write_ep_lock):
                 usb.util.release_interface(self._dev, self._interface)
-                self.DEV_EP_STORE[devid].pop(self._interface, None)
-                self._dev = None
         self._logger.debug("Released InterfaceNumber: %d", self._interface)
 
     def _get_ep(self, write=False):
