@@ -26,4 +26,10 @@
     <doc>Map from EC-reported chip name to flash_ec-recognised chip</doc>
     <params npcx_uut="npcx" ite_uart="it82102"></params>
   </map>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="ite_uart" />
+  </control>
 </root>
