@@ -111,6 +111,12 @@
     init="force_off" gsc_only="yes" clobber_ok="full" />
   </control>
   <control>
+    <name>ap_flash_select</name>
+    <doc>AP_FLASH_SELECT GPIO pin in H1</doc>
+    <params subtype="ap_flash_select" interface="GSC_CONSOLE" drv="cr50"
+      map="onoff" init="off" clobber_ok="full"/>
+  </control>
+  <control>
     <name>ccd_cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing CPU firmware over CCD</doc>
     <params interface="servo" drv="macro" map="onoff">
