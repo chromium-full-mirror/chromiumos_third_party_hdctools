@@ -13,14 +13,26 @@
       <content>
         <item key="macro_map">
           <item key="1">
+            <!-- Wait for EC to finish EFS2 RO->RW sysjump if just reset. -->
+            <item>sleep:1</item>
             <!-- Cancel any pending reboots to avoid unexpected behavior. -->
             <item>ec_uart_regexp:None</item>
             <item>ec_uart_cmd:reboot cancel</item>
             <item>ec_uart_cmd:apshutdown</item>
             <item>sleep:5</item>
             <item>ec_uart_cmd:gpioset en_s5_rails 1</item>
+            <!-- Disconnect consoles to prevent TT congestion -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>fpmcu_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
           </item>
           <item key="0">
+            <!-- Reconnect consoles first so GSC command works -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>fpmcu_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
             <item>gsc_ecrst_pulse:on</item>
           </item>
         </item>
@@ -40,6 +52,8 @@
         <item key="macro_map">
           <item key="1">
             <item>ap_flash_select:off</item>
+            <!-- Wait for EC to finish EFS2 RO->RW sysjump if just reset. -->
+            <item>sleep:1</item>
             <!-- Cancel any pending reboots to avoid unexpected behavior. -->
             <item>ec_uart_cmd:reboot cancel</item>
             <item>ec_uart_cmd:apshutdown</item>

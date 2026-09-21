@@ -22,6 +22,45 @@
     <name>ec_efs2.xml</name>
   </include>
   <!-- ******** Controls ******** -->
+  <!-- FW flashing config -->
+  <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <!-- Wait for EC to finish EFS2 RO->RW sysjump if just reset. -->
+            <item>sleep:1</item>
+            <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <item>ec_uart_regexp:None</item>
+            <item>ec_uart_cmd:reboot cancel</item>
+            <item>ec_uart_cmd:apshutdown</item>
+            <item>sleep:5</item>
+            <item>ec_uart_cmd:gpioset en_pp3300_a 1</item>
+            <!-- Disconnect consoles to prevent TT congestion -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>fpmcu_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
+          </item>
+          <item key="0">
+            <!-- Reconnect consoles first so GSC command works -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>fpmcu_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>ccd_cpu_fw_spi_depends_on_ec_fw</name>
+    <doc>Returns "yes" or "no" of whether ccd_cpu_fw_spi control depends on DUT EC firmware cooperation. See https://issuetracker.google.com/269804618 for background. This control is only meaningful when ccd_cpu_fw_spi control exists.</doc>
+    <params drv="echo" value="yes" interface="servo" clobber_ok="full"/>
+  </control>
   <control>
     <!-- Volteer connects TABLET_MODE_L to the rec_mode signal -->
     <name>power_state</name>
