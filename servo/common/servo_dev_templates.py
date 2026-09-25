@@ -9,7 +9,6 @@ import logging
 import pathlib
 
 from google.protobuf import text_format
-
 from servo.common.proto import servo_dev_pb2 as ServoDeviceProto
 
 
@@ -30,6 +29,11 @@ MAIN_DEV_PREFIXES = [MAIN_DEV_PREFIX, MAIN_DEV_PREFIX_ALIAS]
 
 # The root hub device of the main device gets the prefix 'root'
 ROOT_DEV_PREFIX = "root"
+
+# Dynamic prefix that routes controls to whichever DUT controller is currently
+# active according to 'active_dut_controller' (falling back to the main device
+# on single-controller setups).
+ACTIVE_DEV_PREFIX = "active"
 
 # SERVO_VID_PID_TEMPLATE_MAP, SERVO_LOTID_TEMPLATE_MAP, SERVO_ID_DEFAULTS,
 # and SERVO_NAME_TEMPLATE_MAP, get populated when protobufs are read from to keep

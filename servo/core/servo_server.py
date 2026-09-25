@@ -203,13 +203,25 @@ class Servod:
           NameError: if |name| not a known control on its servo dev.
         """
         prefix, processed_name = Servod._get_control_prefix_and_name(name)
-        if prefix not in self._devices:
+        is_active_prefix = (
+            prefix == servo_dev_templates.ACTIVE_DEV_PREFIX
+            and prefix not in self._devices
+        )
+        if is_active_prefix:
+            dev = self._get_active_dut_controller_device()
+            if dev is None:
+                raise ServodError(
+                    f"No control named '{name}' registered. "
+                    "No active DUT controller registered."
+                )
+        elif prefix not in self._devices:
             error_msg = (
                 "No control named '%s' registered. "
                 "No servo device registered for prefix %s."
             ) % (name, prefix)
             raise ServodError(error_msg)
-        dev = self._devices[prefix]
+        else:
+            dev = self._devices[prefix]
 
         # Controls routed to main that are not covered by main are covered by their
         # root hub device.
@@ -224,7 +236,8 @@ class Servod:
                 f"Servo device {dev} (prefix: {dev.get_prefixes()}) "
                 f"is picked as the target device for the control.\n"
             )
-            candidates = [ctrl for ctrl in self._controls if name in ctrl]
+            match_target = processed_name if is_active_prefix else name
+            candidates = [ctrl for ctrl in self._controls if match_target in ctrl]
             if candidates:
                 # Wrap candidates slightly or just print comma separated
                 error_msg += f"Did you mean: {', '.join(candidates)}?\n"
@@ -431,6 +444,87 @@ class Servod:
                     raise Exception(msg[len(self.GRPC_EXC_MSG) :]) from e
             raise
 
+    def _get_active_dut_controller_device(self):
+        """Return the ServoDevice for the currently active DUT controller.
+
+        In dual-controller Servo v4 setups (for example servo_v4p1 with
+        servo_micro or c2d2 alongside CCD), 'active_dut_controller' on the root
+        v4 device tracks which controller currently drives the shared DUT UART
+        lines (such as 'servo_micro', 'c2d2', 'ccd_cr50', or 'ccd_gsc_nt').
+        Resolving the 'active.' prefix dynamically (e.g. 'active.ec_uart_pty',
+        'active.cpu_uart_pty', 'active.gsc_uart_pty', 'active.fpmcu_uart_pty')
+        routes requests to whichever controller is currently active while
+        leaving unprefixed 'main' controls statically bound for backward
+        compatibility with automated tests.
+
+        On single-controller setups without 'active_dut_controller' (or when
+        'active_dut_controller' reports 'neither' or cannot be queried), this
+        falls back to the main device.
+
+        Returns:
+          The active ServoDevice instance, or None if no device is registered.
+        """
+        # root_dev is the root Servo hub device (e.g. servo_v4 or servo_v4p1),
+        # which registers 'active_dut_controller' in dual-controller setups.
+        # main_dev is the primary DUT controller (e.g. servo_micro or c2d2 in a
+        # dual setup, or the standalone controller when no Servo v4 is present).
+        root_dev = self.get_root_device()
+        main_dev = self._devices.get(
+            servo_dev_templates.MAIN_DEV_PREFIX
+        ) or self._devices.get(servo_dev_templates.MAIN_DEV_PREFIX_ALIAS)
+
+        # Find the device that owns the 'active_dut_controller' control
+        # (typically root_dev on Servo v4 setups). If neither root_dev nor
+        # main_dev defines 'active_dut_controller' (for example on a standalone
+        # c2d2 or servo_micro setup without a Servo v4), fall back to main_dev.
+        ctrl_owner = None
+        if root_dev is not None and root_dev.is_control("active_dut_controller"):
+            ctrl_owner = root_dev
+        elif main_dev is not None and main_dev.is_control("active_dut_controller"):
+            ctrl_owner = main_dev
+
+        if ctrl_owner is None:
+            return main_dev
+
+        try:
+            ctrl_owner.wait()
+            active_dev = ctrl_owner.get("active_dut_controller")
+        except Exception as e:
+            self._logger.debug(
+                "Could not query active_dut_controller (%s); using main device.",
+                e,
+            )
+            return main_dev
+
+        if not active_dev or active_dev == "neither":
+            self._logger.warning(
+                "active_dut_controller is %r; falling back to main device.",
+                active_dev,
+            )
+            return main_dev
+
+        if self._devices.get(active_dev) is not None:
+            return self._devices[active_dev]
+
+        # If active_dev is not a direct key in self._devices, scan the
+        # registered controller prefixes and device template types (for example
+        # matching a 'ccd_gsc' prefix or dev.template.TYPE == 'ccd_gsc_nt'),
+        # skipping the generic '', 'main', and 'root' aliases.
+        for prefix, dev in self._devices.items():
+            if dev is None or prefix in (
+                servo_dev_templates.MAIN_DEV_PREFIX,
+                servo_dev_templates.MAIN_DEV_PREFIX_ALIAS,
+                servo_dev_templates.ROOT_DEV_PREFIX,
+            ):
+                continue
+            if (
+                prefix.startswith(active_dev)
+                or getattr(getattr(dev, "template", None), "TYPE", "") == active_dev
+            ):
+                return dev
+
+        return main_dev
+
     def update_known_ctrls(self):
         """Helper to generate a list of all accessible controls in servod."""
         known_ctrls = set()
@@ -449,7 +543,19 @@ class Servod:
 
     def has_control(self, control):
         """Returns True if control is available in servod."""
-        return control in self._controls
+        if control in self._controls:
+            return True
+        try:
+            prefix, processed_name = Servod._get_control_prefix_and_name(control)
+        except ServodError:
+            return False
+        if (
+            prefix == servo_dev_templates.ACTIVE_DEV_PREFIX
+            and prefix not in self._devices
+        ):
+            active_dev = self._get_active_dut_controller_device()
+            return active_dev is not None and active_dev.is_control(processed_name)
+        return False
 
     def doc_all(self):
         """Return all documentation for controls.

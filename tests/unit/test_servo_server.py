@@ -671,6 +671,121 @@ class TestServod(unittest.TestCase):
         # Check that the JSON response for config_files was logged
         self.assertTrue(any("config.xml" in str(arg) for arg in all_debug_args))
 
+    def test_active_prefix_routes_to_active_dut_controller(self):
+        """Test 'active.' prefix routes dynamically without rebinding main."""
+        servod = servo_server.Servod()
+        current_active = ["servo_micro"]
+
+        root_dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+        root_dev.template = servo_dev_templates.get_template_class_by_name("servo_v4p1")
+        root_dev.is_control.side_effect = lambda ctrl: ctrl == "active_dut_controller"
+        root_dev.is_connected.return_value = True
+        root_dev.get_all_controls.return_value = {"active_dut_controller"}
+        root_dev.get.side_effect = lambda ctrl: (
+            current_active[-1] if ctrl == "active_dut_controller" else None
+        )
+        root_dev.set.side_effect = lambda _ctrl, val: (
+            current_active.append("ccd_gsc_nt" if val == "ccd" else val) or True
+        )
+        root_dev._serial = "root_serial"
+
+        sm_ptys = {
+            "ec_uart_pty": "/dev/pts/1",
+            "cpu_uart_pty": "/dev/pts/2",
+            "gsc_uart_pty": "/dev/pts/3",
+        }
+        sm_dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+        sm_dev.template = servo_dev_templates.get_template_class_by_name("servo_micro")
+        sm_dev.is_control.side_effect = lambda ctrl: ctrl in sm_ptys
+        sm_dev.is_connected.return_value = True
+        sm_dev.get_prefixes.return_value = ["main", "", "servo_micro"]
+        sm_dev.get_all_controls.return_value = set(sm_ptys.keys())
+        sm_dev.get.side_effect = lambda ctrl: sm_ptys[ctrl]
+        sm_dev._serial = "sm_serial"
+
+        ccd_ptys = {
+            "ec_uart_pty": "/dev/pts/11",
+            "cpu_uart_pty": "/dev/pts/12",
+            "gsc_uart_pty": "/dev/pts/13",
+            "fpmcu_uart_pty": "/dev/pts/14",
+        }
+        ccd_dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+        ccd_dev.template = servo_dev_templates.get_template_class_by_name("ccd_gsc_nt")
+        ccd_dev.is_control.side_effect = lambda ctrl: ctrl in ccd_ptys
+        ccd_dev.is_connected.return_value = True
+        ccd_dev.get_prefixes.return_value = ["ccd_gsc_nt", "ccd_gsc"]
+        ccd_dev.get_all_controls.return_value = set(ccd_ptys.keys())
+        ccd_dev.get.side_effect = lambda ctrl: ccd_ptys[ctrl]
+        ccd_dev._serial = "ccd_serial"
+
+        servod._devices = {
+            "root": root_dev,
+            "main": sm_dev,
+            "": sm_dev,
+            "servo_micro": sm_dev,
+            "ccd_gsc": ccd_dev,
+            "ccd_gsc_nt": ccd_dev,
+        }
+        servod.update_known_ctrls()
+
+        # update_known_ctrls must NOT duplicate 'active.*' entries across controls.
+        self.assertFalse(any(c.startswith("active.") for c in servod._controls))
+
+        # Initially servo_micro is active.
+        self.assertEqual(servod.get("ec_uart_pty"), "/dev/pts/1")
+        self.assertEqual(servod.get("active.ec_uart_pty"), "/dev/pts/1")
+        self.assertEqual(servod.get("active.cpu_uart_pty"), "/dev/pts/2")
+        self.assertEqual(servod.get("active.gsc_uart_pty"), "/dev/pts/3")
+        self.assertTrue(servod.has_control("active.ec_uart_pty"))
+        self.assertFalse(servod.has_control("active.fpmcu_uart_pty"))
+
+        # Switch active_dut_controller to CCD: active.* follows CCD, while
+        # unprefixed and main.* controls remain statically bound to servo_micro.
+        servod.set("active_dut_controller", "ccd")
+        self.assertEqual(servod.get_main_device(), sm_dev)
+        self.assertEqual(servod.get("ec_uart_pty"), "/dev/pts/1")
+        self.assertEqual(servod.get("main.ec_uart_pty"), "/dev/pts/1")
+        self.assertEqual(servod.get("active.ec_uart_pty"), "/dev/pts/11")
+        self.assertEqual(servod.get("active.cpu_uart_pty"), "/dev/pts/12")
+        self.assertEqual(servod.get("active.gsc_uart_pty"), "/dev/pts/13")
+        self.assertEqual(servod.get("active.fpmcu_uart_pty"), "/dev/pts/14")
+        self.assertTrue(servod.has_control("active.fpmcu_uart_pty"))
+
+        # Switch back to servo_micro.
+        servod.set("active_dut_controller", "servo_micro")
+        self.assertEqual(servod.get("active.ec_uart_pty"), "/dev/pts/1")
+        self.assertEqual(servod.get("ec_uart_pty"), "/dev/pts/1")
+        with self.assertRaises(servo_server.ServodError) as ctx:
+            servod.get("active.fpmcu_uart_pty")
+        self.assertIn("ccd_gsc.fpmcu_uart_pty", str(ctx.exception))
+
+        # When active_dut_controller is 'neither', warn and fall back to main.
+        servod._logger.warning = unittest.mock.MagicMock()
+        servod.set("active_dut_controller", "neither")
+        self.assertEqual(servod.get("active.ec_uart_pty"), "/dev/pts/1")
+        servod._logger.warning.assert_called_once_with(
+            "active_dut_controller is %r; falling back to main device.",
+            "neither",
+        )
+
+    def test_active_prefix_falls_back_to_main_on_standalone_setup(self):
+        """Test 'active.' resolves to main when active_dut_controller is absent."""
+        servod = servo_server.Servod()
+        c2d2_dev = unittest.mock.MagicMock(spec=servo_dev.ServoDevice)
+        c2d2_dev.template = servo_dev_templates.get_template_class_by_name("c2d2")
+        c2d2_dev.is_control.side_effect = lambda ctrl: ctrl == "ec_uart_pty"
+        c2d2_dev.is_connected.return_value = True
+        c2d2_dev.get.return_value = "/dev/pts/4"
+
+        servod._devices = {
+            "main": c2d2_dev,
+            "": c2d2_dev,
+            "c2d2": c2d2_dev,
+        }
+        self.assertEqual(servod.get("active.ec_uart_pty"), "/dev/pts/4")
+        self.assertTrue(servod.has_control("active.ec_uart_pty"))
+        self.assertFalse(servod.has_control("active.nonexistent"))
+
 
 if __name__ == "__main__":
     unittest.main()
