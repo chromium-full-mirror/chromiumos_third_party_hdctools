@@ -50,12 +50,17 @@ This augments the `ccd_keepalive_en` control to perform these two functions:
     the host and we need to wait for the host device kernel to re-enumerate the device so
     servod can access it.   This adds in a 2 second delay for role swaps to allow for that
     host kernel enumeration to complete.  See b/444027791 b/427669689
+
+    Note: This control is also used for recovery boot to determine whether `servo_pd_role:snk`
+    is needed. When a DUT has `pdc_ccd_keepalive_en`, `servo_pd_role:snk` is not required for
+    recovery boot; for all other DUTs without this control, `servo_pd_role:snk` is required.
     -->
     <control>
         <name>pdc_ccd_keepalive_en</name>
         <doc>
-            Internal-only command to set PDC SBU mux mode for CCD.
-            Use `ccd_keepalive_en` instead.
+            Internal-only command to set PDC SBU mux mode for CCD (use `ccd_keepalive_en` instead).
+            Also used for recovery boot: when present, `servo_pd_role:snk` is not required to boot
+            into recovery mode; when absent, `servo_pd_role:snk` is required.
         </doc>
         <params cmd="get" subtype="pdc_ccd_keepalive_en" interface="EC_CONSOLE" drv="ec" map="onoff" />
         <params cmd="set" subtype="pdc_ccd_keepalive_en" interface="EC_CONSOLE" drv="ec" map="onoff" />
