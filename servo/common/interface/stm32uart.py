@@ -119,7 +119,9 @@ class Suart(uart.Uart):
 
     def reinitialize(self, reset_device=False):
         """Reinitialize the usb endpoint"""
-        self._susb.reset_usb(force=True, reset_device=reset_device)
+        if reset_device:
+            self._last_reinit_time = time.time()
+        self._susb.reset_usb(force=reset_device, reset_device=reset_device)
 
     def get_device_info(self):
         """The usb device information."""
@@ -137,7 +139,13 @@ class Suart(uart.Uart):
         if not hasattr(self, "_last_reinit_time"):
             self._last_reinit_time = 0
 
-        if now - self._last_reinit_time > 10:  # limit to once per 10s
+        devid = self.get_device_info()
+        dev_last_reset = stm32usb.Susb.DEV_LAST_RESET_TIME.get(devid, 0)
+        if not isinstance(dev_last_reset, (int, float)):
+            dev_last_reset = 0
+        last_reinit = max(self._last_reinit_time, dev_last_reset)
+
+        if now - last_reinit > 10:  # limit to once per 10s
             self._last_reinit_time = now
             self._logger.info("Attempting recovery reinitialization...")
             try:
@@ -148,6 +156,17 @@ class Suart(uart.Uart):
                 self._logger.error("Recovery reinitialization failed: %s", reinit_e)
         else:
             self._logger.debug("Skipping recovery reinit (throttled).")
+            soft_last = stm32usb.Susb.DEV_LAST_SOFT_REINIT_TIME.get(devid, 0)
+            if not isinstance(soft_last, (int, float)):
+                soft_last = 0
+            if self._susb.needs_rediscovery() and now - soft_last >= 1.0:
+                stm32usb.Susb.DEV_LAST_SOFT_REINIT_TIME[devid] = now
+                try:
+                    self._susb.reset_usb(force=False, reset_device=False)
+                except Exception as reinit_e:
+                    self._logger.debug(
+                        "Non-force reinitialization failed: %s", reinit_e
+                    )
         time.sleep(0.5)
 
     def run_rx_thread(self):
@@ -163,7 +182,7 @@ class Suart(uart.Uart):
                         r = self._susb.read_ep(256, self._susb.TIMEOUT_MS)
                     except usb.core.USBTimeoutError:
                         r = None
-                    except (OSError, usb.core.USBError) as e:
+                    except (OSError, usb.core.USBError, stm32usb.SusbError) as e:
                         self._handle_usb_error(e, "rx")
                         r = None
                     except Exception as e:
@@ -211,7 +230,11 @@ class Suart(uart.Uart):
                                     self._susb.write_ep(r, self._susb.TIMEOUT_MS)
                                 except usb.core.USBTimeoutError as e:
                                     self._handle_usb_error(e, "tx_timeout")
-                                except (IOError, usb.core.USBError) as e:
+                                except (
+                                    IOError,
+                                    usb.core.USBError,
+                                    stm32usb.SusbError,
+                                ) as e:
                                     if getattr(e, "errno", None) in (
                                         errno.ENODEV,
                                         errno.EIO,
@@ -224,17 +247,6 @@ class Suart(uart.Uart):
                                             self._susb._product,
                                             self._susb._interface,
                                         )
-                                        try:
-                                            self._susb.release()
-                                        except usb.core.USBError as release_e:
-                                            if getattr(
-                                                release_e, "errno", None
-                                            ) not in (errno.ENODEV, errno.EIO):
-                                                self._logger.exception(
-                                                    "tx release %s: %s",
-                                                    self.get_pty(),
-                                                    release_e,
-                                                )
                                         self._handle_usb_error(e, "tx_disconnect")
                                     else:
                                         self._handle_usb_error(e, "tx")

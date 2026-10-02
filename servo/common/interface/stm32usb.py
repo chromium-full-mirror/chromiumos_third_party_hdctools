@@ -1,11 +1,14 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Allows creation of an interface via stm32 usb."""
+
 import collections
 import contextlib
 import threading
 import time
+import weakref
 
 import usb
 
@@ -45,6 +48,10 @@ class Susb(interface.Interface):
     # The time after which to throw arms up when the lock acquisition fails.
     LOCK_TIMEOUT_S = 60
 
+    # Minimum time between hardware USB resets for the same physical USB device
+    # to avoid reset storms across sibling interfaces.
+    RESET_COOLDOWN_S = 10.0
+
     # Map to keep track of what stm32usb device had what usb devnum (address)
     # last time it was configured by anyone.
     DEV_CONFIG_MAP = {}
@@ -56,6 +63,13 @@ class Susb(interface.Interface):
     # Map to keep locks on a per device level. These locks are required so that
     # no two threads try to set the configuration at the same time.
     DEVICE_LOCKS = collections.defaultdict(threading.Lock)
+
+    # Per-device locks and state for coordinating USB resets and reinitializing
+    # all sibling Susb interfaces when a composite USB device is hardware-reset.
+    RESET_LOCKS = collections.defaultdict(threading.Lock)
+    DEV_LAST_RESET_TIME = collections.defaultdict(float)
+    DEV_LAST_SOFT_REINIT_TIME = collections.defaultdict(float)
+    DEV_INSTANCES = collections.defaultdict(weakref.WeakSet)
 
     # Device-level events used to signal when a thread is trying to reinitialize the
     # interface on a device. Since endpoints are being read in a (tight) loop like in
@@ -99,10 +113,14 @@ class Susb(interface.Interface):
         self._interface = interface_id
         self._serialname = serialname
         self._dev = None
+        self._is_released = False
+
+        devid = self.get_device_info()
+        self.DEV_INSTANCES[devid].add(self)
 
         # An event used to signal when a thread is trying to reinitialize the
         # interface. Only clear the flag when performing a reset.
-        self.REINIT_DONE_EVENTS[self.get_device_info()].set()
+        self.REINIT_DONE_EVENTS[devid].set()
         self._find_device()
 
     @contextlib.contextmanager
@@ -140,27 +158,106 @@ class Susb(interface.Interface):
 
     def reset_usb(self, force=False, reset_device=False):
         """Reinitialize USB based on the device based settings from __init__"""
-        # Signal that resetting is about to happen.
-        self.REINIT_DONE_EVENTS[self.get_device_info()].clear()
-        # Reading and writing is unavailable until the reset has finished.
-        with self._hold_lock(self._read_ep_lock):
-            with self._hold_lock(self._write_ep_lock):
+        devid = self.get_device_info()
+        with self._hold_lock(self.RESET_LOCKS[devid]):
+            if reset_device:
+                now = time.time()
+                last_reset = self.DEV_LAST_RESET_TIME[devid]
+                if last_reset and (now - last_reset) < self.RESET_COOLDOWN_S:
+                    self._logger.info(
+                        "Skipping duplicate USB hardware reset for %04x:%04x %s "
+                        "(last reset %.2fs ago).",
+                        self._vendor,
+                        self._product,
+                        self._serialname,
+                        now - last_reset,
+                    )
+                    reset_device = False
+                    force = False
+
+            # Signal that resetting is about to happen.
+            self.REINIT_DONE_EVENTS[devid].clear()
+            try:
                 if reset_device and self._dev:
-                    try:
-                        self._logger.info("Forcing USB device hardware reset...")
-                        self._dev.reset()
-                        time.sleep(1.0)
-                        # Force is implied if we reset the device
-                        force = True
-                    except usb.core.USBError as e:
-                        self._logger.warning("USB device hardware reset failed: %s", e)
-                self._find_device(force=force)
-        # Signal that resetting is done.
-        self.REINIT_DONE_EVENTS[self.get_device_info()].set()
+                    siblings = sorted(
+                        self.DEV_INSTANCES[devid],
+                        key=lambda inst: (inst._interface, id(inst)),
+                    )
+                    if self not in siblings:
+                        siblings.append(self)
+                    with contextlib.ExitStack() as stack:
+                        # 1. Drain in-flight read_ep/write_ep on all siblings.
+                        for inst in siblings:
+                            stack.enter_context(inst._hold_lock(inst._read_ep_lock))
+                            stack.enter_context(inst._hold_lock(inst._write_ep_lock))
+
+                        # 2. Issue hardware USB reset and wait for re-enumeration.
+                        try:
+                            self._logger.info("Forcing USB device hardware reset...")
+                            self._dev.reset()
+                        except usb.core.USBError as e:
+                            self._logger.warning(
+                                "USB device hardware reset failed: %s", e
+                            )
+                        finally:
+                            time.sleep(1.0)
+                        self.DEV_LAST_RESET_TIME[devid] = time.time()
+
+                        # 3. Dispose old pre-reset device handles on all siblings.
+                        for inst in siblings:
+                            if inst._dev:
+                                usb.util.dispose_resources(inst._dev)
+                                inst._dev = None
+                        self.DEV_CONFIG_MAP.pop(devid, None)
+                        self.DEV_EP_STORE.pop(devid, None)
+
+                        # 4. Re-discover device and re-claim/re-release interfaces.
+                        released_interfaces = set()
+                        first_err = None
+                        for inst in siblings:
+                            was_released = getattr(inst, "_is_released", False)
+                            try:
+                                inst._find_device(force=False)
+                                if (
+                                    was_released
+                                    and inst._dev
+                                    and inst._interface in self.DEV_EP_STORE[devid]
+                                ):
+                                    if inst._interface not in released_interfaces:
+                                        usb.util.release_interface(
+                                            inst._dev, inst._interface
+                                        )
+                                        released_interfaces.add(inst._interface)
+                                    inst._is_released = True
+                            except Exception as e:
+                                self._logger.error(
+                                    "Failed to reinitialize sibling interface %d: %s",
+                                    inst._interface,
+                                    e,
+                                )
+                                if first_err is None:
+                                    first_err = e
+                        if first_err is not None:
+                            raise first_err
+                else:
+                    # Reading and writing is unavailable until the reset has finished.
+                    with self._hold_lock(self._read_ep_lock):
+                        with self._hold_lock(self._write_ep_lock):
+                            self._find_device(force=force)
+            finally:
+                # Signal that resetting is done.
+                self.REINIT_DONE_EVENTS[devid].set()
 
     def get_device_info(self):
         """Returns a tuple (vid, pid, serialname)."""
         return DeviceInfo(self._vendor, self._product, self._serialname)
+
+    def needs_rediscovery(self):
+        """Returns True if this interface lost its USB handle or endpoints."""
+        devid = self.get_device_info()
+        return self._dev is None or self._interface not in self.DEV_EP_STORE.get(
+            devid, {}
+        )
 
     def _find_device(self, force=False):
         """Find device, setup configuration, and set up the usb endpoint"""
@@ -187,7 +284,11 @@ class Susb(interface.Interface):
         # leak this many file descriptors for once system, and if there is a better
         # way to clean up the resources than the way/workaround implemented here.
         if self._dev:
-            if self._dev.address != dev.address or force:
+            if (
+                self._dev.address != dev.address
+                or force
+                or self._interface not in self.DEV_EP_STORE[devid]
+            ):
                 # Dispose of the resources of the previously found device.
                 try:
                     usb.util.release_interface(self._dev, self._interface)
@@ -246,6 +347,7 @@ class Susb(interface.Interface):
             # Some servod interfaces share the same underlying USB interface. Only
             # one must claim it.
             usb.util.claim_interface(dev, self._interface)
+            self._is_released = False
 
             intf = usb.util.find_descriptor(cfg, bInterfaceNumber=self._interface)
 
@@ -277,6 +379,7 @@ class Susb(interface.Interface):
         with self._hold_lock(self._read_ep_lock):
             with self._hold_lock(self._write_ep_lock):
                 usb.util.release_interface(self._dev, self._interface)
+                self._is_released = True
         self._logger.debug("Released InterfaceNumber: %d", self._interface)
 
     def _get_ep(self, write=False):
@@ -345,6 +448,7 @@ class Susb(interface.Interface):
 
     def close(self):
         """Stm32usb release."""
+        self.DEV_INSTANCES[self.get_device_info()].discard(self)
         if self._dev:
             usb.util.dispose_resources(self._dev)
             self._dev = None

@@ -29,7 +29,7 @@ class TestEC3PO:
         mock_tty,
         unused_mock_termios,
         mock_sys,
-        mock_console_sys,
+        unused_mock_console_sys,
     ):
         mock_raw_uart = MagicMock()
         mock_raw_uart.get_pty.return_value = "/dev/pts/1"
@@ -111,6 +111,7 @@ class TestEC3PO:
         ec3po_instance = ec3po_interface.EC3PO()
         ec3po_instance._logger = MagicMock()
         ec3po_instance._raw_ec_uart = "/dev/pts/1"
+        ec3po_instance._source = "servo_v4p1"
         ec3po_instance._device_info = MagicMock(
             vid=0x18D1, pid=0x520D, serialname="123"
         )  # servo_v4p1
@@ -144,6 +145,7 @@ class TestEC3PO:
         ec3po_instance = ec3po_interface.EC3PO()
         ec3po_instance._logger = MagicMock()
         ec3po_instance._raw_ec_uart = "/dev/pts/1"
+        ec3po_instance._source = "servo_v4p1"
         ec3po_instance._device_info = MagicMock(
             vid=0x18D1, pid=0x5020, serialname="123"
         )  # sweetberry (not reinit capable)
@@ -166,3 +168,63 @@ class TestEC3PO:
 
         # Verify interface.reinitialize was called with reset_device=False (overridden)
         mock_interface.reinitialize.assert_called_once_with(reset_device=False)
+
+    @patch("servo.common.interface.ec3po_interface.EC3PO.__init__", return_value=None)
+    @patch("servo.common.interface.ec3po_interface.InterfaceUtils")
+    @patch("servo.common.interface.ec3po_interface.servo_dev_templates")
+    def test_reinitialize_dut_uart_source_disables_reset_device(
+        self, mock_templates, mock_utils, unused_mock_init
+    ):
+        for source in ("PD/Cr50", "Cr50", "H1", "EC", "CPU", "FPMCU"):
+            ec3po_instance = ec3po_interface.EC3PO()
+            ec3po_instance._logger = MagicMock()
+            ec3po_instance._raw_ec_uart = "/dev/pts/1"
+            ec3po_instance._source = source
+            ec3po_instance._device_info = MagicMock(
+                vid=0x18D1, pid=0x501A, serialname="MICRO-123"
+            )
+
+            mock_template = MagicMock()
+            mock_template.TYPE = "servo_micro"
+            mock_templates.get_template_class.return_value = mock_template
+            mock_templates.REINIT_CAPABLE_TYPES = {"servo_micro"}
+
+            mock_utils.get_interface_key.return_value = "key"
+            mock_interface = MagicMock()
+            mock_interface.name.return_value = "stm32_uart"
+            mock_interface.get_pty.return_value = "/dev/pts/1"
+            mock_utils._interface_dict = {"key": {"interface_list": [mock_interface]}}
+
+            ec3po_instance.reinitialize(reset_device=True)
+
+            mock_interface.reinitialize.assert_called_once_with(reset_device=False)
+
+    @patch("servo.common.interface.ec3po_interface.EC3PO.__init__", return_value=None)
+    @patch("servo.common.interface.ec3po_interface.InterfaceUtils")
+    @patch("servo.common.interface.ec3po_interface.servo_dev_templates")
+    def test_reinitialize_servo_console_source_allows_reset_device(
+        self, mock_templates, mock_utils, unused_mock_init
+    ):
+        for source in ("servo_v4", "servo_v4p1", "servo_micro", "c2d2"):
+            ec3po_instance = ec3po_interface.EC3PO()
+            ec3po_instance._logger = MagicMock()
+            ec3po_instance._raw_ec_uart = "/dev/pts/1"
+            ec3po_instance._source = source
+            ec3po_instance._device_info = MagicMock(
+                vid=0x18D1, pid=0x501A, serialname="MICRO-123"
+            )
+
+            mock_template = MagicMock()
+            mock_template.TYPE = "servo_micro"
+            mock_templates.get_template_class.return_value = mock_template
+            mock_templates.REINIT_CAPABLE_TYPES = {"servo_micro"}
+
+            mock_utils.get_interface_key.return_value = "key"
+            mock_interface = MagicMock()
+            mock_interface.name.return_value = "stm32_uart"
+            mock_interface.get_pty.return_value = "/dev/pts/1"
+            mock_utils._interface_dict = {"key": {"interface_list": [mock_interface]}}
+
+            ec3po_instance.reinitialize(reset_device=True)
+
+            mock_interface.reinitialize.assert_called_once_with(reset_device=True)
