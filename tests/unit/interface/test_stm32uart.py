@@ -139,7 +139,7 @@ class TestSuart:
         with patch("servo.common.interface.stm32uart.time.sleep"):
             suart.run_tx_thread()
 
-        suart._susb.release.assert_called_once()
+        suart._susb.release.assert_not_called()
 
     @patch("servo.common.interface.stm32uart.stm32usb.Susb")
     def test_set_uart_props(self, mock_susb):
@@ -199,3 +199,57 @@ class TestSuart:
         mock_sys.read.side_effect = Exception("test")
         with patch("servo.common.interface.stm32uart.time.sleep"):
             suart.run_tx_thread()  # Should log exception and continue
+
+    @patch("servo.common.interface.stm32uart.stm32usb.Susb")
+    def test_reinitialize_flags(self, mock_susb):
+        suart = stm32uart.Suart()
+        suart._susb = mock_susb.return_value
+
+        suart.reinitialize(reset_device=False)
+        suart._susb.reset_usb.assert_called_once_with(force=False, reset_device=False)
+
+        suart._susb.reset_usb.reset_mock()
+        suart.reinitialize(reset_device=True)
+        suart._susb.reset_usb.assert_called_once_with(force=True, reset_device=True)
+        assert suart._last_reinit_time > 0
+
+    @patch("servo.common.interface.stm32uart.time.sleep")
+    @patch("servo.common.interface.stm32uart.stm32usb.Susb")
+    def test_handle_usb_error_respects_device_reset_time(
+        self, mock_susb, unused_mock_sleep
+    ):
+        import time as real_time
+
+        suart = stm32uart.Suart()
+        suart._ptyname = "/dev/pts/1"
+        suart._susb = mock_susb.return_value
+        devid = ("18d1", "501a", "MICRO-123")
+        suart._susb.get_device_info.return_value = devid
+
+        # Simulate a sibling interface having just reset the USB device.
+        now = real_time.time()
+        mock_susb.DEV_LAST_RESET_TIME = {devid: now}
+        mock_susb.DEV_LAST_SOFT_REINIT_TIME = {}
+
+        # When the interface already has its handle/endpoints, do not run
+        # soft reset_usb while throttled.
+        suart._susb.needs_rediscovery.return_value = False
+        suart._handle_usb_error(usb.core.USBError("I/O error"), "rx")
+        suart._susb.reset_usb.assert_not_called()
+
+        # When the interface lost its handle/endpoints, run a soft reset_usb
+        # and rate-limit subsequent attempts on the same device to >= 1s.
+        suart._susb.needs_rediscovery.return_value = True
+        suart._handle_usb_error(usb.core.USBError("I/O error"), "rx")
+        suart._susb.reset_usb.assert_called_once_with(force=False, reset_device=False)
+
+        suart._susb.reset_usb.reset_mock()
+        suart._handle_usb_error(usb.core.USBError("I/O error"), "rx")
+        suart._susb.reset_usb.assert_not_called()
+
+        # Once the 10s cooldown has elapsed, recovery reset is allowed.
+        suart._susb.reset_usb.reset_mock()
+        mock_susb.DEV_LAST_RESET_TIME = {devid: real_time.time() - 20}
+        suart._last_reinit_time = 0
+        suart._handle_usb_error(usb.core.USBError("I/O error"), "rx")
+        suart._susb.reset_usb.assert_called_once_with(force=True, reset_device=True)

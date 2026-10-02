@@ -110,6 +110,12 @@ class EC3PO(uart.Uart):
     This includes both the interpreter and the console objects for one UART.
     """
 
+    # Servo MCU console UART sources. Only these UARTs represent the servo
+    # device's own MCU console; downstream DUT UARTs bridged through a servo
+    # (e.g. PD/Cr50, H1, EC, CPU, FPMCU) must not hardware-reset the servo USB
+    # device on command timeouts.
+    SERVO_CONSOLE_SOURCES = frozenset({"servo_v4", "servo_v4p1", "servo_micro", "c2d2"})
+
     def __init__(self, raw_ec_uart, source_name, device_info, token_db=None):
         """Provides the interface to the EC-3PO console interpreter.
 
@@ -406,6 +412,15 @@ class EC3PO(uart.Uart):
             self._logger.info("Reinitializing EC3PO interface (reset_device=True)...")
         else:
             self._logger.debug("Reinitializing EC3PO interface (reset_device=False)...")
+        if (
+            reset_device
+            and getattr(self, "_source", None) not in self.SERVO_CONSOLE_SOURCES
+        ):
+            self._logger.info(
+                "Skipping USB hardware reset for non-servo console UART source %r.",
+                getattr(self, "_source", None),
+            )
+            reset_device = False
         if reset_device:
             is_reinit_capable = False
             try:
