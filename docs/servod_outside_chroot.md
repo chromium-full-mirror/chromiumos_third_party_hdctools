@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD013 -->
 # Servod Outside of Chroot
 
 Current status: **Production**
@@ -94,6 +95,16 @@ your setup - this grep should prevent re-adding extra line to your .bashrc
 
 ```text
 grep "src/third_party/hdctools/scripts" ~/.bashrc || echo "export PATH=~/chromiumos/src/third_party/hdctools/scripts:\$PATH" >> ~/.bashrc
+```
+
+### Shell Auto-Completion (Bash and Zsh)
+
+To enable command-line tab completion for `start-servod`, `stop-servod`,
+`dut-control`, `servodtool`, and other tools, source `servod_completion.sh` in
+your shell configuration (`~/.bashrc` for Bash or `~/.zshrc` for Zsh):
+
+```bash
+source ~/chromiumos/src/third_party/hdctools/scripts/servod_completion.sh
 ```
 
 ## Quick start

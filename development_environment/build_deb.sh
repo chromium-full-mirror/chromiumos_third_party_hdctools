@@ -12,7 +12,9 @@ short_hash=$(git rev-parse --short HEAD || echo "localbuild")
 
 mkdir -p servod/usr/local/servod/development_environment
 mkdir -p servod/usr/local/servod/scripts
+mkdir -p servod/usr/local/servod/servo/data
 mkdir -p servod/usr/local/bin
+mkdir -p servod/etc/bash_completion.d
 mkdir servod/DEBIAN
 
 cd development_environment/
@@ -29,8 +31,13 @@ cd -
 cd scripts
 cp bootstrap.sh \
   Dockerfile.bootstrap \
+  servod_completion.sh \
   ../servod/usr/local/servod/scripts/
+ln -s /usr/local/servod/scripts/servod_completion.sh \
+  ../servod/etc/bash_completion.d/servod_completion.sh
 cd -
+
+cp servo/data/*.xml servod/usr/local/servod/servo/data/
 
 cd servod/usr/local/bin/
 ln -s /usr/local/servod/scripts/bootstrap.sh \
