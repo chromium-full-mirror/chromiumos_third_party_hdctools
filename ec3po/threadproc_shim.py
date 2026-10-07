@@ -63,6 +63,10 @@ class SocketConnection:
             raise TypeError(
                 "SocketConnection only supports sending bytes (to bypass pickling)."
             )
+        # Skip empty data to prevent the receiver's recv() from returning b'',
+        # which it interprets as an EOF (raising EOFError).
+        if not data:
+            return
         self._sock.sendall(data)
 
     def recv(self, maxsize=4096):
@@ -93,7 +97,10 @@ class SocketConnection:
 # pylint: disable=invalid-name
 def Pipe(duplex=True):
     """Returns a pair of connected SocketConnection objects."""
-    s1, s2 = socket.socketpair()
+    # Use SOCK_SEQPACKET to preserve message boundaries across send()/recv()
+    # calls (matching multiprocessing.Pipe semantics) rather than coalescing
+    # writes into an unframed byte stream.
+    s1, s2 = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
     if duplex:
         return SocketConnection(s1), SocketConnection(s2)
     # A non-duplex Pipe returns (read_only, write_only)

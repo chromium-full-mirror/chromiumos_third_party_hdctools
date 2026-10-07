@@ -387,6 +387,39 @@ class TestUARTDisconnection(unittest.TestCase):
         # outputs.
         self.assertFalse(self.itpr.ec_uart_pty in self.itpr.outputs)
 
+    def test_fakedisconnect_char_by_char_does_not_disconnect(self):
+        """Verify char-by-char 'fakedisconnect' does not coalesce into 'disconnect'."""
+        self.itpr.enhanced_ec = False
+
+        # Send 'fake' one byte at a time and process them.
+        for ch in b"fake":
+            self.cmd_pipe_user.send(bytes([ch]))
+            self.itpr.handle_user_data()
+
+        # Send 'disconnect' one byte at a time before the interpreter reads from
+        # cmd_pipe, reproducing the multi-threaded timing where console.py queues
+        # multiple 1-byte sends between interpreter epoll wakeups.
+        for ch in b"disconnect":
+            self.cmd_pipe_user.send(bytes([ch]))
+        while self.cmd_pipe_itpr.poll():
+            self.itpr.handle_user_data()
+
+        # Send the remainder of the command.
+        for ch in b" 100 2000\n":
+            self.cmd_pipe_user.send(bytes([ch]))
+        while self.cmd_pipe_itpr.poll():
+            self.itpr.handle_user_data()
+
+        # Verify the interpreter did not misinterpret the substring as an
+        # out-of-band 'disconnect' command.
+        self.assertTrue(self.itpr.connected)
+        self.assertFalse(self.itpr.explicitly_disconnected)
+
+        queued = []
+        while not self.itpr.ec_cmd_queue.empty():
+            queued.append(self.itpr.ec_cmd_queue.get())
+        self.assertEqual(b"fakedisconnect 100 2000\n", b"".join(queued))
+
 
 if __name__ == "__main__":
     unittest.main()
