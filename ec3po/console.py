@@ -1375,6 +1375,11 @@ def start_loop(console, command_active, shutdown_pipe=None):
                                     message = console.z_detokenizer.detokenize_text(
                                         chunk,
                                     )
+                                    if message == chunk:
+                                        # Failed to detokenize; retain the end delimiter
+                                        # so downstream log parsers know where the token
+                                        # ends.
+                                        message += TOKEN_SUFFIX
 
                                     message = message.replace(b"\n", b"\r\n")
                                     console.handle_debug_pipe_data(

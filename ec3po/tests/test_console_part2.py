@@ -6,6 +6,7 @@
 import multiprocessing
 import os
 import pty
+import select
 import unittest
 from unittest import mock
 
@@ -203,3 +204,47 @@ class TestConsoleMore(unittest.TestCase):
             console.main(["--log-level", "info", "fake_pty"])
 
             mock_loop.assert_called()
+
+    @mock.patch("ec3po.console.sys_interface")
+    @mock.patch("ec3po.console.select.epoll")
+    def test_start_loop_undecoded_token_preserves_delimiter(
+        self, mock_epoll, unused_mock_sys_intf
+    ):
+        c = mock.MagicMock()
+        c.interrogation_mode = b"never"
+        c.is_tokenized = True
+        c.decoder.read_messages.return_value = [
+            (True, b"`unknown_token"),
+            (False, b"~RTK0: CCI=0\r\n"),
+        ]
+        mock_detok = mock.MagicMock()
+        mock_detok.detokenize_text.side_effect = lambda chunk: chunk
+        c.z_detokenizer = mock_detok
+
+        epoll_outer = mock.MagicMock()
+        epoll_inner = mock.MagicMock()
+        epoll_inner_2 = mock.MagicMock()
+        mock_epoll.side_effect = [epoll_outer, epoll_inner, epoll_inner_2]
+
+        epoll_outer.poll.return_value = []
+        epoll_inner.poll.return_value = [(14, select.EPOLLIN)]
+        epoll_inner.__enter__.return_value = epoll_inner
+        epoll_inner_2.poll.return_value = [(14, select.EPOLLIN)]
+        epoll_inner_2.__enter__.return_value = epoll_inner_2
+
+        c.dbg_pipe.fileno.return_value = 14
+        c.dbg_pipe.recv.side_effect = [
+            b"`unknown_token~RTK0: CCI=0\r\n",
+            EOFError(),
+        ]
+        command_active = multiprocessing.Value("b", False)
+
+        console.start_loop(c, command_active)
+
+        self.assertEqual(
+            c.handle_debug_pipe_data.call_args_list,
+            [
+                mock.call(b"`unknown_token~", True, False),
+                mock.call(b"RTK0: CCI=0\r\n", True, False),
+            ],
+        )
