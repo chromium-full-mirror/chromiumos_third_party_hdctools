@@ -8,6 +8,8 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+import usb
+
 from servo.common.interface.stm32usb import DeviceInfo
 from servo.common.interface.stm32usb import EPInfo
 from servo.common.interface.stm32usb import Susb
@@ -249,6 +251,132 @@ class TestSusbClass(unittest.TestCase):
         }
         self.susb._dev = None
         self.assertTrue(self.susb.needs_rediscovery())
+
+    def _setup_cdc_acm_device(
+        self, mock_find_descriptor, mock_get_usb_device, comm_class, ep_addresses
+    ):
+        """Simulate a Zephyr CDC-ACM device: comm intf 0 + data intf 1.
+
+        Args:
+          mock_find_descriptor: patched usb.util.find_descriptor
+          mock_get_usb_device: patched Hierarchy.get_usb_device
+          comm_class: bInterfaceClass of USB interface 0
+          ep_addresses: bulk endpoint addresses on the data interface (1)
+
+        Returns:
+          (dev, endpoints) mocks
+        """
+        dev = MagicMock()
+        dev.address = 42
+        dev.is_kernel_driver_active.return_value = True
+        mock_get_usb_device.return_value = dev
+
+        interfaces = {0: MagicMock(), 1: MagicMock()}
+        interfaces[0].bInterfaceNumber = 0
+        interfaces[0].bInterfaceClass = comm_class
+        interfaces[1].bInterfaceNumber = 1
+        interfaces[1].bInterfaceClass = usb.CLASS_DATA
+
+        endpoints = []
+        for address in ep_addresses:
+            ep = MagicMock()
+            ep.bEndpointAddress = address
+            ep.bmAttributes = usb.util.ENDPOINT_TYPE_BULK
+            endpoints.append(ep)
+
+        def find_descriptor(_desc, **kwargs):
+            if "bInterfaceNumber" in kwargs:
+                return interfaces.get(kwargs["bInterfaceNumber"])
+            if "bEndpointAddress" in kwargs:
+                for ep in endpoints:
+                    if ep.bEndpointAddress == kwargs["bEndpointAddress"]:
+                        return ep
+                return None
+            for ep in endpoints:
+                if kwargs["custom_match"](ep):
+                    return ep
+            return None
+
+        mock_find_descriptor.side_effect = find_descriptor
+        return dev, endpoints
+
+    def _new_maui_susb(self, serial):
+        return Susb(
+            vendor=0x18D1,
+            product=0x5085,
+            interface_id=1,
+            serialname=serial,
+            logger=MagicMock(),
+        )
+
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
+    @patch("usb.util.claim_interface")
+    @patch("usb.util.find_descriptor")
+    def test_susb_find_device_cdc_acm_it82002(
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
+    ):
+        # Maui v1.2 (IT82002): bulk IN 0x83 does not match 1+0x81, OUT 0x02 does.
+        dev, (ep_in, ep_out) = self._setup_cdc_acm_device(
+            mock_find_descriptor, mock_get_usb_device, usb.CLASS_COMM, (0x83, 0x02)
+        )
+        susb = self._new_maui_susb("MAUI_IT82002")
+
+        eps = susb.DEV_EP_STORE[susb.get_device_info()][1]
+        self.assertEqual(eps.read_ep, ep_in)
+        self.assertEqual(eps.write_ep, ep_out)
+        dev.detach_kernel_driver.assert_any_call(0)
+        mock_claim_interface.assert_any_call(dev, 0)
+        mock_claim_interface.assert_any_call(dev, 1)
+        dev.ctrl_transfer.assert_called_once_with(
+            bmRequestType=0x21,
+            bRequest=0x22,
+            wValue=0x03,
+            wIndex=0,
+        )
+
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
+    @patch("usb.util.claim_interface")
+    @patch("usb.util.find_descriptor")
+    def test_susb_find_device_cdc_acm_mspm0(
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
+    ):
+        # Maui v1.1 (MSPM0): bulk IN 0x82 matches 1+0x81, OUT 0x01 does not.
+        dev, (ep_in, ep_out) = self._setup_cdc_acm_device(
+            mock_find_descriptor, mock_get_usb_device, usb.CLASS_COMM, (0x82, 0x01)
+        )
+        susb = self._new_maui_susb("MAUI_MSPM0")
+
+        eps = susb.DEV_EP_STORE[susb.get_device_info()][1]
+        self.assertEqual(eps.read_ep, ep_in)
+        self.assertEqual(eps.write_ep, ep_out)
+        dev.ctrl_transfer.assert_called_once()
+
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
+    @patch("usb.util.claim_interface")
+    @patch("usb.util.find_descriptor")
+    def test_susb_find_device_cdc_data_without_comm_interface(
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
+    ):
+        # Interface N-1 is not a CDC Communications interface: no DTR request.
+        dev, _ = self._setup_cdc_acm_device(
+            mock_find_descriptor, mock_get_usb_device, 0xFF, (0x83, 0x02)
+        )
+        self._new_maui_susb("MAUI_NO_COMM")
+
+        dev.ctrl_transfer.assert_not_called()
+        mock_claim_interface.assert_called_once_with(dev, 1)
+
+    @patch("servo.utils.usb_hierarchy.Hierarchy.get_usb_device")
+    @patch("usb.util.claim_interface")
+    @patch("usb.util.find_descriptor")
+    def test_susb_find_device_missing_endpoint(
+        self, mock_find_descriptor, mock_claim_interface, mock_get_usb_device
+    ):
+        self._setup_cdc_acm_device(
+            mock_find_descriptor, mock_get_usb_device, usb.CLASS_COMM, (0x83,)
+        )
+        with self.assertRaises(SusbError):
+            self._new_maui_susb("MAUI_NO_OUT_EP")
 
 
 if __name__ == "__main__":

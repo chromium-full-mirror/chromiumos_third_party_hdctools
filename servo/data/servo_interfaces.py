@@ -290,6 +290,15 @@ for vid, pid in MAUI_PROTO_DEFAULTS:
         {"name": "ftdi_uart", "interface": 0},  # 1: UART
     ]
 
+# Maui native USB (v1.1 MSPM0 / v1.2 IT82002), Zephyr CDC-ACM.
+# USB interfaces 0/1 are the shell (comm/data), 2/3 the "Maui RPC" channel.
+MAUI_DEFAULTS = [(0x18D1, 0x5085)]
+for vid, pid in MAUI_DEFAULTS:
+    INTERFACE_DEFAULTS[vid][pid] = [
+        "empty",
+        {"name": "stm32_uart", "interface": 1},  # 1: Maui shell (CDC data)
+    ]
+
 # Fluffy
 FLUFFY_ID_DEFAULTS = [(0x18D1, 0x503B)]
 for vid, pid in FLUFFY_ID_DEFAULTS:

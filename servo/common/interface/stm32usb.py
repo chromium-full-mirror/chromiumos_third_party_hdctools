@@ -42,6 +42,11 @@ class Susb(interface.Interface):
     WRITE_ENDPOINT = 0x1
     TIMEOUT_MS = 100
 
+    # USB CDC-ACM class request and line state (DTR | RTS) used to tell
+    # standard CDC-ACM devices (e.g. Zephyr based Maui) that a host is attached.
+    CDC_SET_CONTROL_LINE_STATE = 0x22
+    CDC_LINE_STATE_DTR_RTS = 0x03
+
     # Timeout to let a device debounce before trying to communicate with it again.
     DEV_DEBOUNCE_S = 0.1
 
@@ -353,12 +358,19 @@ class Susb(interface.Interface):
 
             self._logger.debug("InterfaceNumber: %s", intf.bInterfaceNumber)
 
-            read_ep_number = intf.bInterfaceNumber + self.READ_ENDPOINT
-            read_ep = usb.util.find_descriptor(intf, bEndpointAddress=read_ep_number)
+            if intf.bInterfaceClass == usb.CLASS_DATA:
+                self._set_cdc_line_state(dev, cfg)
+
+            read_ep = self._find_ep(
+                intf, intf.bInterfaceNumber + self.READ_ENDPOINT, usb.util.ENDPOINT_IN
+            )
             self._logger.debug("Reader endpoint: 0x%x", read_ep.bEndpointAddress)
 
-            write_ep_number = intf.bInterfaceNumber + self.WRITE_ENDPOINT
-            write_ep = usb.util.find_descriptor(intf, bEndpointAddress=write_ep_number)
+            write_ep = self._find_ep(
+                intf,
+                intf.bInterfaceNumber + self.WRITE_ENDPOINT,
+                usb.util.ENDPOINT_OUT,
+            )
             self._logger.debug("Writer endpoint: 0x%x", write_ep.bEndpointAddress)
 
             self.DEV_EP_STORE[devid][self._interface] = EPInfo(
@@ -366,6 +378,91 @@ class Susb(interface.Interface):
             )
 
             self._logger.debug("Set up stm32 usb")
+
+    def _find_ep(self, intf, ep_address, direction):
+        """Find the endpoint |ep_address| on |intf|.
+
+        CrOS EC USB streams use endpoint N+0x81/N+0x01 for interface N. Standard
+        CDC-ACM devices (e.g. Zephyr based Maui) number endpoints differently,
+        so fall back to the first bulk endpoint of |direction| on the interface.
+
+        Args:
+          intf: pyUSB interface descriptor
+          ep_address: expected bEndpointAddress
+          direction: usb.util.ENDPOINT_IN or usb.util.ENDPOINT_OUT
+
+        Returns:
+          pyUSB endpoint descriptor
+
+        Raises:
+          SusbError: if no matching endpoint exists
+        """
+        ep = usb.util.find_descriptor(intf, bEndpointAddress=ep_address)
+        if ep is None:
+            ep = usb.util.find_descriptor(
+                intf,
+                custom_match=lambda e: (
+                    usb.util.endpoint_direction(e.bEndpointAddress) == direction
+                    and usb.util.endpoint_type(e.bmAttributes)
+                    == usb.util.ENDPOINT_TYPE_BULK
+                ),
+            )
+        if ep is None:
+            raise SusbError(
+                "No %s endpoint found on interface %d"
+                % (
+                    "IN" if direction == usb.util.ENDPOINT_IN else "OUT",
+                    intf.bInterfaceNumber,
+                )
+            )
+        return ep
+
+    def _set_cdc_line_state(self, dev, cfg):
+        """Assert DTR/RTS on the CDC Communications interface paired with ours.
+
+        Standard CDC-ACM functions consist of a Communications interface (N-1)
+        followed by a Data interface (N). Zephyr shells built with
+        CONFIG_SHELL_BACKEND_SERIAL_CHECK_DTR hold all output until DTR is set,
+        which normally happens when the kernel cdc_acm driver opens the tty.
+        Since servod drives the Data interface directly, do it here.
+
+        Args:
+          dev: pyUSB device
+          cfg: active pyUSB configuration of |dev|
+        """
+        comm_iface = self._interface - 1
+        comm = (
+            usb.util.find_descriptor(cfg, bInterfaceNumber=comm_iface)
+            if comm_iface >= 0
+            else None
+        )
+        if comm is None or comm.bInterfaceClass != usb.CLASS_COMM:
+            self._logger.debug(
+                "No CDC Communications interface paired with interface %d",
+                self._interface,
+            )
+            return
+        try:
+            if dev.is_kernel_driver_active(comm_iface):
+                dev.detach_kernel_driver(comm_iface)
+            usb.util.claim_interface(dev, comm_iface)
+            dev.ctrl_transfer(
+                bmRequestType=(
+                    usb.util.CTRL_OUT
+                    | usb.util.CTRL_TYPE_CLASS
+                    | usb.util.CTRL_RECIPIENT_INTERFACE
+                ),
+                bRequest=self.CDC_SET_CONTROL_LINE_STATE,
+                wValue=self.CDC_LINE_STATE_DTR_RTS,
+                wIndex=comm_iface,
+            )
+        except usb.core.USBError as e:
+            self._logger.warning(
+                "Failed to set CDC DTR/RTS on interface %d, console output may "
+                "be held by the device: %s",
+                comm_iface,
+                e,
+            )
 
     def release(self):
         devid = self.get_device_info()

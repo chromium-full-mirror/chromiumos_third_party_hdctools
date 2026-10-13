@@ -242,5 +242,6 @@ REINIT_CAPABLE_TYPES = set(
         "servo_v4p1",
         "servo_micro",
         "c2d2",
+        "maui_v1",
     ]
 )
