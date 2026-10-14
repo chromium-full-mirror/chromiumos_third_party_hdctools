@@ -132,7 +132,7 @@ class Scratch:
         """Mark entry at |identifier| as active."""
         entry = self.find_by_id(identifier)
         if entry[ACTIVE_ENTRY_KEY]:
-            self._logger.info("Entry at %r already marked active.")
+            self._logger.info("Entry at %r already marked active.", identifier)
         else:
             entry[ACTIVE_ENTRY_KEY] = True
             self._write_entry(entry)

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import codecs
 import http.server
 import logging
 import os
@@ -149,7 +148,7 @@ class HttpRequestHandler:
             return
 
         # Open the html file as text
-        html_reader = codecs.open(VISUALIZATION_RELEASE_HTML_FILE_PATH, "r")
+        html_reader = open(VISUALIZATION_RELEASE_HTML_FILE_PATH, "r", encoding="utf-8")
         html_content = html_reader.read()
 
         # Find the place we are going to insert our sample data
@@ -170,7 +169,7 @@ class HttpRequestHandler:
         save_html_path = save_path + "/" + RELEASE_HTML
 
         # Create the file and write the text
-        save_html_reader = codecs.open(save_html_path, "w")
+        save_html_reader = open(save_html_path, "w", encoding="utf-8")
         save_html_reader.write(save_data)
 
         self._logger.info("Save the release.html in %s", save_html_path)
