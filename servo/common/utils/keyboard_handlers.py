@@ -1460,6 +1460,100 @@ class ChromeMatrix30Handler(ChromeECHandler):
         self.open()
 
 
+class HorusMatrix21Handler(ChromeECHandler):
+    """To support scan matrix horus v2.1, add key matrix here."""
+
+    KEY_MATRIX = {
+        # key: (row, col)
+        "`": (6, 11),
+        "1": (3, 14),
+        "2": (2, 9),
+        "3": (2, 5),
+        "4": (6, 4),
+        "5": (3, 16),
+        "6": (7, 5),
+        "7": (5, 4),
+        "8": (2, 6),
+        "9": (2, 10),
+        "0": (7, 8),
+        "-": (3, 8),
+        "=": (7, 11),
+        "q": (6, 12),
+        "w": (7, 4),
+        "e": (5, 8),
+        "r": (7, 6),
+        "t": (3, 7),
+        "y": (0, 13),
+        "u": (5, 7),
+        "i": (0, 0),
+        "o": (1, 12),
+        "p": (1, 4),
+        "[": (2, 16),
+        "]": (0, 1),
+        "\\": (5, 1),
+        "a": (4, 7),
+        "s": (5, 6),
+        "d": (0, 14),
+        "f": (5, 10),
+        "g": (2, 8),
+        "h": (5, 11),
+        "j": (4, 9),
+        "k": (7, 16),
+        "l": (3, 4),
+        ";": (6, 10),
+        "'": (6, 13),
+        "z": (7, 9),
+        "x": (5, 5),
+        "c": (7, 13),
+        "v": (7, 10),
+        "b": (2, 14),
+        "n": (0, 4),
+        "m": (5, 13),
+        ",": (6, 9),
+        ".": (7, 7),
+        "/": (3, 3),
+        " ": (5, 3),
+        "<right>": (1, 17),
+        "<left>": (0, 15),
+        "<down>": (5, 16),
+        "<up>": (2, 11),
+        "<tab>": (5, 15),
+        "<shift_r>": (6, 17),
+        "<shift_l>": (1, 0),
+        "<esc>": (1, 1),
+        "<backspace>": (0, 5),
+        "<alt_r>": (0, 10),
+        "<alt_l>": (6, 2),
+        "<ctrl_r>": (4, 0),
+        "<ctrl_l>": (2, 1),
+        "<f1>": (0, 2),
+        "<f2>": (3, 2),
+        "<f3>": (7, 15),
+        "<f4>": (1, 13),
+        "<f5>": (0, 9),
+        "<f6>": (2, 3),
+        "<f7>": (0, 7),
+        "<f8>": (3, 12),
+        "<f9>": (0, 8),
+        "<f10>": (4, 15),
+        "<f11>": (0, 11),
+        "<f12>": (0, 12),
+        "<f13>": (6, 7),
+        "<f14>": (6, 1),
+        "<f15>": (0, 6),
+        "<enter>": (7, 17),
+    }
+
+    def __init__(self, grpc_core_addr):
+        """Sets up the servo communication infrastructure.
+
+        @param servo: A Servo object representing
+                           the host running servod.
+        """
+        super().__init__(grpc_core_addr)
+        self.open()
+
+
 class USBkm232Handler(_BaseHandler):
     """Keyboard handler for devices without internal keyboard."""
 
