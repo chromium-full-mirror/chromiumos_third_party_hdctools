@@ -125,6 +125,44 @@ def test_uart_capture_function(
     assert "overflow" not in u._capture_buffer  # Dropped due to overflow
 
 
+@unittest.mock.patch("servo.common.interface.uart.MAX_BUFFER_SIZE", 2)
+@unittest.mock.patch("servo.common.interface.uart.os.open", return_value=10)
+@unittest.mock.patch("servo.common.interface.uart.os.read")
+@unittest.mock.patch("servo.common.interface.uart.os.close")
+@unittest.mock.patch("servo.common.interface.uart.termios.tcgetattr")
+@unittest.mock.patch("servo.common.interface.uart.termios.tcsetattr")
+@unittest.mock.patch("servo.common.interface.uart.tty.setraw")
+def test_uart_capture_function_overflow_marker(
+    unused_mock_setraw,
+    unused_mock_tcsetattr,
+    unused_mock_tcgetattr,
+    unused_mock_close,
+    mock_read,
+    unused_mock_open,
+):
+    u = uart.Uart()
+    u._capture_active = True
+    u.get_pty = unittest.mock.MagicMock(return_value="/dev/null")
+    reads = [b"a", b"b", b"c", b"d", b"e"]
+
+    def read_side_effect(*unused_args):
+        data = reads.pop(0)
+        if not reads:
+            u._capture_active = False
+        return data
+
+    mock_read.side_effect = read_side_effect
+
+    u._capture_function()
+
+    # 'a' and 'b' fill the buffer; 'c', 'd' and 'e' are dropped.
+    assert u._capture_buffer == [
+        "a",
+        "b",
+        "\n\n........capture buffer overflow........\n\n",
+    ]
+
+
 def test_uart_capture_function_oserror():
     u = uart.Uart()
     u._capture_active = True

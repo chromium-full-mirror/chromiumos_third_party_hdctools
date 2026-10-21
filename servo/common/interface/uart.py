@@ -117,7 +117,7 @@ class Uart(interface.Interface):
                 self._capture_buffer.append(
                     data.decode(encoding="utf-8", errors="ignore")
                 )
-            elif buffer_overflow:
+            elif not buffer_overflow:
                 self._capture_buffer.append(
                     "\n\n........capture buffer overflow........\n\n"
                 )
