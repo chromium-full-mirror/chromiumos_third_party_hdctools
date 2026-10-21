@@ -1,0 +1,86 @@
+<root>
+  <include>
+    <name>arm_ec_common.xml</name>
+  </include>
+  <include>
+    <name>ti50.xml</name>
+  </include>
+  <include>
+    <name>pdc_ccd_keepalive.xml</name>
+  </include>
+  <include>
+    <name>gsc_chassis_open.xml</name>
+  </include>
+  <include>
+    <name>gsc_lid_open.xml</name>
+  </include>
+  <include>
+    <name>gsc_reset_pch_disable.xml</name>
+  </include>
+  <include>
+    <!-- TODO(b/576181629): Enable USB3 once proven to work properly -->
+    <name>dut_usb3_disabled.xml</name>
+  </include>
+  <!-- ******** Controls ******** -->
+  <control>
+    <name>power_state</name>
+    <doc>Used to turn the DUT off and on</doc>
+    <params drv="cros_ec_softrec_power" clobber_ok="patch" shutdown_delay="4.5"
+    apreset_ec_commands="apreset" warm_reset_can_hold_ap="no"/>
+  </control>
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="ite_i2c"/>
+  </control>
+  <!--
+    Use the power sequence to emulate the legacy servo warm_reset pin.
+    Send the power sequence command to the EC UART.
+  -->
+  <control>
+    <name>warm_reset</name>
+    <doc>warm_reset</doc>
+    <params subtype="warm_reset" interface="EC_CONSOLE" drv="ec"
+    map="onoff_i" clobber_ok="full"/>
+  </control>
+  <control>
+    <name>dev_mode</name>
+    <alias>servo_spi_programming</alias>
+    <doc>Controls the SPI mux that switches between AP or GSC+Servo access to AP SPI flash.</doc>
+    <params clobber_ok="patch" od="PP" map="onoff" init="off"/>
+  </control>
+  <control>
+    <name>cpu_fw_spi</name>
+    <params clobber_ok="full" interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>cold_reset:on</item>
+            <item>servo_spi_programming:on</item>
+            <item>spi2_buf_en:on</item>
+            <item>spi2_vref:off</item>
+            <item>spi_hold:off</item>
+          </item>
+          <item key="0">
+            <item>spi2_buf_en:off</item>
+            <item>spi2_vref:off</item>
+            <item>spi_hold:off</item>
+            <item>servo_spi_programming:off</item>
+            <item>cold_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>dut_pd_data_role</name>
+    <params clobber_ok="patch" pdc="yes"/>
+  </control>
+  <control>
+    <name>init_keyboard</name>
+    <doc>initialize keyboard handler</doc>
+    <params map="onoff" init="on" drv="kb_handler_init" interface="servo"
+      subtype="init_default_keyboard" handler_type="ChromeMatrix30" clobber_ok="full"/>
+  </control>
+</root>
