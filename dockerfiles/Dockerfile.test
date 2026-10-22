@@ -8,6 +8,7 @@ ARG BASE_IMG=servod:dev
 FROM ${BASE_IMG}
 
 RUN apt-get update --no-install-recommends \
+    && apt-get -y dist-upgrade \
     && apt-get install -y --no-install-recommends \
     python3-pytest \
     python3-pytest-cov \
@@ -20,8 +21,6 @@ RUN apt-get update --no-install-recommends \
     python3-pip \
     build-essential \
     pkg-config \
-    libftdi1-dev \
-    libusb-1.0-0-dev \
     git \
     pylint
 

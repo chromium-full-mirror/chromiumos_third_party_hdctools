@@ -55,7 +55,10 @@ RUN python3 setup.py bdist_wheel
 
 ######################################################################
 FROM ${BASE_IMG}
-RUN apt-get update && apt-get install -y --no-install-recommends sudo && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+    && apt-get -y dist-upgrade \
+    && apt-get install -y --no-install-recommends sudo \
+    && rm -rf /var/lib/apt/lists/*
 
 
 WORKDIR /hdctools/chromeos/
