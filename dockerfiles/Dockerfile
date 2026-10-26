@@ -56,6 +56,7 @@ RUN python3 setup.py bdist_wheel
 ######################################################################
 FROM ${BASE_IMG}
 RUN apt-get update \
+    && apt-mark hold fwupd hdctools-docker-fake \
     && apt-get -y dist-upgrade \
     && apt-get install -y --no-install-recommends sudo \
     && rm -rf /var/lib/apt/lists/*
