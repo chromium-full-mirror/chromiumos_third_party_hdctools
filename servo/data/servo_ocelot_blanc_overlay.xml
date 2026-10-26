@@ -1,0 +1,12 @@
+<root>
+  <include>
+    <name>servo_ocelot_overlay.xml</name>
+  </include>
+  <!-- Blanc uses the Nuvoton NPCX9 (npcx9m7f) EC. -->
+  <control>
+    <name>ec_chip</name>
+    <doc>EC chip name (read-only)</doc>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="npcx_uut"/>
+  </control>
+</root>
