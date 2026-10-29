@@ -3,10 +3,13 @@
 # found in the LICENSE file.
 # pylint: disable=line-too-long
 
+import ast
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+from ec3po import console
 from servo.common.interface import ec3po_interface
+from servo.common.interface import uart
 
 
 class TestEC3PO:
@@ -228,3 +231,54 @@ class TestEC3PO:
             ec3po_instance.reinitialize(reset_device=True)
 
             mock_interface.reinitialize.assert_called_once_with(reset_device=True)
+
+
+class TestEC3POCapture:
+    """UART capture behaviour of EC3PO (b/451584953, b/575738169)."""
+
+    @staticmethod
+    def _make():
+        # Bypass __init__, which spawns the console/interpreter threads.
+        inst = ec3po_interface.EC3PO.__new__(ec3po_interface.EC3PO)
+        inst._logger = MagicMock()
+        inst._capture = console.CaptureState(ec3po_interface.CAPTURE_LIMIT_CHARS)
+        return inst
+
+    def test_capture_readback(self):
+        # Regression for b/451584953: autotest and DTS UartCapture read the
+        # control back after setting it and skip the UART if it isn't 'on'.
+        inst = self._make()
+        assert inst.get_capture_active() == 0
+        inst.set_capture_active(1)
+        assert inst.get_capture_active() == 1
+        inst.set_capture_active(0)
+        assert inst.get_capture_active() == 0
+
+    def test_get_stream_is_repr_str(self):
+        inst = self._make()
+        inst.set_capture_active(1)
+        inst._capture.append(b"Chip: H1\r\n'quote'")
+        stream = inst.get_stream()
+        assert isinstance(stream, str)
+        assert ast.literal_eval(stream) == "Chip: H1\r\n'quote'"
+        assert ast.literal_eval(inst.get_stream()) == ""
+
+    def test_get_stream_returns_tail_after_capture_off(self):
+        # autotest Servo.close() stops capture before dumping the stream.
+        inst = self._make()
+        inst.set_capture_active(1)
+        inst._capture.append(b"tail")
+        inst.set_capture_active(0)
+        assert ast.literal_eval(inst.get_stream()) == "tail"
+
+    def test_get_stream_inactive_empty(self):
+        inst = self._make()
+        assert inst.get_stream() == repr("")
+
+    def test_get_stream_overflow_marker(self):
+        inst = self._make()
+        inst._capture.limit = 3
+        inst.set_capture_active(1)
+        inst._capture.append(b"abc")
+        inst._capture.append(b"d")
+        assert ast.literal_eval(inst.get_stream()) == "abc" + uart.BUFFER_OVERFLOW_STR

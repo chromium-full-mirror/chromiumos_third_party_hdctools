@@ -25,6 +25,7 @@ import select
 import socket
 import stat
 import sys
+import threading
 from typing import Union
 
 
@@ -115,6 +116,76 @@ class ControlKey:
     ESC = 0x1B
 
 
+class CaptureState:
+    """Shared state for UART stream capture.
+
+    The console thread appends a copy of everything it presents to the user
+    PTY, so programmatic capture (*_uart_capture / *_uart_stream) never competes
+    with an interactive terminal (e.g. minicom, cu) for bytes on the user PTY.
+
+    Attributes:
+      lock: Protects all other attributes.
+      chunks: Captured output strings, oldest first.
+      active: True while capture is enabled.
+      size: Total number of characters held in chunks.
+      limit: Maximum number of characters to hold in chunks.
+      overflowed: True if data was dropped since the last drain.
+    """
+
+    def __init__(self, limit: int):
+        self.lock = threading.Lock()
+        self.chunks = []
+        self.active = False
+        self.size = 0
+        self.limit = limit
+        self.overflowed = False
+
+    def append(self, data: bytes) -> None:
+        """Append data to the capture buffer if capture is active.
+
+        Once data has been dropped, everything is dropped until the next
+        drain() or re-enable, so the captured stream never has a silent gap
+        before the overflow marker.
+        """
+        with self.lock:
+            if not self.active:
+                return
+            text = data.decode(encoding="utf-8", errors="ignore")
+            if not self.overflowed and self.size + len(text) <= self.limit:
+                self.chunks.append(text)
+                self.size += len(text)
+            else:
+                self.overflowed = True
+
+    def set_active(self, active: bool) -> None:
+        """Enable or disable capture; stale data is cleared on enable."""
+        with self.lock:
+            if active and not self.active:
+                self.chunks.clear()
+                self.size = 0
+                self.overflowed = False
+            self.active = bool(active)
+
+    def drain(self, overflow_marker: str = "") -> str:
+        """Return and clear all captured data.
+
+        Data remains drainable after capture is disabled, so the tail of a
+        capture can still be collected after *_uart_capture:off.
+
+        Args:
+          overflow_marker: String appended if data was dropped since the last
+            drain.
+        """
+        with self.lock:
+            text = "".join(self.chunks)
+            self.chunks.clear()
+            self.size = 0
+            if self.overflowed:
+                text += overflow_marker
+                self.overflowed = False
+            return text
+
+
 class Console:
     """Class which provides the console interface between the EC and the user.
 
@@ -173,6 +244,7 @@ class Console:
         dbg_pipe: multiprocessing.connection.Connection,
         name: Union[str, None] = None,
         token_db: Union[str, None] = None,
+        capture: Union[CaptureState, None] = None,
     ):
         """Initializes a Console object with the provided arguments.
 
@@ -190,6 +262,9 @@ class Console:
           this pipe.
         name: The console source name.
         token_db: Path to token database, None if tokenization is disabled.
+        capture: Optional shared CaptureState. While active, it receives a copy
+          of all output presented on the user PTY, whether or not a user is
+          connected.
         """
         # Create a unique logger based on the console name
         console_prefix = ("%s - " % (name,)) if name else ""
@@ -223,6 +298,7 @@ class Console:
         self.decoder = None
         self.is_tokenized = False
         self.token_db = None
+        self.capture = capture
 
         # Set non-blocking flags on the PTYs to prevent deadlocks on write.
         for fd in [self.controller_pty, self.interface_pty]:
@@ -238,9 +314,17 @@ class Console:
         If the write blocks (EAGAIN/EWOULDBLOCK), it will discard the remaining
         data to prevent deadlocking the console process.
 
+        Everything written to the user PTY (controller_pty) is also mirrored to
+        the UART stream capture while it is active, including output generated
+        by the console itself (local echo, prompts, line editing, OOBM).
+
         Returns:
             The number of bytes written.
         """
+        if fd == self.controller_pty and self.capture_active():
+            # Capture before writing, so a slow or stalled terminal can't cause
+            # data loss in the capture.
+            self.capture.append(data)
         written = 0
         try:
             while data:
@@ -1116,18 +1200,26 @@ class Console:
         # Move the sliding window.
         self.look_buffer = self.look_buffer[-LOOK_BUFFER_SIZE:]
 
-    def send_to_controller(self, data: bytes):
-        """Send data to controller pty.
+    def capture_active(self) -> bool:
+        """Returns True if UART stream capture is currently active."""
+        capture = getattr(self, "capture", None)
+        return capture is not None and capture.active
+
+    def format_output(self, data: bytes) -> bytes:
+        """Insert host timestamps into data destined for the user PTY.
 
         Args:
-        data: bytes to send to controller pty.
+        data: bytes from the EC.
+
+        Returns:
+          The bytes to present, with any timestamps inserted.
         """
+        chunks = []
         if self.timestamp_enabled:
             # A timestamp is required at the beginning of this line
             if self.tm_req:
                 now = datetime.now()
-                tm = canonicalize_time_string(now.strftime(HOST_STRFTIME))
-                self._write(self.controller_pty, tm)
+                chunks.append(canonicalize_time_string(now.strftime(HOST_STRFTIME)))
                 self.tm_req = False
 
             # Insert timestamps into the middle where appropriate
@@ -1135,14 +1227,24 @@ class Console:
             nls_found = data.count(b"\n", 0, -1)
             now = datetime.now()
             tm = canonicalize_time_string(now.strftime("\n" + HOST_STRFTIME))
-            data_tm = data.replace(b"\n", tm, nls_found)
+            chunks.append(data.replace(b"\n", tm, nls_found))
         else:
-            data_tm = data
+            chunks.append(data)
 
         # timestamp required on next input
         if data[-1:] == b"\n":
             self.tm_req = True
-        self._write(self.controller_pty, data_tm)
+        return b"".join(chunks)
+
+    def send_to_controller(self, data: bytes):
+        """Send data to controller pty.
+
+        Args:
+        data: bytes to send to controller pty.
+        """
+        # One write, so the capture (mirrored by _write()) always gets the
+        # timestamp and its line together, even if the write fails.
+        self._write(self.controller_pty, self.format_output(data))
 
     def handle_debug_pipe_data(self, data: bytes, controller_connected, command_active):
         """Handle data coming from debug pipe.
@@ -1161,9 +1263,18 @@ class Console:
         self.log_console_output(data)
         if controller_connected:
             try:
+                # _write() mirrors user PTY output into the capture.
                 self.send_to_controller(data)
             except OSError as e:
                 self.logger.debug("Failed sending to controller_pty: %s", e)
+        elif self.capture_active():
+            # No terminal attached: format exactly as the user PTY would show
+            # it and capture it without touching the PTY.
+            self.capture.append(self.format_output(data))
+        elif data[-1:] == b"\n":
+            # Nothing presents this data, but keep the line state, so the first
+            # line after capture is enabled or a terminal attaches is stamped.
+            self.tm_req = True
 
         if command_active:
             try:
@@ -1339,11 +1450,14 @@ def start_loop(console, command_active, shutdown_pipe=None):
                             )
                         if controller_connected:
                             try:
+                                # _write() mirrors this into the capture.
                                 console._write(console.controller_pty, data)
                             except OSError as e:
                                 console.logger.debug(
                                     "Failed writing controller_pty: %s", e
                                 )
+                        elif console.capture_active():
+                            console.capture.append(data)
                         if command_active.value:
                             try:
                                 console._write(console.interface_pty, data)

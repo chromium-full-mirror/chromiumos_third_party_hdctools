@@ -87,8 +87,21 @@ class TestConsoleMore(unittest.TestCase):
         "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
     )
     def test_send_to_controller(self, mock_write):
+        self.console.timestamp_enabled = False
         self.console.send_to_controller(b"hello")
-        mock_write.assert_called_with(self.primary_pty, b"hello")
+        mock_write.assert_called_once_with(self.primary_pty, b"hello")
+
+    @mock.patch(
+        "ec3po.console.sys_interface.write", side_effect=lambda fd, data: len(data)
+    )
+    def test_send_to_controller_single_write_with_timestamp(self, mock_write):
+        self.console.timestamp_enabled = True
+        self.console.tm_req = True
+        self.console.send_to_controller(b"hello")
+        mock_write.assert_called_once()
+        fd, data = mock_write.call_args.args
+        self.assertEqual(fd, self.primary_pty)
+        self.assertRegex(data, rb"^\d\d-\d\d-\d\d \d\d:\d\d:\d\d\.\d\d\d hello$")
 
     def test_check_buffer_for_enhanced_image(self):
         # Should set enhanced_ec to True if it finds a match
@@ -125,6 +138,7 @@ class TestConsoleMore(unittest.TestCase):
         class MockCommandActive:
             value = True
 
+        self.console.timestamp_enabled = False
         self.console.handle_debug_pipe_data(
             b"some debug data", True, MockCommandActive()
         )

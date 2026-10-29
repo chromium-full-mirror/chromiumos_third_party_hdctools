@@ -16,6 +16,9 @@ MAX_BUFFER_SIZE = 500000  # Do not keep more than this number of bytes
 
 # when capturing.
 
+# Appended to the captured stream when data had to be dropped.
+BUFFER_OVERFLOW_STR = "\n\n........capture buffer overflow........\n\n"
+
 
 class UartDefaultException(Exception):
     """Default exception type if no alternative is supplied."""
@@ -118,9 +121,7 @@ class Uart(interface.Interface):
                     data.decode(encoding="utf-8", errors="ignore")
                 )
             elif not buffer_overflow:
-                self._capture_buffer.append(
-                    "\n\n........capture buffer overflow........\n\n"
-                )
+                self._capture_buffer.append(BUFFER_OVERFLOW_STR)
                 buffer_overflow = True
             self._capture_lock.release()
         termios.tcsetattr(uart_fd, termios.TCSANOW, saved_conf)
@@ -227,6 +228,11 @@ class Uart(interface.Interface):
 
     def set_capture_active(self, activate):
         """Enable/disable the capture mode on this interface.
+
+        Note that this capture mechanism reads the PTY returned by get_pty(), so
+        it competes with any other program reading the same PTY (e.g. minicom),
+        and data is lost from both readers. Interfaces that can observe their
+        output before it reaches the PTY (e.g. EC3PO) override this.
 
         Args:
           activate: a Boolean, indicating whether capture should be activated or

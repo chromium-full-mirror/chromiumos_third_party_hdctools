@@ -38,6 +38,11 @@ from servo.utils.sys_interface import sys_interface
 DeviceInfo = collections.namedtuple("DeviceInfo", ("vid", "pid", "serialname"))
 EC_TOKENS_CONTROL = "uses_cros_ec_tokens"
 EC_TOKENS_VALUES = {"never": False, "always": True}
+# Max characters buffered per console between *_uart_stream reads. Enough for
+# hours of console output for tests that only read the stream at the end (DTS
+# UartCapture, autotest servo._Uart.dump()), while bounding servod memory and
+# XML-RPC payload size on labstations running many servod instances.
+CAPTURE_LIMIT_CHARS = 10_000_000
 
 
 def _run_callbacks(*callbacks):
@@ -140,6 +145,11 @@ class EC3PO(uart.Uart):
         # The debug pipe is unidirectional from interpreter to console only.
         dbg_pipe_interactive, dbg_pipe_interp = threadproc_shim.Pipe(duplex=False)
 
+        # Shared UART stream capture state. The console thread copies its user
+        # PTY output here while capture is active, so *_uart_capture does not
+        # compete with interactive terminals for bytes on the user PTY.
+        self._capture = console.CaptureState(CAPTURE_LIMIT_CHARS)
+
         # Use a separate shutdown notification pipe for each subprocess or thread
         # because there is no guarantee that multiple select()/poll()/epoll()
         # pollers would be woken upon blocked->unblocked transition.
@@ -241,6 +251,7 @@ class EC3PO(uart.Uart):
             dbg_pipe_interactive,
             self._source,
             token_db=self._token_db,
+            capture=self._capture,
         )
         self._console = new_console
         new_console._logger = logging.getLogger("Console")
@@ -505,6 +516,40 @@ class EC3PO(uart.Uart):
         """Returns 1 if timestamps are enabled. 0 if they're disabled."""
         # Use an int, so the onoff map can handle it.
         return int(self._console.timestamp_enabled)
+
+    def set_capture_active(self, activate):
+        """Enable or disable UART stream capture.
+
+        Overrides uart.Uart, which reads the user PTY and therefore competes
+        with interactive terminals (minicom, cu, ...) for bytes. Instead, the
+        console thread copies exactly what it presents on the user PTY into
+        self._capture, whether or not a terminal is attached.
+
+        Args:
+          activate: a Boolean, indicating whether capture should be activated or
+                    deactivated
+        """
+        self._logger.debug("EC3PO capture set to %s", activate)
+        self._capture.set_active(activate)
+
+    def get_capture_active(self):
+        """Returns state of the 'capture_active' control for this interface.
+
+        Overrides uart.Uart, so self._capture is the single source of truth.
+
+        Returns:
+          Current capture mode expressed as an integer (0 or 1)
+        """
+        return int(self._capture.active)
+
+    def get_stream(self):
+        """Return UART stream accumulated since last time.
+
+        Returns:
+          repr() of the captured string, matching uart.Uart.get_stream(). Data
+          captured before capture was disabled is still returned.
+        """
+        return repr(self._capture.drain(uart.BUFFER_OVERFLOW_STR))
 
     def set_token_db(self, path):
         """Set token DB path or toggle tokenized decoding.
