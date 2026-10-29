@@ -95,6 +95,11 @@
   </control>
 
   <control>
+    <name>ccd_ec_boot_mode_bitbang</name>
+    <params clobber_ok="patch" map="onoff" init="off"></params>
+  </control>
+
+  <control>
     <name>dev_mode</name>
     <params clobber_ok="patch" od="PP" map="onoff"></params>
   </control>

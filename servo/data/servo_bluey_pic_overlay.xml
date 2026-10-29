@@ -8,4 +8,9 @@
     <doc>Control SERVO_EC_FLASH_SEL pin.</doc>
     <params clobber_ok="patch" od="PU" map="onoff_i" init="off"></params>
   </control>
+
+  <control>
+    <name>ccd_ec_boot_mode_bitbang</name>
+    <params clobber_ok="patch" map="onoff" init="off"></params>
+  </control>
 </root>
