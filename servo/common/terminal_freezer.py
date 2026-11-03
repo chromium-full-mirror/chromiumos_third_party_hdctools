@@ -1,8 +1,8 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Terminal Freezer utility"""
 
+"""Terminal Freezer utility"""
 
 import logging
 import os
@@ -54,7 +54,8 @@ class TerminalFreezer:
         servod_processes = []
         for p in self._processes:
             with open("/proc/%s/cmdline" % p, encoding="utf-8") as f:
-                if "servod" in f.readline():
+                cmdline = f.readline()
+                if "servod" in cmdline or "grpc_server_setup" in cmdline:
                     servod_processes.append(p)
 
         self._logger.debug("servod processes: %r", servod_processes)

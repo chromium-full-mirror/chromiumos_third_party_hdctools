@@ -82,6 +82,28 @@ def test_terminal_freezer_ignores_servod(
         mock_kill.assert_not_called()
 
 
+@mock.patch(
+    "builtins.open",
+    mock.mock_open(
+        read_data=(
+            "/usr/bin/python3"
+            " /usr/local/lib/python3.11/dist-packages"
+            "/servo/data/grpc_server/grpc_server_setup.py\n"
+        )
+    ),
+)
+def test_terminal_freezer_ignores_servod_data(
+    mock_sys_interface: mock.MagicMock,
+    mock_kill: mock.MagicMock,
+    unused_mock_sleep: mock.MagicMock,
+) -> None:
+    mock_sys_interface.check_output.return_value = "p1234\n"
+    tf = terminal_freezer.TerminalFreezer("/dev/pts/1")
+
+    with tf:
+        mock_kill.assert_not_called()
+
+
 @mock.patch("builtins.open", mock.mock_open(read_data="bash\n"))
 def test_terminal_freezer_lsof_fails(mock_sys_interface, mock_kill, unused_mock_sleep):
     mock_sys_interface.check_output.side_effect = subprocess.CalledProcessError(
