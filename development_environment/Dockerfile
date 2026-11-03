@@ -7,7 +7,9 @@ FROM debian:trixie AS base
 ARG USER
 ARG USERID
 
-RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
+RUN apt-get -yq update \
+    && apt-get -yq dist-upgrade \
+    && apt-get install --no-install-recommends -yq \
     apt-transport-https \
     ca-certificates \
     wget \
@@ -37,7 +39,8 @@ RUN echo \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
   tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
+RUN apt-get -yq update \
+    && apt-get install --no-install-recommends -yq \
     black \
     code \
     containerd.io \
@@ -47,7 +50,7 @@ RUN apt-get -yq update && apt-get install --no-install-recommends -yq \
     docker-compose-plugin \
     flake8 \
     git-core \
-    google-cloud-sdk \
+    google-cloud-cli \
     isort \
     libasound2 \
     libusb-dev \
