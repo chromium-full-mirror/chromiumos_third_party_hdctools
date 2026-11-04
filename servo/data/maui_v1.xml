@@ -3,6 +3,11 @@
   <include>
     <name>common.xml</name>
   </include>
+  <map>
+    <name>maui_onoffcycle</name>
+    <doc>DUT power/data action: off, on, or cycle (off, then on again)</doc>
+    <params off="0" on="1" cycle="2"></params>
+  </map>
   <control>
     <name>ftdi_status</name>
     <alias>ftdi_status,maui_status</alias>
@@ -15,5 +20,102 @@
     <alias>maui_uart_pty</alias>
     <doc>Maui UART console</doc>
     <params cmd="get" subtype="pty" interface="1" drv="uart"></params>
+  </control>
+  <!-- DUT power / data -->
+  <control>
+    <name>dut_power</name>
+    <alias>maui_dut_power</alias>
+    <doc>Turn DUT power (VBUS on the Maui DUT port) off/on, or cycle it.
+    Returns as soon as the Maui accepted the request; for 'cycle' the PDC
+    turns power back on by itself about 1s later. Cutting power may also
+    disconnect DUT USB devices behind the Maui (e.g. CCD). servod shuts down if
+    such a device stays away (about 40s with default settings), so run e.g.
+    'dut-control watchdog_remove:ccd_gsc' first.</doc>
+    <!-- TODO(b/581690742): add a getter. Maui firmware has no 'power_dut status';
+         until it does, the state could be derived from
+         'adc read PPVAR_USB_DUT_VBUS'. -->
+    <params cmd="get" interface="1" drv="na"></params>
+    <params cmd="set" subtype="dut_power" interface="1" drv="maui"
+    map="maui_onoffcycle" timeout="10.0"></params>
+  </control>
+  <control>
+    <name>dut_data</name>
+    <alias>maui_dut_data</alias>
+    <doc>Connect/disconnect the DUT USB2+USB3 data path (and the H2H bridge),
+    or cycle it. 'cycle' returns as soon as it started; data is connected
+    again about 1.3s later and the Maui shell is busy until then.
+    Disconnecting drops DUT USB devices behind the Maui (e.g. CCD). servod
+    shuts down if such a device stays away (about 40s with default settings),
+    so run e.g. 'dut-control watchdog_remove:ccd_gsc' first.</doc>
+    <!-- TODO(b/581690742): add a getter. Maui firmware has no 'data_dut status';
+         until it does, the state could be derived from
+         'gpio get usb3_mux_dut_oe_r_l'. -->
+    <params cmd="get" interface="1" drv="na"></params>
+    <params cmd="set" subtype="dut_data" interface="1" drv="maui"
+    map="maui_onoffcycle" timeout="5.0"></params>
+  </control>
+  <!-- Read-only info -->
+  <control>
+    <name>maui_hwrev</name>
+    <doc>Maui hardware revision id (-1 if it could not be read)</doc>
+    <params cmd="get" subtype="text" interface="1" drv="maui"
+    uart_cmd="hwrev" regex="Hardware revision: (-?\d+)" group="1"></params>
+  </control>
+  <control>
+    <name>maui_temp</name>
+    <doc>Maui board temperature in degrees C</doc>
+    <params cmd="get" subtype="text" interface="1" drv="maui"
+    uart_cmd="temp" regex="Temperature = (-?[\d.]+) 'C" group="1"></params>
+  </control>
+  <control>
+    <name>maui_dut_vbus_mv</name>
+    <doc>Measured VBUS on the Maui DUT port in mV</doc>
+    <params cmd="get" subtype="text" interface="1" drv="maui"
+    uart_cmd="adc read PPVAR_USB_DUT_VBUS"
+    regex="\[PPVAR_USB_DUT_VBUS\] = (-?\d+) mV" group="1"></params>
+  </control>
+  <control>
+    <name>maui_chg_vbus_mv</name>
+    <doc>Measured VBUS on the Maui charger port in mV</doc>
+    <params cmd="get" subtype="text" interface="1" drv="maui"
+    uart_cmd="adc read PPVAR_USB_CHG_VBUS"
+    regex="\[PPVAR_USB_CHG_VBUS\] = (-?\d+) mV" group="1"></params>
+  </control>
+  <!-- Generic console access (same pattern as c2d2/cr50) -->
+  <control>
+    <name>maui_uart_cmd</name>
+    <doc>Send a command to the Maui shell; see maui_uart_regexp</doc>
+    <params subtype="uart_cmd" interface="1" drv="uart" input_type="str"
+    tags="servo_cmd_ctrl"></params>
+  </control>
+  <control>
+    <name>maui_uart_timeout</name>
+    <doc>Timeout in seconds for maui_uart_cmd responses</doc>
+    <params subtype="uart_timeout" interface="1" drv="uart"
+    input_type="float"></params>
+  </control>
+  <control>
+    <name>maui_uart_multicmd</name>
+    <doc>Send ';'-separated commands to the Maui shell</doc>
+    <params interface="1" drv="na" cmd="get"></params>
+    <params subtype="uart_multicmd" interface="1" drv="uart" input_type="str"
+    cmd="set"></params>
+  </control>
+  <control>
+    <name>maui_uart_regexp</name>
+    <doc>List of regexes to match the maui_uart_cmd response</doc>
+    <params subtype="uart_regexp" interface="1" drv="uart"
+    input_type="str" cmd="set"></params>
+  </control>
+  <control>
+    <name>maui_uart_capture</name>
+    <doc>Enable/disable capturing Maui console output</doc>
+    <params subtype="uart_capture" interface="1" drv="uart"
+    map="onoff"></params>
+  </control>
+  <control>
+    <name>maui_uart_stream</name>
+    <doc>Maui console output captured while maui_uart_capture is on</doc>
+    <params cmd="get" subtype="uart_stream" interface="1" drv="uart"></params>
   </control>
 </root>

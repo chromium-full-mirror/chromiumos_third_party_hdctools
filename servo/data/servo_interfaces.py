@@ -290,7 +290,8 @@ for vid, pid in MAUI_PROTO_DEFAULTS:
         {"name": "ftdi_uart", "interface": 0},  # 1: UART
     ]
 
-# Maui native USB (v1.1 MSPM0 / v1.2 IT82002), Zephyr CDC-ACM.
+# Maui native USB (ITE IT82002: v1.2, v2.0), Zephyr CDC-ACM. Maui proto/v1.1
+# (MSPM0) use an FTDI USB-UART instead, see MAUI_PROTO_DEFAULTS.
 # USB interfaces 0/1 are the shell (comm/data), 2/3 the "Maui RPC" channel.
 MAUI_DEFAULTS = [(0x18D1, 0x5085)]
 for vid, pid in MAUI_DEFAULTS:
