@@ -76,6 +76,7 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
         self._ec_reboot_wait_ext_delay = float(
             self._params.get("ec_reboot_wait_ext_delay", 0.1)
         )
+        self._pre_ec_reset_cmd = self._params.get("pre_ec_reset_cmd", "")
         self._on = "on"
         self._off = "off"
 
@@ -150,6 +151,9 @@ class crosEcSoftrecPower(cros_ec_power.CrosECPower):
                         )
                         time.sleep(self._warm_reset_ec_jump_to_rw_delay)
                 ap_off_option = "ap-off-in-ro" if efs2 else "ap-off"
+                if self._pre_ec_reset_cmd:
+                    self._servod_set("ec_uart_regexp", "None")
+                    self._servod_set("ec_uart_cmd", self._pre_ec_reset_cmd)
                 try:
                     if self._wait_ext_is_fake:
                         raise Exception("wait-ext isn't supported")

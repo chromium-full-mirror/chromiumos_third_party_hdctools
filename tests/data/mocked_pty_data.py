@@ -99,6 +99,7 @@ MOCKED_EC_PD_CONSOLE_DATA = {
     b"sysinfo": b"sysinfo\r\nReset flags: 0x00001802 (reset-pin hard ap-off)\r\nCopy:   RO\r\nJumped: no\r\nFlags:  unlocked\r\n> ",
     b"temps": b"temps\r\n  Charger             : 308 K = 35 C\r\n  SOC                 : 307 K = 34 C\r\n  CPU                 : 296 K = 23 C\r\n> ",
     b"version": b"version\r\nChip:    Nuvoton NPCX796F A.07\r\nboard:   6\r\nRO:      aleena_v2.1.333-a6ea0bc7f\r\nRW:      aleena_v2.1.333-a6ea0bc7f\r\nbuild:   aleena_v2.1.333-a6ea0bc7f\r\n         2021-02-04 04:05:36 @chromeos-ci-factory-us-central1-b-x32-0-9ql5\r\n> ",
+    b"wdt disable watchdog@4000c000": b"\r\n> ",
 }
 
 MOCKED_SERVO41_I2C_DATA = {
@@ -313,6 +314,7 @@ MOCKED_SERVO_MICRO_EC_DATA = {
     b"powerinfo": b"powerinfo\r\n[424278.745078 power state 3 = S0, in 0x000f]\r\n> ",
     b"power on": b"",
     b"version": b"version\r\nChip:    Nuvoton NPCX796F A.07\r\nboard:   6\r\nRO:      aleena_v2.1.333-a6ea0bc7f\r\nRW:      aleena_v2.1.333-a6ea0bc7f\r\nbuild:   aleena_v2.1.333-a6ea0bc7f\r\n         2021-02-04 04:05:36 @chromeos-ci-factory-us-central1-b-x32-0-9ql5\r\n> ",
+    b"wdt disable watchdog@4000c000": b"",
 }
 
 MOCKED_C2D2_H1_CONSOLE_DATA = {

@@ -74,3 +74,26 @@ class TestCrosEcSoftrecPower(unittest.TestCase):
             time_out=DEFAULT_UART_TIMEOUT,
             prefix=self.drv._prefix,
         )
+
+    @unittest.mock.patch("time.sleep")
+    def test_power_on_rec_on_runs_pre_ec_reset_cmd(self, mock_sleep):
+        """Test that pre_ec_reset_cmd is issued before reboot wait-ext."""
+        intfc = mock.Mock()
+        params = {
+            "cmd": "set",
+            "pre_ec_reset_cmd": "wdt disable watchdog@4000c000",
+        }
+        drv = cros_ec_softrec_power.crosEcSoftrecPower(
+            ("localhost", 9999), ("localhost", 9999), intfc, params
+        )
+        drv._driver_client = unittest.mock.MagicMock()
+        drv._servod_get = unittest.mock.MagicMock(return_value="0")
+        drv._servod_set = unittest.mock.MagicMock()
+        drv._servod_has_control = unittest.mock.MagicMock(return_value=False)
+        drv._cold_reset = unittest.mock.MagicMock()
+        drv._power_on_ap = unittest.mock.MagicMock()
+
+        drv._power_on_bytype(drv.REC_ON, drv._REC_TYPE_REC_ON)
+
+        drv._servod_set.assert_any_call("ec_uart_regexp", "None")
+        drv._servod_set.assert_any_call("ec_uart_cmd", "wdt disable watchdog@4000c000")

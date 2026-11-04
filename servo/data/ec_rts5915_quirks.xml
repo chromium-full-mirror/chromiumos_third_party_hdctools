@@ -1,6 +1,61 @@
 <root>
   <!-- ******** Controls ******** -->
   <control>
+    <name>ccd_wdt_cold_reset</name>
+    <doc>Disable RTK EC watchdog before asserting GSC cold reset.</doc>
+    <params interface="servo" drv="macro" map="onoff">
+      <content>
+        <item key="get_controls">
+          <item>gsc_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>gsc_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <!-- [RTK EC] disable watchdog b/502343064, b/559869950 -->
+            <item>ec_uart_regexp:None</item>
+            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+            <item>gsc_cold_reset:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>gsc_locked_cold_reset</name>
+    <doc>Disable RTK EC watchdog, pulse gsc ecrst, and assert flex cold_reset.</doc>
+    <params interface="servo" drv="macro" map="onoff" clobber_ok="full">
+      <content>
+        <item key="get_controls">
+          <item>default_cold_reset</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>default_cold_reset:off</item>
+          </item>
+          <item key="1">
+            <!-- [RTK EC] disable watchdog b/502343064, b/559869950 -->
+            <item>ec_uart_regexp:None</item>
+            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+            <item>default_cold_reset:on</item>
+            <item>gsc_ecrst_pulse:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
+    <name>cold_reset_select</name>
+    <params servo_init="gsc_locked_cold_reset" c2d2_init="gsc_reset"
+    ccd_init="ccd_wdt_cold_reset" init="servo_specific" clobber_ok="patch"/>
+  </control>
+  <control>
+    <name>power_state</name>
+    <params clobber_ok="patch"
+    pre_ec_reset_cmd="wdt disable watchdog@4000c000"/>
+  </control>
+  <control>
     <name>ccd_cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
     <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
@@ -8,6 +63,7 @@
         <item key="macro_map">
           <item key="1">
             <!-- [RTK EC] disable watchdog b/502343064 -->
+            <item>ec_uart_regexp:None</item>
             <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
             <!-- Reset the EC; see b/375444551 comment #50 -->
             <item>gsc_uart_regexp:None</item>
