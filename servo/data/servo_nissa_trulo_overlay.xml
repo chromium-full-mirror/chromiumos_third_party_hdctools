@@ -18,6 +18,47 @@
   <!-- ******** Controls ******** -->
 
   <control>
+    <name>ccd_cpu_fw_spi</name>
+    <doc>Enable SPI mode for flashing AP firmware over CCD</doc>
+    <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
+      <content>
+        <item key="macro_map">
+          <item key="1">
+            <item>gsc_ec_reset:on</item>
+            <item>ap_flash_select:on</item>
+            <!-- Let EC reset, the AP_FLASH_SELECT SPI mux switch, and trailing
+            UART output settle before closing ec3po consoles and starting SPI
+            transfers. -->
+            <item>sleep:1</item>
+            <!-- Disconnect ec3po consoles so servod stops polling Ti50 USB UART
+            endpoints and contending with raiden_debug_spi USB SPI traffic on
+            the servo hub's USB 2.0 Transaction Translator (TT). -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>fpmcu_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
+          </item>
+          <item key="0">
+            <!-- Reconnect GSC console for ap_flash_select:off and
+            gsc_ec_reset:off, and reconnect AP/EC/FPMCU consoles before
+            releasing EC reset so early boot logs and ec_system_powerstate are
+            available immediately. -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>fpmcu_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
+            <!-- Let the reconnected GSC console settle after SPI flashing
+            before sending GSC commands to avoid GSC UART I/O errors. -->
+            <item>sleep:1</item>
+            <item>ap_flash_select:off</item>
+            <item>gsc_ec_reset:off</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+
+  <control>
     <name>cpu_fw_spi</name>
     <doc>Enable SPI mode for flashing AP firmware over direct SPI connection</doc>
     <params drv="macro" interface="servo" map="onoff" clobber_ok="full">
