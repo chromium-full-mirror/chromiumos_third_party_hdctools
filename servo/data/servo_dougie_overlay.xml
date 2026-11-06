@@ -32,7 +32,7 @@
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
     <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
-    drv="cros_chip" chip="ite_i2c"/>
+    drv="cros_chip" chip="ite_uart"/>
   </control>
   <!--
     Use the power sequence to emulate the legacy servo warm_reset pin.
