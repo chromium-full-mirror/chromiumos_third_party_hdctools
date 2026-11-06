@@ -30,8 +30,7 @@
           </item>
           <item key="1">
             <!-- [RTK EC] disable watchdog b/502343064, b/559869950 -->
-            <item>ec_uart_regexp:None</item>
-            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+            <item>ec_watchdog:off</item>
             <item>gsc_cold_reset:on</item>
           </item>
         </item>
@@ -52,8 +51,7 @@
           </item>
           <item key="1">
             <!-- [RTK EC] disable watchdog b/502343064, b/559869950 -->
-            <item>ec_uart_regexp:None</item>
-            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+            <item>ec_watchdog:off</item>
             <item>default_cold_reset:on</item>
             <item>gsc_ecrst_pulse:on</item>
           </item>
@@ -79,8 +77,7 @@
         <item key="macro_map">
           <item key="1">
             <!-- [RTK EC] disable watchdog b/502343064 -->
-            <item>ec_uart_regexp:None</item>
-            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+            <item>ec_watchdog:off</item>
             <!-- Reset the EC; see b/375444551 comment #50 -->
             <item>gsc_uart_regexp:None</item>
             <item>gsc_ec_reset:on</item>
