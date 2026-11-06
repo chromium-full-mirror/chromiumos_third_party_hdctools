@@ -1,6 +1,22 @@
 <root>
   <!-- ******** Controls ******** -->
   <control>
+    <name>ec_watchdog</name>
+    <doc>Disable RTK EC watchdog</doc>
+    <params cmd="get" interface="EC_CONSOLE" drv="na"></params>
+    <params cmd="set" interface="servo" drv="macro" input_type="str">
+      <content>
+        <item key="macro_map">
+          <item key="off">
+            <!-- [RTK EC] disable watchdog b/502343064, b/559869950 -->
+            <item>ec_uart_regexp:None</item>
+            <item>ec_uart_cmd:wdt disable watchdog@4000c000</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
     <name>ccd_wdt_cold_reset</name>
     <doc>Disable RTK EC watchdog before asserting GSC cold reset.</doc>
     <params interface="servo" drv="macro" map="onoff">
