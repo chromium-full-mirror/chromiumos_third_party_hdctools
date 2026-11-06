@@ -38,6 +38,28 @@
     </params>
   </control>
   <control>
+    <name>gsc_reset</name>
+    <alias>cr50_reset_odl,h1_reset</alias>
+    <doc>Disable RTK EC watchdog before resetting the GSC</doc>
+    <params interface="servo" drv="macro" map="onoff" clobber_ok="full">
+      <content>
+        <item key="get_controls">
+          <item>pch_disable</item>
+        </item>
+        <item key="macro_map">
+          <item key="0">
+            <item>pch_disable:off</item>
+          </item>
+          <item key="1">
+            <!-- [RTK EC] disable watchdog b/502343064, b/559869950 -->
+            <item>ec_watchdog:off</item>
+            <item>pch_disable:on</item>
+          </item>
+        </item>
+      </content>
+    </params>
+  </control>
+  <control>
     <name>gsc_locked_cold_reset</name>
     <doc>Disable RTK EC watchdog, pulse gsc ecrst, and assert flex cold_reset.</doc>
     <params interface="servo" drv="macro" map="onoff" clobber_ok="full">
