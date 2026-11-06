@@ -166,4 +166,9 @@
     <doc>Returns "yes" or "no" of whether ccd_cpu_fw_spi control depends on DUT EC firmware cooperation. See https://issuetracker.google.com/269804618 for background. This control is only meaningful when ccd_cpu_fw_spi control exists.</doc>
     <params drv="echo" value="no" interface="servo"/>
   </control>
+  <control>
+    <name>ite_dbgr_preserve_pin</name>
+    <doc>ITE EC GPIO port/pin (e.g. "G1" or "G4") preserved across I2C DFU GPIO reset, or empty string if none.</doc>
+    <params cmd="get" drv="echo" value="" interface="servo"/>
+  </control>
 </root>

@@ -72,4 +72,9 @@
     <doc>Controls a mux on Rauru that switches between AP or GSC+Servo access to AP SPI flash.</doc>
     <params clobber_ok="patch" od="PP" map="onoff" init="off" />
   </control>
+  <control>
+    <name>ite_dbgr_preserve_pin</name>
+    <doc>Preserve GPIOG4 (IT82202 internal KGD eflash rail enable) during ITE EC I2C DFU flashing on Rauru boards.</doc>
+    <params clobber_ok="full" cmd="get" drv="echo" value="G4" interface="servo"/>
+  </control>
 </root>

@@ -46,4 +46,9 @@
       warm_reset:off"
       />
   </control>
+  <control>
+    <name>ite_dbgr_preserve_pin</name>
+    <doc>Preserve GPIOG1 (AP_RST_L) during ITE EC I2C DFU flashing on Corsola/Staryu boards.</doc>
+    <params clobber_ok="full" cmd="get" drv="echo" value="G1" interface="servo"/>
+  </control>
 </root>
