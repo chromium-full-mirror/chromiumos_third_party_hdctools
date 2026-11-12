@@ -64,8 +64,8 @@
   <control>
     <name>ec_chip</name>
     <doc>EC chip name (read-only)</doc>
-    <params clobber_ok="" cmd="get" interface="EC_CONSOLE" drv="simple_ec" uart_cmd="version"
-      regex="Chip:\s+\S+\s+(npcx|it82102)\S*\s" group="1" map="ec_chip_map"/>
+    <params clobber_ok="full" cmd="get" subtype="chip" interface="servo"
+    drv="cros_chip" chip="ite_uart" />
   </control>
   <control>
     <name>dut_pd_data_role</name>
