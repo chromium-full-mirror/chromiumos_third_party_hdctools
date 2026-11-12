@@ -1,6 +1,6 @@
 <root>
   <include>
-    <name>servo_skywalker_overlay.xml</name>
+    <name>servo_skywalker_npcx_overlay.xml</name>
   </include>
   <!-- vader has matrix v30 -->
   <control>

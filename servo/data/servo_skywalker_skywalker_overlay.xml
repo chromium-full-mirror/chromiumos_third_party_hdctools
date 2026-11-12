@@ -1,6 +1,6 @@
 <root>
   <include>
-    <name>servo_skywalker_overlay.xml</name>
+    <name>servo_skywalker_npcx_overlay.xml</name>
   </include>
   <!-- Skywalker's keyboard matrix is same as Chinchou's -->
   <control>
