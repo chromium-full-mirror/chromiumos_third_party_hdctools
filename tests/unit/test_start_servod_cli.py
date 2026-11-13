@@ -114,6 +114,202 @@ class TestStartServod(unittest.TestCase):
                 f"Expected logs directory in volumes: {volumes}",
             )
 
+    def test_dual_servo_micro_and_ccd_console_output(self):
+        test_args = ["start-servod", "-s", "SERVOV4P1-S-2106191847"]
+
+        def exec_run_side_effect(cmd):
+            if cmd == "servodtool instance wait-for-active --timeout 1 -p 9999":
+                return (0, b"")
+            if cmd == "dut-control servo_type":
+                return (
+                    0,
+                    b"servo_type:servo_v4p1_with_servo_micro_and_ccd_gsc_nt\n",
+                )
+            if (
+                cmd == "dut-control servo_micro.ec_uart_pty "
+                "servo_micro.cpu_uart_pty servo_micro.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"servo_micro.ec_uart_pty:/dev/pts/2\n"
+                    b"servo_micro.cpu_uart_pty:/dev/pts/1\n"
+                    b"servo_micro.gsc_uart_pty:/dev/pts/0\n",
+                )
+            if cmd == "dut-control servo_micro.fpmcu_uart_pty":
+                return (1, b"No control named servo_micro.fpmcu_uart_pty\n")
+            if (
+                cmd == "dut-control ccd_gsc.ec_uart_pty "
+                "ccd_gsc.cpu_uart_pty ccd_gsc.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"ccd_gsc.ec_uart_pty:/dev/pts/6\n"
+                    b"ccd_gsc.cpu_uart_pty:/dev/pts/5\n"
+                    b"ccd_gsc.gsc_uart_pty:/dev/pts/3\n",
+                )
+            if cmd == "dut-control ccd_gsc.fpmcu_uart_pty":
+                return (0, b"ccd_gsc.fpmcu_uart_pty:/dev/pts/7\n")
+            if cmd == "dut-control active_dut_controller":
+                return (0, b"active_dut_controller:servo_micro\n")
+            if (
+                cmd == "dut-control active.ec_uart_pty "
+                "active.cpu_uart_pty active.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"active.ec_uart_pty:/dev/pts/2\n"
+                    b"active.cpu_uart_pty:/dev/pts/1\n"
+                    b"active.gsc_uart_pty:/dev/pts/0\n",
+                )
+            if cmd == "dut-control active.fpmcu_uart_pty":
+                return (1, b"No control named active.fpmcu_uart_pty\n")
+            return (0, b"")
+
+        self.mock_container.exec_run.side_effect = exec_run_side_effect
+
+        with (
+            patch.object(sys, "argv", test_args),
+            patch("builtins.print") as mock_print,
+        ):
+            start_servod.main()
+
+            printed_text = "\n".join(
+                " ".join(str(a) for a in call.args)
+                for call in mock_print.call_args_list
+            )
+            self.assertIn("Servo Micro console locations:", printed_text)
+            self.assertIn("servo_micro.ec_uart_pty:/dev/pts/2", printed_text)
+            self.assertNotIn("servo_micro.fpmcu_uart_pty", printed_text)
+            self.assertIn("\nCCD console locations:", printed_text)
+            self.assertIn("ccd_gsc.ec_uart_pty:/dev/pts/6", printed_text)
+            self.assertIn("ccd_gsc.fpmcu_uart_pty:/dev/pts/7", printed_text)
+            self.assertIn(
+                "Active console locations (active_dut_controller: servo_micro):",
+                printed_text,
+            )
+            self.assertIn("active.ec_uart_pty:/dev/pts/2", printed_text)
+            self.assertIn("active.cpu_uart_pty:/dev/pts/1", printed_text)
+            self.assertIn("active.gsc_uart_pty:/dev/pts/0", printed_text)
+            self.assertNotIn("active.fpmcu_uart_pty", printed_text)
+
+    def test_dual_c2d2_and_ccd_console_output(self):
+        test_args = ["start-servod", "-s", "SERVOV4P1-S-2106191847"]
+
+        def exec_run_side_effect(cmd):
+            if cmd == "servodtool instance wait-for-active --timeout 1 -p 9999":
+                return (0, b"")
+            if cmd == "dut-control servo_type":
+                return (
+                    0,
+                    b"servo_type:servo_v4p1_with_c2d2_and_ccd_cr50\n",
+                )
+            if (
+                cmd == "dut-control c2d2.ec_uart_pty "
+                "c2d2.cpu_uart_pty c2d2.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"c2d2.ec_uart_pty:/dev/pts/2\n"
+                    b"c2d2.cpu_uart_pty:/dev/pts/1\n"
+                    b"c2d2.gsc_uart_pty:/dev/pts/0\n",
+                )
+            if (
+                cmd == "dut-control ccd_gsc.ec_uart_pty "
+                "ccd_gsc.cpu_uart_pty ccd_gsc.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"ccd_gsc.ec_uart_pty:/dev/pts/6\n"
+                    b"ccd_gsc.cpu_uart_pty:/dev/pts/5\n"
+                    b"ccd_gsc.gsc_uart_pty:/dev/pts/3\n",
+                )
+            if cmd == "dut-control active_dut_controller":
+                return (0, b"active_dut_controller:c2d2\n")
+            if (
+                cmd == "dut-control active.ec_uart_pty "
+                "active.cpu_uart_pty active.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"active.ec_uart_pty:/dev/pts/2\n"
+                    b"active.cpu_uart_pty:/dev/pts/1\n"
+                    b"active.gsc_uart_pty:/dev/pts/0\n",
+                )
+            if "fpmcu_uart_pty" in cmd:
+                return (1, b"")
+            return (0, b"")
+
+        self.mock_container.exec_run.side_effect = exec_run_side_effect
+
+        with (
+            patch.object(sys, "argv", test_args),
+            patch("builtins.print") as mock_print,
+        ):
+            start_servod.main()
+
+            printed_text = "\n".join(
+                " ".join(str(a) for a in call.args)
+                for call in mock_print.call_args_list
+            )
+            self.assertIn("C2D2 console locations:", printed_text)
+            self.assertIn("c2d2.ec_uart_pty:/dev/pts/2", printed_text)
+            self.assertIn("\nCCD console locations:", printed_text)
+            self.assertIn(
+                "Active console locations (active_dut_controller: c2d2):",
+                printed_text,
+            )
+            self.assertIn("active.ec_uart_pty:/dev/pts/2", printed_text)
+
+    def test_single_controller_console_output(self):
+        test_args = ["start-servod", "-s", "SERVOV4P1-S-2106191847"]
+
+        def exec_run_side_effect(cmd):
+            if cmd == "servodtool instance wait-for-active --timeout 1 -p 9999":
+                return (0, b"")
+            if cmd == "dut-control servo_type":
+                return (0, b"servo_type:servo_v4p1_with_ccd_gsc_nt\n")
+            if cmd == "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty":
+                return (
+                    0,
+                    b"ec_uart_pty:/dev/pts/10\n"
+                    b"cpu_uart_pty:/dev/pts/12\n"
+                    b"gsc_uart_pty:/dev/pts/8\n",
+                )
+            if cmd == "dut-control fpmcu_uart_pty":
+                return (0, b"fpmcu_uart_pty:/dev/pts/14\n")
+            if (
+                cmd == "dut-control active.ec_uart_pty "
+                "active.cpu_uart_pty active.gsc_uart_pty"
+            ):
+                return (
+                    0,
+                    b"active.ec_uart_pty:/dev/pts/10\n"
+                    b"active.cpu_uart_pty:/dev/pts/12\n"
+                    b"active.gsc_uart_pty:/dev/pts/8\n",
+                )
+            if cmd == "dut-control active.fpmcu_uart_pty":
+                return (0, b"active.fpmcu_uart_pty:/dev/pts/14\n")
+            return (0, b"")
+
+        self.mock_container.exec_run.side_effect = exec_run_side_effect
+
+        with (
+            patch.object(sys, "argv", test_args),
+            patch("builtins.print") as mock_print,
+        ):
+            start_servod.main()
+
+            printed_text = "\n".join(
+                " ".join(str(a) for a in call.args)
+                for call in mock_print.call_args_list
+            )
+            self.assertIn("Main console locations:", printed_text)
+            self.assertIn("ec_uart_pty:/dev/pts/10", printed_text)
+            self.assertIn("fpmcu_uart_pty:/dev/pts/14", printed_text)
+            self.assertIn("\nActive console locations:", printed_text)
+            self.assertIn("active.ec_uart_pty:/dev/pts/10", printed_text)
+            self.assertIn("active.fpmcu_uart_pty:/dev/pts/14", printed_text)
+
 
 if __name__ == "__main__":
     unittest.main()

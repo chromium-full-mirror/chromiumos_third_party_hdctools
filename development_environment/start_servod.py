@@ -206,6 +206,97 @@ def get_image(client, channel, allow_offline, force_update, verbose):
     return image
 
 
+def _query_console_ptys(cont, prefix=""):
+    """Query servod inside the container for available DUT UART console PTYs.
+
+    Args:
+      cont: Running Docker container instance.
+      prefix: Optional device/routing prefix (e.g. 'servo_micro', 'c2d2',
+          'ccd_gsc', or 'active'). Empty string queries unprefixed 'main'
+          controls.
+
+    Returns:
+      Tuple of (exit_code, formatted_stdout_string).
+    """
+    ctrl_prefix = f"{prefix}." if prefix else ""
+    base_ctrls = " ".join(
+        f"{ctrl_prefix}{ctrl}"
+        for ctrl in ("ec_uart_pty", "cpu_uart_pty", "gsc_uart_pty")
+    )
+    code, output = cont.exec_run(f"dut-control {base_ctrls}")
+    result = output.decode("utf-8")
+    if code != 0:
+        return code, result
+
+    # fpmcu_uart_pty is only defined on controllers/overlays with an FPMCU UART
+    # (e.g. ccd_ti50 or boards including fpmcu.xml). Query it separately so its
+    # absence on other boards does not cause the base PTY lookup to fail.
+    fpmcu_code, fpmcu_output = cont.exec_run(f"dut-control {ctrl_prefix}fpmcu_uart_pty")
+    if fpmcu_code == 0 and fpmcu_output:
+        fpmcu_str = fpmcu_output.decode("utf-8")
+        if fpmcu_str.strip():
+            result += fpmcu_str
+    return code, result
+
+
+def print_console_locations(cont):
+    """Print physical and dynamic 'active.' UART console PTY paths at startup.
+
+    In dual-controller Servo v4 setups (servo_micro or c2d2 paired with CCD),
+    unprefixed controls like ec_uart_pty remain statically bound to the main
+    debug-header device for test compatibility, even after switching
+    active_dut_controller to CCD. Displaying each physical controller's
+    prefixed PTYs alongside the dynamic 'active.*' console controls avoids
+    confusion over which /dev/pts/* path belongs to the active controller.
+    """
+    _unused_code, servo_type_output = cont.exec_run("dut-control servo_type")
+    servo_type_str = servo_type_output.decode("utf-8")
+
+    header_info = None
+    if "servo_micro" in servo_type_str:
+        header_info = ("servo_micro", "Servo Micro")
+    elif "c2d2" in servo_type_str:
+        header_info = ("c2d2", "C2D2")
+
+    if header_info is not None and "ccd_" in servo_type_str:
+        header_prefix, header_label = header_info
+        hdr_code, hdr_output = _query_console_ptys(cont, header_prefix)
+        if hdr_code != 0:
+            hdr_code, hdr_output = _query_console_ptys(cont)
+        print(f"{header_label} console locations:\n{hdr_output}", end="")
+
+        ccd_code, ccd_output = _query_console_ptys(cont, "ccd_gsc")
+        if ccd_code == 0:
+            print(f"\nCCD console locations:\n{ccd_output}", end="")
+
+        active_header = "Active console locations"
+        active_code, active_out = cont.exec_run("dut-control active_dut_controller")
+        if active_code == 0:
+            active_str = active_out.decode("utf-8").strip()
+            if ":" in active_str:
+                ctrl, val = active_str.split(":", 1)
+                active_header = f"Active console locations ({ctrl}: {val.strip()})"
+            elif active_str:
+                active_header = (
+                    f"Active console locations "
+                    f"(active_dut_controller: {active_str})"
+                )
+
+        act_pty_code, act_pty_output = _query_console_ptys(cont, "active")
+        if act_pty_code == 0:
+            print(f"\n{active_header}:\n{act_pty_output}")
+        elif active_code == 0:
+            print(f"\n{active_header}\n")
+    else:
+        _unused_main_code, main_output = _query_console_ptys(cont)
+        print(f"Main console locations:\n{main_output}", end="")
+        act_pty_code, act_pty_output = _query_console_ptys(cont, "active")
+        if act_pty_code == 0:
+            print(f"\nActive console locations:\n{act_pty_output}")
+        else:
+            print("")
+
+
 def output_logs(log_lines):
     for line in log_lines:
         print(line.decode("utf-8"), end="")
@@ -404,10 +495,7 @@ def start_servod(
                     if follow:
                         print(" or press CTRL+C", end="")
                     print("\n")
-                    (error_code, output) = cont.exec_run(
-                        "dut-control ec_uart_pty cpu_uart_pty gsc_uart_pty"
-                    )
-                    print("Main console locations:\n{}".format(output.decode("utf-8")))
+                    print_console_locations(cont)
                     # Verify connected servos FW version, print warning if update needed
                     for servo_type in (
                         "servo_v4",
