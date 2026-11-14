@@ -1,6 +1,7 @@
 # Copyright 2019 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Driver for controlling the active servo v4 device."""
 
 import time
@@ -90,6 +91,27 @@ class activeV4Device(hw_driver.HwDriver):
             return list(service.device_list.list)
         return service.value
 
+    def _ccd_ctrl(self, ctrl):
+        """Return a CCD-prefixed control name when a USB CCD device is connected.
+
+        In dual-controller setups (servo_micro or c2d2 paired with a CCD device),
+        unprefixed controls such as 'cr50_ccd_state_flags' and 'cr50_brdprop'
+        resolve to 'main' (the debug-header controller), which queries the GSC
+        over the physical 115200-baud debug-header UART. Multi-line output from
+        'ccdstate' over the debug-header UART can drop characters on some boards,
+        causing regex timeouts and making _Get_device() fall back to assuming the
+        default device even when CCD is active.
+
+        Because v4_device_info['ccd'] is populated statically from servo_type at
+        init, also check GetCcdState().state (ccd_device.is_connected()) so that
+        when a test disables DTS mode (servo_dts_mode:off) and disconnects USB
+        CCD, queries fall back to the unprefixed debug-header control.
+        """
+        ccd_dev = self.get_v4_device_info("ccd")
+        if ccd_dev and self._driver_client.GetCcdState().state:
+            return f"{ccd_dev}.{ctrl}"
+        return ctrl
+
     def _Set_device(self, device):
         """Configure cr50 to enable using servo micro or ccd."""
         if device in self.DEVICE_ALIASES:
@@ -107,7 +129,10 @@ class activeV4Device(hw_driver.HwDriver):
         # Check again after a potential override for ccd_gsc
         if device not in devices:
             if not devices:
-                self._logger.info("No usable devices available. Cannot set active device to %r", device)
+                self._logger.info(
+                    "No usable devices available. Cannot set active device to %r",
+                    device,
+                )
                 return
             raise activeV4DeviceError("Invalid device %r. Try %r" % (device, devices))
         use_servo = self.V4_DEVICES[device]
@@ -130,16 +155,17 @@ class activeV4Device(hw_driver.HwDriver):
             # Cr50 can't detect servo if CCD EC uart is enabled. Enable cr50 servo
             # detection just in case ccd is blocking it.
             if (
-                self._servod_get("cr50_servo") in ["undetectable", "ignored"]
+                self._servod_get(self._ccd_ctrl("cr50_servo"))
+                in ["undetectable", "ignored"]
                 and use_servo
             ):
-                self._servod_set("cr50_force_servo_detect", "on")
+                self._servod_set(self._ccd_ctrl("cr50_force_servo_detect"), "on")
             # Give Cr50 enough time to detect the new state.
             time.sleep(2)
 
             # Once Cr50 detects servo it should always be able to detect it. We don't
             # need force_servo_detect anymore.
-            self._servod_set("cr50_force_servo_detect", "off")
+            self._servod_set(self._ccd_ctrl("cr50_force_servo_detect"), "off")
 
         actual_device = self._Get_device()
         if device != actual_device:
@@ -161,8 +187,8 @@ class activeV4Device(hw_driver.HwDriver):
         can_control_cr50 = self._driver_client.IsServoHasAttr(name="_can_control_cr50")
         if not can_control_cr50.value:
             return False
-        flags = self._servod_get("cr50_ccd_state_flags")
-        brdprop = int(self._servod_get("cr50_brdprop"), base=16)
+        flags = self._servod_get(self._ccd_ctrl("cr50_ccd_state_flags"))
+        brdprop = int(self._servod_get(self._ccd_ctrl("cr50_brdprop")), base=16)
         ccd_enabled_flags = {"SPI", "UARTAP+TX", "UARTFPMCU+TX"}
 
         # If BOARD_EC_CR50_COMM_SUPPORT flag is set in board property,
