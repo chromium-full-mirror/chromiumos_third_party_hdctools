@@ -1,6 +1,7 @@
 # Copyright 2016 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Accesses I2C buses through stm32 usb endpoint."""
 
 import errno
@@ -156,18 +157,27 @@ class Si2cBus(i2c_base.BaseI2CBus):
                 cmd.append((read_count >> 7) & 0xFF)
                 cmd.append(0)  # reserved field
 
-            # Send wr_rd command to stm32.
+            # Send wr_rd command to stm32, rediscovering endpoints if a GSC
+            # reboot or sibling Suart reset invalidated the USB handle.
             cmd.extend(write_list)
+            if self._susb.needs_rediscovery() is True:
+                self._susb.reset_usb()
             try:
                 self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
-            except IOError as e:
-                if e.errno == errno.ENODEV:
-                    self._logger.error(
-                        "USB disconnected 0x%04x:%04x, servod failed.",
-                        self._susb._vendor,
-                        self._susb._product,
-                    )
-                raise
+            except stm32usb.SusbError:
+                self._susb.reset_usb()
+                self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
+            except OSError as e:
+                if e.errno not in (errno.ENODEV, errno.EIO):
+                    raise
+                self._logger.warning(
+                    "USB error (%s) on 0x%04x:%04x; rediscovering endpoints.",
+                    e,
+                    self._susb._vendor,
+                    self._susb._product,
+                )
+                self._susb.reset_usb(force=True)
+                self._susb.write_ep(cmd, self._susb.TIMEOUT_MS)
 
             # Read back response if necessary.
             data = self._susb.read_ep(read_count + 4, self._susb.TIMEOUT_MS)
@@ -186,9 +196,12 @@ class Si2cBus(i2c_base.BaseI2CBus):
             if auto_release:
                 self.release()
 
-    def release(self):
-        """Release i2c usb device so that external tools can use it."""
-        self._susb.release()
+    def release(self) -> None:
+        """Releases the I2C USB device so external tools can claim it."""
+        try:
+            self._susb.release()
+        except (stm32usb.SusbError, OSError) as e:
+            self._logger.debug("Skipping USB interface release: %s", e)
 
     def close(self):
         """Stm32i2c wind down logic.

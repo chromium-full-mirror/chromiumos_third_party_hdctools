@@ -3,12 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 # pylint: disable=unused-argument
+import errno
 import unittest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
 from servo.common.interface.stm32i2c import Si2cBus
 from servo.common.interface.stm32i2c import Si2cError
+from servo.common.interface.stm32usb import SusbError
 
 
 class TestSi2cBus(unittest.TestCase):
@@ -58,6 +60,45 @@ class TestSi2cBus(unittest.TestCase):
             % (expected_read_data[1], expected_read_data[0]),
         ):
             self.susb_bus._raw_wr_rd(child_address, write_list, read_count)
+
+    def test_raw_wr_rd_rediscovers_when_endpoints_missing(self) -> None:
+        """Verifies endpoint rediscovery when sibling reset wiped endpoints."""
+        self.mock_susb_instance.needs_rediscovery.return_value = True
+        self.mock_susb_instance.read_ep.return_value = [0, 0, 0, 0, 0xAB]
+
+        result = self.susb_bus._raw_wr_rd(0x78, [0x00], 1)
+
+        self.assertEqual(result, [0xAB])
+        self.mock_susb_instance.reset_usb.assert_called_once_with()
+        self.mock_susb_instance.write_ep.assert_called_once()
+
+    def test_raw_wr_rd_rediscovers_on_enodev(self) -> None:
+        """Verifies forced rediscovery and retry on stale USB handle ENODEV."""
+        self.mock_susb_instance.needs_rediscovery.return_value = False
+        self.mock_susb_instance._vendor = 0x18D1
+        self.mock_susb_instance._product = 0x5014
+        self.mock_susb_instance.write_ep.side_effect = [
+            OSError(errno.ENODEV, "No such device"),
+            None,
+        ]
+        self.mock_susb_instance.read_ep.return_value = [0, 0, 0, 0]
+
+        result = self.susb_bus._raw_wr_rd(0x78, [0x00], 0)
+
+        self.assertEqual(result, [])
+        self.mock_susb_instance.reset_usb.assert_called_once_with(force=True)
+        self.assertEqual(self.mock_susb_instance.write_ep.call_count, 2)
+
+    def test_raw_wr_rd_release_does_not_mask_original_error(self) -> None:
+        """Verifies cleanup release ignores SusbError when endpoints missing."""
+        self.mock_susb_instance.needs_rediscovery.return_value = True
+        self.mock_susb_instance.reset_usb.side_effect = RuntimeError("No device found")
+        self.mock_susb_instance.release.side_effect = SusbError(
+            "has no endpoints setup for interface 5"
+        )
+
+        with self.assertRaisesRegex(RuntimeError, "No device found"):
+            self.susb_bus._raw_wr_rd(0x78, [0x00], 0)
 
 
 if __name__ == "__main__":
