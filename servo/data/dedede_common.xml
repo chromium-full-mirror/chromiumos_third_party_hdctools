@@ -13,8 +13,12 @@
       <content>
         <item key="macro_map">
           <item key="1">
-            <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <!-- Wait for EC to finish EFS2 RO->RW sysjump if just reset. -->
+            <item>sleep:1</item>
+            <!-- Silence EC console and cancel any pending reboots. -->
             <item>ec_uart_regexp:None</item>
+            <item>ec_uart_cmd:chan 0</item>
+            <item>sleep:0.2</item>
             <item>ec_uart_cmd:reboot cancel</item>
             <!-- Shutdown AP so that it enters G3 state. -->
             <item>ec_uart_cmd:apshutdown</item>
@@ -27,10 +31,21 @@
             <item>sleep:0.2</item>
             <!-- Halt the power sequencing by de-asserting EC_AP_RSMRST_L. -->
             <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <item>sleep:0.2</item>
             <!-- De-assert again to be on the safe side. -->
             <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <item>sleep:0.2</item>
+            <!-- Disconnect consoles to prevent TT congestion. -->
+            <item>cpu_ec3po_interp_connect:off</item>
+            <item>ec_ec3po_interp_connect:off</item>
+            <item>gsc_ec3po_interp_connect:off</item>
           </item>
           <item key="0">
+            <!-- Reconnect consoles first so reset commands work. -->
+            <item>cpu_ec3po_interp_connect:on</item>
+            <item>ec_ec3po_interp_connect:on</item>
+            <item>gsc_ec3po_interp_connect:on</item>
+            <item>sleep:1</item>
             <item>power_state:reset</item>
           </item>
         </item>
@@ -49,8 +64,12 @@
       <content>
         <item key="macro_map">
           <item key="1">
-            <!-- Cancel any pending reboots to avoid unexpected behavior. -->
+            <!-- Wait for EC to finish EFS2 RO->RW sysjump if just reset. -->
+            <item>sleep:1</item>
+            <!-- Silence EC console and cancel any pending reboots. -->
             <item>ec_uart_regexp:None</item>
+            <item>ec_uart_cmd:chan 0</item>
+            <item>sleep:0.2</item>
             <item>ec_uart_cmd:reboot cancel</item>
             <!-- Shutdown AP so that it enters G3 state. -->
             <item>ec_uart_cmd:apshutdown</item>
@@ -63,8 +82,10 @@
             <item>sleep:0.2</item>
             <!-- Halt the power sequencing by de-asserting EC_AP_RSMRST_L. -->
             <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <item>sleep:0.2</item>
             <!-- De-assert again to be on the safe side. -->
             <item>ec_uart_cmd:gpioset ec_ap_rsmrst_l 0</item>
+            <item>sleep:0.2</item>
             <item>ap_flash_select:off</item>
             <item>spi2_vref:pp3300</item>
           </item>
