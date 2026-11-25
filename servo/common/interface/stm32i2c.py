@@ -7,6 +7,8 @@
 import errno
 import logging
 
+import usb
+
 from servo.common.interface import common as c
 from servo.common.interface import i2c_base
 from servo.common.interface import stm32usb
@@ -14,6 +16,13 @@ from servo.common.interface import stm32usb
 
 _MAX_WRITE_SIZE = (1 << 12) - 1
 _MAX_READ_SIZE = (1 << 15) - 1
+_PROBE_CMD = b"\x0f\x00\x00\x01"
+_PROBE_READ_BYTES = 64
+_PROBE_MIN_RESPONSE_LEN = 5
+_PROBE_DRAIN_TIMEOUT_MS = 10
+_PROBE_MAX_STALE_PACKETS = 8
+# USB_I2C_PORT_INVALID (0x05) and USB_I2C_DISABLED (0x06) from ec usb_i2c.h.
+_PROBE_VALID_STATUS_LSB = frozenset({0x05, 0x06})
 
 
 class Si2cError(c.InterfaceError):
@@ -96,6 +105,48 @@ class Si2cBus(i2c_base.BaseI2CBus):
     def get_device_info(self):
         """The usb device information."""
         return self._susb.get_device_info()
+
+    def is_endpoint_responsive(self) -> bool:
+        """Checks whether the STM32 USB I2C bulk endpoint responds to a probe.
+
+        Sends a 4-byte invalid-port request (port=15, addr=0, write_count=0,
+        read_count=1) after draining any stale inbound packets. Healthy STM32
+        firmware replies immediately with USB_I2C_PORT_INVALID or
+        USB_I2C_DISABLED without driving physical DUT I2C pins, whereas a wedged
+        bulk OUT endpoint times out.
+
+        Returns:
+          True if the endpoint accepts the probe and returns a valid status
+          header, or False on timeout or malformed response.
+        """
+        try:
+            if self._susb.needs_rediscovery() is True:
+                self._susb.reset_usb()
+            for _unused in range(_PROBE_MAX_STALE_PACKETS):
+                try:
+                    self._susb.read_ep(_PROBE_READ_BYTES, _PROBE_DRAIN_TIMEOUT_MS)
+                except usb.core.USBTimeoutError:
+                    break
+            self._susb.write_ep(_PROBE_CMD, self._susb.TIMEOUT_MS)
+            probe_response = self._susb.read_ep(
+                _PROBE_READ_BYTES, self._susb.TIMEOUT_MS
+            )
+            if (
+                len(probe_response) < _PROBE_MIN_RESPONSE_LEN
+                or probe_response[0] not in _PROBE_VALID_STATUS_LSB
+                or probe_response[1] != 0
+            ):
+                self._logger.warning(
+                    "Unexpected USB I2C endpoint probe response: %s",
+                    list(probe_response),
+                )
+                return False
+            return True
+        except (usb.core.USBError, OSError, c.InterfaceError) as err:
+            self._logger.warning("USB I2C endpoint probe failed: %s", err)
+            return False
+        finally:
+            self.release()
 
     def _raw_wr_rd(self, child_address, write_list, read_count=0, auto_release=True):
         """Implements hdctools wr_rd() interface.

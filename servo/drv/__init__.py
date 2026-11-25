@@ -78,6 +78,7 @@ from servo.drv import servo_watchdog
 from servo.drv import sflag
 from servo.drv import simple_ec
 from servo.drv import sleep
+from servo.drv import stm32_i2c
 from servo.drv import sx1505
 from servo.drv import sx1506
 from servo.drv import sx1506_v4

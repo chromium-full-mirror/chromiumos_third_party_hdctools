@@ -8,6 +8,8 @@ import unittest
 from unittest.mock import MagicMock
 from unittest.mock import patch
 
+import usb
+
 from servo.common.interface.stm32i2c import Si2cBus
 from servo.common.interface.stm32i2c import Si2cError
 from servo.common.interface.stm32usb import SusbError
@@ -99,6 +101,54 @@ class TestSi2cBus(unittest.TestCase):
 
         with self.assertRaisesRegex(RuntimeError, "No device found"):
             self.susb_bus._raw_wr_rd(0x78, [0x00], 0)
+
+    def test_is_endpoint_responsive_drains_stale_packet_and_succeeds(self) -> None:
+        self.mock_susb_instance.needs_rediscovery.return_value = False
+        self.mock_susb_instance.TIMEOUT_MS = 100
+        self.mock_susb_instance.release.reset_mock()
+        self.mock_susb_instance.read_ep.side_effect = [
+            [0x00, 0x00, 0x00, 0x00],
+            usb.core.USBTimeoutError("drain complete"),
+            [0x05, 0x00, 0x00, 0x00, 0x00],
+        ]
+
+        self.assertTrue(self.susb_bus.is_endpoint_responsive())
+        self.mock_susb_instance.write_ep.assert_called_once_with(
+            b"\x0f\x00\x00\x01", 100
+        )
+        self.mock_susb_instance.release.assert_called_once_with()
+
+    def test_is_endpoint_responsive_accepts_disabled_status(self) -> None:
+        self.mock_susb_instance.needs_rediscovery.return_value = False
+        self.mock_susb_instance.TIMEOUT_MS = 100
+        self.mock_susb_instance.read_ep.side_effect = [
+            usb.core.USBTimeoutError("drain complete"),
+            [0x06, 0x00, 0x00, 0x00, 0x00],
+        ]
+
+        self.assertTrue(self.susb_bus.is_endpoint_responsive())
+
+    def test_is_endpoint_responsive_returns_false_on_write_timeout(self) -> None:
+        self.mock_susb_instance.needs_rediscovery.return_value = False
+        self.mock_susb_instance.release.reset_mock()
+        self.mock_susb_instance.read_ep.side_effect = usb.core.USBTimeoutError(
+            "drain complete"
+        )
+        self.mock_susb_instance.write_ep.side_effect = usb.core.USBTimeoutError(
+            "bulk out wedged"
+        )
+
+        self.assertFalse(self.susb_bus.is_endpoint_responsive())
+        self.mock_susb_instance.release.assert_called_once_with()
+
+    def test_is_endpoint_responsive_returns_false_on_unexpected_status(self) -> None:
+        self.mock_susb_instance.needs_rediscovery.return_value = False
+        self.mock_susb_instance.read_ep.side_effect = [
+            usb.core.USBTimeoutError("drain complete"),
+            [0x00, 0x00, 0x00, 0x00, 0xFF],
+        ]
+
+        self.assertFalse(self.susb_bus.is_endpoint_responsive())
 
 
 if __name__ == "__main__":

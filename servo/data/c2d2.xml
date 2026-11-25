@@ -273,6 +273,13 @@
     <params subtype="i2c_speed" interface="6" bus="ec" drv="ec3po_c2d2"
     input_type="int"></params>
   </control>
+  <control>
+    <name>c2d2_usb_i2c_responsive</name>
+    <doc>Whether the C2D2 USB I2C bulk endpoint responds without timing
+    out.</doc>
+    <params cmd="get" interface="4" drv="stm32_i2c"
+    subtype="usb_endpoint_responsive" map="yesno"></params>
+  </control>
   <!-- Controls overwritten by Cr50 -->
   <control>
     <name>warm_reset</name>
