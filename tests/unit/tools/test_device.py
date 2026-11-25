@@ -22,6 +22,9 @@ class TestDevice(unittest.TestCase):
         """Test help()."""
         self.assertEqual(device.Device().help, "Manage servo device.")
 
+    def test_c2d2_console_iface(self) -> None:
+        self.assertEqual(device.Device.USB_CONSOLE_IFACE[0x18D1][0x5041], 3)
+
     @unittest.mock.patch(
         "servo.utils.usb_hierarchy.Hierarchy.get_all_usb_device_sysfs_paths",
         unittest.mock.MagicMock(return_value=["/path/1/a/b/c", "/path/2/a/b/c"]),

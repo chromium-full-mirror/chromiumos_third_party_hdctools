@@ -45,7 +45,7 @@ class Device(tool.Tool):
     USB_CONSOLE_IFACE[0x18D1][0x501B] = 0  # servo_v4
     USB_CONSOLE_IFACE[0x18D1][0x5020] = 0  # sweetberry
     USB_CONSOLE_IFACE[0x18D1][0x520D] = 0  # servo_v4p1
-    USB_CONSOLE_IFACE[0x18D1][0x5041] = 0  # c2d2
+    USB_CONSOLE_IFACE[0x18D1][0x5041] = 3  # c2d2
 
     @property
     def help(self):
